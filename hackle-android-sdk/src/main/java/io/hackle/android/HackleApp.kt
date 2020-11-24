@@ -2,10 +2,10 @@ package io.hackle.android
 
 import android.content.Context
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
-import io.hackle.sdk.Event
-import io.hackle.sdk.User
-import io.hackle.sdk.Variation
-import io.hackle.sdk.Variation.Companion.CONTROL
+import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.User
+import io.hackle.sdk.common.Variation
+import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.core.client.HackleClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
@@ -84,7 +84,6 @@ class HackleApp internal constructor(
         private val LOCK = Any()
         private var INSTANCE: HackleApp? = null
 
-
         /**
          * Returns a singleton instance of [HackleApp]
          *
@@ -92,8 +91,8 @@ class HackleApp internal constructor(
          */
         @JvmStatic
         fun getInstance(): HackleApp {
-            synchronized(LOCK) {
-                return checkNotNull(INSTANCE) { "HackleApp is not initialized. Make sure to call HackleApp.initializeApp() first" }
+            return synchronized(LOCK) {
+                checkNotNull(INSTANCE) { "HackleApp is not initialized. Make sure to call HackleApp.initializeApp() first" }
             }
         }
 
@@ -111,8 +110,8 @@ class HackleApp internal constructor(
             sdkKey: String,
             onReady: Runnable = Runnable { }
         ): HackleApp {
-            synchronized(LOCK) {
-                return INSTANCE
+            return synchronized(LOCK) {
+                INSTANCE
                     ?: HackleApps
                         .create(sdkKey)
                         .initialize { onReady.run() }

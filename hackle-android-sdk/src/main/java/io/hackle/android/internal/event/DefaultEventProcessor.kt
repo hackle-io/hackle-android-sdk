@@ -36,7 +36,6 @@ internal class DefaultEventProcessor(
         }
     }
 
-    @Synchronized
     private fun flush() {
         queue.flush()
     }

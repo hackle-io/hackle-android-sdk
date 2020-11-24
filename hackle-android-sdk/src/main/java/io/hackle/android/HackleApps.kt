@@ -1,7 +1,6 @@
 package io.hackle.android
 
 import androidx.lifecycle.ProcessLifecycleOwner
-//import io.hackle.BuildConfig
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.http.SdkHeaderInterceptor
@@ -11,7 +10,8 @@ import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceCache
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
-import io.hackle.sdk.core.client.HackleClients
+import io.hackle.sdk.core.HackleCore
+import io.hackle.sdk.core.client
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import io.hackle.sdk.core.internal.utils.minutes
@@ -30,7 +30,7 @@ internal object HackleApps {
             .connectTimeout(1.seconds)
             .readTimeout(5.seconds)
             .writeTimeout(5.seconds)
-            .addInterceptor(SdkHeaderInterceptor(sdkKey, "android-sdk", "asdf"))
+            .addInterceptor(SdkHeaderInterceptor(sdkKey, "android-sdk", BuildConfig.VERSION_NAME))
             .build()
 
         val workspaceCache = WorkspaceCache()
@@ -52,6 +52,7 @@ internal object HackleApps {
 
         val eventDispatcher = EventDispatcher(
             baseEventUri = "https://event.hackle.io",
+            executor = Executors.newCachedThreadPool(),
             httpClient = httpClient
         )
 
@@ -70,7 +71,7 @@ internal object HackleApps {
         appStateChangeObserver
             .addListener(defaultEventProcessor)
 
-        val hackleClient = HackleClients.create(
+        val hackleClient = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
             eventProcessor = defaultEventProcessor.apply { start() }
         )

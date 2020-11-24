@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("io.hackle.android", appContext.packageName)
+        assertEquals("io.hackle.android.test", appContext.packageName)
     }
 }
