@@ -6,7 +6,7 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.Variation.Companion.CONTROL
-import io.hackle.sdk.core.client.HackleClient
+import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
@@ -15,7 +15,7 @@ import java.io.Closeable
  * Entry point of Hackle Sdk.
  */
 class HackleApp internal constructor(
-    private val hackleClient: HackleClient,
+    private val client: HackleInternalClient,
     private val workspaceCacheHandler: WorkspaceCacheHandler,
 ) : Closeable {
 
@@ -41,7 +41,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL
     ): Variation {
-        return runCatching { hackleClient.variation(experimentKey, user, defaultVariation) }
+        return runCatching { client.variation(experimentKey, user, defaultVariation) }
             .getOrElse {
                 log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $it" }
                 defaultVariation
@@ -65,12 +65,12 @@ class HackleApp internal constructor(
      * @param user  the user that occurred the event. MUST NOT be null.
      */
     fun track(event: Event, user: User) {
-        runCatching { hackleClient.track(event, user) }
+        runCatching { client.track(event, user) }
             .onFailure { log.error { "Unexpected exception while tracking event[${event.key}]: $it" } }
     }
 
     override fun close() {
-        hackleClient.tryClose()
+        client.tryClose()
     }
 
     internal fun initialize(onReady: () -> Unit) = apply {

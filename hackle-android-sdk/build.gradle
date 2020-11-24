@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = 'io.hackle'
-    version = '1.0.0-SNAPSHOT'
+    version = '1.0.0'
 }
 
 android {
@@ -44,8 +44,8 @@ android {
 
 dependencies {
 
-    api 'io.hackle:hackle-sdk-common:1.0.0-SNAPSHOT'
-    implementation 'io.hackle:hackle-sdk-core:1.0.0-SNAPSHOT'
+    api 'io.hackle:hackle-sdk-common:1.0.0'
+    implementation 'io.hackle:hackle-sdk-core:1.0.0'
     implementation 'com.squareup.okhttp3:okhttp:4.8.1'
     implementation "com.google.code.gson:gson:2.8.6"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
@@ -96,16 +96,16 @@ afterEvaluate {
                 }
             }
         }
-    }
-    repositories {
-        maven {
-            name = "MavenCentral"
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username = System.getenv("SONATYPE_USERNAME")
-                password = System.getenv("SONATYPE_PASSWORD")
+        repositories {
+            maven {
+                name = "MavenCentral"
+                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username = System.getenv("SONATYPE_USERNAME")
+                    password = System.getenv("SONATYPE_PASSWORD")
+                }
             }
         }
     }

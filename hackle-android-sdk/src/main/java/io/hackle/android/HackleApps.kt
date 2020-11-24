@@ -71,11 +71,11 @@ internal object HackleApps {
         appStateChangeObserver
             .addListener(defaultEventProcessor)
 
-        val hackleClient = HackleCore.client(
+        val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
             eventProcessor = defaultEventProcessor.apply { start() }
         )
 
-        return HackleApp(hackleClient, workspaceCacheHandler)
+        return HackleApp(client, workspaceCacheHandler)
     }
 }
