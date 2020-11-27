@@ -111,7 +111,7 @@ class HackleApp internal constructor(
             onReady: Runnable = Runnable { }
         ): HackleApp {
             return synchronized(LOCK) {
-                INSTANCE
+                INSTANCE?.also { onReady.run() }
                     ?: HackleApps
                         .create(sdkKey)
                         .initialize { onReady.run() }
