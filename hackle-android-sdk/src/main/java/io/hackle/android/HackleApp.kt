@@ -1,6 +1,8 @@
 package io.hackle.android
 
 import android.content.Context
+import android.content.SharedPreferences
+import io.hackle.android.internal.utils.computeIfAbsent
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -10,6 +12,7 @@ import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
+import java.util.*
 
 /**
  * Entry point of Hackle Sdk.
@@ -17,7 +20,40 @@ import java.io.Closeable
 class HackleApp internal constructor(
     private val client: HackleInternalClient,
     private val workspaceCacheHandler: WorkspaceCacheHandler,
+    private val sharedPreferences: SharedPreferences,
 ) : Closeable {
+
+    /**
+     * The user's Device Id.
+     */
+    private val deviceId: String by lazy {
+        sharedPreferences.computeIfAbsent(DEVICE_ID) { UUID.randomUUID().toString() }
+    }
+
+    /**
+     * Decide the variation to expose to the user for experiment.
+     *
+     * This method return the [defaultVariation] if:
+     * - SDK is not ready
+     * - The experiment key is invalid
+     * - The experiment has not started yet
+     * - The user is not allocated to the experiment
+     * - The decided variation has been dropped
+     *
+     * @param experimentKey    the unique key of the experiment.
+     * @param userId           the identifier of user to participate in the experiment. MUST NOT be null.
+     * @param defaultVariation the default variation of the experiment. MUST NOT be null.
+     *
+     * @return the decided variation for the user, or [defaultVariation]
+     */
+    @JvmOverloads
+    fun variation(
+        experimentKey: Long,
+        userId: String = deviceId,
+        defaultVariation: Variation = CONTROL,
+    ): Variation {
+        return variation(experimentKey, User.of(userId), defaultVariation)
+    }
 
     /**
      * Decide the variation to expose to the user for experiment.
@@ -52,6 +88,28 @@ class HackleApp internal constructor(
      * Records the event that occurred by the user.
      *
      * @param eventKey the unique key of the event that occurred. MUST NOT be null.
+     * @param userId   the identifier of user that occurred the event. MUST NOT be null.
+     */
+    @JvmOverloads
+    fun track(eventKey: String, userId: String = deviceId) {
+        track(Event.of(eventKey), User.of(userId))
+    }
+
+    /**
+     * Records the event that occurred by the user.
+     *
+     * @param event  the event that occurred. MUST NOT be null.
+     * @param userId the identifier of user that occurred the event. MUST NOT be null.
+     */
+    @JvmOverloads
+    fun track(event: Event, userId: String = deviceId) {
+        track(event, User.of(userId))
+    }
+
+    /**
+     * Records the event that occurred by the user.
+     *
+     * @param eventKey the unique key of the event that occurred. MUST NOT be null.
      * @param user     the user that occurred the event. MUST NOT be null.
      */
     fun track(eventKey: String, user: User) {
@@ -78,6 +136,8 @@ class HackleApp internal constructor(
     }
 
     companion object {
+
+        private const val DEVICE_ID = "device_id"
 
         private val log = Logger<HackleApp>()
 
@@ -113,7 +173,7 @@ class HackleApp internal constructor(
             return synchronized(LOCK) {
                 INSTANCE?.also { onReady.run() }
                     ?: HackleApps
-                        .create(sdkKey)
+                        .create(context, sdkKey)
                         .initialize { onReady.run() }
                         .also { INSTANCE = it }
             }
