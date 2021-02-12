@@ -1,5 +1,7 @@
 package io.hackle.android
 
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
@@ -22,7 +24,9 @@ import java.util.concurrent.Executors
 
 internal object HackleApps {
 
-    fun create(sdkKey: String): HackleApp {
+    private const val PREFERENCES_NAME = "io.hackle.android"
+
+    fun create(context: Context, sdkKey: String): HackleApp {
 
         Logger.factory = AndroidLogger.Factory
 
@@ -76,6 +80,8 @@ internal object HackleApps {
             eventProcessor = defaultEventProcessor.apply { start() }
         )
 
-        return HackleApp(client, workspaceCacheHandler)
+        val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE)
+
+        return HackleApp(client, workspaceCacheHandler, sharedPreferences)
     }
 }
