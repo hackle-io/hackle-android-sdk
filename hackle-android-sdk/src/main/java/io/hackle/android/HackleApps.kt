@@ -16,11 +16,10 @@ import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.client
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Schedulers
-import io.hackle.sdk.core.internal.utils.minutes
-import io.hackle.sdk.core.internal.utils.seconds
 import okhttp3.OkHttpClient
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 internal object HackleApps {
 
@@ -31,9 +30,9 @@ internal object HackleApps {
         Logger.factory = AndroidLogger.Factory
 
         val httpClient = OkHttpClient.Builder()
-            .connectTimeout(1.seconds)
-            .readTimeout(5.seconds)
-            .writeTimeout(5.seconds)
+            .connectTimeout(1, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
             .addInterceptor(SdkHeaderInterceptor(sdkKey, "android-sdk", BuildConfig.VERSION_NAME))
             .build()
 
@@ -63,7 +62,7 @@ internal object HackleApps {
         val defaultEventProcessor = DefaultEventProcessor(
             queue = ArrayBlockingQueue(100),
             flushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
-            flushInterval = 1.minutes,
+            flushIntervalMillis = 60 * 1000,
             eventDispatcher = eventDispatcher,
             maxEventDispatchSize = 20
         )

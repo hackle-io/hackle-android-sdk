@@ -8,6 +8,8 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.Variation.Companion.CONTROL
+import io.hackle.sdk.common.decision.Decision
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
@@ -58,13 +60,6 @@ class HackleApp internal constructor(
     /**
      * Decide the variation to expose to the user for experiment.
      *
-     * This method return the [defaultVariation] if:
-     * - SDK is not ready
-     * - The experiment key is invalid
-     * - The experiment has not started yet
-     * - The user is not allocated to the experiment
-     * - The decided variation has been dropped
-     *
      * @param experimentKey    the unique key of the experiment.
      * @param user             the user to participate in the experiment. MUST NOT be null.
      * @param defaultVariation the default variation of the experiment. MUST NOT be null.
@@ -75,12 +70,51 @@ class HackleApp internal constructor(
     fun variation(
         experimentKey: Long,
         user: User,
-        defaultVariation: Variation = CONTROL
+        defaultVariation: Variation = CONTROL,
     ): Variation {
+        return variationDetail(experimentKey, user, defaultVariation).variation
+    }
+
+
+    /**
+     * Decide the variation to expose to the user for experiment, and returns an object that
+     * describes the way the variation was decided.
+     *
+     * @param experimentKey    the unique key of the experiment.
+     * @param userId           the identifier of user to participate in the experiment. MUST NOT be null.
+     * @param defaultVariation the default variation of the experiment. MUST NOT be null.
+     *
+     * @return a [Decision] object
+     */
+    @JvmOverloads
+    fun variationDetail(
+        experimentKey: Long,
+        userId: String = deviceId,
+        defaultVariation: Variation = CONTROL,
+    ): Decision {
+        return variationDetail(experimentKey, User.of(userId), defaultVariation)
+    }
+
+    /**
+     * Decide the variation to expose to the user for experiment, and returns an object that
+     * describes the way the variation was decided.
+     *
+     * @param experimentKey    the unique key for the experiment.
+     * @param user             the user to participate in the experiment. MUST NOT be null.
+     * @param defaultVariation the default variation of the experiment. MUST NOT be null.
+     *
+     * @return a [Decision] object
+     */
+    @JvmOverloads
+    fun variationDetail(
+        experimentKey: Long,
+        user: User,
+        defaultVariation: Variation = CONTROL,
+    ): Decision {
         return runCatching { client.variation(experimentKey, user, defaultVariation) }
             .getOrElse {
                 log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $it" }
-                defaultVariation
+                Decision.of(defaultVariation, DecisionReason.EXCEPTION)
             }
     }
 
@@ -168,7 +202,7 @@ class HackleApp internal constructor(
         fun initializeApp(
             context: Context,
             sdkKey: String,
-            onReady: Runnable = Runnable { }
+            onReady: Runnable = Runnable { },
         ): HackleApp {
             return synchronized(LOCK) {
                 INSTANCE?.also { onReady.run() }
