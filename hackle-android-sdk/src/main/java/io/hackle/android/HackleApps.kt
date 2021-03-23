@@ -2,10 +2,12 @@ package io.hackle.android
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.os.Build
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.http.SdkHeaderInterceptor
+import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.AppStateChangeObserver
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
@@ -23,18 +25,15 @@ import java.util.concurrent.TimeUnit
 
 internal object HackleApps {
 
+    private val log = Logger<HackleApps>()
+
     private const val PREFERENCES_NAME = "io.hackle.android"
 
     fun create(context: Context, sdkKey: String): HackleApp {
 
         Logger.factory = AndroidLogger.Factory
 
-        val httpClient = OkHttpClient.Builder()
-            .connectTimeout(1, TimeUnit.SECONDS)
-            .readTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS)
-            .addInterceptor(SdkHeaderInterceptor(sdkKey, "android-sdk", BuildConfig.VERSION_NAME))
-            .build()
+        val httpClient = createHttpClient(context, sdkKey)
 
         val workspaceCache = WorkspaceCache()
 
@@ -82,5 +81,26 @@ internal object HackleApps {
         val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE)
 
         return HackleApp(client, workspaceCacheHandler, sharedPreferences)
+    }
+
+    private fun createHttpClient(context: Context, sdkKey: String): OkHttpClient {
+
+        val builder = OkHttpClient.Builder()
+            .connectTimeout(1, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
+            .writeTimeout(5, TimeUnit.SECONDS)
+            .addInterceptor(SdkHeaderInterceptor(sdkKey, "android-sdk", BuildConfig.VERSION_NAME))
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+
+            try {
+                Tls.update(context)
+                builder.sslSocketFactory(Tls.tlsSocketFactory(), Tls.defaultTrustManager())
+            } catch (e: Exception) {
+                log.error { "TLS is not available: $e" }
+            }
+        }
+
+        return builder.build()
     }
 }

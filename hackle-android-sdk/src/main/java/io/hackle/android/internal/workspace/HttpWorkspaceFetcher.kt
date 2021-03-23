@@ -2,24 +2,24 @@ package io.hackle.android.internal.workspace
 
 import io.hackle.android.internal.http.parse
 import io.hackle.sdk.core.workspace.Workspace
-import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 internal class HttpWorkspaceFetcher(
     baseSdkUri: String,
-    private val httpClient: OkHttpClient
+    private val httpClient: OkHttpClient,
 ) {
 
-    private val endpoint = (baseSdkUri + WORKSPACE_FETCH_PATH).toHttpUrl()
+    private val endpoint = HttpUrl.get(baseSdkUri + WORKSPACE_FETCH_PATH)
 
     fun fetch(): Workspace {
         val request = Request.Builder()
             .url(endpoint)
             .build()
         return httpClient.newCall(request).execute().use { response ->
-            check(response.isSuccessful) { "Http status code: ${response.code}" }
-            val responseBody = checkNotNull(response.body) { "Response body is null" }
+            check(response.isSuccessful) { "Http status code: ${response.code()}" }
+            val responseBody = checkNotNull(response.body()) { "Response body is null" }
             val dto = responseBody.parse<WorkspaceDto>()
             WorkspaceImpl.from(dto)
         }
