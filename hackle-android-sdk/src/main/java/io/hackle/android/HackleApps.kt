@@ -95,7 +95,7 @@ internal object HackleApps {
 
             try {
                 Tls.update(context)
-                builder.sslSocketFactory(Tls.tlsSocketFactory(), Tls.defaultTrustManager())
+                builder.sslSocketFactory(Tls.tls12SocketFactory(), Tls.defaultTrustManager())
             } catch (e: Exception) {
                 log.error { "TLS is not available: $e" }
             }

@@ -16,8 +16,6 @@ internal object Tls {
 
     private val log = Logger<Tls>()
 
-    const val V_1 = "TLSv1"
-    const val V_1_1 = "TLSv1.1"
     const val V_1_2 = "TLSv1.2"
 
     fun update(context: Context) {
@@ -47,22 +45,22 @@ internal object Tls {
         return trustManagers[0] as X509TrustManager
     }
 
-    fun tlsSocketFactory(): SSLSocketFactory {
+    fun tls12SocketFactory(): SSLSocketFactory {
         val context = SSLContext.getInstance("TLS").apply { init(null, null, null) }
-        return TlsSocketFactory(context.socketFactory)
+        return Tls12SocketFactory(context.socketFactory)
     }
 }
 
-internal class TlsSocketFactory(
+internal class Tls12SocketFactory(
     private val delegate: SSLSocketFactory,
 ) : SSLSocketFactory() {
 
     override fun createSocket(s: Socket?, host: String?, port: Int, autoClose: Boolean): Socket {
-        return enableTls(delegate.createSocket(s, host, port, autoClose))
+        return patch(delegate.createSocket(s, host, port, autoClose))
     }
 
     override fun createSocket(host: String?, port: Int): Socket {
-        return enableTls(delegate.createSocket(host, port))
+        return patch(delegate.createSocket(host, port))
     }
 
     override fun createSocket(
@@ -71,11 +69,11 @@ internal class TlsSocketFactory(
         localHost: InetAddress?,
         localPort: Int,
     ): Socket {
-        return enableTls(delegate.createSocket(host, port, localHost, localPort))
+        return patch(delegate.createSocket(host, port, localHost, localPort))
     }
 
     override fun createSocket(host: InetAddress?, port: Int): Socket {
-        return enableTls(delegate.createSocket(host, port))
+        return patch(delegate.createSocket(host, port))
     }
 
     override fun createSocket(
@@ -84,7 +82,7 @@ internal class TlsSocketFactory(
         localAddress: InetAddress?,
         localPort: Int,
     ): Socket {
-        return enableTls(delegate.createSocket(address, port, localAddress, localPort))
+        return patch(delegate.createSocket(address, port, localAddress, localPort))
     }
 
     override fun getDefaultCipherSuites(): Array<String> {
@@ -95,18 +93,14 @@ internal class TlsSocketFactory(
         return delegate.supportedCipherSuites
     }
 
-    private fun enableTls(socket: Socket): Socket {
+    private fun patch(socket: Socket): Socket {
         if (socket is SSLSocket) {
-            val protocols = socket.supportedProtocols
-                .filter { PROTOCOLS.contains(it) }
-            if (protocols.isNotEmpty()) {
-                socket.enabledProtocols = protocols.toTypedArray()
-            }
+            socket.enabledProtocols = TLS_V_1_2_ONLY
         }
         return socket
     }
 
     companion object {
-        private val PROTOCOLS = setOf(Tls.V_1, Tls.V_1_1, Tls.V_1_2)
+        private val TLS_V_1_2_ONLY = arrayOf(Tls.V_1_2)
     }
 }
