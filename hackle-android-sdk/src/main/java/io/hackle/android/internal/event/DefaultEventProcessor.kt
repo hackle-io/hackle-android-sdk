@@ -9,17 +9,16 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.internal.scheduler.Scheduler
-import io.hackle.sdk.core.internal.utils.format
 import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
-import java.time.Duration
 import java.util.concurrent.BlockingQueue
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class DefaultEventProcessor(
     private val queue: BlockingQueue<UserEvent>,
     private val flushScheduler: Scheduler,
-    private val flushInterval: Duration,
+    private val flushIntervalMillis: Long,
     private val eventDispatcher: EventDispatcher,
     private val maxEventDispatchSize: Int
 ) : EventProcessor, AppStateChangeListener, Closeable {
@@ -53,9 +52,8 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            flushingJob =
-                flushScheduler.schedulePeriodically(flushInterval, flushInterval) { flush() }
-            log.info { "DefaultEventProcessor started. Flush events every ${flushInterval.format()}" }
+            flushingJob = flushScheduler.schedulePeriodically(flushIntervalMillis, flushIntervalMillis, MILLISECONDS) { flush() }
+            log.info { "DefaultEventProcessor started. Flush events every $flushIntervalMillis ms" }
         }
     }
 
