@@ -6,7 +6,7 @@ import io.hackle.sdk.core.workspace.Workspace
 
 internal class WorkspaceImpl(
     private val experiments: Map<Long, Experiment>,
-    private val eventTypes: Map<String, EventType>
+    private val eventTypes: Map<String, EventType>,
 ) : Workspace {
 
     override fun getEventTypeOrNull(eventTypeKey: String): EventType? {
