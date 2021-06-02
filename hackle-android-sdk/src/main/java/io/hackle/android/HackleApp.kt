@@ -28,7 +28,7 @@ class HackleApp internal constructor(
     /**
      * The user's Device Id.
      */
-    private val deviceId: String by lazy {
+    val deviceId: String by lazy {
         sharedPreferences.computeIfAbsent(DEVICE_ID) { UUID.randomUUID().toString() }
     }
 
