@@ -1,0 +1,4 @@
+-keep class io.hackle.android.** { *; }
+-keep class io.hackle.sdk.** { *; }
+-dontwarn okhttp3.**
+-dontwarn com.google.gson.**
