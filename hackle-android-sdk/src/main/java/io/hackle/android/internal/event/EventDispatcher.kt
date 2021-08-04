@@ -43,6 +43,6 @@ internal class EventDispatcher(
     companion object {
         private val log = Logger<EventDispatcher>()
         private val CONTENT_TYPE = MediaType.get("application/json; charset=utf-8")
-        private const val EVENT_DISPATCH_PATH = "/api/v1/events"
+        private const val EVENT_DISPATCH_PATH = "/api/v2/events"
     }
 }

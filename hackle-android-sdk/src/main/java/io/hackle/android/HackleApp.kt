@@ -10,6 +10,7 @@ import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
+import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
@@ -111,10 +112,76 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        return runCatching { client.variation(experimentKey, user, defaultVariation) }
+        return runCatching { client.experiment(experimentKey, user, defaultVariation) }
             .getOrElse {
                 log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $it" }
                 Decision.of(defaultVariation, DecisionReason.EXCEPTION)
+            }
+    }
+
+    /**
+     * Decide whether the feature is turned on to the user.
+     *
+     * @param featureKey the unique key for the feature.
+     * @param userId     the identifier of user.
+     *
+     * @return True if the feature is on.
+     *         False if the feature is off.
+     *
+     * @since 2.0.0
+     */
+    @JvmOverloads
+    fun isFeatureOn(featureKey: Long, userId: String = deviceId): Boolean {
+        return featureFlagDetail(featureKey, User.of(userId)).isOn
+    }
+
+    /**
+     * Decide whether the feature is turned on to the user.
+     *
+     * @param featureKey the unique key for the feature.
+     * @param user       the user requesting the feature.
+     *
+     * @return True if the feature is on.
+     *         False if the feature is off.
+     *
+     * @since 2.0.0
+     */
+    fun isFeatureOn(featureKey: Long, user: User): Boolean {
+        return featureFlagDetail(featureKey, user).isOn
+    }
+
+    /**
+     * Decide whether the feature is turned on to the user, and returns an object that
+     * describes the way the flag was decided.
+     *
+     * @param featureKey the unique key for the feature.
+     * @param userId     the identifier of user.
+     *
+     * @return a [FeatureFlagDecision] object
+     *
+     * @since 2.0.0
+     */
+    @JvmOverloads
+    fun featureFlagDetail(featureKey: Long, userId: String = deviceId): FeatureFlagDecision {
+        return featureFlagDetail(featureKey, User.of(userId))
+    }
+
+    /**
+     * Decide whether the feature is turned on to the user, and returns an object that
+     * describes the way the flag was decided.
+     *
+     * @param featureKey the unique key for the feature.
+     * @param user       the user requesting the feature.
+     *
+     * @return a [FeatureFlagDecision] object
+     *
+     * @since 2.0.0
+     */
+    fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
+        return runCatching { client.featureFlag(featureKey, user) }
+            .getOrElse {
+                log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $it" }
+                FeatureFlagDecision.off(DecisionReason.EXCEPTION)
             }
     }
 
