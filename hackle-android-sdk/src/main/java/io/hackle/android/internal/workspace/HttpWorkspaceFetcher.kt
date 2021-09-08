@@ -26,6 +26,6 @@ internal class HttpWorkspaceFetcher(
     }
 
     companion object {
-        private const val WORKSPACE_FETCH_PATH = "/api/v1/workspaces"
+        private const val WORKSPACE_FETCH_PATH = "/api/v2/workspaces"
     }
 }
