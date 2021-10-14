@@ -1,8 +1,7 @@
 package io.hackle.android
 
 import android.content.Context
-import android.content.SharedPreferences
-import io.hackle.android.internal.utils.computeIfAbsent
+import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -14,8 +13,8 @@ import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
+import io.hackle.sdk.core.model.HackleUser
 import java.io.Closeable
-import java.util.*
 
 /**
  * Entry point of Hackle Sdk.
@@ -23,15 +22,13 @@ import java.util.*
 class HackleApp internal constructor(
     private val client: HackleInternalClient,
     private val workspaceCacheHandler: WorkspaceCacheHandler,
-    private val sharedPreferences: SharedPreferences,
+    private val device: Device,
 ) : Closeable {
 
     /**
      * The user's Device Id.
      */
-    val deviceId: String by lazy {
-        sharedPreferences.computeIfAbsent(DEVICE_ID) { UUID.randomUUID().toString() }
-    }
+    val deviceId: String get() = device.id
 
     /**
      * Decide the variation to expose to the user for experiment.
@@ -112,11 +109,14 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        return runCatching { client.experiment(experimentKey, user, defaultVariation) }
-            .getOrElse {
-                log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $it" }
-                Decision.of(defaultVariation, DecisionReason.EXCEPTION)
-            }
+        return try {
+            client.experiment(experimentKey,
+                HackleUser.of(user, device.properties),
+                defaultVariation)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
+            Decision.of(defaultVariation, DecisionReason.EXCEPTION)
+        }
     }
 
     /**
@@ -178,11 +178,12 @@ class HackleApp internal constructor(
      * @since 2.0.0
      */
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        return runCatching { client.featureFlag(featureKey, user) }
-            .getOrElse {
-                log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $it" }
-                FeatureFlagDecision.off(DecisionReason.EXCEPTION)
-            }
+        return try {
+            client.featureFlag(featureKey, HackleUser.of(user, device.properties))
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
+            FeatureFlagDecision.off(DecisionReason.EXCEPTION)
+        }
     }
 
     /**
@@ -224,8 +225,11 @@ class HackleApp internal constructor(
      * @param user  the user that occurred the event. MUST NOT be null.
      */
     fun track(event: Event, user: User) {
-        runCatching { client.track(event, user) }
-            .onFailure { log.error { "Unexpected exception while tracking event[${event.key}]: $it" } }
+        try {
+            client.track(event, HackleUser.of(user, device.properties))
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
+        }
     }
 
     override fun close() {
@@ -237,8 +241,6 @@ class HackleApp internal constructor(
     }
 
     companion object {
-
-        private const val DEVICE_ID = "device_id"
 
         private val log = Logger<HackleApp>()
 
@@ -274,7 +276,7 @@ class HackleApp internal constructor(
             return synchronized(LOCK) {
                 INSTANCE?.also { onReady.run() }
                     ?: HackleApps
-                        .create(context, sdkKey)
+                        .create(context.applicationContext, sdkKey)
                         .initialize { onReady.run() }
                         .also { INSTANCE = it }
             }
