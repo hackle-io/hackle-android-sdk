@@ -1,7 +1,6 @@
 package io.hackle.android
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.os.Build
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.hackle.android.internal.event.DefaultEventProcessor
@@ -10,6 +9,7 @@ import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.AppStateChangeObserver
 import io.hackle.android.internal.log.AndroidLogger
+import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceCache
@@ -27,7 +27,7 @@ internal object HackleApps {
 
     private val log = Logger<HackleApps>()
 
-    private const val PREFERENCES_NAME = "io.hackle.android"
+    const val PREFERENCES_NAME = "io.hackle.android"
 
     fun create(context: Context, sdkKey: String): HackleApp {
 
@@ -78,9 +78,9 @@ internal object HackleApps {
             eventProcessor = defaultEventProcessor.apply { start() }
         )
 
-        val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE)
+        val device = Device.create(context)
 
-        return HackleApp(client, workspaceCacheHandler, sharedPreferences)
+        return HackleApp(client, workspaceCacheHandler, device)
     }
 
     private fun createHttpClient(context: Context, sdkKey: String): OkHttpClient {
