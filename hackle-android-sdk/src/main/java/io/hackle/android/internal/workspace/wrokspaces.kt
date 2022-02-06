@@ -5,6 +5,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.enumValueOfOrNull
 import io.hackle.sdk.core.model.*
 import io.hackle.sdk.core.model.Target
+import io.hackle.sdk.core.model.TargetingType.*
 
 private val log = Logger<WorkspaceImpl>()
 
@@ -16,9 +17,10 @@ internal fun ExperimentDto.toExperimentOrNull(type: Experiment.Type): Experiment
         type = type,
         status = Experiment.Status.fromExecutionStatusOrNull(execution.status) ?: return null,
         variations = variations.map { it.toVariation() },
-        overrides = execution.userOverrides.associate { it.userId to it.variationId },
-        targetAudiences = execution.targetAudiences.mapNotNull { it.toTargetOrNull() },
-        targetRules = execution.targetRules.mapNotNull { it.toTargetRuleOrNull() },
+        userOverrides = execution.userOverrides.associate { it.userId to it.variationId },
+        segmentOverrides = execution.segmentOverrides.mapNotNull { it.toTargetRuleOrNull(IDENTIFIER) },
+        targetAudiences = execution.targetAudiences.mapNotNull { it.toTargetOrNull(PROPERTY) },
+        targetRules = execution.targetRules.mapNotNull { it.toTargetRuleOrNull(PROPERTY) },
         defaultRule = execution.defaultRule.toActionOrNull() ?: return null,
         winnerVariationId = winnerVariationId
     )
@@ -30,8 +32,8 @@ internal fun VariationDto.toVariation() = Variation(
     isDropped = status == "DROPPED"
 )
 
-internal fun TargetDto.toTargetOrNull(): Target? {
-    val conditions = conditions.mapNotNull { it.toConditionOrNull() }
+internal fun TargetDto.toTargetOrNull(targetingType: TargetingType): Target? {
+    val conditions = conditions.mapNotNull { it.toConditionOrNull(targetingType) }
     return if (conditions.isEmpty()) {
         null
     } else {
@@ -39,12 +41,17 @@ internal fun TargetDto.toTargetOrNull(): Target? {
     }
 }
 
-internal fun TargetDto.ConditionDto.toConditionOrNull(): Target.Condition? {
+internal fun TargetDto.ConditionDto.toConditionOrNull(targetingType: TargetingType): Target.Condition? {
+    val key = key.toTargetKeyOrNull() ?: return null
+
+    if (!targetingType.supports(key.type)) {
+        return null
+    }
+
     return Target.Condition(
-        key = key.toTargetKeyOrNull() ?: return null,
+        key = key,
         match = match.toMatchOrNull() ?: return null
     )
-
 }
 
 internal fun TargetDto.KeyDto.toTargetKeyOrNull(): Target.Key? {
@@ -74,9 +81,9 @@ internal fun TargetActionDto.toActionOrNull(): Action? {
     }
 }
 
-internal fun TargetRuleDto.toTargetRuleOrNull(): TargetRule? {
+internal fun TargetRuleDto.toTargetRuleOrNull(targetingType: TargetingType): TargetRule? {
     return TargetRule(
-        target = target.toTargetOrNull() ?: return null,
+        target = target.toTargetOrNull(targetingType) ?: return null,
         action = action.toActionOrNull() ?: return null,
     )
 }
@@ -107,3 +114,13 @@ internal fun SlotDto.toSlot() = Slot(
 
 // EventType
 internal fun EventTypeDto.toEventType() = EventType.Custom(id, key)
+
+// Segment
+internal fun SegmentDto.toSegmentOrNull(): Segment? {
+    return Segment(
+        id = id,
+        key = key,
+        type = parseEnumOrNull<Segment.Type>(type) ?: return null,
+        targets = targets.mapNotNull { it.toTargetOrNull(SEGMENT) }
+    )
+}
