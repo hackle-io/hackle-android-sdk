@@ -10,48 +10,18 @@ private val log = Logger<WorkspaceImpl>()
 
 // Experiment
 internal fun ExperimentDto.toExperimentOrNull(type: Experiment.Type): Experiment? {
-
-    val variations = variations.map { it.toVariation() }
-    val overrides = execution.userOverrides.associate { it.userId to it.variationId }
-
-    return when (execution.status) {
-        "READY" -> Experiment.Draft(
-            id = id,
-            key = key,
-            type = type,
-            variations = variations,
-            overrides = overrides
-        )
-        "RUNNING" -> Experiment.Running(
-            id = id,
-            key = key,
-            type = type,
-            variations = variations,
-            overrides = overrides,
-            targetAudiences = execution.targetAudiences.mapNotNull { it.toTargetOrNull() },
-            targetRules = execution.targetRules.mapNotNull { it.toTargetRuleOrNull() },
-            defaultRule = execution.defaultRule.toActionOrNull() ?: return null
-        )
-        "PAUSED" -> Experiment.Paused(
-            id = id,
-            key = key,
-            type = type,
-            variations = variations,
-            overrides = overrides
-        )
-        "STOPPED" -> Experiment.Completed(
-            id = id,
-            key = key,
-            type = type,
-            variations = variations,
-            overrides = overrides,
-            winnerVariationId = requireNotNull(winnerVariationId)
-        )
-        else -> {
-            log.debug { "Unknown experiment status [$status]" }
-            null
-        }
-    }
+    return Experiment(
+        id = id,
+        key = key,
+        type = type,
+        status = Experiment.Status.fromExecutionStatusOrNull(execution.status) ?: return null,
+        variations = variations.map { it.toVariation() },
+        overrides = execution.userOverrides.associate { it.userId to it.variationId },
+        targetAudiences = execution.targetAudiences.mapNotNull { it.toTargetOrNull() },
+        targetRules = execution.targetRules.mapNotNull { it.toTargetRuleOrNull() },
+        defaultRule = execution.defaultRule.toActionOrNull() ?: return null,
+        winnerVariationId = winnerVariationId
+    )
 }
 
 internal fun VariationDto.toVariation() = Variation(
@@ -123,6 +93,7 @@ private inline fun <reified E : Enum<E>> parseEnumOrNull(name: String): E? {
 
 // Bucket
 internal fun BucketDto.toBucket() = Bucket(
+    id = id,
     seed = seed,
     slotSize = slotSize,
     slots = slots.map { it.toSlot() }
