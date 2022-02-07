@@ -5,6 +5,7 @@ internal data class WorkspaceDto(
     val featureFlags: List<ExperimentDto>,
     val buckets: List<BucketDto>,
     val events: List<EventTypeDto>,
+    val segments: List<SegmentDto>,
 )
 
 internal data class ExperimentDto(
@@ -25,9 +26,10 @@ internal data class VariationDto(
 internal data class ExecutionDto(
     val status: String,
     val userOverrides: List<UserOverrideDto>,
+    val segmentOverrides: List<TargetRuleDto>,
     val targetAudiences: List<TargetDto>,
     val targetRules: List<TargetRuleDto>,
-    val defaultRule: TargetActionDto
+    val defaultRule: TargetActionDto,
 )
 
 internal data class UserOverrideDto(
@@ -54,33 +56,40 @@ internal data class EventTypeDto(
 )
 
 internal data class TargetDto(
-    val conditions: List<ConditionDto>
+    val conditions: List<ConditionDto>,
 ) {
     data class ConditionDto(
         val key: KeyDto,
-        val match: MatchDto
+        val match: MatchDto,
     )
 
     data class KeyDto(
         val type: String,
-        val name: String
+        val name: String,
     )
 
     data class MatchDto(
         val type: String,
         val operator: String,
         val valueType: String,
-        val values: List<Any>
+        val values: List<Any>,
     )
 }
 
 internal data class TargetActionDto(
     val type: String,
     val variationId: Long?,
-    val bucketId: Long?
+    val bucketId: Long?,
 )
 
 internal data class TargetRuleDto(
     val target: TargetDto,
-    val action: TargetActionDto
+    val action: TargetActionDto,
+)
+
+internal data class SegmentDto(
+    val id: Long,
+    val key: String,
+    val type: String,
+    val targets: List<TargetDto>,
 )
