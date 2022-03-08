@@ -62,6 +62,7 @@ internal class DefaultEventProcessor(
             flushingJob?.cancel()
             flushingJob = null
             flush()
+            log.info { "DefaultEventProcessor stopped." }
         }
     }
 
