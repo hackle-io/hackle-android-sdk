@@ -10,6 +10,7 @@ import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.AppStateChangeObserver
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.utils.runOnMainThread
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceCache
@@ -66,8 +67,9 @@ internal object HackleApps {
             maxEventDispatchSize = 20
         )
 
-        val appStateChangeObserver = AppStateChangeObserver().also {
-            ProcessLifecycleOwner.get().lifecycle.addObserver(it)
+        val appStateChangeObserver = AppStateChangeObserver()
+        runOnMainThread {
+            ProcessLifecycleOwner.get().lifecycle.addObserver(appStateChangeObserver)
         }
 
         appStateChangeObserver
