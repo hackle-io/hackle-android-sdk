@@ -17,6 +17,7 @@ internal fun ExperimentDto.toExperimentOrNull(type: Experiment.Type): Experiment
         type = type,
         identifierType = identifierType,
         status = Experiment.Status.fromExecutionStatusOrNull(execution.status) ?: return null,
+        version = version,
         variations = variations.map { it.toVariation() },
         userOverrides = execution.userOverrides.associate { it.userId to it.variationId },
         segmentOverrides = execution.segmentOverrides.mapNotNull { it.toTargetRuleOrNull(IDENTIFIER) },

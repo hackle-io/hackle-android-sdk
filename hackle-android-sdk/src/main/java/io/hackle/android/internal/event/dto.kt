@@ -20,6 +20,7 @@ internal data class ExposureEventDto(
     val experimentId: Long,
     val experimentKey: Long,
     val experimentType: String,
+    val experimentVersion: Int,
     val variationId: Long?,
     val variationKey: String,
     val decisionReason: String,
@@ -67,6 +68,7 @@ internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
     experimentId = experiment.id,
     experimentKey = experiment.key,
     experimentType = experiment.type.name,
+    experimentVersion = experiment.version,
     variationId = variationId,
     variationKey = variationKey,
     decisionReason = decisionReason.name
