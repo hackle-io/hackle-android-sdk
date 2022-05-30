@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -13,7 +14,6 @@ import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
-import io.hackle.sdk.core.model.HackleUser
 import java.io.Closeable
 
 /**
@@ -22,6 +22,7 @@ import java.io.Closeable
 class HackleApp internal constructor(
     private val client: HackleInternalClient,
     private val workspaceCacheHandler: WorkspaceCacheHandler,
+    private val userResolver: HackleUserResolver,
     private val device: Device,
 ) : Closeable {
 
@@ -110,9 +111,9 @@ class HackleApp internal constructor(
         defaultVariation: Variation = CONTROL,
     ): Decision {
         return try {
-            client.experiment(experimentKey,
-                HackleUser.of(user, device.properties),
-                defaultVariation)
+            val hackleUser = userResolver.resolveOrNull(user)
+                ?: return Decision.of(defaultVariation, DecisionReason.INVALID_INPUT)
+            client.experiment(experimentKey, hackleUser, defaultVariation)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
             Decision.of(defaultVariation, DecisionReason.EXCEPTION)
@@ -179,7 +180,9 @@ class HackleApp internal constructor(
      */
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
         return try {
-            client.featureFlag(featureKey, HackleUser.of(user, device.properties))
+            val hackleUser = userResolver.resolveOrNull(user)
+                ?: return FeatureFlagDecision.off(DecisionReason.INVALID_INPUT)
+            client.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
             FeatureFlagDecision.off(DecisionReason.EXCEPTION)
@@ -226,7 +229,8 @@ class HackleApp internal constructor(
      */
     fun track(event: Event, user: User) {
         try {
-            client.track(event, HackleUser.of(user, device.properties))
+            val hackleUser = userResolver.resolveOrNull(user) ?: return
+            client.track(event, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
         }

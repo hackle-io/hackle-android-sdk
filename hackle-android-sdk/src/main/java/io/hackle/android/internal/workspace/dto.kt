@@ -15,6 +15,7 @@ internal data class ExperimentDto(
     val variations: List<VariationDto>,
     val execution: ExecutionDto,
     val winnerVariationId: Long?,
+    val identifierType: String,
 )
 
 internal data class VariationDto(
