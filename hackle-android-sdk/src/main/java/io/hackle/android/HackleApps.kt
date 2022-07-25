@@ -10,6 +10,7 @@ import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.AppStateChangeObserver
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.utils.runOnMainThread
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
@@ -81,8 +82,8 @@ internal object HackleApps {
         )
 
         val device = Device.create(context)
-
-        return HackleApp(client, workspaceCacheHandler, device)
+        val userResolver = HackleUserResolver(device)
+        return HackleApp(client, workspaceCacheHandler, userResolver, device)
     }
 
     private fun createHttpClient(context: Context, sdkKey: String): OkHttpClient {
