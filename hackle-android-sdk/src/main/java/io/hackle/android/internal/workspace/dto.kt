@@ -6,6 +6,7 @@ internal data class WorkspaceDto(
     val buckets: List<BucketDto>,
     val events: List<EventTypeDto>,
     val segments: List<SegmentDto>,
+    val containers: List<ContainerDto>
 )
 
 internal data class ExperimentDto(
@@ -17,6 +18,7 @@ internal data class ExperimentDto(
     val execution: ExecutionDto,
     val winnerVariationId: Long?,
     val identifierType: String,
+    val containerId: Long?
 )
 
 internal data class VariationDto(
@@ -94,4 +96,16 @@ internal data class SegmentDto(
     val key: String,
     val type: String,
     val targets: List<TargetDto>,
+)
+
+internal data class ContainerDto(
+    val id: Long,
+    val environmentId: Long,
+    val bucketId: Long,
+    val groups: List<ContainerGroupDto>
+)
+
+internal data class ContainerGroupDto(
+    val id: Long,
+    val experiments: List<Long>
 )

@@ -24,6 +24,7 @@ internal fun ExperimentDto.toExperimentOrNull(type: Experiment.Type): Experiment
         targetAudiences = execution.targetAudiences.mapNotNull { it.toTargetOrNull(PROPERTY) },
         targetRules = execution.targetRules.mapNotNull { it.toTargetRuleOrNull(PROPERTY) },
         defaultRule = execution.defaultRule.toActionOrNull() ?: return null,
+        containerId = containerId,
         winnerVariationId = winnerVariationId
     )
 }
@@ -126,3 +127,14 @@ internal fun SegmentDto.toSegmentOrNull(): Segment? {
         targets = targets.mapNotNull { it.toTargetOrNull(SEGMENT) }
     )
 }
+
+internal fun ContainerDto.toContainer() = Container (
+    id = id,
+    bucketId = bucketId,
+    groups = groups.map { it.toContainerGroup() }
+)
+
+internal fun ContainerGroupDto.toContainerGroup() = ContainerGroup(
+    id = id,
+    experiments = experiments
+)

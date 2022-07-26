@@ -1,11 +1,8 @@
 package io.hackle.android.internal.workspace
 
-import io.hackle.sdk.core.model.Bucket
-import io.hackle.sdk.core.model.EventType
-import io.hackle.sdk.core.model.Experiment
+import io.hackle.sdk.core.model.*
 import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
 import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
-import io.hackle.sdk.core.model.Segment
 import io.hackle.sdk.core.workspace.Workspace
 
 internal class WorkspaceImpl(
@@ -14,6 +11,7 @@ internal class WorkspaceImpl(
     private val eventTypes: Map<String, EventType>,
     private val buckets: Map<Long, Bucket>,
     private val segments: Map<String, Segment>,
+    private val containers: Map<Long, Container>,
 ) : Workspace {
 
     override fun getEventTypeOrNull(eventTypeKey: String): EventType? {
@@ -30,6 +28,10 @@ internal class WorkspaceImpl(
 
     override fun getBucketOrNull(bucketId: Long): Bucket? {
         return buckets[bucketId]
+    }
+
+    override fun getContainerOrNull(containerId: Long): Container? {
+        return containers[containerId]
     }
 
     override fun getSegmentOrNull(segmentKey: String): Segment? {
@@ -60,12 +62,17 @@ internal class WorkspaceImpl(
                     .mapNotNull { it.toSegmentOrNull() }
                     .associateBy { it.key }
 
+            val containers = dto.containers.asSequence()
+                .mapNotNull { it.toContainer() }
+                .associateBy { it.id }
+
             return WorkspaceImpl(
                 experiments = experiment,
                 featureFlags = featureFlags,
                 eventTypes = eventTypes,
                 buckets = buckets,
                 segments = segments,
+                containers = containers
             )
         }
     }
