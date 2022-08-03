@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = 'io.hackle'
-    version = '2.6.1-SNAPSHOT'
+    version = '2.6.1'
 }
 
 android {
