@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.lifecycle.ProcessLifecycleOwner
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
+import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.AppStateChangeObserver
@@ -31,7 +32,7 @@ internal object HackleApps {
 
     const val PREFERENCES_NAME = "io.hackle.android"
 
-    fun create(context: Context, sdkKey: String): HackleApp {
+    fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
 
         Logger.factory = AndroidLogger.Factory
 
@@ -40,7 +41,7 @@ internal object HackleApps {
         val workspaceCache = WorkspaceCache()
 
         val httpWorkspaceFetcher = HttpWorkspaceFetcher(
-            baseSdkUri = "https://sdk.hackle.io",
+            baseSdkUri = config.sdkUri,
             httpClient = httpClient
         )
 
@@ -55,7 +56,7 @@ internal object HackleApps {
         )
 
         val eventDispatcher = EventDispatcher(
-            baseEventUri = "https://event.hackle.io",
+            baseEventUri = config.eventUri,
             executor = Executors.newCachedThreadPool(),
             httpClient = httpClient
         )
@@ -65,7 +66,8 @@ internal object HackleApps {
             flushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
             flushIntervalMillis = 60 * 1000,
             eventDispatcher = eventDispatcher,
-            maxEventDispatchSize = 20
+            maxEventDispatchSize = 20,
+            deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis)
         )
 
         val appStateChangeObserver = AppStateChangeObserver()

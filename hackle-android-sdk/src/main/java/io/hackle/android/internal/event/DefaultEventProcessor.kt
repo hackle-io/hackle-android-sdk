@@ -20,12 +20,18 @@ internal class DefaultEventProcessor(
     private val flushScheduler: Scheduler,
     private val flushIntervalMillis: Long,
     private val eventDispatcher: EventDispatcher,
-    private val maxEventDispatchSize: Int
+    private val maxEventDispatchSize: Int,
+    private val deduplicationDeterminer: ExposureEventDeduplicationDeterminer,
 ) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
     override fun process(event: UserEvent) {
+
+        if (deduplicationDeterminer.isDeduplicationTarget(event)) {
+            return
+        }
+
         if (!queue.offer(event)) {
             log.warn { "Event not processed. Exceeded event queue capacity" }
             return

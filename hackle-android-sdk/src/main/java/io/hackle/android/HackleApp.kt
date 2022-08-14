@@ -275,12 +275,13 @@ class HackleApp internal constructor(
         fun initializeApp(
             context: Context,
             sdkKey: String,
+            config: HackleConfig = HackleConfig.DEFAULT,
             onReady: Runnable = Runnable { },
         ): HackleApp {
             return synchronized(LOCK) {
                 INSTANCE?.also { onReady.run() }
                     ?: HackleApps
-                        .create(context.applicationContext, sdkKey)
+                        .create(context.applicationContext, sdkKey, config)
                         .initialize { onReady.run() }
                         .also { INSTANCE = it }
             }
