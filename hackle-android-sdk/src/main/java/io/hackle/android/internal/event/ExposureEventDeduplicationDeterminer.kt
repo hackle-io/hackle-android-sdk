@@ -5,14 +5,14 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.user.HackleUser
 
 internal class ExposureEventDeduplicationDeterminer(
-    private val exposureEventDedupIntervalMillis: Long?,
+    private val exposureEventDedupIntervalMillis: Int,
 ) {
 
     private var cache = hashMapOf<Key, Long>()
     private var currentUser: HackleUser? = null
 
     fun isDeduplicationTarget(event: UserEvent): Boolean {
-        if (exposureEventDedupIntervalMillis == null) {
+        if (exposureEventDedupIntervalMillis == -1) {
             return false
         }
 
@@ -27,7 +27,7 @@ internal class ExposureEventDeduplicationDeterminer(
         val now = System.currentTimeMillis()
 
         val firstExposureTimeMillis = cache[key]
-        if (firstExposureTimeMillis != null && firstExposureTimeMillis >= now - exposureEventDedupIntervalMillis) {
+        if (firstExposureTimeMillis != null && now - firstExposureTimeMillis <= this.exposureEventDedupIntervalMillis) {
             return true
         }
 
