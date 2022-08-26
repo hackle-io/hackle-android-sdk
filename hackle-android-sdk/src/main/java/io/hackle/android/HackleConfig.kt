@@ -27,11 +27,11 @@ class HackleConfig private constructor(builder: Builder) {
         }
 
         fun build(): HackleConfig {
-            val dedupInterval = exposureEventDedupIntervalMillis
-
-            if (dedupInterval < EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS || dedupInterval > EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS) {
-                log.warn { "Exposure event dedup interval is outside allowed range[${EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS}ms..${EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS}ms]. Setting to default value[no dedup]." }
-                this.exposureEventDedupIntervalMillis = -1
+            if (exposureEventDedupIntervalMillis != -1) {
+                if (exposureEventDedupIntervalMillis < EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS || exposureEventDedupIntervalMillis > EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS) {
+                    log.warn { "Exposure event dedup interval is outside allowed range[${EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS}ms..${EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS}ms]. Setting to default value[no dedup]." }
+                    this.exposureEventDedupIntervalMillis = -1
+                }
             }
             return HackleConfig(this)
         }
