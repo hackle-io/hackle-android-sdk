@@ -23,7 +23,7 @@ class HackleConfigTest {
     }
 
     @Test
-    fun `exposureEventDedupIntervalMillis 100 보다 작은 값으로 설정하면 -1로 설정된다`() {
+    fun `exposureEventDedupIntervalMillis 1000 보다 작은 값으로 설정하면 -1로 설정된다`() {
         val config = HackleConfig.builder()
             .exposureEventDedupIntervalMillis(999)
             .build()
