@@ -268,6 +268,7 @@ class HackleApp internal constructor(
          *
          * @param context [Context]
          * @param sdkKey the SDK key of your Hackle environment.
+         * @param config the HackleConfig that contains the desired configuration.
          * @param onReady callback that is called when HackleApp is ready to use.
          */
         @JvmOverloads
@@ -275,15 +276,32 @@ class HackleApp internal constructor(
         fun initializeApp(
             context: Context,
             sdkKey: String,
+            config: HackleConfig = HackleConfig.DEFAULT,
             onReady: Runnable = Runnable { },
         ): HackleApp {
             return synchronized(LOCK) {
                 INSTANCE?.also { onReady.run() }
                     ?: HackleApps
-                        .create(context.applicationContext, sdkKey)
+                        .create(context.applicationContext, sdkKey, config)
                         .initialize { onReady.run() }
                         .also { INSTANCE = it }
             }
+        }
+
+        /**
+         * Initialized the HackleApp instance.
+         *
+         * @param context [Context]
+         * @param sdkKey the SDK key of your Hackle environment.
+         * @param onReady callback that is called when HackleApp is ready to use.
+         */
+        @JvmStatic
+        fun initializeApp(
+            context: Context,
+            sdkKey: String,
+            onReady: Runnable,
+        ): HackleApp {
+            return initializeApp(context, sdkKey, HackleConfig.DEFAULT, onReady)
         }
     }
 }
