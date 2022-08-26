@@ -13,7 +13,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Publish
-        run: gradle :hackle-android.sdk:clean :hackle-java-sdk-alpha:build :hackle-java-sdk-alpha:publish --info
+        run: gradle :hackle-android.sdk:clean :hackle-android.sdk:build :hackle-android.sdk:publish --info
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
