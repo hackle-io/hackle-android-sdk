@@ -1,5 +1,6 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.HackleConfig
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.user.HackleUser
@@ -12,7 +13,7 @@ internal class ExposureEventDeduplicationDeterminer(
     private var currentUser: HackleUser? = null
 
     fun isDeduplicationTarget(event: UserEvent): Boolean {
-        if (exposureEventDedupIntervalMillis == -1) {
+        if (exposureEventDedupIntervalMillis == HackleConfig.EXPOSURE_EVENT_NO_DEDUP) {
             return false
         }
 
