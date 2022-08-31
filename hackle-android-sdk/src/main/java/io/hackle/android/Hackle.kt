@@ -8,11 +8,20 @@ object Hackle
 
 val Hackle.app: HackleApp get() = HackleApp.getInstance()
 
-fun Hackle.initialize(context: Context, sdkKey: String): HackleApp =
-    HackleApp.initializeApp(context, sdkKey)
+fun Hackle.initialize(
+    context: Context,
+    sdkKey: String,
+    config: HackleConfig = HackleConfig.DEFAULT,
+): HackleApp =
+    HackleApp.initializeApp(context, sdkKey, config)
 
-fun Hackle.initialize(context: Context, sdkKey: String, onReady: () -> Unit): HackleApp =
-    HackleApp.initializeApp(context, sdkKey) { onReady() }
+fun Hackle.initialize(
+    context: Context,
+    sdkKey: String,
+    config: HackleConfig = HackleConfig.DEFAULT,
+    onReady: () -> Unit,
+): HackleApp =
+    HackleApp.initializeApp(context, sdkKey, config) { onReady() }
 
 fun Hackle.user(id: String) = User.of(id)
 fun Hackle.user(id: String, init: User.Builder.() -> Unit) = User.builder(id).apply(init).build()
