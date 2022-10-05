@@ -3,6 +3,8 @@ package io.hackle.android
 import android.content.Context
 import android.os.Build
 import androidx.lifecycle.ProcessLifecycleOwner
+import io.hackle.android.internal.database.DatabaseHelper
+import io.hackle.android.internal.database.EventRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
@@ -22,7 +24,6 @@ import io.hackle.sdk.core.client
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import okhttp3.OkHttpClient
-import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -55,18 +56,27 @@ internal object HackleApps {
             workspaceCache = workspaceCache
         )
 
+        val databaseHelper = DatabaseHelper(context)
+        val eventRepository = EventRepository(databaseHelper)
+        val eventExecutor = Executors.newSingleThreadExecutor()
+
         val eventDispatcher = EventDispatcher(
             baseEventUri = config.eventUri,
-            executor = Executors.newCachedThreadPool(),
+            eventRepository = eventRepository,
+            eventExecutor = eventExecutor,
+            dispatchExecutor = Executors.newFixedThreadPool(4),
             httpClient = httpClient
         )
 
         val defaultEventProcessor = DefaultEventProcessor(
-            queue = ArrayBlockingQueue(100),
+            eventStorageMaxSize = 2000,
+            eventRepository = eventRepository,
+            eventExecutor = eventExecutor,
             flushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
-            flushIntervalMillis = 60 * 1000,
+            flushIntervalMillis = 30 * 1000,
             eventDispatcher = eventDispatcher,
-            maxEventDispatchSize = 20,
+            eventDispatchThreshold = 20,
+            eventDispatchMaxSize = 100,
             deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis)
         )
 

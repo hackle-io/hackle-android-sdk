@@ -1,13 +1,24 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.database.EventEntity
 import io.hackle.sdk.core.event.UserEvent
-import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.user.IdentifierType
 
-internal data class EventPayloadDto(
-    val exposureEvents: List<ExposureEventDto>,
-    val trackEvents: List<TrackEventDto>,
-)
+internal fun List<EventEntity>.toPayload(): String {
+    val exposures = mutableListOf<String>()
+    val tracks = mutableListOf<String>()
+    for (event in this) {
+        when (event.type) {
+            EventEntity.Type.EXPOSURE -> exposures.add(event.event)
+            EventEntity.Type.TRACK -> tracks.add(event.event)
+        }
+    }
+
+    val exposurePayload = exposures.joinToString(",", "[", "]")
+    val trackPayload = tracks.joinToString(",", "[", "]")
+
+    return "{\"exposureEvents\":$exposurePayload,\"trackEvents\":$trackPayload}"
+}
 
 internal data class ExposureEventDto(
     val timestamp: Long,
@@ -39,23 +50,6 @@ internal data class TrackEventDto(
     val value: Double?,
     val properties: Map<String, Any>,
 )
-
-internal fun List<UserEvent>.toPayload(): EventPayloadDto {
-
-    val exposures = mutableListOf<ExposureEventDto>()
-    val tracks = mutableListOf<TrackEventDto>()
-    for (event in this) {
-        when (event) {
-            is UserEvent.Exposure -> exposures += event.toDto()
-            is UserEvent.Track -> tracks += event.toDto()
-        }.safe
-    }
-
-    return EventPayloadDto(
-        exposureEvents = exposures,
-        trackEvents = tracks,
-    )
-}
 
 internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
     timestamp = timestamp,
