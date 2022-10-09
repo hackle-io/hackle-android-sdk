@@ -6,24 +6,27 @@ import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
 import io.hackle.sdk.core.workspace.Workspace
 
 internal class WorkspaceImpl(
-    private val experiments: Map<Long, Experiment>,
-    private val featureFlags: Map<Long, Experiment>,
+    override val experiments: List<Experiment>,
+    override val featureFlags: List<Experiment>,
     private val eventTypes: Map<String, EventType>,
     private val buckets: Map<Long, Bucket>,
     private val segments: Map<String, Segment>,
     private val containers: Map<Long, Container>,
 ) : Workspace {
 
+    private val _experiments = experiments.associateBy { it.key }
+    private val _featureFlags = featureFlags.associateBy { it.key }
+
     override fun getEventTypeOrNull(eventTypeKey: String): EventType? {
         return eventTypes[eventTypeKey]
     }
 
     override fun getFeatureFlagOrNull(featureKey: Long): Experiment? {
-        return featureFlags[featureKey]
+        return _featureFlags[featureKey]
     }
 
     override fun getExperimentOrNull(experimentKey: Long): Experiment? {
-        return experiments[experimentKey]
+        return _experiments[experimentKey]
     }
 
     override fun getBucketOrNull(bucketId: Long): Bucket? {
@@ -41,15 +44,11 @@ internal class WorkspaceImpl(
     companion object {
         fun from(dto: WorkspaceDto): Workspace {
 
-            val experiment: Map<Long, Experiment> =
-                dto.experiments.asSequence()
-                    .mapNotNull { it.toExperimentOrNull(AB_TEST) }
-                    .associateBy { it.key }
+            val experiments: List<Experiment> =
+                dto.experiments.mapNotNull { it.toExperimentOrNull(AB_TEST) }
 
-            val featureFlags: Map<Long, Experiment> =
-                dto.featureFlags.asSequence()
-                    .mapNotNull { it.toExperimentOrNull(FEATURE_FLAG) }
-                    .associateBy { it.key }
+            val featureFlags: List<Experiment> =
+                dto.featureFlags.mapNotNull { it.toExperimentOrNull(FEATURE_FLAG) }
 
             val eventTypes: Map<String, EventType.Custom> =
                 dto.events.associate { it.key to it.toEventType() }
@@ -67,7 +66,7 @@ internal class WorkspaceImpl(
                 .associateBy { it.id }
 
             return WorkspaceImpl(
-                experiments = experiment,
+                experiments = experiments,
                 featureFlags = featureFlags,
                 eventTypes = eventTypes,
                 buckets = buckets,

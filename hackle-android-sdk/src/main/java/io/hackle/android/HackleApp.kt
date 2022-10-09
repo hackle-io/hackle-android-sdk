@@ -121,6 +121,26 @@ class HackleApp internal constructor(
     }
 
     /**
+     * Decide the variations for all experiments, and returns a map of decision results.
+     *
+     * @param user the user requesting the experiments
+     *
+     * @return key   - experimentKey
+     *         value - decision result
+     *
+     * @since 2.8.0
+     */
+    fun allVariationDetails(user: User): Map<Long, Decision> {
+        return try {
+            val hackleUser = userResolver.resolveOrNull(user) ?: return hashMapOf()
+            client.experiments(hackleUser)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding variations for all experiments: $t" }
+            hashMapOf()
+        }
+    }
+
+    /**
      * Decide whether the feature is turned on to the user.
      *
      * @param featureKey the unique key for the feature.
