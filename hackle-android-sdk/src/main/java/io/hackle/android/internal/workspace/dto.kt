@@ -6,7 +6,8 @@ internal data class WorkspaceDto(
     val buckets: List<BucketDto>,
     val events: List<EventTypeDto>,
     val segments: List<SegmentDto>,
-    val containers: List<ContainerDto>
+    val containers: List<ContainerDto>,
+    val parameterConfigurations: List<ParameterConfigurationDto>,
 )
 
 internal data class ExperimentDto(
@@ -25,6 +26,7 @@ internal data class VariationDto(
     val id: Long,
     val key: String,
     val status: String,
+    val parameterConfigurationId: Long?,
 )
 
 internal data class ExecutionDto(
@@ -109,3 +111,13 @@ internal data class ContainerGroupDto(
     val id: Long,
     val experiments: List<Long>
 )
+
+internal data class ParameterConfigurationDto(
+    val id: Long,
+    val parameters: List<ParameterDto>,
+) {
+    data class ParameterDto(
+        val key: String,
+        val value: Any,
+    )
+}

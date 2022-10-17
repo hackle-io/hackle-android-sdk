@@ -24,6 +24,7 @@ internal data class ExposureEventDto(
     val variationId: Long?,
     val variationKey: String,
     val decisionReason: String,
+    val properties: Map<String, Any>,
 )
 
 internal data class TrackEventDto(
@@ -71,7 +72,8 @@ internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
     experimentVersion = experiment.version,
     variationId = variationId,
     variationKey = variationKey,
-    decisionReason = decisionReason.name
+    decisionReason = decisionReason.name,
+    properties = properties,
 )
 
 internal fun UserEvent.Track.toDto() = TrackEventDto(
