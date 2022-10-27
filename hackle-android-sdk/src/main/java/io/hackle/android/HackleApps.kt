@@ -61,11 +61,11 @@ internal object HackleApps {
         )
 
         val defaultEventProcessor = DefaultEventProcessor(
-            queue = ArrayBlockingQueue(100),
+            queue = ArrayBlockingQueue(config.eventDispatchSize * 2),
             flushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
-            flushIntervalMillis = 60 * 1000,
+            flushIntervalMillis = config.flushIntervalMillis.toLong(),
             eventDispatcher = eventDispatcher,
-            maxEventDispatchSize = 20,
+            maxEventDispatchSize = config.eventDispatchSize,
             deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis)
         )
 
