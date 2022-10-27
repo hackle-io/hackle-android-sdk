@@ -1,18 +1,17 @@
 package io.hackle.android
 
+import android.app.Application
 import android.content.Context
 import android.os.Build
-import androidx.lifecycle.ProcessLifecycleOwner
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
-import io.hackle.android.internal.lifecycle.AppStateChangeObserver
+import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.user.HackleUserResolver
-import io.hackle.android.internal.utils.runOnMainThread
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceCache
@@ -70,13 +69,10 @@ internal object HackleApps {
             deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis)
         )
 
-        val appStateChangeObserver = AppStateChangeObserver()
-        runOnMainThread {
-            ProcessLifecycleOwner.get().lifecycle.addObserver(appStateChangeObserver)
+        val lifecycleCallbacks = HackleActivityLifecycleCallbacks().apply {
+            addListener(defaultEventProcessor)
         }
-
-        appStateChangeObserver
-            .addListener(defaultEventProcessor)
+        (context as? Application)?.registerActivityLifecycleCallbacks(lifecycleCallbacks)
 
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
