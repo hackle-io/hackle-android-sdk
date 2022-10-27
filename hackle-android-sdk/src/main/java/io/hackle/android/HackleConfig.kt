@@ -34,6 +34,10 @@ class HackleConfig private constructor(builder: Builder) {
             this.flushIntervalMillis = flushIntervalMillis
         }
 
+        fun eventDispatchSize(eventDispatchSize: Int) = apply {
+            this.eventDispatchSize = eventDispatchSize
+        }
+
         fun build(): HackleConfig {
 
             if (exposureEventDedupIntervalMillis != EXPOSURE_EVENT_NO_DEDUP && exposureEventDedupIntervalMillis !in EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS_RANGE) {
