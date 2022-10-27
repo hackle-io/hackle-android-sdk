@@ -14,7 +14,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal var sdkUri: String = DEFAULT_SDK_URI
         internal var eventUri: String = DEFAULT_EVENT_URI
-        internal var exposureEventDedupIntervalMillis: Int = EXPOSURE_EVENT_NO_DEDUP
+        internal var exposureEventDedupIntervalMillis: Int = DEFAULT_EXPOSURE_EVENT_NO_DEDUP
         internal var flushIntervalMillis: Int = DEFAULT_FLUSH_INTERVAL_MILLIS
         internal var eventDispatchSize: Int = DEFAULT_EVENT_DISPATCH_SIZE
 
@@ -35,11 +35,10 @@ class HackleConfig private constructor(builder: Builder) {
         }
 
         fun build(): HackleConfig {
-            if (exposureEventDedupIntervalMillis != EXPOSURE_EVENT_NO_DEDUP) {
-                if (exposureEventDedupIntervalMillis < EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS || exposureEventDedupIntervalMillis > EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS) {
-                    log.warn { "Exposure event dedup interval is outside allowed range[${EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS}ms..${EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS}ms]. Setting to default value[no dedup]." }
-                    this.exposureEventDedupIntervalMillis = EXPOSURE_EVENT_NO_DEDUP
-                }
+
+            if (exposureEventDedupIntervalMillis != EXPOSURE_EVENT_NO_DEDUP && exposureEventDedupIntervalMillis !in EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS_RANGE) {
+                log.warn { "Exposure event dedup interval is outside allowed range[$EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS_RANGE]ms. Setting to default value[$DEFAULT_EXPOSURE_EVENT_NO_DEDUP]ms." }
+                this.exposureEventDedupIntervalMillis = DEFAULT_EXPOSURE_EVENT_NO_DEDUP
             }
 
             if (flushIntervalMillis !in FLUSH_INTERVAL_MILLIS_RANGE) {
@@ -70,8 +69,8 @@ class HackleConfig private constructor(builder: Builder) {
         private val EVENT_DISPATCH_SIZE_RANGE = 5..100 // 5 ~ 100
 
         internal const val EXPOSURE_EVENT_NO_DEDUP = -1
-        private const val EXPOSURE_EVENT_DEDUP_INTERVAL_MIN_MILLIS = 1000 // 1s
-        private const val EXPOSURE_EVENT_DEDUP_INTERVAL_MAX_MILLIS = 1000 * 60 * 60 // 1h
+        private const val DEFAULT_EXPOSURE_EVENT_NO_DEDUP = 60000 // 1m
+        private val EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS_RANGE = 1000..3_600_000 // 1s ~ 1h
 
         val DEFAULT: HackleConfig = builder().build()
 
