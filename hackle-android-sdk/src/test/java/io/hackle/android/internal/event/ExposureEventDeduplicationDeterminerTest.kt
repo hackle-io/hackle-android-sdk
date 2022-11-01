@@ -48,7 +48,7 @@ class ExposureEventDeduplicationDeterminerTest {
 
     @Test
     fun `같은 사용자의 같은 노출이벤트지만 중복제거 기간 이후에 들어오면 중복제거 하지 않는다`() {
-        val sut = ExposureEventDeduplicationDeterminer(1000)
+        val sut = ExposureEventDeduplicationDeterminer(100)
 
         val user = HackleUser.of("test_id")
         val event1 = event(user)
