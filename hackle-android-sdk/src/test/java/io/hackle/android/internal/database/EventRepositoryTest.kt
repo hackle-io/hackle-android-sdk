@@ -130,7 +130,7 @@ internal class EventRepositoryTest {
 
         every { db.rawQuery(any(), any()) } returns cursor
 
-        val statement = mockk<SQLiteStatement>(relaxUnitFun = true)
+        val statement = mockk<SQLiteStatement>(relaxed = true)
         every { db.compileStatement(any()) } returns statement
 
         // when
@@ -146,7 +146,7 @@ internal class EventRepositoryTest {
         }
 
         verify(exactly = 1) { databaseHelper.execute(readOnly = false, transaction = true, any()) }
-        verify(exactly = 4) { statement.execute() }
+        verify(exactly = 4) { statement.executeUpdateDelete() }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 1") }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 2") }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 3") }
@@ -156,7 +156,7 @@ internal class EventRepositoryTest {
     private fun cursor(vararg rows: List<Any>): Cursor {
 
         var currentIndex = -1
-        val cursor = mockk<Cursor>(relaxUnitFun = true)
+        val cursor = mockk<Cursor>(relaxed = true)
         every { cursor.moveToNext() } answers {
             currentIndex++
             currentIndex < rows.size
@@ -229,7 +229,7 @@ internal class EventRepositoryTest {
             EventEntity(3L, PENDING, TRACK, "body"),
             EventEntity(4L, PENDING, TRACK, "body"),
         )
-        val statement = mockk<SQLiteStatement>(relaxUnitFun = true)
+        val statement = mockk<SQLiteStatement>(relaxed = true)
         every { db.compileStatement(any()) } returns statement
 
         // when
@@ -237,7 +237,7 @@ internal class EventRepositoryTest {
 
         // then
         verify(exactly = 1) { databaseHelper.execute(readOnly = false, transaction = true, any()) }
-        verify(exactly = 4) { statement.execute() }
+        verify(exactly = 4) { statement.executeUpdateDelete() }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 1") }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 2") }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 3") }

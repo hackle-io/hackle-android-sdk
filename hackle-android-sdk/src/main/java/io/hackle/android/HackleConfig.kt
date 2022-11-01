@@ -71,7 +71,7 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val DEFAULT_SDK_URI = "https://sdk.hackle.io"
         internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
 
-        internal const val DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS = 10000 // 10s (default)
+        internal const val DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS = 10 * 1000 // 10s (default)
         internal const val MIN_EVENT_FLUSH_INTERVAL_MILLIS = 1000 // 1s (min)
         internal const val MAX_EVENT_FLUSH_INTERVAL_MILLIS = 60 * 1000 // 1m (max)
 
@@ -82,7 +82,7 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val DEFAULT_EVENT_REPOSITORY_MAX_SIZE = 1000
 
         internal const val EXPOSURE_EVENT_NO_DEDUP = -1
-        internal const val DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 60000 // 1m (default)
+        internal const val DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 60 * 1000 // 1m (default)
         internal const val MIN_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 1000 // 1s (min)
         internal const val MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 60 * 60 * 1000 // 1h (max)
 

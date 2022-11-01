@@ -35,7 +35,7 @@ internal class EventDispatcher(
 
     private fun updateEventStatusToPending(events: List<EventEntity>) {
         try {
-            eventExecutor.execute(UpdateEventTask(events))
+            eventExecutor.execute(UpdateEventToPendingTask(events))
         } catch (e: Exception) {
             log.error { "Failed to submit UpdateEventTask: $e" }
         }
@@ -81,7 +81,7 @@ internal class EventDispatcher(
         }
     }
 
-    inner class UpdateEventTask(private val events: List<EventEntity>) : Runnable {
+    inner class UpdateEventToPendingTask(private val events: List<EventEntity>) : Runnable {
         override fun run() {
             try {
                 eventRepository.update(events, PENDING)

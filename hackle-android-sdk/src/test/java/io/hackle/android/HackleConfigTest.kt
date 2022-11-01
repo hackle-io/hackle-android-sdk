@@ -51,11 +51,11 @@ class HackleConfigTest {
 
     @Test
     fun `eventFlushThreshold`() {
-        configTest(20, HackleConfig::eventFlushThreshold)
-        configTest(20, HackleConfig::eventFlushThreshold) {
+        configTest(10, HackleConfig::eventFlushThreshold)
+        configTest(10, HackleConfig::eventFlushThreshold) {
             eventFlushThreshold(4)
         }
-        configTest(20, HackleConfig::eventFlushThreshold) {
+        configTest(10, HackleConfig::eventFlushThreshold) {
             eventFlushThreshold(31)
         }
         for (i in 5..30) {

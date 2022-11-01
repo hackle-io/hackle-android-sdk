@@ -71,7 +71,7 @@ class EventDispatcherTest {
             fail()
         }
 
-        verify(exactly = 1) { eventExecutor.execute(withArg { expectThat(it).isA<EventDispatcher.UpdateEventTask>() }) }
+        verify(exactly = 1) { eventExecutor.execute(withArg { expectThat(it).isA<EventDispatcher.UpdateEventToPendingTask>() }) }
     }
 
     @Test
@@ -113,7 +113,7 @@ class EventDispatcherTest {
 
         // then
         verify(exactly = 1) { eventRepository.update(events, PENDING) }
-        verify(exactly = 1) { eventExecutor.execute(withArg { expectThat(it).isA<EventDispatcher.UpdateEventTask>() }) }
+        verify(exactly = 1) { eventExecutor.execute(withArg { expectThat(it).isA<EventDispatcher.UpdateEventToPendingTask>() }) }
     }
 
 
@@ -147,7 +147,7 @@ class EventDispatcherTest {
     @Test
     fun `UpdateEventTask - 이벤트를 PENDING 상태로 업데이트한다`() {
         val events = listOf(EventEntity(1, FLUSHING, TRACK, "body"))
-        val task = sut.UpdateEventTask(events)
+        val task = sut.UpdateEventToPendingTask(events)
 
         task.run()
 
@@ -158,7 +158,7 @@ class EventDispatcherTest {
     @Test
     fun `UpdateEventTask - 업데이트하다 예외가 발생해도 무시한다`() {
         val events = listOf(EventEntity(1, FLUSHING, TRACK, "body"))
-        val task = sut.UpdateEventTask(events)
+        val task = sut.UpdateEventToPendingTask(events)
         every { eventRepository.update(any(), any()) } throws IllegalArgumentException()
 
         try {

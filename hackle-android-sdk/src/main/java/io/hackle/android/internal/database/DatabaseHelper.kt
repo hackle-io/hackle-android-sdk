@@ -70,7 +70,7 @@ internal class DatabaseHelper(
             return "${DATABASE_NAME}_${sdkKey}"
         }
 
-        private const val DATABASE_NAME = "io.hackle"
+        private const val DATABASE_NAME = "hackle"
         private const val DATABASE_VERSION = 1
     }
 }
