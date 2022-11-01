@@ -1,18 +1,20 @@
 package io.hackle.android
 
+import android.app.Application
 import android.content.Context
 import android.os.Build
-import androidx.lifecycle.ProcessLifecycleOwner
+import io.hackle.android.internal.database.DatabaseHelper
+import io.hackle.android.internal.database.EventRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
-import io.hackle.android.internal.lifecycle.AppStateChangeObserver
+import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.HackleUserResolver
-import io.hackle.android.internal.utils.runOnMainThread
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceCache
@@ -22,7 +24,6 @@ import io.hackle.sdk.core.client
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import okhttp3.OkHttpClient
-import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -46,7 +47,7 @@ internal object HackleApps {
         )
 
         val workspaceCacheHandler = WorkspaceCacheHandler(
-            executor = Executors.newCachedThreadPool(),
+            executor = Executors.newSingleThreadExecutor(),
             workspaceCache = workspaceCache,
             httpWorkspaceFetcher = httpWorkspaceFetcher
         )
@@ -55,32 +56,43 @@ internal object HackleApps {
             workspaceCache = workspaceCache
         )
 
+        val databaseHelper = DatabaseHelper[context, sdkKey]
+        val eventRepository = EventRepository(databaseHelper)
+        val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
+        val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")
+
         val eventDispatcher = EventDispatcher(
             baseEventUri = config.eventUri,
-            executor = Executors.newCachedThreadPool(),
+            eventExecutor = eventExecutor,
+            eventRepository = eventRepository,
+            httpExecutor = httpExecutor,
             httpClient = httpClient
         )
 
         val defaultEventProcessor = DefaultEventProcessor(
-            queue = ArrayBlockingQueue(100),
-            flushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
-            flushIntervalMillis = 60 * 1000,
-            eventDispatcher = eventDispatcher,
-            maxEventDispatchSize = 20,
-            deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis)
+            deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis),
+            eventExecutor = eventExecutor,
+            eventRepository = eventRepository,
+            eventRepositoryMaxSize = HackleConfig.DEFAULT_EVENT_REPOSITORY_MAX_SIZE,
+            eventFlushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
+            eventFlushIntervalMillis = config.eventFlushIntervalMillis.toLong(),
+            eventFlushThreshold = config.eventFlushThreshold,
+            eventFlushMaxBatchSize = config.eventFlushThreshold * 2 + 1,
+            eventDispatcher = eventDispatcher
         )
 
-        val appStateChangeObserver = AppStateChangeObserver()
-        runOnMainThread {
-            ProcessLifecycleOwner.get().lifecycle.addObserver(appStateChangeObserver)
+        val lifecycleCallbacks = HackleActivityLifecycleCallbacks().apply {
+            addListener(defaultEventProcessor)
         }
+        (context as? Application)?.registerActivityLifecycleCallbacks(lifecycleCallbacks)
 
-        appStateChangeObserver
-            .addListener(defaultEventProcessor)
 
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
-            eventProcessor = defaultEventProcessor.apply { start() }
+            eventProcessor = defaultEventProcessor.apply {
+                initialize()
+                start()
+            }
         )
 
         val device = Device.create(context)

@@ -16,35 +16,61 @@ class HackleConfigTest {
     }
 
     @Test
-    fun `exposureEventDedupIntervalMillis 설정하지 않으면 -1`() {
-        val config = HackleConfig.builder()
-            .build()
-        assertEquals(-1, config.exposureEventDedupIntervalMillis)
-    }
-
-    @Test
-    fun `exposureEventDedupIntervalMillis 1000 보다 작은 값으로 설정하면 -1로 설정된다`() {
-        val config = HackleConfig.builder()
-            .exposureEventDedupIntervalMillis(999)
-            .build()
-        assertEquals(-1, config.exposureEventDedupIntervalMillis)
-    }
-
-    @Test
-    fun `exposureEventDedupIntervalMillis 3600000 보다 큰 값으로 설정하면 -1로 설정된다`() {
-        val config = HackleConfig.builder()
-            .exposureEventDedupIntervalMillis(3600001)
-            .build()
-        assertEquals(-1, config.exposureEventDedupIntervalMillis)
-    }
-
-    @Test
-    fun `exposureEventDedupIntervalMillis 1000 ~ 3600000 사이의 값으로 설정해야 된다`() {
-        for (i in 1000..3600000) {
-            val config = HackleConfig.builder()
-                .exposureEventDedupIntervalMillis(i)
-                .build()
-            assertEquals(i, config.exposureEventDedupIntervalMillis)
+    fun `exposureEventDedupIntervalMillis`() {
+        configTest(60000, HackleConfig::exposureEventDedupIntervalMillis)
+        configTest(60000, HackleConfig::exposureEventDedupIntervalMillis) {
+            exposureEventDedupIntervalMillis(999)
         }
+
+        configTest(60000, HackleConfig::exposureEventDedupIntervalMillis) {
+            exposureEventDedupIntervalMillis(3600001)
+        }
+
+        for (i in 1000..3600000) {
+            configTest(i, HackleConfig::exposureEventDedupIntervalMillis) {
+                exposureEventDedupIntervalMillis(i)
+            }
+        }
+    }
+
+    @Test
+    fun `eventFlushIntervalMillis`() {
+        configTest(10000, HackleConfig::eventFlushIntervalMillis)
+        configTest(10000, HackleConfig::eventFlushIntervalMillis) {
+            eventFlushIntervalMillis(999)
+        }
+        configTest(10000, HackleConfig::eventFlushIntervalMillis) {
+            eventFlushIntervalMillis(60001)
+        }
+        for (i in 1000..60000) {
+            configTest(i, HackleConfig::eventFlushIntervalMillis) {
+                eventFlushIntervalMillis(i)
+            }
+        }
+    }
+
+    @Test
+    fun `eventFlushThreshold`() {
+        configTest(10, HackleConfig::eventFlushThreshold)
+        configTest(10, HackleConfig::eventFlushThreshold) {
+            eventFlushThreshold(4)
+        }
+        configTest(10, HackleConfig::eventFlushThreshold) {
+            eventFlushThreshold(31)
+        }
+        for (i in 5..30) {
+            configTest(i, HackleConfig::eventFlushThreshold) {
+                eventFlushThreshold(i)
+            }
+        }
+    }
+
+    private fun <T> configTest(
+        expected: T,
+        actual: (HackleConfig) -> T,
+        doConfig: HackleConfig.Builder.() -> Unit = {},
+    ) {
+        val config = HackleConfig.builder().apply { doConfig() }.build()
+        assertEquals(expected, actual(config))
     }
 }
