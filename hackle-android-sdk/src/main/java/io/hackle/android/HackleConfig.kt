@@ -88,6 +88,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         val DEFAULT: HackleConfig = builder().build()
 
+        @JvmStatic
         fun builder(): Builder {
             return Builder()
         }
