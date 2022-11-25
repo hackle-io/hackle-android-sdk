@@ -13,7 +13,8 @@ internal data class EventEntity(
 
     enum class Type(val code: Int) {
         EXPOSURE(0),
-        TRACK(1);
+        TRACK(1),
+        REMOTE_CONFIG(2);
 
         companion object {
             private val TYPE = values().associateBy { it.code }
@@ -53,6 +54,7 @@ internal val UserEvent.type: EventEntity.Type
         return when (this) {
             is UserEvent.Exposure -> EventEntity.Type.EXPOSURE
             is UserEvent.Track -> EventEntity.Type.TRACK
+            is UserEvent.RemoteConfig -> EventEntity.Type.REMOTE_CONFIG
         }
     }
 
@@ -60,5 +62,6 @@ internal fun UserEvent.toBody(): String {
     return when (this) {
         is UserEvent.Exposure -> toDto().toJson()
         is UserEvent.Track -> toDto().toJson()
+        is UserEvent.RemoteConfig -> toDto().toJson()
     }
 }
