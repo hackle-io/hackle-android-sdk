@@ -28,3 +28,5 @@ fun Hackle.user(id: String, init: User.Builder.() -> Unit) = User.builder(id).ap
 
 fun Hackle.event(key: String) = Event.of(key)
 fun Hackle.event(key: String, init: Event.Builder.() -> Unit) = Event.builder(key).apply(init).build()
+
+fun Hackle.remoteConfig(user: User = Hackle.user(app.deviceId)) = app.remoteConfig(user)
