@@ -8,6 +8,7 @@ internal data class WorkspaceDto(
     val segments: List<SegmentDto>,
     val containers: List<ContainerDto>,
     val parameterConfigurations: List<ParameterConfigurationDto>,
+    val remoteConfigParameters: List<RemoteConfigParameterDto>,
 )
 
 internal data class ExperimentDto(
@@ -19,7 +20,7 @@ internal data class ExperimentDto(
     val execution: ExecutionDto,
     val winnerVariationId: Long?,
     val identifierType: String,
-    val containerId: Long?
+    val containerId: Long?,
 )
 
 internal data class VariationDto(
@@ -104,12 +105,12 @@ internal data class ContainerDto(
     val id: Long,
     val environmentId: Long,
     val bucketId: Long,
-    val groups: List<ContainerGroupDto>
+    val groups: List<ContainerGroupDto>,
 )
 
 internal data class ContainerGroupDto(
     val id: Long,
-    val experiments: List<Long>
+    val experiments: List<Long>,
 )
 
 internal data class ParameterConfigurationDto(
@@ -118,6 +119,29 @@ internal data class ParameterConfigurationDto(
 ) {
     data class ParameterDto(
         val key: String,
+        val value: Any,
+    )
+}
+
+internal data class RemoteConfigParameterDto(
+    val id: Long,
+    val key: String,
+    val type: String,
+    val identifierType: String,
+    val targetRules: List<TargetRuleDto>,
+    val defaultValue: ValueDto,
+) {
+
+    data class TargetRuleDto(
+        val key: String,
+        val name: String,
+        val target: TargetDto,
+        val bucketId: Long,
+        val value: ValueDto,
+    )
+
+    data class ValueDto(
+        val id: Long,
         val value: Any,
     )
 }

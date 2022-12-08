@@ -2,9 +2,11 @@ package io.hackle.android
 
 import android.content.Context
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.Variation.Companion.CONTROL
@@ -254,6 +256,14 @@ class HackleApp internal constructor(
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
         }
+    }
+
+    /**
+     * Returns a instance of Hackle Remote Config.
+     */
+    @JvmOverloads
+    fun remoteConfig(user: User = User.of(deviceId)): HackleRemoteConfig {
+        return HackleRemoteConfigImpl(user, client, userResolver)
     }
 
     override fun close() {
