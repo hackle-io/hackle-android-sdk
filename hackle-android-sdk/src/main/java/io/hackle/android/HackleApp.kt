@@ -1,8 +1,10 @@
 package io.hackle.android
 
 import android.content.Context
+import io.hackle.android.internal.lifecycle.AppInitializeListener
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
@@ -26,12 +28,16 @@ class HackleApp internal constructor(
     private val workspaceCacheHandler: WorkspaceCacheHandler,
     private val userResolver: HackleUserResolver,
     private val device: Device,
+    private val sessionManager: SessionManager,
+    private val listeners: List<AppInitializeListener>,
 ) : Closeable {
 
     /**
      * The user's Device Id.
      */
     val deviceId: String get() = device.id
+
+    val sessionId: String get() = sessionManager.requiredSession.id
 
     /**
      * Decide the variation to expose to the user for experiment.
@@ -271,6 +277,13 @@ class HackleApp internal constructor(
     }
 
     internal fun initialize(onReady: () -> Unit) = apply {
+        for (listener in listeners) {
+            try {
+                listener.onInitialized()
+            } catch (e: Exception) {
+                log.error { "Failed to onInitialized [${listener::class.java.simpleName}]: $e" }
+            }
+        }
         workspaceCacheHandler.fetchAndCache(onReady)
     }
 

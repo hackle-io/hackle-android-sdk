@@ -5,15 +5,20 @@ import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
 import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.session.Session
+import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
 import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isA
+import strikt.assertions.*
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
@@ -34,11 +39,18 @@ class DefaultEventProcessorTest {
     @RelaxedMockK
     private lateinit var eventDispatcher: EventDispatcher
 
+    @RelaxedMockK
+    private lateinit var userManager: UserManager
+
+    @RelaxedMockK
+    private lateinit var sessionManager: SessionManager
+
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
         every { deduplicationDeterminer.isDeduplicationTarget(any()) } returns false
+        every { sessionManager.currentSession } returns null
     }
 
 
@@ -52,6 +64,8 @@ class DefaultEventProcessorTest {
         eventFlushThreshold: Int = 10,
         eventFlushMaxBatchSize: Int = 21,
         eventDispatcher: EventDispatcher = this.eventDispatcher,
+        userManager: UserManager = this.userManager,
+        sessionManager: SessionManager = this.sessionManager,
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             deduplicationDeterminer,
@@ -62,8 +76,41 @@ class DefaultEventProcessorTest {
             eventFlushIntervalMillis,
             eventFlushThreshold,
             eventFlushMaxBatchSize,
-            eventDispatcher
+            eventDispatcher,
+            userManager,
+            sessionManager
         )
+    }
+
+    @Test
+    fun `process - eventExecutor 로 실행시킨다`() {
+        // given
+        val sut = processor()
+        every { eventExecutor.execute(any()) } returns Unit
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) {
+            eventExecutor.execute(any())
+        }
+    }
+
+    @Test
+    fun `process - userManager, sessionManager update`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.of("id")
+        val event = event(user = user, timestamp = 42)
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { userManager.updateUser(user) }
+        verify(exactly = 1) { sessionManager.updateLastEventTime(42) }
     }
 
     @Test
@@ -71,21 +118,57 @@ class DefaultEventProcessorTest {
         // given
         val sut = processor()
         every { deduplicationDeterminer.isDeduplicationTarget(any()) } returns true
-        val event = mockk<UserEvent>()
+        val event = event()
 
         // when
         sut.process(event)
 
         // then
-        verify { eventExecutor wasNot Called }
         verify { eventRepository wasNot Called }
+    }
+
+    @Test
+    fun `process - currentSession 이 없으면 sessionId 를 추가하지 않는다`() {
+        // given
+        val sut = processor()
+        var savedEvent: UserEvent? = null
+        every { eventRepository.save(any()) } answers { savedEvent = firstArg() }
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { eventRepository.save(any()) }
+        expectThat(savedEvent) isSameInstanceAs event
+    }
+
+    @Test
+    fun `process - currentSession 의 sessionId 를 추가한다`() {
+        // given
+        val sut = processor()
+        var savedEvent: UserEvent? = null
+        every { eventRepository.save(any()) } answers { savedEvent = firstArg() }
+        every { sessionManager.currentSession } returns Session("42.session")
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { eventRepository.save(any()) }
+        expectThat(savedEvent).isNotNull()
+            .get { user }.and {
+                get { identifiers }.hasSize(2)
+                get { identifiers[IdentifierType.SESSION.key] } isEqualTo "42.session"
+            }
     }
 
     @Test
     fun `process - 입력받은 이벤트를 저장한다`() {
         // given
         val sut = processor()
-        val event = mockk<UserEvent>()
+        val event = event()
 
         // when
         sut.process(event)
@@ -103,7 +186,7 @@ class DefaultEventProcessorTest {
             eventFlushMaxBatchSize = 51
         )
         every { eventRepository.count(null) } returns 101
-        val event = mockk<UserEvent>()
+        val event = event()
 
         // when
         sut.process(event)
@@ -126,7 +209,7 @@ class DefaultEventProcessorTest {
         val events = listOf<EventEntity>(mockk())
         every { eventRepository.getEventsToFlush(42) } returns events
 
-        val event = mockk<UserEvent>()
+        val event = event()
 
         // when
         sut.process(event)
@@ -149,7 +232,7 @@ class DefaultEventProcessorTest {
         val events = listOf<EventEntity>(mockk())
         every { eventRepository.getEventsToFlush(42) } returns events
 
-        val event = mockk<UserEvent>()
+        val event = event()
 
         // when
         sut.process(event)
@@ -169,7 +252,7 @@ class DefaultEventProcessorTest {
         every { eventRepository.count(null) } returns 100
         every { eventRepository.count(PENDING) } returns 29
 
-        val event = mockk<UserEvent>()
+        val event = event()
 
         // when
         sut.process(event)
@@ -184,7 +267,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onChanged(AppState.FOREGROUND)
+        sut.onChanged(AppState.FOREGROUND, System.currentTimeMillis())
 
         // then
         verify(exactly = 1) { sut.start() }
@@ -196,7 +279,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onChanged(AppState.BACKGROUND)
+        sut.onChanged(AppState.BACKGROUND, System.currentTimeMillis())
 
         // then
         verify(exactly = 1) { sut.stop() }
@@ -355,15 +438,24 @@ class DefaultEventProcessorTest {
         }
     }
 
-    @Test
-    fun `InitializeTask - 예외가 발생해도 무시한다`() {
-        val sut = processor().InitializeTask()
-        every { eventRepository.findAllBy(any()) } throws IllegalArgumentException()
-
-        try {
-            sut.run()
-        } catch (e: Exception) {
-            fail()
+    private fun event(
+        timestamp: Long = System.currentTimeMillis(),
+        user: HackleUser = HackleUser.of("test_user_id"),
+    ): UserEvent {
+        val event = mockk<UserEvent> {
+            every { this@mockk.timestamp } returns timestamp
+            every { this@mockk.user } returns user
         }
+
+        every { event.with(any()) } answers {
+
+            val u = firstArg<HackleUser>()
+            return@answers mockk {
+                every { this@mockk.timestamp } returns timestamp
+                every { this@mockk.user } returns u
+            }
+        }
+
+        return event
     }
 }
