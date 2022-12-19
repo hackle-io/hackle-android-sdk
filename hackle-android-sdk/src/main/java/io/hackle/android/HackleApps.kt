@@ -56,6 +56,7 @@ internal object HackleApps {
         )
 
         val workspaceCacheHandler = WorkspaceCacheHandler(
+            executor = Executors.newSingleThreadExecutor(),
             workspaceCache = workspaceCache,
             httpWorkspaceFetcher = httpWorkspaceFetcher
         )
@@ -117,12 +118,12 @@ internal object HackleApps {
 
         val device = Device.create(context, keyValueRepository)
         val userResolver = HackleUserResolver(device)
-        val listeners = listOf(sessionManager, eventProcessor, workspaceCacheHandler)
+        val listeners = listOf(sessionManager, eventProcessor)
         return HackleApp(
             client = client,
+            workspaceCacheHandler = workspaceCacheHandler,
             userResolver = userResolver,
             device = device,
-            eventExecutor = eventExecutor,
             sessionManager = sessionManager,
             listeners = listeners
         )

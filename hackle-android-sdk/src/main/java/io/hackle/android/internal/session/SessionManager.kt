@@ -103,10 +103,12 @@ internal class SessionManager(
     }
 
     override fun onInitialized() {
-        log.debug { "SessionManager initialize start." }
-        loadSession()
-        loadLastEventTime()
-        log.debug { "SessionManager initialize end." }
+        eventExecutor.execute {
+            log.debug { "SessionManager initialize start." }
+            loadSession()
+            loadLastEventTime()
+            log.debug { "SessionManager initialize end." }
+        }
     }
 
     override fun onChanged(state: AppState, timestamp: Long) {

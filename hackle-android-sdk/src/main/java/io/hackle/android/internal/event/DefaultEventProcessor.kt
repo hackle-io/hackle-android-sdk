@@ -103,9 +103,11 @@ internal class DefaultEventProcessor(
     }
 
     override fun onInitialized() {
-        log.debug { "EventProcessor initialize start." }
-        initialize()
-        log.debug { "EventProcessor initialize end." }
+        eventExecutor.execute {
+            log.debug { "EventProcessor initialize start." }
+            initialize()
+            log.debug { "EventProcessor initialize end." }
+        }
     }
 
     override fun onChanged(state: AppState, timestamp: Long) {
