@@ -1,10 +1,11 @@
 package io.hackle.android
 
 import android.content.Context
+import io.hackle.android.internal.lifecycle.AppInitializeListener
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
-import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
@@ -17,21 +18,26 @@ import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
+import java.util.concurrent.Executor
 
 /**
  * Entry point of Hackle Sdk.
  */
 class HackleApp internal constructor(
     private val client: HackleInternalClient,
-    private val workspaceCacheHandler: WorkspaceCacheHandler,
     private val userResolver: HackleUserResolver,
     private val device: Device,
+    private val eventExecutor: Executor,
+    private val sessionManager: SessionManager,
+    private val listeners: List<AppInitializeListener>,
 ) : Closeable {
 
     /**
      * The user's Device Id.
      */
     val deviceId: String get() = device.id
+
+    val sessionId: String get() = sessionManager.requiredSession.id
 
     /**
      * Decide the variation to expose to the user for experiment.
@@ -271,7 +277,18 @@ class HackleApp internal constructor(
     }
 
     internal fun initialize(onReady: () -> Unit) = apply {
-        workspaceCacheHandler.fetchAndCache(onReady)
+        for (listener in listeners) {
+            eventExecutor.execute {
+                try {
+                    listener.onInitialized()
+                } catch (e: Exception) {
+                    log.error { "Failed to onInitialized [${listener::class.java.simpleName}]: $e" }
+                }
+            }
+        }
+        eventExecutor.execute {
+            onReady()
+        }
     }
 
     companion object {

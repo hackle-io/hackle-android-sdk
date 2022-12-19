@@ -1,25 +1,22 @@
 package io.hackle.android.internal.workspace
 
+import io.hackle.android.internal.lifecycle.AppInitializeListener
 import io.hackle.sdk.core.internal.log.Logger
-import java.util.concurrent.ExecutorService
 
 internal class WorkspaceCacheHandler(
-    private val executor: ExecutorService,
     private val workspaceCache: WorkspaceCache,
-    private val httpWorkspaceFetcher: HttpWorkspaceFetcher
-) {
+    private val httpWorkspaceFetcher: HttpWorkspaceFetcher,
+) : AppInitializeListener {
 
-    fun fetchAndCache(onCompleted: () -> Unit) {
-        executor.submit {
-            try {
-                val workspace = httpWorkspaceFetcher.fetch()
-                workspaceCache.put(workspace)
-            } catch (e: Exception) {
-                log.error { "Failed to fetch Workspace: $e" }
-            } finally {
-                onCompleted()
-            }
+    override fun onInitialized() {
+        log.debug { "WorkspaceCacheHandler initialize start" }
+        try {
+            val workspace = httpWorkspaceFetcher.fetch()
+            workspaceCache.put(workspace)
+        } catch (e: Exception) {
+            log.error { "Failed to fetch Workspace: $e" }
         }
+        log.debug { "WorkspaceCacheHandler initialize end" }
     }
 
     companion object {
