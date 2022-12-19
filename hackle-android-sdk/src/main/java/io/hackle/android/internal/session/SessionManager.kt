@@ -56,8 +56,6 @@ internal class SessionManager(
         log.debug { "LastEventTime updated [$timestamp]" }
     }
 
-    // Supports
-
     private fun endSession() {
         val oldSession = currentSession
         val lastEventTime = lastEventTime
@@ -103,8 +101,6 @@ internal class SessionManager(
         }
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
-
-    // Listeners
 
     override fun onInitialized() {
         log.debug { "SessionManager initialize start." }

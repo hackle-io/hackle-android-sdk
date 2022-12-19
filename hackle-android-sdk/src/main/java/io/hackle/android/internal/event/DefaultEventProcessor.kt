@@ -54,8 +54,6 @@ internal class DefaultEventProcessor(
         }
     }
 
-    // Supports
-
     fun initialize() {
         try {
             start()
@@ -104,8 +102,6 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
-    // Listeners
-
     override fun onInitialized() {
         log.debug { "EventProcessor initialize start." }
         initialize()
@@ -123,8 +119,6 @@ internal class DefaultEventProcessor(
         eventFlushScheduler.tryClose()
         stop()
     }
-
-    // Task
 
     inner class AddEventTask(private val event: UserEvent) : Runnable {
         override fun run() {
