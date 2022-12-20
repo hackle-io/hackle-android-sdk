@@ -1,11 +1,16 @@
 package io.hackle.android
 
+import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
 
 class HackleConfig private constructor(builder: Builder) {
 
+    val logLevel: Int = builder.logLevel
+
     val sdkUri: String = builder.sdkUri
     val eventUri: String = builder.eventUri
+
+    val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
 
     val eventFlushIntervalMillis: Int = builder.eventFlushIntervalMillis
     val eventFlushThreshold: Int = builder.eventFlushThreshold
@@ -13,9 +18,12 @@ class HackleConfig private constructor(builder: Builder) {
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
     class Builder {
+        internal var logLevel: Int = Log.INFO
 
         internal var sdkUri: String = DEFAULT_SDK_URI
         internal var eventUri: String = DEFAULT_EVENT_URI
+
+        internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
 
         internal var eventFlushIntervalMillis: Int = DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS
         internal var eventFlushThreshold: Int = DEFAULT_EVENT_FLUSH_THRESHOLD
@@ -23,12 +31,20 @@ class HackleConfig private constructor(builder: Builder) {
         internal var exposureEventDedupIntervalMillis: Int =
             DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
 
+        fun logLevel(logLevel: Int) = apply {
+            this.logLevel = logLevel
+        }
+
         fun sdkUri(sdkUri: String) = apply {
             this.sdkUri = sdkUri
         }
 
         fun eventUri(eventUri: String) = apply {
             this.eventUri = eventUri
+        }
+
+        fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
+            this.sessionTimeoutMillis = sessionTimeoutMillis
         }
 
         fun eventFlushIntervalMillis(eventFlushIntervalMillis: Int) = apply {
@@ -70,6 +86,8 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal const val DEFAULT_SDK_URI = "https://client-sdk.hackle.io"
         internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
+
+        internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m
 
         internal const val DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS = 10 * 1000 // 10s (default)
         internal const val MIN_EVENT_FLUSH_INTERVAL_MILLIS = 1000 // 1s (min)

@@ -3,6 +3,8 @@ package io.hackle.android.internal.lifecycle
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
+import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class HackleActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
@@ -18,11 +20,11 @@ internal class HackleActivityLifecycleCallbacks : Application.ActivityLifecycleC
     override fun onActivityStarted(activity: Activity) {}
 
     override fun onActivityResumed(activity: Activity) {
-        dispatch(AppState.FOREGROUND)
+        dispatch(FOREGROUND, System.currentTimeMillis())
     }
 
     override fun onActivityPaused(activity: Activity) {
-        dispatch(AppState.BACKGROUND)
+        dispatch(BACKGROUND, System.currentTimeMillis())
     }
 
     override fun onActivityStopped(activity: Activity) {}
@@ -31,10 +33,10 @@ internal class HackleActivityLifecycleCallbacks : Application.ActivityLifecycleC
 
     override fun onActivityDestroyed(activity: Activity) {}
 
-    private fun dispatch(state: AppState) {
+    private fun dispatch(state: AppState, timestamp: Long) {
         for (listener in listeners) {
             try {
-                listener.onChanged(state)
+                listener.onChanged(state, timestamp)
             } catch (e: Exception) {
                 log.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $e" }
             }
