@@ -2,7 +2,9 @@ package io.hackle.android
 
 import android.app.Application
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.os.Build
+import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.EventRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
@@ -13,8 +15,10 @@ import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceCache
@@ -31,11 +35,16 @@ internal object HackleApps {
 
     private val log = Logger<HackleApps>()
 
-    const val PREFERENCES_NAME = "io.hackle.android"
+    private const val PREFERENCES_NAME = "io.hackle.android"
 
     fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
 
-        Logger.factory = AndroidLogger.Factory
+        Logger.factory = AndroidLogger.Factory.also {
+            it.logLevel = config.logLevel
+        }
+
+        val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE)
+        val keyValueRepository = AndroidKeyValueRepository(sharedPreferences)
 
         val httpClient = createHttpClient(context, sdkKey)
 
@@ -69,8 +78,18 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        val defaultEventProcessor = DefaultEventProcessor(
-            deduplicationDeterminer = ExposureEventDeduplicationDeterminer(config.exposureEventDedupIntervalMillis),
+        val userManager = UserManager()
+        val sessionManager = SessionManager(
+            sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
+            keyValueRepository = keyValueRepository,
+            eventExecutor = eventExecutor
+        )
+        val dedupDeterminer = ExposureEventDeduplicationDeterminer(
+            exposureEventDedupIntervalMillis = config.exposureEventDedupIntervalMillis
+        )
+
+        val eventProcessor = DefaultEventProcessor(
+            deduplicationDeterminer = dedupDeterminer,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
             eventRepositoryMaxSize = HackleConfig.DEFAULT_EVENT_REPOSITORY_MAX_SIZE,
@@ -78,26 +97,36 @@ internal object HackleApps {
             eventFlushIntervalMillis = config.eventFlushIntervalMillis.toLong(),
             eventFlushThreshold = config.eventFlushThreshold,
             eventFlushMaxBatchSize = config.eventFlushThreshold * 2 + 1,
-            eventDispatcher = eventDispatcher
+            eventDispatcher = eventDispatcher,
+            userManager = userManager,
+            sessionManager = sessionManager
         )
 
+
         val lifecycleCallbacks = HackleActivityLifecycleCallbacks().apply {
-            addListener(defaultEventProcessor)
+            addListener(sessionManager)
+            addListener(eventProcessor)
         }
         (context as? Application)?.registerActivityLifecycleCallbacks(lifecycleCallbacks)
 
+        userManager.addListener(sessionManager)
 
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
-            eventProcessor = defaultEventProcessor.apply {
-                initialize()
-                start()
-            }
+            eventProcessor = eventProcessor
         )
 
-        val device = Device.create(context)
+        val device = Device.create(context, keyValueRepository)
         val userResolver = HackleUserResolver(device)
-        return HackleApp(client, workspaceCacheHandler, userResolver, device)
+        val listeners = listOf(sessionManager, eventProcessor)
+        return HackleApp(
+            client = client,
+            workspaceCacheHandler = workspaceCacheHandler,
+            userResolver = userResolver,
+            device = device,
+            sessionManager = sessionManager,
+            listeners = listeners
+        )
     }
 
     private fun createHttpClient(context: Context, sdkKey: String): OkHttpClient {

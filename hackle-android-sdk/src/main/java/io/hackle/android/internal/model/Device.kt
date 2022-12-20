@@ -1,10 +1,8 @@
 package io.hackle.android.internal.model
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.os.Build
-import io.hackle.android.HackleApps
-import io.hackle.android.internal.utils.computeIfAbsent
+import io.hackle.android.internal.database.KeyValueRepository
 import java.util.*
 
 internal data class Device(
@@ -16,9 +14,8 @@ internal data class Device(
 
         private const val ID_KEY = "device_id"
 
-        fun create(context: Context): Device {
-            val deviceId = context.getSharedPreferences(HackleApps.PREFERENCES_NAME, MODE_PRIVATE)
-                .computeIfAbsent(ID_KEY) { UUID.randomUUID().toString() }
+        fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
+            val deviceId = keyValueRepository.getString(ID_KEY) { UUID.randomUUID().toString() }
             val properties = mapOf(
                 "deviceModel" to Build.MODEL,
                 "deviceVendor" to Build.MANUFACTURER,
