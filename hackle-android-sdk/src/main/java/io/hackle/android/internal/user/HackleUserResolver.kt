@@ -3,27 +3,22 @@ package io.hackle.android.internal.user
 import io.hackle.android.internal.model.Device
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
 
 internal class HackleUserResolver(
     private val device: Device,
 ) {
-
-    fun resolveOrNull(user: User): HackleUser? {
-        val decoratedUser = decorateUser(user)
-        val hackleUser = HackleUser.of(decoratedUser, device.properties)
-
-        if (hackleUser.identifiers.isEmpty()) {
-            return null
-        }
-
-        return hackleUser
-    }
-
-    private fun decorateUser(user: User): User {
-        return if (user.deviceId == null) {
-            user.copy(deviceId = device.id)
-        } else {
-            user
-        }
+    fun resolve(user: User): HackleUser {
+        return HackleUser.builder()
+            .identifiers(user.identifiers)
+            .identifier(IdentifierType.ID, user.id)
+            .identifier(IdentifierType.ID, device.id, overwrite = false)
+            .identifier(IdentifierType.USER, user.userId)
+            .identifier(IdentifierType.DEVICE, user.deviceId)
+            .identifier(IdentifierType.DEVICE, device.id, overwrite = false)
+            .identifier(IdentifierType.HACKLE_DEVICE_ID, user.deviceId)
+            .properties(user.properties)
+            .hackleProperties(device.properties)
+            .build()
     }
 }
