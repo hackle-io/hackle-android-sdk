@@ -113,7 +113,7 @@ internal object HackleApps {
 
         userManager.addListener(sessionManager)
 
-        metricConfiguration(config, lifecycleCallbacks, httpExecutor, httpClient)
+        metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
 
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
@@ -141,11 +141,13 @@ internal object HackleApps {
     private fun metricConfiguration(
         config: HackleConfig,
         callbacks: HackleActivityLifecycleCallbacks,
+        eventExecutor: Executor,
         httpExecutor: Executor,
         httpClient: OkHttpClient,
     ) {
         val monitoringMetricRegistry = MonitoringMetricRegistry(
             monitoringBaseUrl = config.monitoringUri,
+            eventExecutor = eventExecutor,
             httpExecutor = httpExecutor,
             httpClient = httpClient
         )

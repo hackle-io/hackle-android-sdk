@@ -17,6 +17,7 @@ import java.util.concurrent.Executor
 
 internal class MonitoringMetricRegistry(
     monitoringBaseUrl: String,
+    private val eventExecutor: Executor,
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
     clock: Clock = Clock.SYSTEM,
@@ -35,20 +36,22 @@ internal class MonitoringMetricRegistry(
     override fun onChanged(state: AppState, timestamp: Long) {
         return when (state) {
             AppState.FOREGROUND -> Unit
-            AppState.BACKGROUND -> httpExecutor.execute { flush() }
+            AppState.BACKGROUND -> eventExecutor.execute { flush() }
         }
     }
 
     private fun flush() {
-        try {
-            metrics.asSequence()
-                .filterIsInstance<FlushMetric<Metric>>()
-                .map { it.flush() }
-                .filter(::isDispatchTarget)
-                .chunked(500)
-                .forEach(::dispatch)
-        } catch (e: Exception) {
-            log.warn { "Failed to flushing metrics: $e" }
+        httpExecutor.execute {
+            try {
+                metrics.asSequence()
+                    .filterIsInstance<FlushMetric<Metric>>()
+                    .map { it.flush() }
+                    .filter(::isDispatchTarget)
+                    .chunked(500)
+                    .forEach(::dispatch)
+            } catch (e: Exception) {
+                log.warn { "Failed to flushing metrics: $e" }
+            }
         }
     }
 
