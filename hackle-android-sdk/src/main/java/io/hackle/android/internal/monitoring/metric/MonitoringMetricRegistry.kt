@@ -1,35 +1,52 @@
 package io.hackle.android.internal.monitoring.metric
 
+import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppStateChangeListener
 import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Counter
 import io.hackle.sdk.core.internal.metrics.Metric
+import io.hackle.sdk.core.internal.metrics.MetricRegistry
 import io.hackle.sdk.core.internal.metrics.Timer
-import io.hackle.sdk.core.internal.metrics.flush.FlushMetricRegistry
-import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.internal.metrics.flush.FlushCounter
+import io.hackle.sdk.core.internal.metrics.flush.FlushMetric
+import io.hackle.sdk.core.internal.metrics.flush.FlushTimer
 import io.hackle.sdk.core.internal.time.Clock
 import okhttp3.*
 import java.util.concurrent.Executor
 
 internal class MonitoringMetricRegistry(
     monitoringBaseUrl: String,
-    scheduler: Scheduler,
-    flushIntervalMillis: Long,
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
     clock: Clock = Clock.SYSTEM,
-) : FlushMetricRegistry(clock, scheduler, flushIntervalMillis) {
+) : MetricRegistry(clock), AppStateChangeListener {
 
     private val monitoringEndpoint = HttpUrl.get("$monitoringBaseUrl/metrics")
 
-    override fun flushMetric(metrics: List<Metric>) {
+    override fun createCounter(id: Metric.Id): Counter {
+        return FlushCounter(id)
+    }
+
+    override fun createTimer(id: Metric.Id): Timer {
+        return FlushTimer(id, clock)
+    }
+
+    override fun onChanged(state: AppState, timestamp: Long) {
+        return when (state) {
+            AppState.FOREGROUND -> Unit
+            AppState.BACKGROUND -> httpExecutor.execute { flush() }
+        }
+    }
+
+    private fun flush() {
         try {
-            httpExecutor.execute {
-                metrics.asSequence()
-                    .filter(::isDispatchTarget)
-                    .chunked(500)
-                    .forEach(::dispatch)
-            }
+            metrics.asSequence()
+                .filterIsInstance<FlushMetric<Metric>>()
+                .map { it.flush() }
+                .filter(::isDispatchTarget)
+                .chunked(500)
+                .forEach(::dispatch)
         } catch (e: Exception) {
             log.warn { "Failed to flushing metrics: $e" }
         }

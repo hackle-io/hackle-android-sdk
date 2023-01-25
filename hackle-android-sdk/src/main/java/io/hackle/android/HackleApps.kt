@@ -16,7 +16,6 @@ import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
-import io.hackle.android.internal.monitoring.metric.add
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.HackleUserResolver
@@ -147,13 +146,11 @@ internal object HackleApps {
     ) {
         val monitoringMetricRegistry = MonitoringMetricRegistry(
             monitoringBaseUrl = config.monitoringUri,
-            scheduler = Schedulers.executor("MonitoringMetricRegistry-"),
-            flushIntervalMillis = 60 * 1000,
             httpExecutor = httpExecutor,
             httpClient = httpClient
         )
 
-        callbacks.add(monitoringMetricRegistry)
+        callbacks.addListener(monitoringMetricRegistry)
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 
