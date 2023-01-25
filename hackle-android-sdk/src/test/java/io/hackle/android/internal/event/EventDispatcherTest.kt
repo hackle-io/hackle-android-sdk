@@ -5,6 +5,8 @@ import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventEntity.Type.TRACK
 import io.hackle.android.internal.database.EventRepository
+import io.hackle.sdk.core.internal.metrics.Metrics
+import io.hackle.sdk.core.internal.metrics.cumulative.CumulativeMetricRegistry
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -19,6 +21,7 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isA
+import strikt.assertions.isEqualTo
 import java.util.concurrent.Executor
 import java.util.concurrent.RejectedExecutionException
 
@@ -168,9 +171,44 @@ class EventDispatcherTest {
         }
     }
 
+    @Test
+    fun `record success call`() {
+        // given
+        val registry = CumulativeMetricRegistry()
+        Metrics.addRegistry(registry)
+
+        mockResponse(202)
+        val events = listOf(EventEntity(1, FLUSHING, TRACK, "body"))
+
+        // when
+        sut.dispatch(events)
+
+        // then
+        val timer = registry.timer("api.call", "operation" to "post.events", "success" to "true")
+        expectThat(timer.count()).isEqualTo(1)
+    }
+
+    @Test
+    fun `record fail call`() {
+        // given
+        val registry = CumulativeMetricRegistry()
+        Metrics.addRegistry(registry)
+
+        mockResponse(500)
+        val events = listOf(EventEntity(1, FLUSHING, TRACK, "body"))
+
+        // when
+        sut.dispatch(events)
+
+        // then
+        val timer = registry.timer("api.call", "operation" to "post.events", "success" to "false")
+        expectThat(timer.count()).isEqualTo(1)
+    }
+
     private fun mockResponse(code: Int) {
         val response = mockk<Response> {
             every { code() } returns code
+            every { isSuccessful } returns (code in (200..299))
         }
         val call = mockk<Call> {
             every { execute() } returns response

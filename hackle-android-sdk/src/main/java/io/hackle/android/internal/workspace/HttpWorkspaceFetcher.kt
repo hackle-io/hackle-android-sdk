@@ -1,6 +1,7 @@
 package io.hackle.android.internal.workspace
 
 import io.hackle.android.internal.http.parse
+import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.core.workspace.Workspace
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
@@ -17,7 +18,10 @@ internal class HttpWorkspaceFetcher(
         val request = Request.Builder()
             .url(endpoint)
             .build()
-        return httpClient.newCall(request).execute().use { response ->
+
+        return ApiCallMetrics.record("get.workspace") {
+            httpClient.newCall(request).execute()
+        }.use { response ->
             check(response.isSuccessful) { "Http status code: ${response.code()}" }
             val responseBody = checkNotNull(response.body()) { "Response body is null" }
             val dto = responseBody.parse<WorkspaceDto>()

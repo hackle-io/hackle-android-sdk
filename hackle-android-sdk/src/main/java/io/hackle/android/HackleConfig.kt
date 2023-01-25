@@ -9,6 +9,7 @@ class HackleConfig private constructor(builder: Builder) {
 
     val sdkUri: String = builder.sdkUri
     val eventUri: String = builder.eventUri
+    val monitoringUri: String = builder.monitoringUri
 
     val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
 
@@ -22,6 +23,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal var sdkUri: String = DEFAULT_SDK_URI
         internal var eventUri: String = DEFAULT_EVENT_URI
+        internal var monitoringUri: String = DEFAULT_MONITORING_URI
 
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
 
@@ -41,6 +43,10 @@ class HackleConfig private constructor(builder: Builder) {
 
         fun eventUri(eventUri: String) = apply {
             this.eventUri = eventUri
+        }
+
+        fun monitoringUri(monitoringUri: String) = apply {
+            this.monitoringUri = monitoringUri
         }
 
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
@@ -86,6 +92,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal const val DEFAULT_SDK_URI = "https://client-sdk.hackle.io"
         internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
+        internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
 
         internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m
 
