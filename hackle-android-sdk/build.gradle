@@ -5,10 +5,8 @@ plugins {
     id 'signing'
 }
 
-allprojects {
-    group = 'io.hackle'
-    version = '2.14.0-SNAPSHOT'
-}
+group = 'io.hackle'
+version = sdk_version
 
 android {
     compileSdkVersion 30
@@ -92,18 +90,6 @@ afterEvaluate {
                         developerConnection = 'scm:git:https://github.com/hackle-io/hackle-android-sdk.git'
                         url = 'https://github.com/hackle-io/hackle-android-sdk'
                     }
-                }
-            }
-        }
-        repositories {
-            maven {
-                name = "MavenCentral"
-                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-                url = version.contains('SNAPSHOT') || version.contains('RC') ? snapshotsRepoUrl : releasesRepoUrl
-                credentials {
-                    username = System.getenv("SONATYPE_USERNAME")
-                    password = System.getenv("SONATYPE_PASSWORD")
                 }
             }
         }
