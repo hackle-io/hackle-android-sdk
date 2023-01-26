@@ -39,6 +39,9 @@ class HackleApp internal constructor(
      */
     val deviceId: String get() = device.id
 
+    /**
+     * Current Session Id. If session is unavailable, returns "0.ffffffff"
+     */
     val sessionId: String get() = sessionManager.requiredSession.id
 
     /**
