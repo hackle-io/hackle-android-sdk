@@ -3,6 +3,7 @@ package io.hackle.android.internal.event
 import io.hackle.android.internal.database.EventEntity
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.core.internal.log.Logger
 import okhttp3.*
 import java.util.concurrent.Executor
@@ -58,8 +59,11 @@ internal class EventDispatcher(
                 .post(requestBody)
                 .build()
 
-            httpClient.newCall(request).execute()
-                .use { handleResponse(it) }
+            ApiCallMetrics.record("post.events") {
+                httpClient.newCall(request).execute()
+            }.use {
+                handleResponse(it)
+            }
         }
 
         private fun handleResponse(response: Response) {

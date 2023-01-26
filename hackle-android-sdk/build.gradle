@@ -5,10 +5,8 @@ plugins {
     id 'signing'
 }
 
-allprojects {
-    group = 'io.hackle'
-    version = '2.13.0'
-}
+group = 'io.hackle'
+version = sdk_version
 
 android {
     compileSdkVersion 30
@@ -42,8 +40,8 @@ android {
 dependencies {
 
 
-    api "io.hackle:hackle-sdk-common:2.9.1"
-    implementation "io.hackle:hackle-sdk-core:2.9.1"
+    api "io.hackle:hackle-sdk-common:2.10.1"
+    implementation "io.hackle:hackle-sdk-core:2.10.1"
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
     implementation "com.google.android.gms:play-services-base:17.3.0"
@@ -92,18 +90,6 @@ afterEvaluate {
                         developerConnection = 'scm:git:https://github.com/hackle-io/hackle-android-sdk.git'
                         url = 'https://github.com/hackle-io/hackle-android-sdk'
                     }
-                }
-            }
-        }
-        repositories {
-            maven {
-                name = "MavenCentral"
-                def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-                url = version.contains('SNAPSHOT') || version.contains('RC') ? snapshotsRepoUrl : releasesRepoUrl
-                credentials {
-                    username = System.getenv("SONATYPE_USERNAME")
-                    password = System.getenv("SONATYPE_PASSWORD")
                 }
             }
         }

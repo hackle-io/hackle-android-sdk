@@ -3,6 +3,7 @@ package io.hackle.android
 import android.content.Context
 import io.hackle.android.internal.lifecycle.AppInitializeListener
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
@@ -17,6 +18,7 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
 
@@ -37,6 +39,9 @@ class HackleApp internal constructor(
      */
     val deviceId: String get() = device.id
 
+    /**
+     * Current Session Id. If session is unavailable, returns "0.ffffffff"
+     */
     val sessionId: String get() = sessionManager.requiredSession.id
 
     /**
@@ -118,6 +123,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
+        val sample = Timer.start()
         return try {
             val hackleUser = userResolver.resolveOrNull(user)
                 ?: return Decision.of(defaultVariation, DecisionReason.INVALID_INPUT)
@@ -125,6 +131,8 @@ class HackleApp internal constructor(
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
             Decision.of(defaultVariation, DecisionReason.EXCEPTION)
+        }.also {
+            DecisionMetrics.experiment(sample, experimentKey, it)
         }
     }
 
@@ -207,6 +215,7 @@ class HackleApp internal constructor(
      * @since 2.0.0
      */
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
+        val sample = Timer.start()
         return try {
             val hackleUser = userResolver.resolveOrNull(user)
                 ?: return FeatureFlagDecision.off(DecisionReason.INVALID_INPUT)
@@ -214,6 +223,8 @@ class HackleApp internal constructor(
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
             FeatureFlagDecision.off(DecisionReason.EXCEPTION)
+        }.also {
+            DecisionMetrics.featureFlag(sample, featureKey, it)
         }
     }
 
