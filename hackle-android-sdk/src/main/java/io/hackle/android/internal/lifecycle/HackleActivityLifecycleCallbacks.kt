@@ -13,6 +13,7 @@ internal class HackleActivityLifecycleCallbacks : Application.ActivityLifecycleC
 
     fun addListener(listener: AppStateChangeListener) = apply {
         listeners += listener
+        log.info { "AppStateChangeListener added [$listener]" }
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}

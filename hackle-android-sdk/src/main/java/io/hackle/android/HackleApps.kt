@@ -15,6 +15,7 @@ import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.HackleUserResolver
@@ -26,8 +27,11 @@ import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.client
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.log.metrics.MetricLoggerFactory
+import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import okhttp3.OkHttpClient
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -39,9 +43,7 @@ internal object HackleApps {
 
     fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
 
-        Logger.factory = AndroidLogger.Factory.also {
-            it.logLevel = config.logLevel
-        }
+        loggerConfiguration(config)
 
         val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE)
         val keyValueRepository = AndroidKeyValueRepository(sharedPreferences)
@@ -111,6 +113,8 @@ internal object HackleApps {
 
         userManager.addListener(sessionManager)
 
+        metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
+
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
             eventProcessor = eventProcessor
@@ -127,6 +131,29 @@ internal object HackleApps {
             sessionManager = sessionManager,
             listeners = listeners
         )
+    }
+
+    private fun loggerConfiguration(config: HackleConfig) {
+        Logger.add(AndroidLogger.Factory.logLevel(config.logLevel))
+        Logger.add(MetricLoggerFactory(Metrics.globalRegistry))
+    }
+
+    private fun metricConfiguration(
+        config: HackleConfig,
+        callbacks: HackleActivityLifecycleCallbacks,
+        eventExecutor: Executor,
+        httpExecutor: Executor,
+        httpClient: OkHttpClient,
+    ) {
+        val monitoringMetricRegistry = MonitoringMetricRegistry(
+            monitoringBaseUrl = config.monitoringUri,
+            eventExecutor = eventExecutor,
+            httpExecutor = httpExecutor,
+            httpClient = httpClient
+        )
+
+        callbacks.addListener(monitoringMetricRegistry)
+        Metrics.addRegistry(monitoringMetricRegistry)
     }
 
     private fun createHttpClient(context: Context, sdkKey: String): OkHttpClient {
