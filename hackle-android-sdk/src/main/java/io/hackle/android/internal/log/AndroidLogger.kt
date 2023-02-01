@@ -21,6 +21,11 @@ internal object AndroidLogger : Logger {
 
     object Factory : Logger.Factory {
         var logLevel: Int = Log.INFO
+
+        fun logLevel(level: Int) = apply {
+            this.logLevel = level
+        }
+
         override fun getLogger(name: String): Logger = AndroidLogger
     }
 }
