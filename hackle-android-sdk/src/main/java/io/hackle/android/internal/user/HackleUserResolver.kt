@@ -16,7 +16,7 @@ internal class HackleUserResolver(
             .identifier(IdentifierType.USER, user.userId)
             .identifier(IdentifierType.DEVICE, user.deviceId)
             .identifier(IdentifierType.DEVICE, device.id, overwrite = false)
-            .identifier(IdentifierType.HACKLE_DEVICE_ID, user.deviceId)
+            .identifier(IdentifierType.HACKLE_DEVICE_ID, device.id)
             .properties(user.properties)
             .hackleProperties(device.properties)
             .build()

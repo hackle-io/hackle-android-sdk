@@ -39,6 +39,9 @@ class HackleApp internal constructor(
      */
     val deviceId: String get() = userManager.device.id
 
+    /**
+     * Current Session Id. If session is unavailable, returns "0.ffffffff"
+     */
     val sessionId: String get() = sessionManager.requiredSession.id
 
     fun setUser(user: User) {
@@ -190,9 +193,9 @@ class HackleApp internal constructor(
     }
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
+        userManager.initialize(user)
         eventExecutor.execute {
             try {
-                userManager.initialize(user)
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 workspaceCacheHandler.fetchAndCache()

@@ -10,6 +10,7 @@ import io.hackle.android.internal.utils.parseJson
 import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.time.Clock
 
 internal class UserManager(
     val device: Device,
@@ -43,7 +44,7 @@ internal class UserManager(
         }
 
         if (!newUser.identifierEquals(oldUser)) {
-            changeUser(oldUser, newUser, System.currentTimeMillis())
+            changeUser(oldUser, newUser, Clock.SYSTEM.currentMillis())
         }
 
         return newUser
