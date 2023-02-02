@@ -11,8 +11,8 @@ internal data class Sdk(
 
     companion object {
         fun of(sdkKey: String, config: HackleConfig): Sdk {
-            val wrapperName = config["wrapper_name"]
-            val wrapperVersion = config["wrapper_version"]
+            val wrapperName = config["\$wrapper_name"]
+            val wrapperVersion = config["\$wrapper_version"]
             return if (wrapperName != null && wrapperVersion != null) {
                 Sdk(sdkKey, wrapperName, wrapperVersion)
             } else {
