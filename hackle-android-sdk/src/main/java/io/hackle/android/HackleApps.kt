@@ -14,6 +14,7 @@ import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
@@ -43,12 +44,13 @@ internal object HackleApps {
 
     fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
 
+        val sdk = Sdk.of(sdkKey, config)
         loggerConfiguration(config)
 
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
         val device = Device.create(context, globalKeyValueRepository)
 
-        val httpClient = createHttpClient(context, sdkKey)
+        val httpClient = createHttpClient(context, sdk)
 
         val workspaceCache = WorkspaceCache()
 
@@ -161,13 +163,13 @@ internal object HackleApps {
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 
-    private fun createHttpClient(context: Context, sdkKey: String): OkHttpClient {
+    private fun createHttpClient(context: Context, sdk: Sdk): OkHttpClient {
 
         val builder = OkHttpClient.Builder()
             .connectTimeout(1, TimeUnit.SECONDS)
             .readTimeout(5, TimeUnit.SECONDS)
             .writeTimeout(5, TimeUnit.SECONDS)
-            .addInterceptor(SdkHeaderInterceptor(sdkKey, "android-sdk", BuildConfig.VERSION_NAME))
+            .addInterceptor(SdkHeaderInterceptor(sdk.key, sdk.name, sdk.version))
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
 

@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
+import java.util.*
 
 class HackleConfig private constructor(builder: Builder) {
 
@@ -18,6 +19,10 @@ class HackleConfig private constructor(builder: Builder) {
 
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
+    private val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
+
+    internal operator fun get(key: String): String? = extra[key]
+
     class Builder {
         internal var logLevel: Int = Log.INFO
 
@@ -32,6 +37,8 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal var exposureEventDedupIntervalMillis: Int =
             DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
+
+        internal val extra = hashMapOf<String, String>()
 
         fun logLevel(logLevel: Int) = apply {
             this.logLevel = logLevel
@@ -63,6 +70,10 @@ class HackleConfig private constructor(builder: Builder) {
 
         fun exposureEventDedupIntervalMillis(exposureEventDedupIntervalMillis: Int) = apply {
             this.exposureEventDedupIntervalMillis = exposureEventDedupIntervalMillis
+        }
+
+        fun add(key: String, value: String) = apply {
+            this.extra[key] = value
         }
 
         fun build(): HackleConfig {
