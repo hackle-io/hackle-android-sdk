@@ -5,7 +5,6 @@ import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
-import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.utils.parseJson
 import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.common.User
@@ -13,7 +12,6 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 
 internal class UserManager(
-    val device: Device,
     private val repository: KeyValueRepository,
 ) : AppStateChangeListener {
 

@@ -31,6 +31,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.log.metrics.MetricLoggerFactory
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.scheduler.Schedulers
+import io.hackle.sdk.core.internal.time.Clock
 import okhttp3.OkHttpClient
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -82,7 +83,6 @@ internal object HackleApps {
         )
 
         val userManager = UserManager(
-            device = device,
             repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         )
         val sessionManager = SessionManager(
@@ -130,13 +130,15 @@ internal object HackleApps {
         metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
 
         return HackleApp(
+            clock = Clock.SYSTEM,
             client = client,
             eventExecutor = eventExecutor,
             workspaceCacheHandler = workspaceCacheHandler,
             hackleUserResolver = hackleUserResolver,
             userManager = userManager,
             sessionManager = sessionManager,
-            eventProcessor = eventProcessor
+            eventProcessor = eventProcessor,
+            device = device
         )
     }
 

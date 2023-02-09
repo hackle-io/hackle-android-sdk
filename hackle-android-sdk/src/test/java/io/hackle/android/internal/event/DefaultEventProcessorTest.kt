@@ -7,7 +7,7 @@ import io.hackle.android.internal.database.EventRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
@@ -40,9 +40,6 @@ class DefaultEventProcessorTest {
     private lateinit var eventDispatcher: EventDispatcher
 
     @RelaxedMockK
-    private lateinit var userManager: UserManager
-
-    @RelaxedMockK
     private lateinit var sessionManager: SessionManager
 
     @Before
@@ -64,21 +61,19 @@ class DefaultEventProcessorTest {
         eventFlushThreshold: Int = 10,
         eventFlushMaxBatchSize: Int = 21,
         eventDispatcher: EventDispatcher = this.eventDispatcher,
-        userManager: UserManager = this.userManager,
         sessionManager: SessionManager = this.sessionManager,
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
-            deduplicationDeterminer,
-            eventExecutor,
-            eventRepository,
-            eventRepositoryMaxSize,
-            eventFlushScheduler,
-            eventFlushIntervalMillis,
-            eventFlushThreshold,
-            eventFlushMaxBatchSize,
-            eventDispatcher,
-            userManager,
-            sessionManager
+            deduplicationDeterminer = deduplicationDeterminer,
+            eventExecutor = eventExecutor,
+            eventRepository = eventRepository,
+            eventRepositoryMaxSize = eventRepositoryMaxSize,
+            eventFlushScheduler = eventFlushScheduler,
+            eventFlushIntervalMillis = eventFlushIntervalMillis,
+            eventFlushThreshold = eventFlushThreshold,
+            eventFlushMaxBatchSize = eventFlushMaxBatchSize,
+            eventDispatcher = eventDispatcher,
+            sessionManager = sessionManager
         )
     }
 
@@ -99,7 +94,24 @@ class DefaultEventProcessorTest {
     }
 
     @Test
-    fun `process - userManager, sessionManager update`() {
+    fun `process - SessionEvent 인 경우 last event time 을 업데이트 하지 않는다`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
+        val event = mockk<UserEvent.Track> {
+            every { event } returns Event.of("\$session_start")
+            every { this@mockk.user } returns user
+        }
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
+    }
+
+    @Test
+    fun `process - last event time update`() {
         // given
         val sut = processor()
         val user = HackleUser.of("id")
@@ -109,7 +121,6 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { userManager.updateUser(user) }
         verify(exactly = 1) { sessionManager.updateLastEventTime(42) }
     }
 

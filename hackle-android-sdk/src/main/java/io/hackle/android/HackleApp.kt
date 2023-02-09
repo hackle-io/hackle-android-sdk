@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
@@ -17,6 +18,7 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
 import java.util.concurrent.Executor
@@ -25,6 +27,7 @@ import java.util.concurrent.Executor
  * Entry point of Hackle Sdk.
  */
 class HackleApp internal constructor(
+    private val clock: Clock,
     private val client: HackleInternalClient,
     private val eventExecutor: Executor,
     private val workspaceCacheHandler: WorkspaceCacheHandler,
@@ -32,12 +35,13 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
+    private val device: Device,
 ) : Closeable {
 
     /**
      * The user's Device Id.
      */
-    val deviceId: String get() = userManager.device.id
+    val deviceId: String get() = device.id
 
     /**
      * Current Session Id. If session is unavailable, returns "0.ffffffff"
@@ -175,7 +179,7 @@ class HackleApp internal constructor(
     private fun trackInternal(event: Event, user: User) {
         try {
             val hackleUser = hackleUserResolver.resolve(user)
-            client.track(event, hackleUser)
+            client.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
         }
@@ -266,25 +270,25 @@ class HackleApp internal constructor(
         }
     }
 
-    @Deprecated("Ues featureFlagDetail(featureKey) with setUser(user) instead.")
+    @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
         val updatedUser = updateUser(User.of(userId))
         return featureFlagDetailInternal(featureKey, updatedUser)
     }
 
-    @Deprecated("Ues featureFlagDetail(featureKey) with setUser(user) instead.")
+    @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
         val updatedUser = updateUser(user)
         return featureFlagDetailInternal(featureKey, updatedUser)
     }
 
-    @Deprecated("User isFeatureOn(featureKey) with setUser(user) instead.")
+    @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, userId: String): Boolean {
         val updatedUser = updateUser(User.of(userId))
         return featureFlagDetailInternal(featureKey, updatedUser).isOn
     }
 
-    @Deprecated("User isFeatureOn(featureKey) with setUser(user) instead.")
+    @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, user: User): Boolean {
         val updatedUser = updateUser(user)
         return featureFlagDetailInternal(featureKey, updatedUser).isOn
