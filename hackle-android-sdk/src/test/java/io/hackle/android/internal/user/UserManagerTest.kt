@@ -2,6 +2,7 @@ package io.hackle.android.internal.user
 
 import io.hackle.android.internal.database.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.common.User
 import org.junit.Test
@@ -13,8 +14,9 @@ class UserManagerTest {
 
     @Test
     fun `initialize - User 설정한 경우`() {
+        val device = Device("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
-        val userManager = UserManager(repository)
+        val userManager = UserManager(device, repository)
 
         val user = User.of("hello")
         userManager.initialize(user)
@@ -24,6 +26,7 @@ class UserManagerTest {
 
     @Test
     fun `initialize - from repository`() {
+        val device = Device("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val user = User.builder("id")
             .userId("userId")
@@ -36,7 +39,7 @@ class UserManagerTest {
             .property("null", null)
             .build()
         repository.putString("user", user.toJson())
-        val userManager = UserManager(repository)
+        val userManager = UserManager(device, repository)
 
         userManager.initialize(null)
 
@@ -53,25 +56,29 @@ class UserManagerTest {
 
     @Test
     fun `initialize - from repository null`() {
-        val userManager = UserManager(MapKeyValueRepository())
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
         userManager.initialize(null)
-        expectThat(userManager.currentUser).isEqualTo(User.builder().build())
+        expectThat(userManager.currentUser).isEqualTo(User.builder().deviceId("test_device_id").build())
     }
 
     @Test
-    fun `updateUser - tc1`() {
-        val userManager = UserManager(MapKeyValueRepository())
+    fun `setUser - 기존 사용자와 다른 경우`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
         userManager.addListener(listener)
 
         val user = User.builder().deviceId("42").build()
-        val actual = userManager.updateUser(user)
+        val actual = userManager.setUser(user)
 
         expectThat(actual) isEqualTo user
         expectThat(listener.history) {
             hasSize(1)
             first().and {
-                get { first } isEqualTo User.builder().build()
+                get { first } isEqualTo User.builder().deviceId("test_device_id").build()
                 get { second } isEqualTo user
                 get { third } isGreaterThan 0
             }
@@ -79,8 +86,10 @@ class UserManagerTest {
     }
 
     @Test
-    fun `updateUser - 기존 사용자와 다른 사용자인 경우`() {
-        val userManager = UserManager(MapKeyValueRepository())
+    fun `setUser - 기존 사용자와 다른 경우 2`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
         userManager.addListener(listener)
 
@@ -88,7 +97,7 @@ class UserManagerTest {
         val newUser = User.builder().deviceId("b").property("b", "b").build()
 
         userManager.initialize(oldUser)
-        val actual = userManager.updateUser(newUser)
+        val actual = userManager.setUser(newUser)
 
         expectThat(actual).isEqualTo(newUser)
         expectThat(listener.history) {
@@ -102,8 +111,10 @@ class UserManagerTest {
     }
 
     @Test
-    fun `updateUser - 기존 사용자와 같은 사용자인 경우`() {
-        val userManager = UserManager(MapKeyValueRepository())
+    fun `setUser - 기존 사용자와 같은 사용자인 경우`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
         userManager.addListener(listener)
 
@@ -111,7 +122,7 @@ class UserManagerTest {
         val newUser = User.builder().deviceId("a").property("b", "b").build()
 
         userManager.initialize(oldUser)
-        val actual = userManager.updateUser(newUser)
+        val actual = userManager.setUser(newUser)
 
         expectThat(actual).isEqualTo(
             User.builder().deviceId("a").property("a", "a").property("b", "b").build()
@@ -121,8 +132,12 @@ class UserManagerTest {
 
     @Test
     fun `onChange - 현재 유저를 저장한다`() {
+        val device = Device("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
-        val userManager = UserManager(repository)
+        val userManager = UserManager(device, repository)
+        val listener = UserListenerStub()
+        userManager.addListener(listener)
+
         val user = User.builder().deviceId("a").property("a", "a").build()
         userManager.initialize(user)
         userManager.onChanged(AppState.BACKGROUND, 42)

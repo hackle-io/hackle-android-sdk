@@ -48,16 +48,46 @@ class HackleApp internal constructor(
      */
     val sessionId: String get() = sessionManager.requiredSession.id
 
-    fun setUser(user: User) {
-        updateUser(user)
+    val user: User get() = userManager.currentUser
+
+    fun setUser(user: User): User {
+        return try {
+            userManager.setUser(user)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set user: $e" }
+            user
+        }
     }
 
-    private fun updateUser(user: User): User {
-        return try {
-            userManager.updateUser(user)
+    fun setUserId(userId: String?) {
+        try {
+            userManager.setUserId(userId)
         } catch (e: Exception) {
-            log.error { "Unexpected exception while update user: $e" }
-            user
+            log.error { "Unexpected exception while set userId: $e" }
+        }
+    }
+
+    fun setDeviceId(deviceId: String) {
+        try {
+            userManager.setDeviceId(deviceId)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set deviceId: $e" }
+        }
+    }
+
+    fun setUserProperty(key: String, value: Any?) {
+        try {
+            userManager.setUserProperty(key, value)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set userProperty: $e" }
+        }
+    }
+
+    fun resetUser() {
+        try {
+            userManager.resetUser()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while reset user: $e" }
         }
     }
 
@@ -221,7 +251,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        val updatedUser = updateUser(User.of(userId))
+        val updatedUser = setUser(User.of(userId))
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
     }
 
@@ -232,7 +262,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        val updatedUser = updateUser(user)
+        val updatedUser = setUser(user)
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
     }
 
@@ -243,7 +273,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        val updatedUser = updateUser(User.of(userId))
+        val updatedUser = setUser(User.of(userId))
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
     }
 
@@ -254,14 +284,14 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        val updatedUser = updateUser(user)
+        val updatedUser = setUser(user)
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
     }
 
     @Deprecated("Use allVariationDetails() with setUser(user) instead.")
     fun allVariationDetails(user: User): Map<Long, Decision> {
         return try {
-            val updatedUser = updateUser(user)
+            val updatedUser = setUser(user)
             val hackleUser = hackleUserResolver.resolve(updatedUser)
             client.experiments(hackleUser)
         } catch (t: Throwable) {
@@ -272,49 +302,49 @@ class HackleApp internal constructor(
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
-        val updatedUser = updateUser(User.of(userId))
+        val updatedUser = setUser(User.of(userId))
         return featureFlagDetailInternal(featureKey, updatedUser)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        val updatedUser = updateUser(user)
+        val updatedUser = setUser(user)
         return featureFlagDetailInternal(featureKey, updatedUser)
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, userId: String): Boolean {
-        val updatedUser = updateUser(User.of(userId))
+        val updatedUser = setUser(User.of(userId))
         return featureFlagDetailInternal(featureKey, updatedUser).isOn
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        val updatedUser = updateUser(user)
+        val updatedUser = setUser(user)
         return featureFlagDetailInternal(featureKey, updatedUser).isOn
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, userId: String) {
-        val updatedUser = updateUser(User.of(userId))
+        val updatedUser = setUser(User.of(userId))
         trackInternal(Event.of(eventKey), updatedUser)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, userId: String) {
-        val updatedUser = updateUser(User.of(userId))
+        val updatedUser = setUser(User.of(userId))
         trackInternal(event, updatedUser)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, user: User) {
-        val updatedUser = updateUser(user)
+        val updatedUser = setUser(user)
         trackInternal(Event.of(eventKey), updatedUser)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, user: User) {
-        val updatedUser = updateUser(user)
+        val updatedUser = setUser(user)
         trackInternal(event, updatedUser)
     }
 

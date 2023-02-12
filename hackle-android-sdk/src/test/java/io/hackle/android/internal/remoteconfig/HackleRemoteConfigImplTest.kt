@@ -46,7 +46,7 @@ class HackleRemoteConfigImplTest {
     fun `user 가 있는경우 업데이트 후 사용한다`() {
         val user = User.of("test_user")
         val updatedUser = User.of("updated_user")
-        val userManager = mockk<UserManager> { every { updateUser(any()) } answers { updatedUser } }
+        val userManager = mockk<UserManager> { every { setUser(any()) } answers { updatedUser } }
         val hackleUserResolver = mockk<HackleUserResolver> {
             every { resolve(any()) } answers { HackleUser.of(firstArg(), emptyMap()) }
         }

@@ -3,6 +3,7 @@ package io.hackle.android.internal.session
 import io.hackle.android.internal.database.KeyValueRepository
 import io.hackle.android.internal.database.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
 import io.mockk.spyk
@@ -19,7 +20,7 @@ class SessionManagerTest {
         vararg listeners: SessionListener,
     ): SessionManager {
         return SessionManager(
-            userManager = UserManager(MapKeyValueRepository()),
+            userManager = UserManager(Device("test_id", emptyMap()), MapKeyValueRepository()),
             keyValueRepository = repository,
             sessionTimeoutMillis = sessionTimeoutMillis
         ).also { listeners.forEach(it::addListener) }

@@ -46,7 +46,7 @@ internal class HackleRemoteConfigImpl(
     ): RemoteConfigDecision<T> {
         val sample = Timer.start()
         return try {
-            val user = this.user?.let { userManager.updateUser(it) } ?: userManager.currentUser
+            val user = this.user?.let { userManager.setUser(it) } ?: userManager.currentUser
             val hackleUser = hackleUserResolver.resolve(user)
             client.remoteConfig(key, hackleUser, requiredType, defaultValue)
         } catch (e: Exception) {

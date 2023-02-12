@@ -83,6 +83,7 @@ internal object HackleApps {
         )
 
         val userManager = UserManager(
+            device = device,
             repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         )
         val sessionManager = SessionManager(
