@@ -50,12 +50,11 @@ class HackleApp internal constructor(
 
     val user: User get() = userManager.currentUser
 
-    fun setUser(user: User): User {
-        return try {
+    fun setUser(user: User) {
+        try {
             userManager.setUser(user)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set user: $e" }
-            user
         }
     }
 
@@ -251,7 +250,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        val updatedUser = setUser(User.of(userId))
+        val updatedUser = userManager.setUser(User.of(userId))
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
     }
 
@@ -262,7 +261,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        val updatedUser = setUser(user)
+        val updatedUser = userManager.setUser(user)
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
     }
 
@@ -273,7 +272,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        val updatedUser = setUser(User.of(userId))
+        val updatedUser = userManager.setUser(User.of(userId))
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
     }
 
@@ -284,14 +283,14 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        val updatedUser = setUser(user)
+        val updatedUser = userManager.setUser(user)
         return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
     }
 
     @Deprecated("Use allVariationDetails() with setUser(user) instead.")
     fun allVariationDetails(user: User): Map<Long, Decision> {
         return try {
-            val updatedUser = setUser(user)
+            val updatedUser = userManager.setUser(user)
             val hackleUser = hackleUserResolver.resolve(updatedUser)
             client.experiments(hackleUser)
         } catch (t: Throwable) {
@@ -302,49 +301,49 @@ class HackleApp internal constructor(
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
-        val updatedUser = setUser(User.of(userId))
+        val updatedUser = userManager.setUser(User.of(userId))
         return featureFlagDetailInternal(featureKey, updatedUser)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        val updatedUser = setUser(user)
+        val updatedUser = userManager.setUser(user)
         return featureFlagDetailInternal(featureKey, updatedUser)
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, userId: String): Boolean {
-        val updatedUser = setUser(User.of(userId))
+        val updatedUser = userManager.setUser(User.of(userId))
         return featureFlagDetailInternal(featureKey, updatedUser).isOn
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        val updatedUser = setUser(user)
+        val updatedUser = userManager.setUser(user)
         return featureFlagDetailInternal(featureKey, updatedUser).isOn
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, userId: String) {
-        val updatedUser = setUser(User.of(userId))
+        val updatedUser = userManager.setUser(User.of(userId))
         trackInternal(Event.of(eventKey), updatedUser)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, userId: String) {
-        val updatedUser = setUser(User.of(userId))
+        val updatedUser = userManager.setUser(User.of(userId))
         trackInternal(event, updatedUser)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, user: User) {
-        val updatedUser = setUser(user)
+        val updatedUser = userManager.setUser(user)
         trackInternal(Event.of(eventKey), updatedUser)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, user: User) {
-        val updatedUser = setUser(user)
+        val updatedUser = userManager.setUser(user)
         trackInternal(event, updatedUser)
     }
 
