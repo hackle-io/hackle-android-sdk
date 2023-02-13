@@ -2,7 +2,6 @@ package io.hackle.android
 
 import android.app.Application
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.os.Build
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
@@ -17,6 +16,7 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
+import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.HackleUserResolver
@@ -31,6 +31,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.log.metrics.MetricLoggerFactory
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.scheduler.Schedulers
+import io.hackle.sdk.core.internal.time.Clock
 import okhttp3.OkHttpClient
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -47,8 +48,8 @@ internal object HackleApps {
         val sdk = Sdk.of(sdkKey, config)
         loggerConfiguration(config)
 
-        val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE)
-        val keyValueRepository = AndroidKeyValueRepository(sharedPreferences)
+        val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
+        val device = Device.create(context, globalKeyValueRepository)
 
         val httpClient = createHttpClient(context, sdk)
 
@@ -60,7 +61,6 @@ internal object HackleApps {
         )
 
         val workspaceCacheHandler = WorkspaceCacheHandler(
-            executor = Executors.newSingleThreadExecutor(),
             workspaceCache = workspaceCache,
             httpWorkspaceFetcher = httpWorkspaceFetcher
         )
@@ -82,11 +82,14 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        val userManager = UserManager()
+        val userManager = UserManager(
+            device = device,
+            repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
+        )
         val sessionManager = SessionManager(
+            userManager = userManager,
             sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
-            keyValueRepository = keyValueRepository,
-            eventExecutor = eventExecutor
+            keyValueRepository = globalKeyValueRepository,
         )
         val dedupDeterminer = ExposureEventDeduplicationDeterminer(
             exposureEventDedupIntervalMillis = config.exposureEventDedupIntervalMillis
@@ -102,36 +105,41 @@ internal object HackleApps {
             eventFlushThreshold = config.eventFlushThreshold,
             eventFlushMaxBatchSize = config.eventFlushThreshold * 2 + 1,
             eventDispatcher = eventDispatcher,
-            userManager = userManager,
             sessionManager = sessionManager
         )
-
-
-        val lifecycleCallbacks = HackleActivityLifecycleCallbacks().apply {
-            addListener(sessionManager)
-            addListener(eventProcessor)
-        }
-        (context as? Application)?.registerActivityLifecycleCallbacks(lifecycleCallbacks)
-
-        userManager.addListener(sessionManager)
-
-        metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
 
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
             eventProcessor = eventProcessor
         )
+        val hackleUserResolver = HackleUserResolver(device)
 
-        val device = Device.create(context, keyValueRepository)
-        val userResolver = HackleUserResolver(device)
-        val listeners = listOf(sessionManager, eventProcessor)
+        val lifecycleCallbacks = HackleActivityLifecycleCallbacks(eventExecutor = eventExecutor)
+            .addListener(sessionManager)
+            .addListener(userManager)
+            .addListener(eventProcessor)
+        (context as? Application)?.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+
+        userManager.addListener(sessionManager)
+
+        val sessionEventTracker = SessionEventTracker(
+            hackleUserResolver = hackleUserResolver,
+            client = client
+        )
+        sessionManager.addListener(sessionEventTracker)
+
+        metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
+
         return HackleApp(
+            clock = Clock.SYSTEM,
             client = client,
+            eventExecutor = eventExecutor,
             workspaceCacheHandler = workspaceCacheHandler,
-            userResolver = userResolver,
-            device = device,
+            hackleUserResolver = hackleUserResolver,
+            userManager = userManager,
             sessionManager = sessionManager,
-            listeners = listeners
+            eventProcessor = eventProcessor,
+            device = device
         )
     }
 

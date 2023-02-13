@@ -3,13 +3,12 @@ package io.hackle.android.internal.event
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
-import io.hackle.android.internal.lifecycle.AppInitializeListener
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.core.event.EventProcessor
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
@@ -32,9 +31,8 @@ internal class DefaultEventProcessor(
     private val eventFlushThreshold: Int,
     private val eventFlushMaxBatchSize: Int,
     private val eventDispatcher: EventDispatcher,
-    private val userManager: UserManager,
     private val sessionManager: SessionManager,
-) : EventProcessor, AppInitializeListener, AppStateChangeListener, Closeable {
+) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
@@ -61,6 +59,7 @@ internal class DefaultEventProcessor(
             if (events.isNotEmpty()) {
                 eventRepository.update(events, PENDING)
             }
+            log.debug { "DefaultEventProcessor initialized." }
         } catch (e: Exception) {
             log.error { "Fail to initialize: $e" }
         }
@@ -102,14 +101,6 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
-    override fun onInitialized() {
-        eventExecutor.execute {
-            log.debug { "EventProcessor initialize start." }
-            initialize()
-            log.debug { "EventProcessor initialize end." }
-        }
-    }
-
     override fun onChanged(state: AppState, timestamp: Long) {
         when (state) {
             FOREGROUND -> start()
@@ -137,21 +128,22 @@ internal class DefaultEventProcessor(
         }
 
         private fun update(event: UserEvent) {
-            userManager.updateUser(event.user)
+            if (SessionEventTracker.isSessionEvent(event)) {
+                return
+            }
             sessionManager.updateLastEventTime(event.timestamp)
         }
 
         private fun decorateSession(event: UserEvent): UserEvent {
-            val session = sessionManager.currentSession ?: return event
-
             if (event.user.sessionId != null) {
                 return event
             }
 
-            val newIdentifiers = HashMap(event.user.identifiers).apply {
-                put(IdentifierType.SESSION.key, session.id)
-            }
-            val newUser = event.user.copy(identifiers = newIdentifiers)
+            val session = sessionManager.currentSession ?: return event
+
+            val newUser = event.user.toBuilder()
+                .identifier(IdentifierType.SESSION, session.id, overwrite = false)
+                .build()
             return event.with(newUser)
         }
 

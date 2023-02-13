@@ -1,7 +1,7 @@
 package io.hackle.android.internal.user
 
-import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.common.User
 
 internal interface UserListener {
-    fun onUserUpdated(user: HackleUser, timestamp: Long)
+    fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long)
 }

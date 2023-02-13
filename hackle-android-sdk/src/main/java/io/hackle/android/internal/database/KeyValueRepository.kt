@@ -1,5 +1,6 @@
 package io.hackle.android.internal.database
 
+import android.content.Context
 import android.content.SharedPreferences
 
 internal interface KeyValueRepository {
@@ -35,5 +36,16 @@ internal class AndroidKeyValueRepository(
 
     override fun putLong(key: String, value: Long) {
         preferences.edit().putLong(key, value).apply()
+    }
+
+    companion object {
+        fun create(
+            context: Context,
+            name: String,
+            mode: Int = Context.MODE_PRIVATE,
+        ): AndroidKeyValueRepository {
+            val preferences = context.getSharedPreferences(name, mode)
+            return AndroidKeyValueRepository(preferences)
+        }
     }
 }
