@@ -29,7 +29,8 @@ fun Hackle.initialize(
 }
 
 fun Hackle.user(id: String) = User.of(id)
-fun Hackle.user(id: String, init: User.Builder.() -> Unit) = User.builder(id).apply(init).build()
+fun Hackle.user(id: String? = null, init: User.Builder.() -> Unit) =
+    User.builder().id(id).apply(init).build()
 
 fun Hackle.event(key: String) = Event.of(key)
 fun Hackle.event(key: String, init: Event.Builder.() -> Unit) =
@@ -38,9 +39,12 @@ fun Hackle.event(key: String, init: Event.Builder.() -> Unit) =
 
 fun Hackle.remoteConfig() = app.remoteConfig()
 
-fun Hackle.setUser(user: User) {
-    app.setUser(user)
-}
+fun Hackle.setUser(user: User) = app.setUser(user)
+fun Hackle.setUserId(userId: String?) = app.setUserId(userId)
+fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
+fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
+fun Hackle.resetUser() = app.resetUser()
+
 
 @Deprecated("User remoteConfig() with setUser(user) instead")
 fun Hackle.remoteConfig(user: User) = app.remoteConfig(user)

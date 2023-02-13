@@ -23,16 +23,16 @@ internal class UserManager(
     private var _currentUser: User = defaultUser
     val currentUser: User get() = synchronized(LOCK) { _currentUser }
 
+    fun addListener(listener: UserListener) {
+        userListeners.add(listener)
+        log.debug { "UserListener added [${listener::class.java.simpleName}]" }
+    }
+
     fun initialize(user: User?) {
         synchronized(LOCK) {
             _currentUser = user ?: loadUser() ?: defaultUser
             log.debug { "UserManager initialized [$_currentUser]" }
         }
-    }
-
-    fun addListener(listener: UserListener) {
-        userListeners.add(listener)
-        log.debug { "UserListener added [${listener::class.java.simpleName}]" }
     }
 
     fun setUser(user: User): User {
