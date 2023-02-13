@@ -93,14 +93,23 @@ internal class UserManager(
     }
 
     private fun loadUser(): User? {
-        return repository.getString(USER_KEY)?.parseJson<UserModel>()?.toUser().also {
-            log.debug { "User loaded [$it]" }
+        return try {
+            repository.getString(USER_KEY)?.parseJson<UserModel>()?.toUser().also {
+                log.debug { "User loaded [$it]" }
+            }
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while load user: $e" }
+            null
         }
     }
 
     private fun saveUser(user: User) {
-        repository.putString(USER_KEY, UserModel.from(user).toJson()).also {
-            log.debug { "User saved [$user]" }
+        try {
+            repository.putString(USER_KEY, UserModel.from(user).toJson()).also {
+                log.debug { "User saved [$user]" }
+            }
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while save user: $e" }
         }
     }
 
