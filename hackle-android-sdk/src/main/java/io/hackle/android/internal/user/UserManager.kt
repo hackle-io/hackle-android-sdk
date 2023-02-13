@@ -50,15 +50,15 @@ internal class UserManager(
 
     fun setDeviceId(deviceId: String): User {
         return synchronized(LOCK) {
-            val newUser = _currentUser.toBuilder().deviceId(deviceId).build()
-            updateUser(newUser)
+            val user = _currentUser.toBuilder().deviceId(deviceId).build()
+            updateUser(user)
         }
     }
 
     fun setUserProperty(key: String, value: Any?): User {
         return synchronized(LOCK) {
-            val newUser = _currentUser.toBuilder().property(key, value).build()
-            updateUser(newUser)
+            val user = _currentUser.toBuilder().property(key, value).build()
+            updateUser(user)
         }
     }
 
