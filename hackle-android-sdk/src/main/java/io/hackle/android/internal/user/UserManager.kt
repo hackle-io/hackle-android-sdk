@@ -1,34 +1,90 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.database.KeyValueRepository
+import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
+import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
+import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.toJson
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.internal.time.Clock
 
-internal class UserManager {
+internal class UserManager(
+    device: Device,
+    private val repository: KeyValueRepository,
+) : AppStateChangeListener {
 
     private val userListeners = mutableListOf<UserListener>()
-    private var currentUser: HackleUser? = null
+    private val defaultUser = User.builder().deviceId(device.id).build()
+
+    private var _currentUser: User = defaultUser
+    val currentUser: User get() = synchronized(LOCK) { _currentUser }
 
     fun addListener(listener: UserListener) {
         userListeners.add(listener)
         log.debug { "UserListener added [${listener::class.java.simpleName}]" }
     }
 
-    fun updateUser(user: HackleUser) {
-        if (isUserChanged(nextUser = user)) {
-            changeUser(user, System.currentTimeMillis())
+    fun initialize(user: User?) {
+        synchronized(LOCK) {
+            _currentUser = user ?: loadUser() ?: defaultUser
+            log.debug { "UserManager initialized [$_currentUser]" }
         }
-        currentUser = user
     }
 
-    private fun isUserChanged(nextUser: HackleUser): Boolean {
-        val currentUser = currentUser ?: return false
-        return !currentUser.isSameUser(next = nextUser)
+    fun setUser(user: User): User {
+        return synchronized(LOCK) {
+            updateUser(user)
+        }
     }
 
-    private fun changeUser(user: HackleUser, timestamp: Long) {
+    fun setUserId(userId: String?): User {
+        return synchronized(LOCK) {
+            val user = _currentUser.toBuilder().userId(userId).build()
+            updateUser(user)
+        }
+    }
+
+    fun setDeviceId(deviceId: String): User {
+        return synchronized(LOCK) {
+            val user = _currentUser.toBuilder().deviceId(deviceId).build()
+            updateUser(user)
+        }
+    }
+
+    fun setUserProperty(key: String, value: Any?): User {
+        return synchronized(LOCK) {
+            val user = _currentUser.toBuilder().property(key, value).build()
+            updateUser(user)
+        }
+    }
+
+    fun resetUser(): User {
+        return synchronized(LOCK) {
+            updateUser(defaultUser)
+        }
+    }
+
+    private fun updateUser(user: User): User {
+        val oldUser = this._currentUser
+        val newUser = user.mergeWith(oldUser)
+        _currentUser = newUser
+
+        if (!newUser.identifierEquals(oldUser)) {
+            changeUser(oldUser, newUser, Clock.SYSTEM.currentMillis())
+        }
+
+        log.debug { "User updated [$_currentUser]" }
+        return newUser
+    }
+
+    private fun changeUser(oldUser: User, newUser: User, timestamp: Long) {
         for (listener in userListeners) {
             try {
-                listener.onUserUpdated(user, timestamp)
+                listener.onUserUpdated(oldUser, newUser, timestamp)
             } catch (e: Exception) {
                 log.error { "Failed to onUserUpdated [${listener::class.java.simpleName}]: $e" }
             }
@@ -36,15 +92,59 @@ internal class UserManager {
         log.debug { "User changed" }
     }
 
-    companion object {
-        private val log = Logger<UserManager>()
+    private fun loadUser(): User? {
+        return repository.getString(USER_KEY)?.parseJson<UserModel>()?.toUser().also {
+            log.debug { "User loaded [$it]" }
+        }
     }
-}
 
-private fun HackleUser.isSameUser(next: HackleUser): Boolean {
-    return if (this.userId != null && next.userId != null) {
-        this.userId == next.userId
-    } else {
-        this.deviceId == next.deviceId
+    private fun saveUser(user: User) {
+        repository.putString(USER_KEY, UserModel.from(user).toJson()).also {
+            log.debug { "User saved [$user]" }
+        }
+    }
+
+    override fun onChanged(state: AppState, timestamp: Long) {
+        return when (state) {
+            FOREGROUND -> Unit
+            BACKGROUND -> saveUser(currentUser)
+        }
+    }
+
+    private data class UserModel(
+        val id: String?,
+        val userId: String?,
+        val deviceId: String?,
+        val identifiers: Map<String, String>,
+        val properties: Map<String, Any?>,
+    ) {
+
+        fun toUser(): User {
+            return User.builder()
+                .id(id)
+                .userId(userId)
+                .deviceId(deviceId)
+                .identifiers(identifiers)
+                .properties(properties)
+                .build()
+        }
+
+        companion object {
+            fun from(user: User): UserModel {
+                return UserModel(
+                    id = user.id,
+                    userId = user.userId,
+                    deviceId = user.deviceId,
+                    identifiers = user.identifiers,
+                    properties = user.properties
+                )
+            }
+        }
+    }
+
+    companion object {
+        private val LOCK = Any()
+        private const val USER_KEY = "user"
+        private val log = Logger<UserManager>()
     }
 }

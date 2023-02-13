@@ -6,8 +6,11 @@ import android.os.Bundle
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.Executor
 
-internal class HackleActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
+internal class HackleActivityLifecycleCallbacks(
+    private val eventExecutor: Executor,
+) : Application.ActivityLifecycleCallbacks {
 
     private val listeners = mutableListOf<AppStateChangeListener>()
 
@@ -35,11 +38,13 @@ internal class HackleActivityLifecycleCallbacks : Application.ActivityLifecycleC
     override fun onActivityDestroyed(activity: Activity) {}
 
     private fun dispatch(state: AppState, timestamp: Long) {
-        for (listener in listeners) {
-            try {
-                listener.onChanged(state, timestamp)
-            } catch (e: Exception) {
-                log.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $e" }
+        eventExecutor.execute {
+            for (listener in listeners) {
+                try {
+                    listener.onChanged(state, timestamp)
+                } catch (e: Exception) {
+                    log.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $e" }
+                }
             }
         }
     }
