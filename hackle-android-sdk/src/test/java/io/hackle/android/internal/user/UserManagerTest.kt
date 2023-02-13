@@ -1,140 +1,157 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.database.MapKeyValueRepository
+import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.user.HackleUser
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isEqualTo
+import strikt.assertions.*
 
 class UserManagerTest {
 
-    private lateinit var update: MutableList<Pair<HackleUser, Long>>
 
-    private fun sut(): UserManager {
-        update = mutableListOf()
-        return UserManager().also {
-            it.addListener(object : UserListener {
-                override fun onUserUpdated(user: HackleUser, timestamp: Long) {
-                    update.add(user to timestamp)
-                }
-            })
-        }
-    }
+    @Test
+    fun `initialize - User 설정한 경우`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
 
-    private fun updateUser(
-        u1: Pair<String?, String?>,
-        u2: Pair<String?, String?>,
-        isSame: Boolean,
-    ) {
+        val user = User.of("hello")
+        userManager.initialize(user)
 
-        val sut = sut()
-
-        val user1 = HackleUser.of(User.builder()
-            .userId(u1.first)
-            .deviceId(u1.second)
-            .build())
-
-        val user2 = HackleUser.of(User.builder()
-            .userId(u2.first)
-            .deviceId(u2.second)
-            .build())
-
-        sut.updateUser(user1)
-        sut.updateUser(user2)
-
-        expectThat(update.size).isEqualTo(if (isSame) 0 else 1)
+        expectThat(userManager.currentUser) isSameInstanceAs user
     }
 
     @Test
-    fun `updateUser`() {
-        updateUser(null to null, null to null, true)
-        updateUser(null to null, null to "a", false)
-        updateUser(null to null, null to "b", false)
-        updateUser(null to null, "a" to null, true)
-        updateUser(null to null, "a" to "a", false)
-        updateUser(null to null, "a" to "b", false)
-        updateUser(null to null, "b" to null, true)
-        updateUser(null to null, "b" to "a", false)
-        updateUser(null to null, "b" to "b", false)
+    fun `initialize - from repository`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val user = User.builder("id")
+            .userId("userId")
+            .deviceId("deviceId")
+            .identifier("customId", "customValue")
+            .property("string", "value")
+            .property("int", 42)
+            .property("long", 42L)
+            .property("boolean", false)
+            .property("null", null)
+            .build()
+        repository.putString("user", user.toJson())
+        val userManager = UserManager(device, repository)
 
-        updateUser(null to "a", null to null, false)
-        updateUser(null to "a", null to "a", true)
-        updateUser(null to "a", null to "b", false)
-        updateUser(null to "a", "a" to null, false)
-        updateUser(null to "a", "a" to "a", true)
-        updateUser(null to "a", "a" to "b", false)
-        updateUser(null to "a", "b" to null, false)
-        updateUser(null to "a", "b" to "a", true)
-        updateUser(null to "a", "b" to "b", false)
+        userManager.initialize(null)
 
-        updateUser(null to "b", null to null, false)
-        updateUser(null to "b", null to "a", false)
-        updateUser(null to "b", null to "b", true)
-        updateUser(null to "b", "a" to null, false)
-        updateUser(null to "b", "a" to "a", false)
-        updateUser(null to "b", "a" to "b", true)
-        updateUser(null to "b", "b" to null, false)
-        updateUser(null to "b", "b" to "a", false)
-        updateUser(null to "b", "b" to "b", true)
+        expectThat(userManager.currentUser) {
+            get { identifiers } isEqualTo user.identifiers
+            get { properties }.and {
+                get("string") isEqualTo "value"
+                get("int") isEqualTo 42.0
+                get("long") isEqualTo 42.0
+                get("boolean") isEqualTo false
+            }
+        }
+    }
 
-        updateUser("a" to null, null to null, true)
-        updateUser("a" to null, null to "a", false)
-        updateUser("a" to null, null to "b", false)
-        updateUser("a" to null, "a" to null, true)
-        updateUser("a" to null, "a" to "a", true)
-        updateUser("a" to null, "a" to "b", true)
-        updateUser("a" to null, "b" to null, false)
-        updateUser("a" to null, "b" to "a", false)
-        updateUser("a" to null, "b" to "b", false)
+    @Test
+    fun `initialize - from repository null`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+        userManager.initialize(null)
+        expectThat(userManager.currentUser).isEqualTo(User.builder().deviceId("test_device_id").build())
+    }
 
-        updateUser("a" to "a", null to null, false)
-        updateUser("a" to "a", null to "a", true)
-        updateUser("a" to "a", null to "b", false)
-        updateUser("a" to "a", "a" to null, true)
-        updateUser("a" to "a", "a" to "a", true)
-        updateUser("a" to "a", "a" to "b", true)
-        updateUser("a" to "a", "b" to null, false)
-        updateUser("a" to "a", "b" to "a", false)
-        updateUser("a" to "a", "b" to "b", false)
+    @Test
+    fun `setUser - 기존 사용자와 다른 경우`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+        val listener = UserListenerStub()
+        userManager.addListener(listener)
 
-        updateUser("a" to "b", null to null, false)
-        updateUser("a" to "b", null to "a", false)
-        updateUser("a" to "b", null to "b", true)
-        updateUser("a" to "b", "a" to null, true)
-        updateUser("a" to "b", "a" to "a", true)
-        updateUser("a" to "b", "a" to "b", true)
-        updateUser("a" to "b", "b" to null, false)
-        updateUser("a" to "b", "b" to "a", false)
-        updateUser("a" to "b", "b" to "b", false)
+        val user = User.builder().deviceId("42").build()
+        val actual = userManager.setUser(user)
 
-        updateUser("b" to null, null to null, true)
-        updateUser("b" to null, null to "a", false)
-        updateUser("b" to null, null to "b", false)
-        updateUser("b" to null, "a" to null, false)
-        updateUser("b" to null, "a" to "a", false)
-        updateUser("b" to null, "a" to "b", false)
-        updateUser("b" to null, "b" to null, true)
-        updateUser("b" to null, "b" to "a", true)
-        updateUser("b" to null, "b" to "b", true)
+        expectThat(actual) isEqualTo user
+        expectThat(listener.history) {
+            hasSize(1)
+            first().and {
+                get { first } isEqualTo User.builder().deviceId("test_device_id").build()
+                get { second } isEqualTo user
+                get { third } isGreaterThan 0
+            }
+        }
+    }
 
-        updateUser("b" to "a", null to null, false)
-        updateUser("b" to "a", null to "a", true)
-        updateUser("b" to "a", null to "b", false)
-        updateUser("b" to "a", "a" to null, false)
-        updateUser("b" to "a", "a" to "a", false)
-        updateUser("b" to "a", "a" to "b", false)
-        updateUser("b" to "a", "b" to null, true)
-        updateUser("b" to "a", "b" to "a", true)
-        updateUser("b" to "a", "b" to "b", true)
+    @Test
+    fun `setUser - 기존 사용자와 다른 경우 2`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+        val listener = UserListenerStub()
+        userManager.addListener(listener)
 
-        updateUser("b" to "b", null to null, false)
-        updateUser("b" to "b", null to "a", false)
-        updateUser("b" to "b", null to "b", true)
-        updateUser("b" to "b", "a" to null, false)
-        updateUser("b" to "b", "a" to "a", false)
-        updateUser("b" to "b", "a" to "b", false)
-        updateUser("b" to "b", "b" to null, true)
-        updateUser("b" to "b", "b" to "a", true)
-        updateUser("b" to "b", "b" to "b", true)
+        val oldUser = User.builder().deviceId("a").property("a", "a").build()
+        val newUser = User.builder().deviceId("b").property("b", "b").build()
+
+        userManager.initialize(oldUser)
+        val actual = userManager.setUser(newUser)
+
+        expectThat(actual).isEqualTo(newUser)
+        expectThat(listener.history) {
+            hasSize(1)
+            first().and {
+                get { first } isEqualTo oldUser
+                get { second } isEqualTo newUser
+                get { third } isGreaterThan 0
+            }
+        }
+    }
+
+    @Test
+    fun `setUser - 기존 사용자와 같은 사용자인 경우`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+        val listener = UserListenerStub()
+        userManager.addListener(listener)
+
+        val oldUser = User.builder().deviceId("a").property("a", "a").build()
+        val newUser = User.builder().deviceId("a").property("b", "b").build()
+
+        userManager.initialize(oldUser)
+        val actual = userManager.setUser(newUser)
+
+        expectThat(actual).isEqualTo(
+            User.builder().deviceId("a").property("a", "a").property("b", "b").build()
+        )
+        expectThat(listener.history).hasSize(0)
+    }
+
+    @Test
+    fun `onChange - 현재 유저를 저장한다`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+        val listener = UserListenerStub()
+        userManager.addListener(listener)
+
+        val user = User.builder().deviceId("a").property("a", "a").build()
+        userManager.initialize(user)
+        userManager.onChanged(AppState.BACKGROUND, 42)
+
+        expectThat(repository.getString("user"))
+            .isNotNull()
+            .isEqualTo(user.toJson())
+    }
+
+    private class UserListenerStub : UserListener {
+
+        val history = mutableListOf<Triple<User, User, Long>>()
+        override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
+            history += Triple(oldUser, newUser, timestamp)
+        }
     }
 }
