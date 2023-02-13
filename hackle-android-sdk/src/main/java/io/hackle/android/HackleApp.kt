@@ -1,12 +1,12 @@
 package io.hackle.android
 
 import android.content.Context
-import io.hackle.android.internal.lifecycle.AppInitializeListener
+import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
-import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
@@ -18,20 +18,24 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.internal.metrics.Timer
+import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
+import java.util.concurrent.Executor
 
 /**
  * Entry point of Hackle Sdk.
  */
 class HackleApp internal constructor(
+    private val clock: Clock,
     private val client: HackleInternalClient,
+    private val eventExecutor: Executor,
     private val workspaceCacheHandler: WorkspaceCacheHandler,
-    private val userResolver: HackleUserResolver,
-    private val device: Device,
+    private val hackleUserResolver: HackleUserResolver,
+    private val userManager: UserManager,
     private val sessionManager: SessionManager,
-    private val listeners: List<AppInitializeListener>,
+    private val eventProcessor: DefaultEventProcessor,
+    private val device: Device,
 ) : Closeable {
 
     /**
@@ -44,67 +48,59 @@ class HackleApp internal constructor(
      */
     val sessionId: String get() = sessionManager.requiredSession.id
 
-    /**
-     * Decide the variation to expose to the user for experiment.
-     *
-     * This method return the [defaultVariation] if:
-     * - SDK is not ready
-     * - The experiment key is invalid
-     * - The experiment has not started yet
-     * - The user is not allocated to the experiment
-     * - The decided variation has been dropped
-     *
-     * @param experimentKey    the unique key of the experiment.
-     * @param userId           the identifier of user to participate in the experiment. MUST NOT be null.
-     * @param defaultVariation the default variation of the experiment. MUST NOT be null.
-     *
-     * @return the decided variation for the user, or [defaultVariation]
-     */
-    @JvmOverloads
-    fun variation(
-        experimentKey: Long,
-        userId: String = deviceId,
-        defaultVariation: Variation = CONTROL,
-    ): Variation {
-        return variation(experimentKey, User.of(userId), defaultVariation)
+    val user: User get() = userManager.currentUser
+
+    fun setUser(user: User) {
+        try {
+            userManager.setUser(user)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set user: $e" }
+        }
+    }
+
+    fun setUserId(userId: String?) {
+        try {
+            userManager.setUserId(userId)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set userId: $e" }
+        }
+    }
+
+    fun setDeviceId(deviceId: String) {
+        try {
+            userManager.setDeviceId(deviceId)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set deviceId: $e" }
+        }
+    }
+
+    fun setUserProperty(key: String, value: Any?) {
+        try {
+            userManager.setUserProperty(key, value)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set userProperty: $e" }
+        }
+    }
+
+    fun resetUser() {
+        try {
+            userManager.resetUser()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while reset user: $e" }
+        }
     }
 
     /**
      * Decide the variation to expose to the user for experiment.
      *
      * @param experimentKey    the unique key of the experiment.
-     * @param user             the user to participate in the experiment. MUST NOT be null.
      * @param defaultVariation the default variation of the experiment. MUST NOT be null.
      *
      * @return the decided variation for the user, or [defaultVariation]
      */
     @JvmOverloads
-    fun variation(
-        experimentKey: Long,
-        user: User,
-        defaultVariation: Variation = CONTROL,
-    ): Variation {
-        return variationDetail(experimentKey, user, defaultVariation).variation
-    }
-
-
-    /**
-     * Decide the variation to expose to the user for experiment, and returns an object that
-     * describes the way the variation was decided.
-     *
-     * @param experimentKey    the unique key of the experiment.
-     * @param userId           the identifier of user to participate in the experiment. MUST NOT be null.
-     * @param defaultVariation the default variation of the experiment. MUST NOT be null.
-     *
-     * @return a [Decision] object
-     */
-    @JvmOverloads
-    fun variationDetail(
-        experimentKey: Long,
-        userId: String = deviceId,
-        defaultVariation: Variation = CONTROL,
-    ): Decision {
-        return variationDetail(experimentKey, User.of(userId), defaultVariation)
+    fun variation(experimentKey: Long, defaultVariation: Variation = CONTROL): Variation {
+        return variationDetail(experimentKey, defaultVariation).variation
     }
 
     /**
@@ -112,43 +108,42 @@ class HackleApp internal constructor(
      * describes the way the variation was decided.
      *
      * @param experimentKey    the unique key for the experiment.
-     * @param user             the user to participate in the experiment. MUST NOT be null.
      * @param defaultVariation the default variation of the experiment. MUST NOT be null.
      *
      * @return a [Decision] object
      */
     @JvmOverloads
-    fun variationDetail(
+    fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
+        return variationDetailInternal(experimentKey, userManager.currentUser, defaultVariation)
+    }
+
+    private fun variationDetailInternal(
         experimentKey: Long,
         user: User,
-        defaultVariation: Variation = CONTROL,
+        defaultVariation: Variation,
     ): Decision {
-        val sample = Timer.start()
         return try {
-            val hackleUser = userResolver.resolveOrNull(user)
-                ?: return Decision.of(defaultVariation, DecisionReason.INVALID_INPUT)
+            val hackleUser = hackleUserResolver.resolve(user)
             client.experiment(experimentKey, hackleUser, defaultVariation)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
             Decision.of(defaultVariation, DecisionReason.EXCEPTION)
-        }.also {
-            DecisionMetrics.experiment(sample, experimentKey, it)
         }
     }
 
     /**
      * Decide the variations for all experiments, and returns a map of decision results.
      *
-     * @param user the user requesting the experiments
-     *
      * @return key   - experimentKey
      *         value - decision result
-     *
-     * @since 2.8.0
      */
-    fun allVariationDetails(user: User): Map<Long, Decision> {
+    fun allVariationDetails(): Map<Long, Decision> {
+        return allVariationDetailsInternal(userManager.currentUser)
+    }
+
+    private fun allVariationDetailsInternal(user: User): Map<Long, Decision> {
         return try {
-            val hackleUser = userResolver.resolveOrNull(user) ?: return hashMapOf()
+            val hackleUser = hackleUserResolver.resolve(user)
             client.experiments(hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variations for all experiments: $t" }
@@ -160,31 +155,14 @@ class HackleApp internal constructor(
      * Decide whether the feature is turned on to the user.
      *
      * @param featureKey the unique key for the feature.
-     * @param userId     the identifier of user.
      *
      * @return True if the feature is on.
      *         False if the feature is off.
      *
      * @since 2.0.0
      */
-    @JvmOverloads
-    fun isFeatureOn(featureKey: Long, userId: String = deviceId): Boolean {
-        return featureFlagDetail(featureKey, User.of(userId)).isOn
-    }
-
-    /**
-     * Decide whether the feature is turned on to the user.
-     *
-     * @param featureKey the unique key for the feature.
-     * @param user       the user requesting the feature.
-     *
-     * @return True if the feature is on.
-     *         False if the feature is off.
-     *
-     * @since 2.0.0
-     */
-    fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        return featureFlagDetail(featureKey, user).isOn
+    fun isFeatureOn(featureKey: Long): Boolean {
+        return featureFlagDetail(featureKey).isOn
     }
 
     /**
@@ -192,39 +170,20 @@ class HackleApp internal constructor(
      * describes the way the flag was decided.
      *
      * @param featureKey the unique key for the feature.
-     * @param userId     the identifier of user.
      *
      * @return a [FeatureFlagDecision] object
-     *
-     * @since 2.0.0
      */
-    @JvmOverloads
-    fun featureFlagDetail(featureKey: Long, userId: String = deviceId): FeatureFlagDecision {
-        return featureFlagDetail(featureKey, User.of(userId))
+    fun featureFlagDetail(featureKey: Long): FeatureFlagDecision {
+        return featureFlagDetailInternal(featureKey, userManager.currentUser)
     }
 
-    /**
-     * Decide whether the feature is turned on to the user, and returns an object that
-     * describes the way the flag was decided.
-     *
-     * @param featureKey the unique key for the feature.
-     * @param user       the user requesting the feature.
-     *
-     * @return a [FeatureFlagDecision] object
-     *
-     * @since 2.0.0
-     */
-    fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        val sample = Timer.start()
+    private fun featureFlagDetailInternal(featureKey: Long, user: User): FeatureFlagDecision {
         return try {
-            val hackleUser = userResolver.resolveOrNull(user)
-                ?: return FeatureFlagDecision.off(DecisionReason.INVALID_INPUT)
+            val hackleUser = hackleUserResolver.resolve(user)
             client.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
             FeatureFlagDecision.off(DecisionReason.EXCEPTION)
-        }.also {
-            DecisionMetrics.featureFlag(sample, featureKey, it)
         }
     }
 
@@ -232,44 +191,24 @@ class HackleApp internal constructor(
      * Records the event that occurred by the user.
      *
      * @param eventKey the unique key of the event that occurred. MUST NOT be null.
-     * @param userId   the identifier of user that occurred the event. MUST NOT be null.
      */
-    @JvmOverloads
-    fun track(eventKey: String, userId: String = deviceId) {
-        track(Event.of(eventKey), User.of(userId))
+    fun track(eventKey: String) {
+        track(Event.of(eventKey))
     }
 
     /**
      * Records the event that occurred by the user.
      *
      * @param event  the event that occurred. MUST NOT be null.
-     * @param userId the identifier of user that occurred the event. MUST NOT be null.
      */
-    @JvmOverloads
-    fun track(event: Event, userId: String = deviceId) {
-        track(event, User.of(userId))
+    fun track(event: Event) {
+        trackInternal(event, userManager.currentUser)
     }
 
-    /**
-     * Records the event that occurred by the user.
-     *
-     * @param eventKey the unique key of the event that occurred. MUST NOT be null.
-     * @param user     the user that occurred the event. MUST NOT be null.
-     */
-    fun track(eventKey: String, user: User) {
-        track(Event.of(eventKey), user)
-    }
-
-    /**
-     * Records the event that occurred by the user.
-     *
-     * @param event the event that occurred. MUST NOT be null.
-     * @param user  the user that occurred the event. MUST NOT be null.
-     */
-    fun track(event: Event, user: User) {
+    private fun trackInternal(event: Event, user: User) {
         try {
-            val hackleUser = userResolver.resolveOrNull(user) ?: return
-            client.track(event, hackleUser)
+            val hackleUser = hackleUserResolver.resolve(user)
+            client.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
         }
@@ -278,24 +217,139 @@ class HackleApp internal constructor(
     /**
      * Returns a instance of Hackle Remote Config.
      */
-    @JvmOverloads
-    fun remoteConfig(user: User = User.of(deviceId)): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, client, userResolver)
+    fun remoteConfig(): HackleRemoteConfig {
+        return HackleRemoteConfigImpl(null, client, userManager, hackleUserResolver)
     }
 
     override fun close() {
         client.tryClose()
     }
 
-    internal fun initialize(onReady: () -> Unit) = apply {
-        for (listener in listeners) {
+    internal fun initialize(user: User?, onReady: Runnable) = apply {
+        userManager.initialize(user)
+        eventExecutor.execute {
             try {
-                listener.onInitialized()
-            } catch (e: Exception) {
-                log.error { "Failed to onInitialized [${listener::class.java.simpleName}]: $e" }
+                sessionManager.initialize()
+                eventProcessor.initialize()
+                workspaceCacheHandler.fetchAndCache()
+                log.debug { "HackleApp initialized" }
+            } catch (e: Throwable) {
+                log.error { "Failed to initialize HackleApp: $e" }
+            } finally {
+                onReady.run()
             }
         }
-        workspaceCacheHandler.fetchAndCache(onReady)
+    }
+
+    // Deprecated
+
+    @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
+    @JvmOverloads
+    fun variation(
+        experimentKey: Long,
+        userId: String,
+        defaultVariation: Variation = CONTROL,
+    ): Variation {
+        val updatedUser = userManager.setUser(User.of(userId))
+        return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
+    }
+
+    @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
+    @JvmOverloads
+    fun variation(
+        experimentKey: Long,
+        user: User,
+        defaultVariation: Variation = CONTROL,
+    ): Variation {
+        val updatedUser = userManager.setUser(user)
+        return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
+    }
+
+    @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
+    @JvmOverloads
+    fun variationDetail(
+        experimentKey: Long,
+        userId: String,
+        defaultVariation: Variation = CONTROL,
+    ): Decision {
+        val updatedUser = userManager.setUser(User.of(userId))
+        return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
+    }
+
+    @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
+    @JvmOverloads
+    fun variationDetail(
+        experimentKey: Long,
+        user: User,
+        defaultVariation: Variation = CONTROL,
+    ): Decision {
+        val updatedUser = userManager.setUser(user)
+        return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
+    }
+
+    @Deprecated("Use allVariationDetails() with setUser(user) instead.")
+    fun allVariationDetails(user: User): Map<Long, Decision> {
+        return try {
+            val updatedUser = userManager.setUser(user)
+            val hackleUser = hackleUserResolver.resolve(updatedUser)
+            client.experiments(hackleUser)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding variations for all experiments: $t" }
+            hashMapOf()
+        }
+    }
+
+    @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
+    fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
+        val updatedUser = userManager.setUser(User.of(userId))
+        return featureFlagDetailInternal(featureKey, updatedUser)
+    }
+
+    @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
+    fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
+        val updatedUser = userManager.setUser(user)
+        return featureFlagDetailInternal(featureKey, updatedUser)
+    }
+
+    @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
+    fun isFeatureOn(featureKey: Long, userId: String): Boolean {
+        val updatedUser = userManager.setUser(User.of(userId))
+        return featureFlagDetailInternal(featureKey, updatedUser).isOn
+    }
+
+    @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
+    fun isFeatureOn(featureKey: Long, user: User): Boolean {
+        val updatedUser = userManager.setUser(user)
+        return featureFlagDetailInternal(featureKey, updatedUser).isOn
+    }
+
+    @Deprecated("Use track(eventKey) with setUser(user) instead.")
+    fun track(eventKey: String, userId: String) {
+        val updatedUser = userManager.setUser(User.of(userId))
+        trackInternal(Event.of(eventKey), updatedUser)
+    }
+
+    @Deprecated("Use track(eventKey) with setUser(user) instead.")
+    fun track(event: Event, userId: String) {
+        val updatedUser = userManager.setUser(User.of(userId))
+        trackInternal(event, updatedUser)
+    }
+
+    @Deprecated("Use track(eventKey) with setUser(user) instead.")
+    fun track(eventKey: String, user: User) {
+        val updatedUser = userManager.setUser(user)
+        trackInternal(Event.of(eventKey), updatedUser)
+    }
+
+    @Deprecated("Use track(eventKey) with setUser(user) instead.")
+    fun track(event: Event, user: User) {
+        val updatedUser = userManager.setUser(user)
+        trackInternal(event, updatedUser)
+    }
+
+    @Deprecated("Use remoteConfig() with setUser(user) instead.")
+    fun remoteConfig(user: User): HackleRemoteConfig {
+        return HackleRemoteConfigImpl(user, client, userManager, hackleUserResolver)
     }
 
     companion object {
@@ -317,6 +371,18 @@ class HackleApp internal constructor(
             }
         }
 
+        @JvmOverloads
+        @JvmStatic
+        fun initializeApp(
+            context: Context,
+            sdkKey: String,
+            user: User?,
+            config: HackleConfig = HackleConfig.DEFAULT,
+            onReady: Runnable = Runnable { },
+        ): HackleApp {
+            return initializeAppInternal(context, sdkKey, user, config, onReady)
+        }
+
         /**
          * Initialized the HackleApp instance.
          *
@@ -333,13 +399,7 @@ class HackleApp internal constructor(
             config: HackleConfig = HackleConfig.DEFAULT,
             onReady: Runnable = Runnable { },
         ): HackleApp {
-            return synchronized(LOCK) {
-                INSTANCE?.also { onReady.run() }
-                    ?: HackleApps
-                        .create(context.applicationContext, sdkKey, config)
-                        .initialize { onReady.run() }
-                        .also { INSTANCE = it }
-            }
+            return initializeAppInternal(context, sdkKey, null, config, onReady)
         }
 
         /**
@@ -355,7 +415,23 @@ class HackleApp internal constructor(
             sdkKey: String,
             onReady: Runnable,
         ): HackleApp {
-            return initializeApp(context, sdkKey, HackleConfig.DEFAULT, onReady)
+            return initializeAppInternal(context, sdkKey, null, HackleConfig.DEFAULT, onReady)
+        }
+
+        private fun initializeAppInternal(
+            context: Context,
+            sdkKey: String,
+            user: User?,
+            config: HackleConfig,
+            onReady: Runnable,
+        ): HackleApp {
+            return synchronized(LOCK) {
+                INSTANCE?.also { onReady.run() }
+                    ?: HackleApps
+                        .create(context.applicationContext, sdkKey, config)
+                        .initialize(user, onReady)
+                        .also { INSTANCE = it }
+            }
         }
     }
 }
