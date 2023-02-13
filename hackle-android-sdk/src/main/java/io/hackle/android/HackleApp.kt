@@ -347,7 +347,7 @@ class HackleApp internal constructor(
         trackInternal(event, updatedUser)
     }
 
-    @Deprecated("User remoteConfig() with setUser(user) instead.")
+    @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
         return HackleRemoteConfigImpl(user, client, userManager, hackleUserResolver)
     }

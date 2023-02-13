@@ -46,5 +46,5 @@ fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, 
 fun Hackle.resetUser() = app.resetUser()
 
 
-@Deprecated("User remoteConfig() with setUser(user) instead")
+@Deprecated("Use remoteConfig() with setUser(user) instead")
 fun Hackle.remoteConfig(user: User) = app.remoteConfig(user)
