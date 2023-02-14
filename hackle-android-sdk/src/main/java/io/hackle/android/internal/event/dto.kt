@@ -30,8 +30,8 @@ internal data class ExposureEventDto(
 
     val userId: String?,
     val identifiers: Map<String, String>,
-    val userProperties: Map<String, Any?>,
-    val hackleProperties: Map<String, Any?>,
+    val userProperties: Map<String, Any>,
+    val hackleProperties: Map<String, Any>,
 
     val experimentId: Long,
     val experimentKey: Long,
@@ -40,7 +40,7 @@ internal data class ExposureEventDto(
     val variationId: Long?,
     val variationKey: String,
     val decisionReason: String,
-    val properties: Map<String, Any?>,
+    val properties: Map<String, Any>,
 )
 
 internal data class TrackEventDto(
@@ -49,13 +49,13 @@ internal data class TrackEventDto(
 
     val userId: String?,
     val identifiers: Map<String, String>,
-    val userProperties: Map<String, Any?>,
-    val hackleProperties: Map<String, Any?>,
+    val userProperties: Map<String, Any>,
+    val hackleProperties: Map<String, Any>,
 
     val eventTypeId: Long,
     val eventTypeKey: String,
     val value: Double?,
-    val properties: Map<String, Any?>,
+    val properties: Map<String, Any>,
 )
 
 internal data class RemoteConfigEventDto(
@@ -64,15 +64,15 @@ internal data class RemoteConfigEventDto(
 
     val userId: String?,
     val identifiers: Map<String, String>,
-    val userProperties: Map<String, Any?>,
-    val hackleProperties: Map<String, Any?>,
+    val userProperties: Map<String, Any>,
+    val hackleProperties: Map<String, Any>,
 
     val parameterId: Long,
     val parameterKey: String,
     val parameterType: String,
     val decisionReason: String,
     val valueId: Long?,
-    val properties: Map<String, Any?>,
+    val properties: Map<String, Any>,
 )
 
 internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
