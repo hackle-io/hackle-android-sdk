@@ -125,7 +125,7 @@ internal class UserManager(
         val userId: String?,
         val deviceId: String?,
         val identifiers: Map<String, String>,
-        val properties: Map<String, Any?>,
+        val properties: Map<String, Any>,
     ) {
 
         fun toUser(): User {
