@@ -35,6 +35,14 @@ internal class UserManager(
         }
     }
 
+    fun resolve(user: User?): User {
+        return if (user != null) {
+            setUser(user)
+        } else {
+            currentUser
+        }
+    }
+
     fun setUser(user: User): User {
         return synchronized(LOCK) {
             updateUser(user)

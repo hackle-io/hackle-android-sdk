@@ -46,8 +46,8 @@ internal class HackleRemoteConfigImpl(
     ): RemoteConfigDecision<T> {
         val sample = Timer.start()
         return try {
-            val user = this.user?.let { userManager.setUser(it) } ?: userManager.currentUser
-            val hackleUser = hackleUserResolver.resolve(user)
+            val currentUser = userManager.resolve(user)
+            val hackleUser = hackleUserResolver.resolve(currentUser)
             client.remoteConfig(key, hackleUser, requiredType, defaultValue)
         } catch (e: Exception) {
             log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }

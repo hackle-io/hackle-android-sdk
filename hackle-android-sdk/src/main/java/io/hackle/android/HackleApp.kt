@@ -3,6 +3,7 @@ package io.hackle.android
 import android.content.Context
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
@@ -18,6 +19,7 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
 import java.io.Closeable
@@ -114,20 +116,24 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
-        return variationDetailInternal(experimentKey, userManager.currentUser, defaultVariation)
+        return variationDetailInternal(experimentKey, null, defaultVariation)
     }
 
     private fun variationDetailInternal(
         experimentKey: Long,
-        user: User,
+        user: User?,
         defaultVariation: Variation,
     ): Decision {
+        val sample = Timer.start()
         return try {
-            val hackleUser = hackleUserResolver.resolve(user)
+            val currentUser = userManager.resolve(user)
+            val hackleUser = hackleUserResolver.resolve(currentUser)
             client.experiment(experimentKey, hackleUser, defaultVariation)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
             Decision.of(defaultVariation, DecisionReason.EXCEPTION)
+        }.also {
+            DecisionMetrics.experiment(sample, experimentKey, it)
         }
     }
 
@@ -138,12 +144,13 @@ class HackleApp internal constructor(
      *         value - decision result
      */
     fun allVariationDetails(): Map<Long, Decision> {
-        return allVariationDetailsInternal(userManager.currentUser)
+        return allVariationDetailsInternal(null)
     }
 
-    private fun allVariationDetailsInternal(user: User): Map<Long, Decision> {
+    private fun allVariationDetailsInternal(user: User?): Map<Long, Decision> {
         return try {
-            val hackleUser = hackleUserResolver.resolve(user)
+            val currentUser = userManager.resolve(user)
+            val hackleUser = hackleUserResolver.resolve(currentUser)
             client.experiments(hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variations for all experiments: $t" }
@@ -174,16 +181,20 @@ class HackleApp internal constructor(
      * @return a [FeatureFlagDecision] object
      */
     fun featureFlagDetail(featureKey: Long): FeatureFlagDecision {
-        return featureFlagDetailInternal(featureKey, userManager.currentUser)
+        return featureFlagDetailInternal(featureKey, null)
     }
 
-    private fun featureFlagDetailInternal(featureKey: Long, user: User): FeatureFlagDecision {
+    private fun featureFlagDetailInternal(featureKey: Long, user: User?): FeatureFlagDecision {
+        val sample = Timer.start()
         return try {
-            val hackleUser = hackleUserResolver.resolve(user)
+            val currentUser = userManager.resolve(user)
+            val hackleUser = hackleUserResolver.resolve(currentUser)
             client.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
             FeatureFlagDecision.off(DecisionReason.EXCEPTION)
+        }.also {
+            DecisionMetrics.featureFlag(sample, featureKey, it)
         }
     }
 
@@ -202,12 +213,13 @@ class HackleApp internal constructor(
      * @param event  the event that occurred. MUST NOT be null.
      */
     fun track(event: Event) {
-        trackInternal(event, userManager.currentUser)
+        trackInternal(event, null)
     }
 
-    private fun trackInternal(event: Event, user: User) {
+    private fun trackInternal(event: Event, user: User?) {
         try {
-            val hackleUser = hackleUserResolver.resolve(user)
+            val currentUser = userManager.resolve(user)
+            val hackleUser = hackleUserResolver.resolve(currentUser)
             client.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
@@ -250,8 +262,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        val updatedUser = userManager.setUser(User.of(userId))
-        return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
+        return variationDetailInternal(experimentKey, User.of(userId), defaultVariation).variation
     }
 
     @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
@@ -261,8 +272,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        val updatedUser = userManager.setUser(user)
-        return variationDetailInternal(experimentKey, updatedUser, defaultVariation).variation
+        return variationDetailInternal(experimentKey, user, defaultVariation).variation
     }
 
     @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
@@ -272,8 +282,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        val updatedUser = userManager.setUser(User.of(userId))
-        return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
+        return variationDetailInternal(experimentKey, User.of(userId), defaultVariation)
     }
 
     @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
@@ -283,68 +292,52 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        val updatedUser = userManager.setUser(user)
-        return variationDetailInternal(experimentKey, updatedUser, defaultVariation)
+        return variationDetailInternal(experimentKey, user, defaultVariation)
     }
 
     @Deprecated("Use allVariationDetails() with setUser(user) instead.")
     fun allVariationDetails(user: User): Map<Long, Decision> {
-        return try {
-            val updatedUser = userManager.setUser(user)
-            val hackleUser = hackleUserResolver.resolve(updatedUser)
-            client.experiments(hackleUser)
-        } catch (t: Throwable) {
-            log.error { "Unexpected exception while deciding variations for all experiments: $t" }
-            hashMapOf()
-        }
+        return allVariationDetailsInternal(user)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
-        val updatedUser = userManager.setUser(User.of(userId))
-        return featureFlagDetailInternal(featureKey, updatedUser)
+        return featureFlagDetailInternal(featureKey, User.of(userId))
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        val updatedUser = userManager.setUser(user)
-        return featureFlagDetailInternal(featureKey, updatedUser)
+        return featureFlagDetailInternal(featureKey, user)
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, userId: String): Boolean {
-        val updatedUser = userManager.setUser(User.of(userId))
-        return featureFlagDetailInternal(featureKey, updatedUser).isOn
+        return featureFlagDetailInternal(featureKey, User.of(userId)).isOn
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        val updatedUser = userManager.setUser(user)
-        return featureFlagDetailInternal(featureKey, updatedUser).isOn
+        return featureFlagDetailInternal(featureKey, user).isOn
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, userId: String) {
-        val updatedUser = userManager.setUser(User.of(userId))
-        trackInternal(Event.of(eventKey), updatedUser)
+        trackInternal(Event.of(eventKey), User.of(userId))
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, userId: String) {
-        val updatedUser = userManager.setUser(User.of(userId))
-        trackInternal(event, updatedUser)
+        trackInternal(event, User.of(userId))
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, user: User) {
-        val updatedUser = userManager.setUser(user)
-        trackInternal(Event.of(eventKey), updatedUser)
+        trackInternal(Event.of(eventKey), user)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, user: User) {
-        val updatedUser = userManager.setUser(user)
-        trackInternal(event, updatedUser)
+        trackInternal(event, user)
     }
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
