@@ -12,5 +12,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 6.5
       - name: Test
         run: gradle :hackle-android-sdk:test
