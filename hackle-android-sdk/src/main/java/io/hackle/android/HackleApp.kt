@@ -1,6 +1,8 @@
 package io.hackle.android
 
+import android.app.Activity
 import android.content.Context
+import io.hackle.android.explorer.HackleUserExplorer
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -40,6 +42,8 @@ class HackleApp internal constructor(
     private val device: Device,
 ) : Closeable {
 
+    private var userExplorer: HackleUserExplorer? = null
+
     /**
      * The user's Device Id.
      */
@@ -51,6 +55,13 @@ class HackleApp internal constructor(
     val sessionId: String get() = sessionManager.requiredSession.id
 
     val user: User get() = userManager.currentUser
+
+    fun showUserExplorer(activity: Activity) {
+        if (userExplorer == null) {
+            userExplorer = HackleUserExplorer()
+        }
+        userExplorer?.show(activity)
+    }
 
     fun setUser(user: User) {
         try {
