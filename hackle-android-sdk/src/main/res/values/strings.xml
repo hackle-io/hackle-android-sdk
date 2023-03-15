@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hackle_logo">hackle_logo</string>
+    <string name="hackle_label_copy">Copy</string>
+    <string name="hackle_label_copied">Copied</string>
+    <string name="hackle_label_user">User</string>
+    <string name="hackle_label_id">ID</string>
+    <string name="hackle_label_device_id">DEVICE ID</string>
+    <string name="hackle_label_user_id">USER ID</string>
+    <string name="hackle_label_not_avail">N/A</string>
+</resources>
