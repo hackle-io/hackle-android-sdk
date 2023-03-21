@@ -2,12 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="48dp"
     android:layout_height="48dp"
-    android:layout_gravity="center"
-    android:background="@color/hackle_transparent">
+    android:background="@color/hackle_transparent"
+    android:clipChildren="false">
 
     <ImageView
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_gravity="center"
         android:contentDescription="@string/hackle_logo"
         android:src="@drawable/hackle_logo" />
 </FrameLayout>

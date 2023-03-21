@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 
 internal interface KeyValueRepository {
 
+    fun getAll(): Map<String, Any>
+
     fun getString(key: String): String?
 
     fun putString(key: String, value: String)
@@ -16,11 +18,20 @@ internal interface KeyValueRepository {
     fun getLong(key: String, defaultValue: Long): Long
 
     fun putLong(key: String, value: Long)
+
+    fun remove(key: String)
+
+    fun clear()
 }
 
 internal class AndroidKeyValueRepository(
     private val preferences: SharedPreferences,
 ) : KeyValueRepository {
+
+    override fun getAll(): Map<String, Any> {
+        @Suppress("UNCHECKED_CAST")
+        return preferences.all as Map<String, Any>
+    }
 
     override fun getString(key: String): String? {
         return preferences.getString(key, null)
@@ -36,6 +47,14 @@ internal class AndroidKeyValueRepository(
 
     override fun putLong(key: String, value: Long) {
         preferences.edit().putLong(key, value).apply()
+    }
+
+    override fun remove(key: String) {
+        preferences.edit().remove(key).apply()
+    }
+
+    override fun clear() {
+        preferences.edit().clear().apply()
     }
 
     companion object {

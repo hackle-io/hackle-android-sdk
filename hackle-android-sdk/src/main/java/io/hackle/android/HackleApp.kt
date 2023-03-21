@@ -2,7 +2,8 @@ package io.hackle.android
 
 import android.app.Activity
 import android.content.Context
-import io.hackle.android.explorer.HackleUserExplorer
+import io.hackle.android.explorer.base.HackleUserExplorer
+import io.hackle.android.explorer.view.HackleUserExplorerView
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -21,6 +22,7 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.client.HackleInternalClient
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
@@ -40,9 +42,10 @@ class HackleApp internal constructor(
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
     private val device: Device,
+    internal val userExplorer: HackleUserExplorer,
 ) : Closeable {
 
-    private var userExplorer: HackleUserExplorer? = null
+    private val userExplorerView: HackleUserExplorerView by lazy { HackleUserExplorerView() }
 
     /**
      * The user's Device Id.
@@ -57,10 +60,8 @@ class HackleApp internal constructor(
     val user: User get() = userManager.currentUser
 
     fun showUserExplorer(activity: Activity) {
-        if (userExplorer == null) {
-            userExplorer = HackleUserExplorer()
-        }
-        userExplorer?.show(activity)
+        userExplorerView.attachTo(activity)
+        Metrics.counter("user.explorer.show").increment()
     }
 
     fun setUser(user: User) {
@@ -163,6 +164,7 @@ class HackleApp internal constructor(
             val currentUser = userManager.resolve(user)
             val hackleUser = hackleUserResolver.resolve(currentUser)
             client.experiments(hackleUser)
+                .mapKeysTo(hashMapOf()) { (experiment, _) -> experiment.key }
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variations for all experiments: $t" }
             hashMapOf()
@@ -430,11 +432,9 @@ class HackleApp internal constructor(
             onReady: Runnable,
         ): HackleApp {
             return synchronized(LOCK) {
-                INSTANCE?.also { onReady.run() }
-                    ?: HackleApps
-                        .create(context.applicationContext, sdkKey, config)
-                        .initialize(user, onReady)
-                        .also { INSTANCE = it }
+                INSTANCE?.also { onReady.run() } ?: HackleApps.create(context.applicationContext,
+                    sdkKey,
+                    config).initialize(user, onReady).also { INSTANCE = it }
             }
         }
     }
