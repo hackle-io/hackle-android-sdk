@@ -24,12 +24,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/hackle_label_feature_flag_key"
                 android:textColor="@color/hackle_black"
-                android:textSize="18dp" />
+                android:textSize="16dp" />
 
             <TextView
                 android:id="@+id/hackle_feature_flag_desc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:text="@string/hackle_label_feature_flag_desc"
                 android:textColor="@color/hackle_dark_gray"
                 android:textSize="12dp" />
