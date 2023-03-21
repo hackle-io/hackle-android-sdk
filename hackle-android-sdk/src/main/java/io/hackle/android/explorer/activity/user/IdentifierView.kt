@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentActivity.CLIPBOARD_SERVICE
 import io.hackle.android.R
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
+import io.hackle.sdk.core.internal.metrics.Metrics
 
 internal class IdentifierView : FrameLayout {
 
@@ -42,6 +43,7 @@ internal class IdentifierView : FrameLayout {
         identifierValue.text = item.value
         copyButton.setOnClickListener {
             copy(item.value)
+            Metrics.counter("user.explorer.identifier.copy").increment()
         }
     }
 
