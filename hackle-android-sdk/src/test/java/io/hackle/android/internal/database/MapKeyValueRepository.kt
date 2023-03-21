@@ -3,6 +3,9 @@ package io.hackle.android.internal.database
 internal class MapKeyValueRepository(
     private val map: MutableMap<String, Any> = mutableMapOf(),
 ) : KeyValueRepository {
+    override fun getAll(): Map<String, Any> {
+        return map
+    }
 
     override fun getString(key: String): String? {
         return map[key] as? String
@@ -19,4 +22,13 @@ internal class MapKeyValueRepository(
     override fun putLong(key: String, value: Long) {
         map[key] = value
     }
+
+    override fun remove(key: String) {
+        map.remove(key)
+    }
+
+    override fun clear() {
+        map.clear()
+    }
+
 }
