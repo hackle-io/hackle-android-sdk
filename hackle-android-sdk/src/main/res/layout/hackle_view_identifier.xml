@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+        <TextView
+            android:id="@+id/hackle_identifier_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/hackle_label_id"
+            android:textColor="@color/hackle_black"
+            android:textSize="14dp" />
+
+        <TextView
+            android:id="@+id/hackle_identifier_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:singleLine="true"
+            android:text="@string/hackle_label_not_avail"
+            android:textColor="@color/hackle_dark_gray"
+            android:textSize="14dp" />
+
+        <Button
+            android:id="@+id/hackle_identifier_value_copy_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:background="@color/hackle_transparent"
+            android:gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="@string/hackle_label_copy"
+            android:textColor="@color/hackle_primary_text_light_disable_only" />
+    </RelativeLayout>
+
+</FrameLayout>

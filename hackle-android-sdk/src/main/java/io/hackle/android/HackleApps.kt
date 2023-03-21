@@ -3,6 +3,8 @@ package io.hackle.android
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import io.hackle.android.explorer.base.HackleUserExplorer
+import io.hackle.android.explorer.storage.HackleUserManualOverrideStorage.Companion.create
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.EventRepository
@@ -108,9 +110,13 @@ internal object HackleApps {
             sessionManager = sessionManager
         )
 
+        val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
+        val ffOverrideStorage = create(context, "${PREFERENCES_NAME}_ff_override_$sdkKey")
+
         val client = HackleCore.client(
             workspaceFetcher = cachedWorkspaceFetcher,
-            eventProcessor = eventProcessor
+            eventProcessor = eventProcessor,
+            manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
         val hackleUserResolver = HackleUserResolver(device)
 
@@ -130,6 +136,14 @@ internal object HackleApps {
 
         metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
 
+        val userExplorer = HackleUserExplorer(
+            client = client,
+            userManager = userManager,
+            hackleUserResolver = hackleUserResolver,
+            abTestOverrideStorage = abOverrideStorage,
+            featureFlagOverrideStorage = ffOverrideStorage
+        )
+
         return HackleApp(
             clock = Clock.SYSTEM,
             client = client,
@@ -139,7 +153,8 @@ internal object HackleApps {
             userManager = userManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
-            device = device
+            device = device,
+            userExplorer = userExplorer
         )
     }
 

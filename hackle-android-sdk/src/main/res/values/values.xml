@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hackle_logo">hackle_logo</string>
+    <string name="hackle_label_copy">COPY</string>
+    <string name="hackle_label_copied">Copied</string>
+    <string name="hackle_label_user">USER</string>
+    <string name="hackle_label_id">ID</string>
+    <string name="hackle_label_device_id">DEVICE ID</string>
+    <string name="hackle_label_user_id">USER ID</string>
+    <string name="hackle_label_not_avail">N/A</string>
+    <string name="hackle_label_experiment_key">EXPERIMENT KEY</string>
+    <string name="hackle_label_experiment_desc">EXPERIMENT DESC</string>
+
+    <string name="hackle_label_feature_flag_key">FEATURE FLAG KEY</string>
+    <string name="hackle_label_feature_flag_desc">FEATURE FLAG DESC</string>
+
+    <string name="hackle_label_reset">RESET</string>
+    <string name="hackle_label_reset_all">RESET ALL</string>
+    <string name="hackle_label_ab_test">A/B TEST</string>
+    <string name="hackle_label_feature_flag">FEATURE FLAG</string>
+
+
+    <color name="hackle_transparent">#00000000</color>
+    <color name="hackle_primary">#5c85eb</color>
+    <color name="hackle_black">#000</color>
+    <color name="hackle_white">#fff</color>
+    <color name="hackle_light_gray">#f2f2f2</color>
+    <color name="hackle_gray">#ccc</color>
+    <color name="hackle_dark_gray">#aaa</color>
+
+    <style name="HackleTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>
