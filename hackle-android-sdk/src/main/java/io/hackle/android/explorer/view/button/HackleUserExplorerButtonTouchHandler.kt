@@ -1,13 +1,14 @@
-package io.hackle.android.explorer
+package io.hackle.android.explorer.view.button
 
 import android.content.Intent
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams
+import io.hackle.android.explorer.activity.HackleUserExplorerActivity
 import kotlin.math.abs
 
-internal class HackleUserExplorerTouchHandler(
+internal class HackleUserExplorerButtonTouchHandler(
     private val windowManager: WindowManager,
     private val layoutParams: LayoutParams,
 ) : View.OnTouchListener {
