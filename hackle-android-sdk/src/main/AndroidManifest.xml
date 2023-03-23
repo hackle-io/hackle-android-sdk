@@ -6,8 +6,9 @@
 
     <application>
         <activity
-            android:name="io.hackle.android.explorer.HackleUserExplorerActivity"
+            android:name="io.hackle.android.explorer.activity.HackleUserExplorerActivity"
             android:exported="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/HackleTheme" />
     </application>
 </manifest>
