@@ -14,6 +14,8 @@ class HackleConfig private constructor(builder: Builder) {
 
     val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
 
+    val pollingIntervalMillis: Int = builder.pollingIntervalMillis
+
     val eventFlushIntervalMillis: Int = builder.eventFlushIntervalMillis
     val eventFlushThreshold: Int = builder.eventFlushThreshold
 
@@ -31,6 +33,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
 
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
+
+        internal var pollingIntervalMillis: Int = DEFAULT_POLLING_INTERVAL_MILLIS
 
         internal var eventFlushIntervalMillis: Int = DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS
         internal var eventFlushThreshold: Int = DEFAULT_EVENT_FLUSH_THRESHOLD
@@ -60,6 +64,10 @@ class HackleConfig private constructor(builder: Builder) {
             this.sessionTimeoutMillis = sessionTimeoutMillis
         }
 
+        fun pollingIntervalMillis(pollingIntervalMillis: Int) = apply {
+            this.pollingIntervalMillis = pollingIntervalMillis
+        }
+
         fun eventFlushIntervalMillis(eventFlushIntervalMillis: Int) = apply {
             this.eventFlushIntervalMillis = eventFlushIntervalMillis
         }
@@ -77,6 +85,11 @@ class HackleConfig private constructor(builder: Builder) {
         }
 
         fun build(): HackleConfig {
+
+            if (pollingIntervalMillis != NO_POLLING && pollingIntervalMillis < MIN_POLLING_INTERVAL_MILLIS) {
+                log.warn { "Polling interval is outside allowed value [min ${MIN_POLLING_INTERVAL_MILLIS}ms]. Setting to min value[${MIN_POLLING_INTERVAL_MILLIS}ms]" }
+                this.pollingIntervalMillis = MIN_POLLING_INTERVAL_MILLIS
+            }
 
             if (exposureEventDedupIntervalMillis != EXPOSURE_EVENT_NO_DEDUP && exposureEventDedupIntervalMillis !in MIN_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS..MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS) {
                 log.warn { "Exposure event dedup interval is outside allowed range[${MIN_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS}..${MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS}]ms. Setting to default value[$DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS]ms." }
@@ -106,6 +119,10 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
 
         internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m
+
+        internal const val NO_POLLING = -1
+        internal const val DEFAULT_POLLING_INTERVAL_MILLIS = NO_POLLING
+        internal const val MIN_POLLING_INTERVAL_MILLIS = 60 * 1000 // 1m
 
         internal const val DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS = 10 * 1000 // 10s (default)
         internal const val MIN_EVENT_FLUSH_INTERVAL_MILLIS = 1000 // 1s (min)
