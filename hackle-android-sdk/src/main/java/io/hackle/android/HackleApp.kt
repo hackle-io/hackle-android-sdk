@@ -11,7 +11,7 @@ import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.workspace.WorkspaceCacheHandler
+import io.hackle.android.internal.workspace.PollingWorkspaceHandler
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
@@ -36,7 +36,7 @@ class HackleApp internal constructor(
     private val clock: Clock,
     private val client: HackleInternalClient,
     private val eventExecutor: Executor,
-    private val workspaceCacheHandler: WorkspaceCacheHandler,
+    private val workspaceHandler: PollingWorkspaceHandler,
     private val hackleUserResolver: HackleUserResolver,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
@@ -256,7 +256,7 @@ class HackleApp internal constructor(
             try {
                 sessionManager.initialize()
                 eventProcessor.initialize()
-                workspaceCacheHandler.fetchAndCache()
+                workspaceHandler.initialize()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }
