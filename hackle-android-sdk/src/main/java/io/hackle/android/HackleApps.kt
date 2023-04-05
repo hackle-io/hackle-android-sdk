@@ -25,8 +25,8 @@ import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
+import io.hackle.android.internal.workspace.PollingWorkspaceHandler
 import io.hackle.android.internal.workspace.WorkspaceCache
-import io.hackle.android.internal.workspace.WorkspaceCacheHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.client
 import io.hackle.sdk.core.internal.log.Logger
@@ -62,9 +62,11 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        val workspaceCacheHandler = WorkspaceCacheHandler(
+        val workspaceHandler = PollingWorkspaceHandler(
             workspaceCache = workspaceCache,
-            httpWorkspaceFetcher = httpWorkspaceFetcher
+            httpWorkspaceFetcher = httpWorkspaceFetcher,
+            pollingScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
+            pollingIntervalMillis = config.pollingIntervalMillis.toLong()
         )
 
         val cachedWorkspaceFetcher = CachedWorkspaceFetcher(
@@ -121,6 +123,7 @@ internal object HackleApps {
         val hackleUserResolver = HackleUserResolver(device)
 
         val lifecycleCallbacks = HackleActivityLifecycleCallbacks(eventExecutor = eventExecutor)
+            .addListener(workspaceHandler)
             .addListener(sessionManager)
             .addListener(userManager)
             .addListener(eventProcessor)
@@ -148,7 +151,7 @@ internal object HackleApps {
             clock = Clock.SYSTEM,
             client = client,
             eventExecutor = eventExecutor,
-            workspaceCacheHandler = workspaceCacheHandler,
+            workspaceHandler = workspaceHandler,
             hackleUserResolver = hackleUserResolver,
             userManager = userManager,
             sessionManager = sessionManager,
