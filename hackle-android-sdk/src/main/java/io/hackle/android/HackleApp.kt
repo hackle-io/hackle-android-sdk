@@ -2,8 +2,7 @@ package io.hackle.android
 
 import android.app.Activity
 import android.content.Context
-import io.hackle.android.explorer.base.HackleUserExplorer
-import io.hackle.android.explorer.view.HackleUserExplorerView
+import io.hackle.android.explorer.HackleUserExplorer
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -45,8 +44,6 @@ class HackleApp internal constructor(
     internal val userExplorer: HackleUserExplorer,
 ) : Closeable {
 
-    private val userExplorerView: HackleUserExplorerView by lazy { HackleUserExplorerView() }
-
     /**
      * The user's Device Id.
      */
@@ -59,8 +56,8 @@ class HackleApp internal constructor(
 
     val user: User get() = userManager.currentUser
 
-    fun showUserExplorer(activity: Activity) {
-        userExplorerView.attachTo(activity)
+    fun showUserExplorer() {
+        userExplorer.show()
         Metrics.counter("user.explorer.show").increment()
     }
 
@@ -356,6 +353,11 @@ class HackleApp internal constructor(
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
         return HackleRemoteConfigImpl(user, client, userManager, hackleUserResolver)
+    }
+
+    @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))
+    fun showUserExplorer(activity: Activity) {
+        showUserExplorer()
     }
 
     companion object {
