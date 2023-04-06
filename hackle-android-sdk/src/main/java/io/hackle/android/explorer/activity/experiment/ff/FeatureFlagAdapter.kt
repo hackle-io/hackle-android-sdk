@@ -2,11 +2,11 @@ package io.hackle.android.explorer.activity.experiment.ff
 
 import android.content.Context
 import android.view.ViewGroup
-import io.hackle.android.explorer.base.HackleUserExplorer
 import io.hackle.android.explorer.activity.experiment.ff.viewholder.FeatureFlagItem
 import io.hackle.android.explorer.activity.experiment.ff.viewholder.FeatureFlagViewHolder
 import io.hackle.android.explorer.activity.experiment.listener.OnOverrideResetListener
 import io.hackle.android.explorer.activity.experiment.listener.OnOverrideSetListener
+import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.base.ListAdapter
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
@@ -15,7 +15,7 @@ import io.hackle.sdk.core.model.Variation
 
 internal class FeatureFlagAdapter(
     private val context: Context,
-    private val explorer: HackleUserExplorer,
+    private val explorerService: HackleUserExplorerService,
 ) : ListAdapter<FeatureFlagItem, FeatureFlagViewHolder>() {
 
     private val overrideSetListener: OnOverrideSetListener
@@ -34,8 +34,8 @@ internal class FeatureFlagAdapter(
 
     fun fetchAndUpdate() {
         runOnBackground {
-            val decisions = explorer.getFeatureFlagDecisions()
-            val overrides = explorer.getFeatureFlagOverrides()
+            val decisions = explorerService.getFeatureFlagDecisions()
+            val overrides = explorerService.getFeatureFlagOverrides()
             val items = FeatureFlagItem.of(decisions, overrides)
             runOnUiThread {
                 update(items)
@@ -45,14 +45,14 @@ internal class FeatureFlagAdapter(
 
     private inner class FeatureFlagOverrideListener : OnOverrideSetListener {
         override fun onOverrideSet(experiment: Experiment, variation: Variation) {
-            explorer.setFeatureFlagOverride(experiment, variation.id)
+            explorerService.setFeatureFlagOverride(experiment, variation.id)
             fetchAndUpdate()
         }
     }
 
     private inner class FeatureFlagOverrideResetListener : OnOverrideResetListener {
         override fun onOverrideReset(experiment: Experiment) {
-            explorer.resetFeatureFlagOverride(experiment)
+            explorerService.resetFeatureFlagOverride(experiment)
             fetchAndUpdate()
         }
     }
