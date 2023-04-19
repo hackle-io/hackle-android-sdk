@@ -3,12 +3,16 @@
     android:layout_width="48dp"
     android:layout_height="48dp"
     android:background="@color/hackle_transparent"
-    android:clipChildren="false">
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <ImageView
+        android:id="@+id/hackle_image_view_logo"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_gravity="center"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:contentDescription="@string/hackle_logo"
         android:src="@drawable/hackle_logo" />
 </FrameLayout>

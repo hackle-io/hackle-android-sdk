@@ -12,7 +12,7 @@ import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
 import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
 import io.hackle.sdk.core.user.HackleUser
 
-internal class HackleUserExplorer(
+internal class HackleUserExplorerService(
     private val client: HackleInternalClient,
     private val userManager: UserManager,
     private val hackleUserResolver: HackleUserResolver,

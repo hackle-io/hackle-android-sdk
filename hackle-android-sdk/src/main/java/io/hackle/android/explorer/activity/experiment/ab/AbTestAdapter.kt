@@ -2,11 +2,11 @@ package io.hackle.android.explorer.activity.experiment.ab
 
 import android.content.Context
 import android.view.ViewGroup
-import io.hackle.android.explorer.base.HackleUserExplorer
 import io.hackle.android.explorer.activity.experiment.ab.viewholder.AbTestItem
 import io.hackle.android.explorer.activity.experiment.ab.viewholder.AbTestViewHolder
 import io.hackle.android.explorer.activity.experiment.listener.OnOverrideResetListener
 import io.hackle.android.explorer.activity.experiment.listener.OnOverrideSetListener
+import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.base.ListAdapter
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
@@ -15,7 +15,7 @@ import io.hackle.sdk.core.model.Variation
 
 internal class AbTestAdapter(
     private val context: Context,
-    private val explorer: HackleUserExplorer,
+    private val explorerService: HackleUserExplorerService,
 ) : ListAdapter<AbTestItem, AbTestViewHolder>() {
 
     private val overrideSetListener: OnOverrideSetListener
@@ -33,8 +33,8 @@ internal class AbTestAdapter(
 
     fun fetchAndUpdate() {
         runOnBackground {
-            val decisions = explorer.getAbTestDecisions()
-            val overrides = explorer.getAbTestOverrides()
+            val decisions = explorerService.getAbTestDecisions()
+            val overrides = explorerService.getAbTestOverrides()
             val items = AbTestItem.of(decisions, overrides)
             runOnUiThread {
                 update(items)
@@ -44,14 +44,14 @@ internal class AbTestAdapter(
 
     private inner class AbTestOverrideListener : OnOverrideSetListener {
         override fun onOverrideSet(experiment: Experiment, variation: Variation) {
-            explorer.setAbTestOverride(experiment, variation.id)
+            explorerService.setAbTestOverride(experiment, variation.id)
             fetchAndUpdate()
         }
     }
 
     private inner class AbTestOverrideResetListener : OnOverrideResetListener {
         override fun onOverrideReset(experiment: Experiment) {
-            explorer.resetAbTestOverride(experiment)
+            explorerService.resetAbTestOverride(experiment)
             fetchAndUpdate()
         }
     }
