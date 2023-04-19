@@ -9,11 +9,11 @@ import android.widget.ListView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import io.hackle.android.R
-import io.hackle.android.explorer.base.HackleUserExplorer
+import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 
 internal class AbTestFragment(
-    private val explorer: HackleUserExplorer,
+    private val explorerService: HackleUserExplorerService,
 ) : Fragment() {
 
     private lateinit var root: View
@@ -29,12 +29,12 @@ internal class AbTestFragment(
 
         root = inflater.inflate(R.layout.hackle_fragment_ab_test, container, false)
         itemView = root.findViewById(R.id.hackle_view_ab_test_items)
-        adapter = AbTestAdapter(root.context, explorer)
+        adapter = AbTestAdapter(root.context, explorerService)
         itemView.adapter = adapter
 
         resetAll = root.findViewById(R.id.hackle_ab_test_reset_all_button)
         resetAll.setOnClickListener {
-            explorer.resetAllAbTestOverride()
+            explorerService.resetAllAbTestOverride()
             adapter.fetchAndUpdate()
             runOnUiThread {
                 Toast.makeText(

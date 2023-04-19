@@ -27,8 +27,8 @@ internal class HackleUserExplorerActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.hackle_activity_user_explorer)
 
-        val explorer = Hackle.app.userExplorer
-        val user = explorer.currentUser()
+        val explorerService = Hackle.app.userExplorer.explorerService
+        val user = explorerService.currentUser()
 
         closeButton = findViewById(R.id.hackle_user_explorer_close_button)
         closeButton.setOnClickListener { onBackPressed() }
@@ -41,7 +41,7 @@ internal class HackleUserExplorerActivity : FragmentActivity() {
         userId.bind(IdentifierItem(getString(R.string.hackle_label_user_id), user.userId))
 
         viewPager = findViewById(R.id.hackle_user_explorer_view_pager)
-        adapter = HackleUserExplorerAdapter(explorer, supportFragmentManager)
+        adapter = HackleUserExplorerAdapter(explorerService, supportFragmentManager)
         viewPager.adapter = adapter
         tab = findViewById(R.id.hackle_user_explorer_tab)
         viewPager.addOnPageChangeListener(ExperimentTabLayout.ExperimentOnPageChangeListener(tab))

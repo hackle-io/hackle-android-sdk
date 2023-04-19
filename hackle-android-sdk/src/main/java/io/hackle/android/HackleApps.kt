@@ -3,7 +3,8 @@ package io.hackle.android
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import io.hackle.android.explorer.base.HackleUserExplorer
+import io.hackle.android.explorer.HackleUserExplorer
+import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.storage.HackleUserManualOverrideStorage.Companion.create
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
@@ -127,7 +128,21 @@ internal object HackleApps {
             .addListener(sessionManager)
             .addListener(userManager)
             .addListener(eventProcessor)
-        (context as? Application)?.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+
+        val userExplorer = HackleUserExplorer(
+            HackleUserExplorerService(
+                client = client,
+                userManager = userManager,
+                hackleUserResolver = hackleUserResolver,
+                abTestOverrideStorage = abOverrideStorage,
+                featureFlagOverrideStorage = ffOverrideStorage
+            )
+        )
+
+        (context as? Application)?.let {
+            it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+            it.registerActivityLifecycleCallbacks(userExplorer)
+        }
 
         userManager.addListener(sessionManager)
 
@@ -138,14 +153,6 @@ internal object HackleApps {
         sessionManager.addListener(sessionEventTracker)
 
         metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
-
-        val userExplorer = HackleUserExplorer(
-            client = client,
-            userManager = userManager,
-            hackleUserResolver = hackleUserResolver,
-            abTestOverrideStorage = abOverrideStorage,
-            featureFlagOverrideStorage = ffOverrideStorage
-        )
 
         return HackleApp(
             clock = Clock.SYSTEM,
