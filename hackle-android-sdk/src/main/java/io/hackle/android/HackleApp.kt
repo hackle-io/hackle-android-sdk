@@ -19,7 +19,7 @@ import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
-import io.hackle.sdk.core.client.HackleInternalClient
+import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
@@ -33,7 +33,7 @@ import java.util.concurrent.Executor
  */
 class HackleApp internal constructor(
     private val clock: Clock,
-    private val client: HackleInternalClient,
+    private val core: HackleCore,
     private val eventExecutor: Executor,
     private val workspaceHandler: PollingWorkspaceHandler,
     private val hackleUserResolver: HackleUserResolver,
@@ -137,7 +137,7 @@ class HackleApp internal constructor(
         return try {
             val currentUser = userManager.resolve(user)
             val hackleUser = hackleUserResolver.resolve(currentUser)
-            client.experiment(experimentKey, hackleUser, defaultVariation)
+            core.experiment(experimentKey, hackleUser, defaultVariation)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
             Decision.of(defaultVariation, DecisionReason.EXCEPTION)
@@ -160,7 +160,7 @@ class HackleApp internal constructor(
         return try {
             val currentUser = userManager.resolve(user)
             val hackleUser = hackleUserResolver.resolve(currentUser)
-            client.experiments(hackleUser)
+            core.experiments(hackleUser)
                 .mapKeysTo(hashMapOf()) { (experiment, _) -> experiment.key }
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variations for all experiments: $t" }
@@ -199,7 +199,7 @@ class HackleApp internal constructor(
         return try {
             val currentUser = userManager.resolve(user)
             val hackleUser = hackleUserResolver.resolve(currentUser)
-            client.featureFlag(featureKey, hackleUser)
+            core.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
             FeatureFlagDecision.off(DecisionReason.EXCEPTION)
@@ -230,7 +230,7 @@ class HackleApp internal constructor(
         try {
             val currentUser = userManager.resolve(user)
             val hackleUser = hackleUserResolver.resolve(currentUser)
-            client.track(event, hackleUser, clock.currentMillis())
+            core.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
         }
@@ -240,11 +240,11 @@ class HackleApp internal constructor(
      * Returns a instance of Hackle Remote Config.
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(null, client, userManager, hackleUserResolver)
+        return HackleRemoteConfigImpl(null, core, userManager, hackleUserResolver)
     }
 
     override fun close() {
-        client.tryClose()
+        core.tryClose()
     }
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
@@ -352,7 +352,7 @@ class HackleApp internal constructor(
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, client, userManager, hackleUserResolver)
+        return HackleRemoteConfigImpl(user, core, userManager, hackleUserResolver)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))

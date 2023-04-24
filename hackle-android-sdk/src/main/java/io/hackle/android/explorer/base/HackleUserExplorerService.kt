@@ -5,7 +5,7 @@ import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
-import io.hackle.sdk.core.client.HackleInternalClient
+import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
@@ -13,7 +13,7 @@ import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
 import io.hackle.sdk.core.user.HackleUser
 
 internal class HackleUserExplorerService(
-    private val client: HackleInternalClient,
+    private val core: HackleCore,
     private val userManager: UserManager,
     private val hackleUserResolver: HackleUserResolver,
     private val abTestOverrideStorage: HackleUserManualOverrideStorage,
@@ -26,7 +26,7 @@ internal class HackleUserExplorerService(
     }
 
     fun getAbTestDecisions(): List<Pair<Experiment, Decision>> {
-        return client.experiments(currentUser()).toList()
+        return core.experiments(currentUser()).toList()
     }
 
     fun getAbTestOverrides(): Map<Long, Long> {
@@ -49,7 +49,7 @@ internal class HackleUserExplorerService(
     }
 
     fun getFeatureFlagDecisions(): List<Pair<Experiment, FeatureFlagDecision>> {
-        return client.featureFlags(currentUser()).toList()
+        return core.featureFlags(currentUser()).toList()
     }
 
     fun getFeatureFlagOverrides(): Map<Long, Long> {

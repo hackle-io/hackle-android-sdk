@@ -3,14 +3,14 @@ package io.hackle.android.internal.session
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.client.HackleInternalClient
+import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.user.IdentifierType
 
 internal class SessionEventTracker(
     private val hackleUserResolver: HackleUserResolver,
-    private val client: HackleInternalClient,
+    private val core: HackleCore,
 ) : SessionListener {
 
     override fun onSessionStarted(session: Session, user: User, timestamp: Long) {
@@ -31,7 +31,7 @@ internal class SessionEventTracker(
             .identifier(IdentifierType.SESSION, session.id, overwrite = false)
             .build()
 
-        client.track(event, hackleUser, timestamp)
+        core.track(event, hackleUser, timestamp)
         log.debug { "$eventKey event tracked [${session.id}]" }
     }
 
