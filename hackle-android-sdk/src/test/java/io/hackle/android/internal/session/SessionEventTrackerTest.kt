@@ -4,7 +4,7 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.client.HackleInternalClient
+import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.event.UserEvent
 import io.mockk.every
 import io.mockk.mockk
@@ -21,8 +21,8 @@ class SessionEventTrackerTest {
     fun `onSessionStarted`() {
         // given
         val userResolver = HackleUserResolver(Device("device_id", emptyMap()))
-        val client = mockk<HackleInternalClient>(relaxed = true)
-        val sut = SessionEventTracker(userResolver, client)
+        val core = mockk<HackleCore>(relaxed = true)
+        val sut = SessionEventTracker(userResolver, core)
 
         // when
         val session = Session("42.ffffffff")
@@ -31,7 +31,7 @@ class SessionEventTrackerTest {
 
         // then
         verify {
-            client.track(
+            core.track(
                 event = withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$session_start"
@@ -52,8 +52,8 @@ class SessionEventTrackerTest {
     fun `onSessionEnded`() {
         // given
         val userResolver = HackleUserResolver(Device("device_id", emptyMap()))
-        val client = mockk<HackleInternalClient>(relaxed = true)
-        val sut = SessionEventTracker(userResolver, client)
+        val core = mockk<HackleCore>(relaxed = true)
+        val sut = SessionEventTracker(userResolver, core)
 
         // when
         val session = Session("42.ffffffff")
@@ -62,7 +62,7 @@ class SessionEventTrackerTest {
 
         // then
         verify {
-            client.track(
+            core.track(
                 event = withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$session_end"

@@ -7,14 +7,14 @@ import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.decision.DecisionReason.EXCEPTION
 import io.hackle.sdk.common.decision.RemoteConfigDecision
-import io.hackle.sdk.core.client.HackleInternalClient
+import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.model.ValueType
 
 internal class HackleRemoteConfigImpl(
     private val user: User?,
-    private val client: HackleInternalClient,
+    private val core: HackleCore,
     private val userManager: UserManager,
     private val hackleUserResolver: HackleUserResolver,
 ) : HackleRemoteConfig {
@@ -48,7 +48,7 @@ internal class HackleRemoteConfigImpl(
         return try {
             val currentUser = userManager.resolve(user)
             val hackleUser = hackleUserResolver.resolve(currentUser)
-            client.remoteConfig(key, hackleUser, requiredType, defaultValue)
+            core.remoteConfig(key, hackleUser, requiredType, defaultValue)
         } catch (e: Exception) {
             log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }
             RemoteConfigDecision.of(defaultValue, EXCEPTION)
