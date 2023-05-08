@@ -16,15 +16,3 @@ internal fun User.mergeWith(other: User?): User {
         else -> this
     }
 }
-
-internal fun User.Builder.identifiers(identifiers: Map<String, String>) = apply {
-    for ((type, value) in identifiers) {
-        identifier(type, value)
-    }
-}
-
-internal fun User.Builder.properties(properties: Map<String, Any>) = apply {
-    for ((key, value) in properties) {
-        property(key, value)
-    }
-}

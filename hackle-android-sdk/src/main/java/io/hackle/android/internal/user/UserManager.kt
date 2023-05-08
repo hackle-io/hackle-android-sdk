@@ -6,8 +6,10 @@ import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.utils.parseJson
 import io.hackle.android.internal.utils.toJson
+import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
@@ -49,6 +51,12 @@ internal class UserManager(
         }
     }
 
+    fun resetUser(): User {
+        return synchronized(LOCK) {
+            update { defaultUser }
+        }
+    }
+
     fun setUserId(userId: String?): User {
         return synchronized(LOCK) {
             val user = _currentUser.toBuilder().userId(userId).build()
@@ -63,22 +71,28 @@ internal class UserManager(
         }
     }
 
-    fun setUserProperty(key: String, value: Any?): User {
+    fun updateProperties(operations: PropertyOperations): User {
         return synchronized(LOCK) {
-            val user = _currentUser.toBuilder().property(key, value).build()
-            updateUser(user)
-        }
-    }
-
-    fun resetUser(): User {
-        return synchronized(LOCK) {
-            updateUser(defaultUser)
+            operateProperties(operations)
         }
     }
 
     private fun updateUser(user: User): User {
+        return update { currentUser ->
+            user.mergeWith(currentUser)
+        }
+    }
+
+    private fun operateProperties(operations: PropertyOperations): User {
+        return update { currentUser ->
+            val properties = operations.operate(currentUser.properties)
+            currentUser.copy(properties = properties)
+        }
+    }
+
+    private fun update(updater: (User) -> User): User {
         val oldUser = this._currentUser
-        val newUser = user.mergeWith(oldUser)
+        val newUser = updater(oldUser)
         _currentUser = newUser
 
         if (!newUser.identifierEquals(oldUser)) {
