@@ -41,7 +41,7 @@ internal fun PropertyOperation.operate(
 
 internal fun PropertyOperations.operate(base: Map<String, Any>): Map<String, Any> {
     var accumulator = base
-    for ((operation, properties) in this) {
+    for ((operation, properties) in this.asMap()) {
         accumulator = operation.operate(accumulator, properties)
     }
     return accumulator
