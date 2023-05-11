@@ -5,9 +5,12 @@ import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
 import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
@@ -42,12 +45,20 @@ class DefaultEventProcessorTest {
     @RelaxedMockK
     private lateinit var sessionManager: SessionManager
 
+    @RelaxedMockK
+    private lateinit var userManager: UserManager
+
+    @RelaxedMockK
+    private lateinit var appStateManager: AppStateManager
+
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
         every { deduplicationDeterminer.isDeduplicationTarget(any()) } returns false
         every { sessionManager.currentSession } returns null
+        every { appStateManager.currentState } returns AppState.FOREGROUND
+        every { userManager.currentUser } returns User.of("id")
     }
 
 
@@ -62,6 +73,8 @@ class DefaultEventProcessorTest {
         eventFlushMaxBatchSize: Int = 21,
         eventDispatcher: EventDispatcher = this.eventDispatcher,
         sessionManager: SessionManager = this.sessionManager,
+        userManager: UserManager = this.userManager,
+        appStateManager: AppStateManager = this.appStateManager,
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             deduplicationDeterminer = deduplicationDeterminer,
@@ -73,7 +86,9 @@ class DefaultEventProcessorTest {
             eventFlushThreshold = eventFlushThreshold,
             eventFlushMaxBatchSize = eventFlushMaxBatchSize,
             eventDispatcher = eventDispatcher,
-            sessionManager = sessionManager
+            sessionManager = sessionManager,
+            userManager = userManager,
+            appStateManager = appStateManager
         )
     }
 
@@ -122,6 +137,21 @@ class DefaultEventProcessorTest {
 
         // then
         verify(exactly = 1) { sessionManager.updateLastEventTime(42) }
+    }
+
+    @Test
+    fun `process - FOREGOURND가 아닌경우 세션초기화 시도`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.of("id")
+        val event = event(user = user, timestamp = 42)
+        every { appStateManager.currentState } returns AppState.BACKGROUND
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any(), 42) }
     }
 
     @Test

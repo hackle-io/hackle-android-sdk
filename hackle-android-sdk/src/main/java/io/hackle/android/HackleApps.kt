@@ -14,6 +14,7 @@ import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
@@ -99,6 +100,8 @@ internal object HackleApps {
             exposureEventDedupIntervalMillis = config.exposureEventDedupIntervalMillis
         )
 
+        val appStateManager = AppStateManager()
+
         val eventProcessor = DefaultEventProcessor(
             deduplicationDeterminer = dedupDeterminer,
             eventExecutor = eventExecutor,
@@ -109,7 +112,9 @@ internal object HackleApps {
             eventFlushThreshold = config.eventFlushThreshold,
             eventFlushMaxBatchSize = config.eventFlushThreshold * 2 + 1,
             eventDispatcher = eventDispatcher,
-            sessionManager = sessionManager
+            sessionManager = sessionManager,
+            userManager = userManager,
+            appStateManager = appStateManager
         )
 
         val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
@@ -122,7 +127,10 @@ internal object HackleApps {
         )
         val hackleUserResolver = HackleUserResolver(device)
 
-        val lifecycleCallbacks = HackleActivityLifecycleCallbacks(eventExecutor = eventExecutor)
+        val lifecycleCallbacks = HackleActivityLifecycleCallbacks(
+            eventExecutor = eventExecutor,
+            appStateManager = appStateManager
+        )
             .addListener(workspaceHandler)
             .addListener(sessionManager)
             .addListener(userManager)
