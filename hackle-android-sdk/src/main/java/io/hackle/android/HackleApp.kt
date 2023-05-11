@@ -11,10 +11,7 @@ import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.PollingWorkspaceHandler
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.HackleRemoteConfig
-import io.hackle.sdk.common.User
-import io.hackle.sdk.common.Variation
+import io.hackle.sdk.common.*
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
@@ -25,6 +22,7 @@ import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
+import io.hackle.sdk.core.model.toEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
 
@@ -86,15 +84,24 @@ class HackleApp internal constructor(
     }
 
     fun setUserProperty(key: String, value: Any?) {
+        val operations = PropertyOperations.builder()
+            .set(key, value)
+            .build()
+        updateUserProperties(operations)
+    }
+
+    fun updateUserProperties(operations: PropertyOperations) {
         try {
-            userManager.setUserProperty(key, value)
+            track(operations.toEvent())
+            userManager.updateProperties(operations)
         } catch (e: Exception) {
-            log.error { "Unexpected exception while set userProperty: $e" }
+            log.error { "Unexpected exception while update user properties: $e" }
         }
     }
 
     fun resetUser() {
         try {
+            track(PropertyOperations.clearAll().toEvent())
             userManager.resetUser()
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }

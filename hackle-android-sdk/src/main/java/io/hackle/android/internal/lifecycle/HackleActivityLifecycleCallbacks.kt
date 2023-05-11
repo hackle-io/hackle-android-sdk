@@ -10,6 +10,7 @@ import java.util.concurrent.Executor
 
 internal class HackleActivityLifecycleCallbacks(
     private val eventExecutor: Executor,
+    private val appStateManager: AppStateManager,
 ) : Application.ActivityLifecycleCallbacks {
 
     private val listeners = mutableListOf<AppStateChangeListener>()
@@ -46,6 +47,7 @@ internal class HackleActivityLifecycleCallbacks(
                     log.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $e" }
                 }
             }
+            appStateManager.onChanged(state, timestamp)
         }
     }
 
