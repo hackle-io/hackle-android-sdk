@@ -92,9 +92,8 @@ class HackleApp internal constructor(
 
     fun updateUserProperties(operations: PropertyOperations) {
         try {
+            track(operations.toEvent())
             userManager.updateProperties(operations)
-            val event = operations.toEvent()
-            track(event)
         } catch (e: Exception) {
             log.error { "Unexpected exception while update user properties: $e" }
         }
@@ -102,8 +101,8 @@ class HackleApp internal constructor(
 
     fun resetUser() {
         try {
-            userManager.resetUser()
             track(PropertyOperations.clearAll().toEvent())
+            userManager.resetUser()
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
         }
