@@ -12,7 +12,8 @@ class HackleActivityLifecycleCallbacksTest {
     @Test
     fun `onActivityResumed - FOREGROUND`() {
         val executor = ExecutorStub()
-        val callbacks = HackleActivityLifecycleCallbacks(executor)
+        val appStateManager = AppStateManager()
+        val callbacks = HackleActivityLifecycleCallbacks(executor, appStateManager)
 
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
@@ -21,6 +22,7 @@ class HackleActivityLifecycleCallbacksTest {
         callbacks.onActivityResumed(mockk())
 
         expectThat(executor.executeCount) isEqualTo 1
+        expectThat(appStateManager.currentState) isEqualTo AppState.FOREGROUND
         verify(exactly = 1) {
             listener.onChanged(AppState.FOREGROUND, any())
         }
@@ -29,7 +31,10 @@ class HackleActivityLifecycleCallbacksTest {
     @Test
     fun `onActivityPaused - BACKGROUND`() {
         val executor = ExecutorStub()
-        val callbacks = HackleActivityLifecycleCallbacks(executor)
+        val appStateManager = AppStateManager().also {
+            it.onChanged(AppState.FOREGROUND, 42)
+        }
+        val callbacks = HackleActivityLifecycleCallbacks(executor, appStateManager)
 
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
@@ -38,6 +43,7 @@ class HackleActivityLifecycleCallbacksTest {
         callbacks.onActivityPaused(mockk())
 
         expectThat(executor.executeCount) isEqualTo 1
+        expectThat(appStateManager.currentState) isEqualTo AppState.BACKGROUND
         verify(exactly = 1) {
             listener.onChanged(AppState.BACKGROUND, any())
         }

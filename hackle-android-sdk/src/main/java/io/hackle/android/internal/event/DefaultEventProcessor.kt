@@ -7,8 +7,10 @@ import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.core.event.EventProcessor
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
@@ -32,6 +34,8 @@ internal class DefaultEventProcessor(
     private val eventFlushMaxBatchSize: Int,
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
+    private val userManager: UserManager,
+    private val appStateManager: AppStateManager,
 ) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
@@ -131,7 +135,13 @@ internal class DefaultEventProcessor(
             if (SessionEventTracker.isSessionEvent(event)) {
                 return
             }
-            sessionManager.updateLastEventTime(event.timestamp)
+
+            if (appStateManager.currentState == FOREGROUND) {
+                sessionManager.updateLastEventTime(event.timestamp)
+            } else {
+                // Corner case when an event is processed between onPause and onResume
+                sessionManager.startNewSessionIfNeeded(userManager.currentUser, event.timestamp)
+            }
         }
 
         private fun decorateSession(event: UserEvent): UserEvent {
