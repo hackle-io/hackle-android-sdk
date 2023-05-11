@@ -4,6 +4,7 @@ import io.hackle.android.internal.database.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.utils.toJson
+import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import org.junit.Test
 import strikt.api.expectThat
@@ -60,7 +61,31 @@ class UserManagerTest {
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
         userManager.initialize(null)
-        expectThat(userManager.currentUser).isEqualTo(User.builder().deviceId("test_device_id").build())
+        expectThat(userManager.currentUser).isEqualTo(User.builder().deviceId("test_device_id")
+            .build())
+    }
+
+    @Test
+    fun `resolve - user not null`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+
+        val user = User.builder().deviceId("42").build()
+        val actual = userManager.resolve(user)
+
+        expectThat(actual) isEqualTo user
+    }
+
+    @Test
+    fun `resolve - currentUser`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+
+        val actual = userManager.resolve(null)
+
+        expectThat(actual) isEqualTo User.builder().deviceId("test_device_id").build()
     }
 
     @Test
@@ -145,6 +170,54 @@ class UserManagerTest {
         expectThat(repository.getString("user"))
             .isNotNull()
             .isEqualTo(user.toJson())
+    }
+
+    @Test
+    fun `resetUser`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+
+        val user = User.builder().deviceId("a").property("a", "a").build()
+        userManager.initialize(user)
+
+        val actual = userManager.resetUser()
+        expectThat(actual) isEqualTo User.builder().deviceId("test_device_id").build()
+        expectThat(userManager.currentUser) isEqualTo User.builder().deviceId("test_device_id")
+            .build()
+    }
+
+    @Test
+    fun `updateProperties`() {
+        val device = Device("test_device_id", emptyMap())
+        val repository = MapKeyValueRepository()
+        val userManager = UserManager(device, repository)
+
+        val user = User.builder()
+            .userId("user")
+            .deviceId("device")
+            .property("a", 42)
+            .property("b", "b")
+            .property("c", "c")
+            .build()
+        userManager.initialize(user)
+
+        val operations = PropertyOperations.builder()
+            .set("d", "d")
+            .increment("a", 42)
+            .append("c", "cc")
+            .build()
+
+        val actual = userManager.updateProperties(operations)
+        expectThat(actual) isEqualTo User.builder()
+            .userId("user")
+            .deviceId("device")
+            .property("a", 84.0)
+            .property("b", "b")
+            .property("c", listOf("c", "cc"))
+            .property("d", "d")
+            .build()
+
     }
 
     private class UserListenerStub : UserListener {
