@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
+import io.hackle.android.HackleActivity
 import io.hackle.android.R
 import io.hackle.android.explorer.activity.HackleUserExplorerActivity
 import io.hackle.android.explorer.base.HackleUserExplorerService
@@ -33,6 +34,7 @@ internal class HackleUserExplorer(
             if (activity is HackleUserExplorerActivity) {
                 return
             }
+
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
                 return
             }
@@ -54,7 +56,7 @@ internal class HackleUserExplorer(
 
     override fun onActivityStarted(activity: Activity) {
         currentActivity = activity
-        if (isShow) {
+        if (isShow && currentActivity !is HackleActivity) {
             attach()
         }
     }

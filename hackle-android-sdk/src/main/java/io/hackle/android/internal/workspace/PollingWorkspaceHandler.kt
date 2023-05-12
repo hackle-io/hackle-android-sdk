@@ -34,6 +34,7 @@ internal class PollingWorkspaceHandler(
         }
     }
 
+
     private fun start() {
         if (pollingIntervalMillis == HackleConfig.NO_POLLING.toLong()) {
             return

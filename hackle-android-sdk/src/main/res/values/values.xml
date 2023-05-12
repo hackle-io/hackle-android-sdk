@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="hackle_user_explorer_view" type="id" />
+    <item name="hackle_in_app_view" type="id" />
 
     <string name="hackle_logo">hackle_logo</string>
     <string name="hackle_label_copy">COPY</string>
@@ -34,4 +35,19 @@
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
     </style>
+
+
+    <style name="HackleInAppMessageTheme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+<!--        <item name="android:colorBackgroundCacheHint">@null</item>-->
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+<!--        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>-->
+    </style>
+
 </resources>

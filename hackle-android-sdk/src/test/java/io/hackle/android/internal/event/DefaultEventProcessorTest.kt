@@ -303,6 +303,22 @@ class DefaultEventProcessorTest {
     }
 
     @Test
+    fun `process - 등록된 eventListener 에게 이벤트를 publish 한다`() {
+        val sut = processor()
+        val mockListenerOne = mockk<EventListener>(relaxed = true)
+        val mockListenerTwo = mockk<EventListener>(relaxed = true)
+        sut.addListener(mockListenerOne)
+        sut.addListener(mockListenerTwo)
+
+        val event = event()
+        sut.process(event)
+
+
+        verify(exactly = 1) { mockListenerOne.onEventPublish(event) }
+        verify(exactly = 1) { mockListenerTwo.onEventPublish(event) }
+    }
+
+    @Test
     fun `onChanged - FOREGOUND 로 상태가 바뀌면 start() 호출`() {
         // given
         val sut = spyk(processor())
@@ -389,10 +405,12 @@ class DefaultEventProcessorTest {
 
         sut.start()
         verify(exactly = 1) {
-            eventFlushScheduler.schedulePeriodically(42,
+            eventFlushScheduler.schedulePeriodically(
+                42,
                 42,
                 MILLISECONDS,
-                any())
+                any()
+            )
         }
 
         sut.stop()
@@ -400,10 +418,12 @@ class DefaultEventProcessorTest {
 
         sut.start()
         verify(exactly = 2) {
-            eventFlushScheduler.schedulePeriodically(42,
+            eventFlushScheduler.schedulePeriodically(
+                42,
                 42,
                 MILLISECONDS,
-                any())
+                any()
+            )
         }
     }
 
@@ -478,6 +498,7 @@ class DefaultEventProcessorTest {
             fail()
         }
     }
+
 
     private fun event(
         timestamp: Long = System.currentTimeMillis(),

@@ -9,6 +9,7 @@ internal data class WorkspaceDto(
     val containers: List<ContainerDto>,
     val parameterConfigurations: List<ParameterConfigurationDto>,
     val remoteConfigParameters: List<RemoteConfigParameterDto>,
+    val inAppMessages: List<InAppMessageDto>
 )
 
 internal data class ExperimentDto(
@@ -144,4 +145,114 @@ internal data class RemoteConfigParameterDto(
         val id: Long,
         val value: Any,
     )
+}
+
+
+internal data class InAppMessageDto(
+    val id: Long,
+    val key: Long,
+    val timeUnit: String,
+    val startEpochTimeMillis: Long?,
+    val endEpochTimeMillis: Long?,
+    val status: String,
+    val eventTriggerRules: List<EventTriggerRuleDto>,
+    val targetContext: TargetContextDto,
+    val messageContext: MessageContextDto
+) {
+
+    data class EventTriggerRuleDto(
+        val eventKey: String,
+        val targets: List<TargetDto>
+    )
+
+    data class TargetContextDto(
+        val targets: List<TargetDto>,
+        val overrides: List<UserOverrideDto>
+    ) {
+        data class UserOverrideDto(
+            val identifierType: String,
+            val identifiers: List<String>
+        )
+    }
+
+    data class MessageContextDto(
+        val defaultLang: String,
+        val platformTypes: List<String>,
+        val orientations: List<String>,
+        val exposure: MessageDto.ExposureDto,
+        val messages: List<MessageDto>
+    ) {
+        data class MessageDto(
+            val lang: String,
+            val layout: LayoutDto,
+            val images: List<ImageDto>,
+            val text: TextDto?,
+            val buttons: List<ButtonDto>,
+            val background: BackgroundDto,
+            val closeButton: CloseButtonDto?
+        ) {
+
+            data class LayoutDto(
+                val displayType: String,
+                val layoutType: String
+            )
+
+            data class ImageDto(
+                val orientation: String,
+                val imagePath: String,
+                val action: ActionDto?
+            )
+
+            data class TextDto(
+                val title: TextAttributeDto,
+                val body: TextAttributeDto
+            ) {
+                data class TextAttributeDto(
+                    val text: String,
+                    val style: StyleDto
+                )
+
+                data class StyleDto(
+                    val textColor: String
+                )
+            }
+
+            data class ButtonDto(
+                val text: String,
+                val style: StyleDto,
+                val action: ActionDto
+            ) {
+
+                data class StyleDto(
+                    val textColor: String,
+                    val bgColor: String,
+                    val borderColor: String
+                )
+            }
+
+            data class BackgroundDto(
+                val color: String
+            )
+
+            data class CloseButtonDto(
+                val style: StyleDto,
+                val action: ActionDto
+            ) {
+                data class StyleDto (
+                    val color: String
+                )
+            }
+
+            data class ExposureDto(
+                val type: String,
+                val key: Long?
+            )
+        }
+
+        data class ActionDto(
+            val behavior: String,
+            val type: String,
+            val value: String?
+        )
+    }
 }

@@ -1,0 +1,124 @@
+{
+  "workspace": {
+    "id": 7356,
+    "environment": {
+      "id": 112712,
+      "primary": true
+    }
+  },
+  "experiments": [],
+  "featureFlags": [],
+  "buckets": [],
+  "events": [],
+  "segments": [] ,
+  "containers": [],
+  "parameterConfigurations": [],
+  "remoteConfigParameters": [],
+  "inAppMessages": [
+    {
+      "id": 1,
+      "key": 1,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "status": "PAUSE",
+      "eventTriggerRules": [
+        {
+          "eventKey": "home",
+          "targets": []
+        }
+      ],
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": [
+          "ANDROID",
+          "IOS"
+        ],
+        "orientations": [
+          "VERTICAL","HORIZONTAL"
+        ],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_TEXT"
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "https://static.hackle.io/images/in_app_message/20230621/aa229194-95ec-4dc6-b352-525a390ebf00.png",
+                "action": null
+              },
+              {
+                "orientation": "HORIZONTAL",
+                "imagePath": "https://static.hackle.io/images/in_app_message/20230621/b0b82095-3e70-4123-9b91-7c540959779a.png",
+                "action": null
+              }
+            ],
+            "text": {
+              "title": {
+                "text": "asldkasldklasdklaksdasdㅇㅇㅇㅇㅇㅇㅁ",
+                "style": {
+                  "textColor": "#0000FF"
+                }
+              },
+              "body": {
+                "text": "긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것긴것",
+                "style": {
+                  "textColor": "#000000"
+                }
+              }
+            },
+            "buttons": [
+              {
+                "text": "닫기",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              },
+              {
+                "text": "INVALID",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#d0021b",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "WEB_LINK",
+                  "value": "invalid_link"
+                }
+              }
+            ],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
