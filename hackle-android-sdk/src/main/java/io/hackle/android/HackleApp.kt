@@ -101,8 +101,8 @@ class HackleApp internal constructor(
 
     fun resetUser() {
         try {
-            track(PropertyOperations.clearAll().toEvent())
             userManager.resetUser()
+            track(PropertyOperations.clearAll().toEvent())
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
         }
