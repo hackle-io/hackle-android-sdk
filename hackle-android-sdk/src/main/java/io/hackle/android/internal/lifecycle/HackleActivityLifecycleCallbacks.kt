@@ -6,6 +6,7 @@ import android.os.Bundle
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 
 internal class HackleActivityLifecycleCallbacks(
@@ -13,7 +14,7 @@ internal class HackleActivityLifecycleCallbacks(
     private val appStateManager: AppStateManager,
 ) : Application.ActivityLifecycleCallbacks {
 
-    private val listeners = mutableListOf<AppStateChangeListener>()
+    private val listeners = CopyOnWriteArrayList<AppStateChangeListener>()
 
     fun addListener(listener: AppStateChangeListener) = apply {
         listeners += listener
