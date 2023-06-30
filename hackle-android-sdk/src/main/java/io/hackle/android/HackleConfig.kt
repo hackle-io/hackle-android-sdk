@@ -21,7 +21,6 @@ class HackleConfig private constructor(builder: Builder) {
 
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
-
     private val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
 
     internal operator fun get(key: String): String? = extra[key]
@@ -68,7 +67,6 @@ class HackleConfig private constructor(builder: Builder) {
         fun pollingIntervalMillis(pollingIntervalMillis: Int) = apply {
             this.pollingIntervalMillis = pollingIntervalMillis
         }
-
 
         fun eventFlushIntervalMillis(eventFlushIntervalMillis: Int) = apply {
             this.eventFlushIntervalMillis = eventFlushIntervalMillis
@@ -123,9 +121,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m
 
         internal const val NO_POLLING = -1
-        internal const val MIN_POLLING_INTERVAL_MILLIS = 60 * 1000 // 1m
         internal const val DEFAULT_POLLING_INTERVAL_MILLIS = NO_POLLING
-
+        internal const val MIN_POLLING_INTERVAL_MILLIS = 60 * 1000 // 1m
 
         internal const val DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS = 10 * 1000 // 10s (default)
         internal const val MIN_EVENT_FLUSH_INTERVAL_MILLIS = 1000 // 1s (min)
@@ -143,7 +140,6 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 60 * 60 * 1000 // 1h (max)
 
         val DEFAULT: HackleConfig = builder().build()
-
 
         @JvmStatic
         fun builder(): Builder {

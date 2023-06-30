@@ -123,7 +123,6 @@ internal object HackleApps {
             appStateManager = appStateManager
         )
 
-
         val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
         val ffOverrideStorage = create(context, "${PREFERENCES_NAME}_ff_override_$sdkKey")
         val inAppMessageStorage =
@@ -165,7 +164,6 @@ internal object HackleApps {
             .addListener(userManager)
             .addListener(eventProcessor)
 
-
         val userExplorer = HackleUserExplorer(
             HackleUserExplorerService(
                 core = core,
@@ -175,7 +173,6 @@ internal object HackleApps {
                 featureFlagOverrideStorage = ffOverrideStorage
             )
         )
-
 
         (context as? Application)?.let {
             it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
@@ -251,6 +248,4 @@ internal object HackleApps {
 
         return builder.build()
     }
-
-
 }
