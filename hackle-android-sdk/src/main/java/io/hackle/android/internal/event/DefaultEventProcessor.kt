@@ -1,8 +1,6 @@
 package io.hackle.android.internal.event
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
+import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
@@ -39,15 +37,16 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
-) : EventProcessor, AppStateChangeListener, Closeable, Application.ActivityLifecycleCallbacks {
+    private val hackleActivityManager: HackleActivityManager
+) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
     private val eventListeners = mutableListOf<EventListener>()
-    private var currentActivity: Activity? = null
 
     override fun process(event: UserEvent) {
         try {
-            eventExecutor.execute(AddEventTask(event))
+            val newEvent = decorateScreenName(event)
+            eventExecutor.execute(AddEventTask(newEvent))
             publish(event)
 
         } catch (e: Exception) {
@@ -142,7 +141,7 @@ internal class DefaultEventProcessor(
                     return
                 }
 
-                val newEvent = decorateScreenName(decorateSession(event))
+                val newEvent = decorateSession(event)
 
                 save(newEvent)
             } catch (e: Exception) {
@@ -176,17 +175,6 @@ internal class DefaultEventProcessor(
             return event.with(newUser)
         }
 
-        private fun decorateScreenName(event: UserEvent): UserEvent {
-            if (currentActivity == null) {
-                return event
-            }
-
-            val newUser = event.user.toBuilder()
-                .hackleProperty("screenClass", currentActivity!!.javaClass.name)
-                .build()
-
-            return event.with(newUser)
-        }
 
         private fun save(event: UserEvent) {
             eventRepository.save(event)
@@ -214,30 +202,15 @@ internal class DefaultEventProcessor(
         }
     }
 
-    override fun onActivityCreated(activity: Activity, p1: Bundle?) {
-        currentActivity = activity
+    private fun decorateScreenName(event: UserEvent): UserEvent {
+        val currentActivity = hackleActivityManager.currentActivity ?: return event
+
+        val newUser = event.user.toBuilder()
+            .hackleProperty("screenClass", currentActivity.javaClass.simpleName)
+            .build()
+
+        return event.with(newUser)
     }
-
-    override fun onActivityStarted(activity: Activity) {
-        currentActivity = activity
-
-    }
-
-    override fun onActivityResumed(activity: Activity) {
-        currentActivity = activity
-    }
-
-    override fun onActivityPaused(p0: Activity) {}
-
-
-    override fun onActivityStopped(activity: Activity) {}
-
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-
-
-    override fun onActivityDestroyed(activity: Activity) {}
-
 
 
     companion object {

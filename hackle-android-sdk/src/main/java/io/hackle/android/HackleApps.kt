@@ -7,7 +7,8 @@ import io.hackle.android.explorer.HackleUserExplorer
 import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.storage.HackleUserManualOverrideStorage.Companion.create
 import io.hackle.android.inappmessage.InAppMessageRenderer
-import io.hackle.android.inappmessage.storage.HackleInAppMessageStorage
+import io.hackle.android.inappmessage.storage.HackleInAppMessageStorageImpl
+import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.EventRepository
@@ -107,6 +108,7 @@ internal object HackleApps {
         )
 
         val appStateManager = AppStateManager()
+        val hackleActivityManager = HackleActivityManager()
 
         val eventProcessor = DefaultEventProcessor(
             deduplicationDeterminer = dedupDeterminer,
@@ -120,13 +122,14 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager
+            appStateManager = appStateManager,
+            hackleActivityManager = hackleActivityManager
         )
 
         val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
         val ffOverrideStorage = create(context, "${PREFERENCES_NAME}_ff_override_$sdkKey")
         val inAppMessageStorage =
-            HackleInAppMessageStorage.create(context, "${PREFERENCES_NAME}_in_app_message_$sdkKey")
+            HackleInAppMessageStorageImpl.create(context, "${PREFERENCES_NAME}_in_app_message_$sdkKey")
 
         HackleCoreContext.registerInstance(inAppMessageStorage)
 
@@ -140,7 +143,7 @@ internal object HackleApps {
         )
 
 
-        val inAppMessageRenderer = InAppMessageRenderer()
+        val inAppMessageRenderer = InAppMessageRenderer(hackleActivityManager)
         val targetMatcher = HackleCoreContext.get(TargetMatcher::class.java)
         val inAppMessageTriggerDeterminer = InAppMessageTriggerDeterminer(targetMatcher)
         val inAppMessageManager = InAppMessageManager(
@@ -177,8 +180,7 @@ internal object HackleApps {
         (context as? Application)?.let {
             it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
             it.registerActivityLifecycleCallbacks(userExplorer)
-            it.registerActivityLifecycleCallbacks(inAppMessageRenderer)
-            it.registerActivityLifecycleCallbacks(eventProcessor)
+            it.registerActivityLifecycleCallbacks(hackleActivityManager)
         }
 
         userManager.addListener(sessionManager)

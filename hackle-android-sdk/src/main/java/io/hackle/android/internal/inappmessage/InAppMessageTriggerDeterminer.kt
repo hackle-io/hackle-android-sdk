@@ -45,7 +45,6 @@ internal class InAppMessageTriggerDeterminer(
             }
     }
 
-    // TargetMatcher 구조상 Request 가 필요해 부득이 EventRequest 를 만듦
     class InAppMessageRequest(
         override val event: UserEvent.Track,
         override val key: Evaluator.Key,

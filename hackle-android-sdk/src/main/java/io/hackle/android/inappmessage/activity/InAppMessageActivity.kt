@@ -23,14 +23,16 @@ import io.hackle.android.inappmessage.InAppMessageRenderer
 import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.inappmessage.base.InAppMessageTrack.actionTrack
 import io.hackle.android.inappmessage.base.InAppMessageTrack.closeTrack
-import io.hackle.android.inappmessage.storage.HackleInAppMessageStorage
-import io.hackle.android.inappmessage.storage.HackleInAppMessageStorage.Companion.NEXT_24_HOUR_MILLISECONDS
+import io.hackle.android.inappmessage.storage.HackleInAppMessageStorageImpl
+import io.hackle.android.inappmessage.storage.HackleInAppMessageStorageImpl.Companion.NEXT_24_HOUR_MILLISECONDS
 import io.hackle.android.inappmessage.view.InAppMessageImageView
 import io.hackle.android.inappmessage.view.InAppMessageModalFrame
 import io.hackle.android.inappmessage.view.InAppMessageModalFrameLand
 import io.hackle.android.inappmessage.view.InAppMessageTextContainerView
 import io.hackle.android.internal.utils.parseJson
+import io.hackle.sdk.core.HackleCoreContext
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.MessageContext.Action.Behavior.CLICK
 import io.hackle.sdk.core.model.InAppMessage.MessageContext.Action.Type.CLOSE
@@ -61,10 +63,7 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
 
     private lateinit var frame: RelativeLayout
 
-
-    private var inAppMessageKey: Long = -1L
-
-    private var inAppMessageId: Long = -1L
+    private lateinit var inAppMessage: InAppMessage
 
     private lateinit var images: List<Message.Image>
 
@@ -85,13 +84,13 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
         }
 
     private fun initialize(): Boolean {
-        val inAppMessage =
+        inAppMessage =
             intent.extras?.getString("inAppMessage")?.parseJson<InAppMessage>() ?: let {
                 log.error { "Could not find iam from intent." }
                 return false
             }
-        inAppMessageKey = inAppMessage.key
-        inAppMessageId = inAppMessage.id
+
+
         messageContext = inAppMessage.messageContext
         message = intent.extras?.getString("message")?.parseJson<Message>() ?: let {
             log.error { "Could not find message from intent." }
@@ -297,8 +296,8 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
                     try {
                         startActivity(intent)
                         actionTrack(
-                            inAppMessageId,
-                            inAppMessageKey,
+                            inAppMessage.id,
+                            inAppMessage.key,
                             message,
                             InAppMessageTrack.ActionSource.IMAGE,
                             imageIdx
@@ -323,8 +322,8 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
             when (action.type) {
                 CLOSE -> {
                     actionTrack(
-                        inAppMessageId,
-                        inAppMessageKey,
+                        inAppMessage.id,
+                        inAppMessage.key,
                         message,
                         InAppMessageTrack.ActionSource.BUTTON,
                         buttonIdx
@@ -339,8 +338,8 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
                         startActivity(intent)
 
                         actionTrack(
-                            inAppMessageId,
-                            inAppMessageKey,
+                            inAppMessage.id,
+                            inAppMessage.key,
                             message,
                             InAppMessageTrack.ActionSource.BUTTON,
                             buttonIdx
@@ -352,11 +351,15 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
                 }
 
                 HIDDEN -> {
-                    val storage = HackleInAppMessageStorage.getInstance()
-                    storage.setInvisibleUntil(inAppMessageKey, NEXT_24_HOUR_MILLISECONDS)
+                    val storage = HackleCoreContext.get(HackleInAppMessageStorageImpl::class.java)
+                    storage.put(
+                        inAppMessage,
+                        Clock.SYSTEM.currentMillis() + NEXT_24_HOUR_MILLISECONDS
+                    )
+
                     actionTrack(
-                        inAppMessageId,
-                        inAppMessageKey,
+                        inAppMessage.id,
+                        inAppMessage.key,
                         message,
                         InAppMessageTrack.ActionSource.BUTTON,
                         buttonIdx
@@ -369,8 +372,8 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
 
     private fun onXButtonClick() {
         actionTrack(
-            inAppMessageId,
-            inAppMessageKey,
+            inAppMessage.id,
+            inAppMessage.key,
             message,
             src = InAppMessageTrack.ActionSource.X_BUTTON,
             itemIdx = 0
@@ -379,7 +382,7 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
     }
 
     override fun onDestroy() {
-        closeTrack(inAppMessageId, inAppMessageKey)
+        closeTrack(inAppMessage.id, inAppMessage.key)
         super.onDestroy()
     }
 

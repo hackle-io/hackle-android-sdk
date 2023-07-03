@@ -1,5 +1,6 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
@@ -51,6 +52,9 @@ class DefaultEventProcessorTest {
     @RelaxedMockK
     private lateinit var appStateManager: AppStateManager
 
+    @RelaxedMockK
+    private lateinit var hackleActivityManager: HackleActivityManager
+
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
@@ -59,6 +63,7 @@ class DefaultEventProcessorTest {
         every { sessionManager.currentSession } returns null
         every { appStateManager.currentState } returns AppState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
+        every { hackleActivityManager.currentActivity } returns null
     }
 
 
@@ -75,6 +80,7 @@ class DefaultEventProcessorTest {
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
         appStateManager: AppStateManager = this.appStateManager,
+        hackleActivityManager: HackleActivityManager = this.hackleActivityManager
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             deduplicationDeterminer = deduplicationDeterminer,
@@ -88,7 +94,8 @@ class DefaultEventProcessorTest {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager
+            appStateManager = appStateManager,
+            hackleActivityManager = hackleActivityManager
         )
     }
 
@@ -124,6 +131,7 @@ class DefaultEventProcessorTest {
         // then
         verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
     }
+
 
     @Test
     fun `process - last event time update`() {

@@ -20,7 +20,7 @@ internal class InAppMessageManager(
     private val core: HackleCore,
     private val appStateManager: AppStateManager,
     private val inAppMessageRenderer: InAppMessageRenderer,
-    private val inAppMessageTriggerDeterminer: InAppMessageTriggerDeterminer,
+    private val inAppMessageTriggerDeterminer: InAppMessageTriggerDeterminer
 ) : EventListener {
 
     private val currentState: AppState
@@ -39,21 +39,27 @@ internal class InAppMessageManager(
         val triggeredInAppMessages =
             inAppMessageTriggerDeterminer.determine(workspace.inAppMessages, userEvent, workspace)
 
-        val inAppMessageDecision = triggeredInAppMessages
+        val inAppMessageRenderSource = triggeredInAppMessages
             .map { core.tryInAppMessage(it.key, userEvent.user) }
-            .filterNot { it.message == null || it.inAppMessage == null }
+            .mapNotNull { it.toInAppMessageRenderSource() }
             .firstOrNull() ?: return
 
         if (currentState == AppState.FOREGROUND) {
-            impressionTrack(
-                inAppMessageDecision.inAppMessage!!
-            )
-
             inAppMessageRenderer.render(
-                inAppMessageDecision
-            )
-
+                inAppMessageRenderSource
+            ).also {
+                impressionTrack(
+                    inAppMessageRenderSource.inAppMessage
+                )
+            }
         }
+    }
+
+    private fun InAppMessageDecision.toInAppMessageRenderSource(): InAppMessageRenderSource? {
+        if (inAppMessage != null && message != null) {
+            return InAppMessageRenderSource(inAppMessage!!, message!!)
+        }
+        return null
     }
 
     private fun HackleCore.tryInAppMessage(

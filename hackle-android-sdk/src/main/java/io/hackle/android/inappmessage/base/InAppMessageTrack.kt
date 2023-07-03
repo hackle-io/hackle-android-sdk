@@ -110,7 +110,6 @@ object InAppMessageTrack {
     }
 
 
-    //어떤 영역에서 액션이 발생했는가
     enum class ActionSource {
         IMAGE,
         BUTTON,

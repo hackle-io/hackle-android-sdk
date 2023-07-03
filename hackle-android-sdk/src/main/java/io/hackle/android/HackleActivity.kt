@@ -1,3 +1,3 @@
 package io.hackle.android
 
-interface HackleActivity
+internal interface HackleActivity
