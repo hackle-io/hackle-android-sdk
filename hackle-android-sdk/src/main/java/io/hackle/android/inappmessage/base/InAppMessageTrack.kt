@@ -6,9 +6,8 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.core.model.InAppMessage
 
-object InAppMessageTrack {
+internal object InAppMessageTrack {
 
-    @JvmStatic
     fun impressionTrack(
         inAppMessage: InAppMessage
     ) {
@@ -17,18 +16,16 @@ object InAppMessageTrack {
         val messageContext = inAppMessage.messageContext
 
         val propertiesBuilder = PropertiesBuilder()
+            .add("in_app_message_id", inAppMessageId)
+            .add("campaign_key", inAppMessageKey)
+            .add("title_text", messageContext.messages.mapNotNull { it.text?.title?.text })
+            .add("body_text", messageContext.messages.mapNotNull { it.text?.body?.text })
             .add(
-                mapOf(
-                    "in_app_message_id" to inAppMessageId,
-                    "campaign_key" to inAppMessageKey,
-                    "title_text" to messageContext.messages.map {
-                        it.text?.title?.text ?: ""
-                    },
-                    "body_text" to messageContext.messages.map { it.text?.body?.text ?: "" },
-                    "button_text" to messageContext.messages.flatMap { message -> message.buttons.map { it.text } },
-                    "image_url" to messageContext.messages.flatMap { message -> message.images.map { it.imagePath } }
-                )
-            )
+                "button_text",
+                messageContext.messages.flatMap { message -> message.buttons.map { it.text } })
+            .add(
+                "image_url",
+                messageContext.messages.flatMap { message -> message.images.map { it.imagePath } })
 
         Hackle.app.track(
             Event.builder(IN_APP_IMPRESSION)
@@ -37,7 +34,6 @@ object InAppMessageTrack {
         )
     }
 
-    @JvmStatic
     fun actionTrack(
         inAppMessageId: Long,
         inAppMessageKey: Long,
@@ -49,43 +45,30 @@ object InAppMessageTrack {
         val propertiesBuilder = when (src) {
             ActionSource.IMAGE -> {
                 PropertiesBuilder()
-                    .add(
-                        mapOf(
-                            "in_app_message_id" to inAppMessageId,
-                            "campaign_key" to inAppMessageKey,
-                            "action_area" to src.name,
-                            "action_type" to message.images[itemIdx].action?.type,
-                            "button_text" to "",
-                            "action_value" to message.images[itemIdx].imagePath
-
-                        )
-                    )
+                    .add("in_app_message_id", inAppMessageId)
+                    .add("campaign_key", inAppMessageKey)
+                    .add("action_area", src.name)
+                    .add("action_type", message.images[itemIdx].action?.type)
+                    .add("button_text", "")
+                    .add("action_value", message.images[itemIdx].imagePath)
             }
 
             ActionSource.BUTTON -> {
                 PropertiesBuilder()
-                    .add(
-                        mapOf(
-                            "in_app_message_id" to inAppMessageId,
-                            "campaign_key" to inAppMessageKey,
-                            "action_area" to src.name,
-                            "action_type" to message.buttons[itemIdx].action.type,
-                            "button_text" to message.buttons[itemIdx].text,
-                            "action_value" to message.buttons[itemIdx].action.value
-                        )
-                    )
+                    .add("in_app_message_id", inAppMessageId)
+                    .add("campaign_key", inAppMessageKey)
+                    .add("action_area", src.name)
+                    .add("action_type", message.buttons[itemIdx].action.type)
+                    .add("button_text", message.buttons[itemIdx].text)
+                    .add("action_value", message.buttons[itemIdx].action.value)
             }
 
             ActionSource.X_BUTTON -> {
                 PropertiesBuilder()
-                    .add(
-                        mapOf(
-                            "in_app_message_id" to inAppMessageId,
-                            "campaign_key" to inAppMessageKey,
-                            "action_area" to src.name,
-                            "action_type" to InAppMessage.MessageContext.Action.Type.CLOSE
-                        )
-                    )
+                    .add("in_app_message_id", inAppMessageId)
+                    .add("campaign_key", inAppMessageKey)
+                    .add("action_area", src.name)
+                    .add("action_type", InAppMessage.MessageContext.Action.Type.CLOSE.name)
             }
         }
 
@@ -96,7 +79,6 @@ object InAppMessageTrack {
         )
     }
 
-    @JvmStatic
     fun closeTrack(inAppMessageId: Long, inAppMessageKey: Long) {
         val propertiesBuilder = PropertiesBuilder()
             .add("in_app_message_id", inAppMessageId)

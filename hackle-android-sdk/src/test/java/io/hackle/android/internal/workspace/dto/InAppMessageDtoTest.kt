@@ -17,11 +17,6 @@ internal class InAppMessageDtoTest {
         expectThat(workspace.getInAppMessageOrNull(1L))
             .isNotNull()
             .InAppMessage(1L, 1L, InAppMessage.Status.PAUSE)
-            .DisplayTimeRange(
-                InAppMessage.TimeUnitType.IMMEDIATE,
-                InAppMessage.DisplayTimeRange.NONE,
-                InAppMessage.DisplayTimeRange.NONE
-            )
             .and {
                 get { targetContext.targets } isEqualTo emptyList()
                 get { targetContext.overrides } isEqualTo emptyList()
@@ -41,6 +36,9 @@ internal class InAppMessageDtoTest {
                         get { exposure.type } isEqualTo InAppMessage.MessageContext.Exposure.Type.DEFAULT
                         get { exposure.key } isEqualTo null
                     }
+            }
+            .and {
+                get { displayTimeRange } isEqualTo InAppMessage.Range.Immediate
             }
 
     }
@@ -159,18 +157,4 @@ internal class InAppMessageDtoTest {
                 fail(targetContext)
             }
         }
-
-    private fun Assertion.Builder<InAppMessage>.DisplayTimeRange(
-        timeUnitType: InAppMessage.TimeUnitType,
-        startEpochTimeMillis: Long?,
-        endEpochTimeMillis: Long?
-    ) = compose("InAppMessage.DisplayTimeRange") {
-        get { it.displayTimeRange.timeUnit } isEqualTo timeUnitType
-        get { it.displayTimeRange.startEpochTimeMillis } isEqualTo startEpochTimeMillis
-        get { it.displayTimeRange.endEpochTimeMillis } isEqualTo endEpochTimeMillis
-    } then {
-        if (allPassed) pass() else fail()
-    }
-
-
 }

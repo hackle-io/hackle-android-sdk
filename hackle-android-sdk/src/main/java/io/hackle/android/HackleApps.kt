@@ -7,7 +7,7 @@ import io.hackle.android.explorer.HackleUserExplorer
 import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.storage.HackleUserManualOverrideStorage.Companion.create
 import io.hackle.android.inappmessage.InAppMessageRenderer
-import io.hackle.android.inappmessage.storage.HackleInAppMessageStorageImpl
+import io.hackle.android.inappmessage.storage.AndroidHackleInAppMessageStorage
 import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
@@ -129,7 +129,10 @@ internal object HackleApps {
         val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
         val ffOverrideStorage = create(context, "${PREFERENCES_NAME}_ff_override_$sdkKey")
         val inAppMessageStorage =
-            HackleInAppMessageStorageImpl.create(context, "${PREFERENCES_NAME}_in_app_message_$sdkKey")
+            AndroidHackleInAppMessageStorage.create(
+                context,
+                "${PREFERENCES_NAME}_in_app_message_$sdkKey"
+            )
 
         HackleCoreContext.registerInstance(inAppMessageStorage)
 
@@ -142,19 +145,16 @@ internal object HackleApps {
             )
         )
 
-
         val inAppMessageRenderer = InAppMessageRenderer(hackleActivityManager)
         val targetMatcher = HackleCoreContext.get(TargetMatcher::class.java)
-        val inAppMessageTriggerDeterminer = InAppMessageTriggerDeterminer(targetMatcher)
+        val inAppMessageTriggerDeterminer = InAppMessageTriggerDeterminer(core, targetMatcher)
         val inAppMessageManager = InAppMessageManager(
             cachedWorkspaceFetcher,
-            core,
             appStateManager,
             inAppMessageRenderer,
             inAppMessageTriggerDeterminer
         )
         eventProcessor.addListener(inAppMessageManager)
-
 
         val hackleUserResolver = HackleUserResolver(device)
 
@@ -174,7 +174,8 @@ internal object HackleApps {
                 hackleUserResolver = hackleUserResolver,
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage
-            )
+            ),
+            hackleActivityManager = hackleActivityManager
         )
 
         (context as? Application)?.let {

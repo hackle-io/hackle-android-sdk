@@ -176,6 +176,7 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
         log.info { "timeUnit NULL" }
         return null
     }
+
     val messageContext = messageContext.toMessageContextOrNull() ?: let {
         log.info { "messageContext NULL" }
         return null
@@ -188,11 +189,12 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
     return InAppMessage(
         id = id,
         key = key,
-        displayTimeRange = InAppMessage.DisplayTimeRange.from(
-            timeUnit = parsedTimeUnit,
-            startEpochTimeMillis,
-            endEpochTimeMillis
-        ),
+        displayTimeRange = when (parsedTimeUnit) {
+            InAppMessage.TimeUnitType.IMMEDIATE -> InAppMessage.Range.Immediate
+            InAppMessage.TimeUnitType.CUSTOM -> InAppMessage.Range.Custom(
+                startEpochTimeMillis ?: return null, endEpochTimeMillis ?: return null
+            )
+        },
         status = parsedStatus,
         eventTriggerRules = eventTriggerRules.map { it.toEventTriggerRule() },
         targetContext = targetContext.toTargetContext(),

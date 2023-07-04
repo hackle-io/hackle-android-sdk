@@ -17,7 +17,6 @@ import io.hackle.sdk.core.workspace.WorkspaceFetcher
 
 internal class InAppMessageManager(
     private val workspaceFetcher: WorkspaceFetcher,
-    private val core: HackleCore,
     private val appStateManager: AppStateManager,
     private val inAppMessageRenderer: InAppMessageRenderer,
     private val inAppMessageTriggerDeterminer: InAppMessageTriggerDeterminer
@@ -32,17 +31,9 @@ internal class InAppMessageManager(
             return
         }
 
-        if (userEvent !is UserEvent.Track) {
-            return
-        }
-
-        val triggeredInAppMessages =
+        val inAppMessageRenderSource =
             inAppMessageTriggerDeterminer.determine(workspace.inAppMessages, userEvent, workspace)
-
-        val inAppMessageRenderSource = triggeredInAppMessages
-            .map { core.tryInAppMessage(it.key, userEvent.user) }
-            .mapNotNull { it.toInAppMessageRenderSource() }
-            .firstOrNull() ?: return
+                ?: return
 
         if (currentState == AppState.FOREGROUND) {
             inAppMessageRenderer.render(
@@ -54,32 +45,6 @@ internal class InAppMessageManager(
             }
         }
     }
-
-    private fun InAppMessageDecision.toInAppMessageRenderSource(): InAppMessageRenderSource? {
-        if (inAppMessage != null && message != null) {
-            return InAppMessageRenderSource(inAppMessage!!, message!!)
-        }
-        return null
-    }
-
-    private fun HackleCore.tryInAppMessage(
-        inAppMessageKey: Long,
-        user: HackleUser
-    ): InAppMessageDecision {
-        val sample = Timer.start()
-
-        val decision = try {
-            inAppMessage(inAppMessageKey, user)
-        } catch (e: Exception) {
-            log.error { "Unexpected error while deciding in app message $e" }
-            InAppMessageDecision(reason = DecisionReason.EXCEPTION, false)
-        }
-
-        DecisionMetrics.inAppMessage(sample, inAppMessageKey, decision)
-
-        return decision
-    }
-
 
     companion object {
         private val log = Logger<InAppMessageManager>()

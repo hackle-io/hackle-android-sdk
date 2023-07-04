@@ -6,7 +6,7 @@ import io.hackle.android.internal.database.KeyValueRepository
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.storage.HackleInAppMessageStorage
 import io.hackle.sdk.core.model.InAppMessage
 
-internal class HackleInAppMessageStorageImpl internal constructor(
+internal class AndroidHackleInAppMessageStorage internal constructor(
     private val keyValueRepository: KeyValueRepository
 ) : HackleInAppMessageStorage {
 
@@ -30,6 +30,9 @@ internal class HackleInAppMessageStorageImpl internal constructor(
         keyValueRepository.putLong(key(inAppMessage), expiredAtMillis)
     }
 
+    fun put(inAppMessageKey: Long, expiredAtMillis: Long) {
+        keyValueRepository.putLong(inAppMessageKey.toString(), expiredAtMillis)
+    }
 
     private fun key(inAppMessage: InAppMessage): String {
         return inAppMessage.key.toString()
@@ -40,8 +43,8 @@ internal class HackleInAppMessageStorageImpl internal constructor(
 
         const val NEXT_24_HOUR_MILLISECONDS = 24 * 60 * 60 * 1000L
 
-        fun create(context: Context, name: String): HackleInAppMessageStorageImpl {
-            return HackleInAppMessageStorageImpl(
+        fun create(context: Context, name: String): AndroidHackleInAppMessageStorage {
+            return AndroidHackleInAppMessageStorage(
                 AndroidKeyValueRepository.create(
                     context,
                     name

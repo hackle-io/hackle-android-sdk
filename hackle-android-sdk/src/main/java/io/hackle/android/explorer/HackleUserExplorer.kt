@@ -11,14 +11,15 @@ import io.hackle.android.R
 import io.hackle.android.explorer.activity.HackleUserExplorerActivity
 import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.view.button.HackleUserExplorerButton
+import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
+    private val hackleActivityManager: HackleActivityManager,
 ) : Application.ActivityLifecycleCallbacks {
 
-    private var currentActivity: Activity? = null
     private var isShow: Boolean = false
 
     fun show() {
@@ -30,10 +31,7 @@ internal class HackleUserExplorer(
 
     private fun attach() {
         try {
-            val activity = currentActivity ?: return
-            if (activity is HackleUserExplorerActivity) {
-                return
-            }
+            val activity = hackleActivityManager.currentActivity ?: return
 
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
                 return
@@ -55,15 +53,13 @@ internal class HackleUserExplorer(
     }
 
     override fun onActivityStarted(activity: Activity) {
-        currentActivity = activity
-        if (isShow && currentActivity !is HackleActivity) {
+        hackleActivityManager.currentActivity ?: return
+        if (isShow) {
             attach()
         }
     }
 
-    override fun onActivityResumed(activity: Activity) {
-        currentActivity = activity
-    }
+    override fun onActivityResumed(activity: Activity) {}
 
     override fun onActivityPaused(activity: Activity) {
     }

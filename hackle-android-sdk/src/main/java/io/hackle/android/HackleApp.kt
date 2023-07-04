@@ -39,7 +39,7 @@ class HackleApp internal constructor(
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
     private val device: Device,
-    internal val userExplorer: HackleUserExplorer
+    internal val userExplorer: HackleUserExplorer,
 ) : Closeable {
 
     /**
@@ -58,7 +58,6 @@ class HackleApp internal constructor(
         userExplorer.show()
         Metrics.counter("user.explorer.show").increment()
     }
-
 
     fun setUser(user: User) {
         try {

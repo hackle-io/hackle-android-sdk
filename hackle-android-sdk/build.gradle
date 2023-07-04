@@ -39,8 +39,8 @@ android {
 
 dependencies {
 
-    api "io.hackle:hackle-sdk-common:2.15.2-SNAPSHOT"
-    implementation "io.hackle:hackle-sdk-core:2.15.2-SNAPSHOT"
+    api "io.hackle:hackle-sdk-common:2.16.0-SNAPSHOT"
+    implementation "io.hackle:hackle-sdk-core:2.16.0-SNAPSHOT"
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
     implementation "com.google.android.gms:play-services-base:17.3.0"
@@ -96,10 +96,10 @@ afterEvaluate {
         }
     }
 }
-//
-//signing {
-//    def signingKey = System.getenv("SIGNING_KEY")
-//    def signingPassword = System.getenv("SIGNING_PASSWORD")
-//    useInMemoryPgpKeys(signingKey, signingPassword)
-//    sign publishing.publications
-//}
+
+signing {
+    def signingKey = System.getenv("SIGNING_KEY")
+    def signingPassword = System.getenv("SIGNING_PASSWORD")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications
+}

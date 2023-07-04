@@ -17,11 +17,14 @@ internal class InAppMessageRenderer(
         val activity = hackleActivityManager.currentActivity ?: return
 
         val intent = Intent(activity, InAppMessageActivity::class.java)
-        val inAppMessage = inAppMessageRenderSource.inAppMessage.toJson()
+        val inAppMessage = inAppMessageRenderSource.inAppMessage
         val message = inAppMessageRenderSource.message.toJson()
+        val messageContext = inAppMessage.messageContext.toJson()
 
+        intent.putExtra("messageContext", messageContext)
         intent.putExtra("message", message)
-        intent.putExtra("inAppMessage", inAppMessage)
+        intent.putExtra("inAppMessageId", inAppMessage.id)
+        intent.putExtra("inAppMessageKey", inAppMessage.key)
 
         activity.startActivity(intent)
     }
