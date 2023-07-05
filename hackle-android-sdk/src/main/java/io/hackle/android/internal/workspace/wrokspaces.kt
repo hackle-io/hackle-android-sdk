@@ -14,6 +14,7 @@ internal fun ExperimentDto.toExperimentOrNull(type: Experiment.Type): Experiment
     return Experiment(
         id = id,
         key = key,
+        name = name,
         type = type,
         identifierType = identifierType,
         status = Experiment.Status.fromExecutionStatusOrNull(execution.status) ?: return null,
