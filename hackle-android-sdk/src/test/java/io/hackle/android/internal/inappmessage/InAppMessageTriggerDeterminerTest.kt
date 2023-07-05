@@ -1,6 +1,7 @@
 package io.hackle.android.internal.inappmessage
 
 
+import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.core.HackleCore
@@ -48,13 +49,17 @@ internal class InAppMessageTriggerDeterminerTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         mockkObject(DecisionMetrics)
         mockkObject(InAppMessageTriggerDeterminer.InAppMessageRequest.Companion)
+        mockkObject(InAppMessageTrack)
+        every { InAppMessageTrack.impressionTrack(any(), any(), any()) } returns mockk()
 
         inAppMessage = mockk()
         message = mockk()
         decision = mockk()
+        every { decision.reason } returns mockk()
         every { decision.inAppMessage } returns inAppMessage
         every { decision.message } returns message
         every { inAppMessage.key } returns 123L
+        every { inAppMessage.id } returns 123L
         every { DecisionMetrics.inAppMessage(any(), any(), any()) } returns mockk()
         every {
             InAppMessageTriggerDeterminer.InAppMessageRequest.Companion.of(
@@ -198,7 +203,7 @@ internal class InAppMessageTriggerDeterminerTest {
     }
 
     @Test
-    fun `트리거 조건에도 맞고 코어 로직 결과 보여주기로 했다면 InAppMessageRenderSource 를 리턴한다`() {
+    fun `트리거 조건에도 맞고 코어 로직 결과 보여주기로 했다면 InAppMessageRenderSource 를 리턴하고 impression track을 발생시킨다`() {
         val workspace = mockk<Workspace>()
         val track = mockk<UserEvent.Track>()
         every { decision.isShow } returns true
@@ -214,6 +219,8 @@ internal class InAppMessageTriggerDeterminerTest {
 
         val actual = sut.determine(listOf(inAppMessage), track, workspace)
 
+
+        verify(exactly = 1) { InAppMessageTrack.impressionTrack(any(), any(), any()) }
         expectThat(actual) {
             get { inAppMessage } isEqualTo decision.inAppMessage
             get { message } isEqualTo decision.message
@@ -225,5 +232,6 @@ internal class InAppMessageTriggerDeterminerTest {
     fun clear() {
         unmockkObject(DecisionMetrics)
         unmockkObject(InAppMessageTriggerDeterminer.InAppMessageRequest.Companion)
+        unmockkObject(InAppMessageTrack)
     }
 }

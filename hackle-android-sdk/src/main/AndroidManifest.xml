@@ -14,7 +14,6 @@
         <activity android:name="io.hackle.android.inappmessage.activity.InAppMessageActivity"
             android:configChanges="orientation|screenSize"
             android:exported="false"
-            android:launchMode="singleTask"
             android:theme="@style/HackleInAppMessageTheme">
         </activity>
     </application>

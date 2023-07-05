@@ -4,28 +4,27 @@ import io.hackle.android.Hackle
 import io.hackle.android.app
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.PropertiesBuilder
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.InAppMessage
 
 internal object InAppMessageTrack {
 
     fun impressionTrack(
-        inAppMessage: InAppMessage
+        inAppMessage: InAppMessage,
+        message: InAppMessage.MessageContext.Message,
+        decisionReason: DecisionReason
     ) {
         val inAppMessageId = inAppMessage.id
         val inAppMessageKey = inAppMessage.key
-        val messageContext = inAppMessage.messageContext
 
         val propertiesBuilder = PropertiesBuilder()
             .add("in_app_message_id", inAppMessageId)
             .add("campaign_key", inAppMessageKey)
-            .add("title_text", messageContext.messages.mapNotNull { it.text?.title?.text })
-            .add("body_text", messageContext.messages.mapNotNull { it.text?.body?.text })
-            .add(
-                "button_text",
-                messageContext.messages.flatMap { message -> message.buttons.map { it.text } })
-            .add(
-                "image_url",
-                messageContext.messages.flatMap { message -> message.images.map { it.imagePath } })
+            .add("title_text", message.text?.title?.text)
+            .add("body_text", message.text?.body?.text)
+            .add("button_text", message.buttons.map { it.text })
+            .add("image_url", message.images.map { it.imagePath } )
+            .add("decision_reason", decisionReason.name)
 
         Hackle.app.track(
             Event.builder(IN_APP_IMPRESSION)

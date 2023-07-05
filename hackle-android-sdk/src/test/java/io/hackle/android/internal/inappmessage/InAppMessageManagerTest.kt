@@ -1,13 +1,10 @@
 package io.hackle.android.internal.inappmessage
 
-import io.hackle.android.Hackle
 import io.hackle.android.HackleApp
-import io.hackle.android.app
 import io.hackle.android.inappmessage.InAppMessageRenderer
 import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.decision.InAppMessageDecision
@@ -53,8 +50,6 @@ class InAppMessageManagerTest {
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         mockkObject(HackleApp.Companion)
-        mockkObject(InAppMessageTrack)
-        every { InAppMessageTrack.impressionTrack(any()) } returns mockk()
     }
 
     @Test
@@ -132,7 +127,7 @@ class InAppMessageManagerTest {
 
 
     @Test
-    fun `모든 조건이 맞으면 inAppMessageRenderer 을 호출하여 인앱 메시지를 렌더링하고 impression 이벤트를 발생시킨다`() {
+    fun `모든 조건이 맞으면 inAppMessageRenderer 을 호출하여 인앱 메시지를 렌더링한다`() {
         val workspace = mockk<Workspace>()
         val inAppMessage = mockk<InAppMessage>()
         val track = mockk<UserEvent.Track>()
@@ -162,7 +157,6 @@ class InAppMessageManagerTest {
         sut.onEventPublish(track)
 
         verify(exactly = 1) { inAppMessageTriggerDeterminer.determine(any(), any(), any()) }
-        verify(exactly = 1) { InAppMessageTrack.impressionTrack(any()) }
         verify(exactly = 1) { inAppMessageRenderer.render(any()) }
     }
 

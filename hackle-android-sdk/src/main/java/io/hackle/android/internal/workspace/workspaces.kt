@@ -173,16 +173,13 @@ internal fun RemoteConfigParameterDto.TargetRuleDto.toTargetRuleOrNull(): Remote
 
 internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
     val parsedTimeUnit = parseEnumOrNull<InAppMessage.TimeUnitType>(timeUnit) ?: let {
-        log.info { "timeUnit NULL" }
         return null
     }
 
     val messageContext = messageContext.toMessageContextOrNull() ?: let {
-        log.info { "messageContext NULL" }
         return null
     }
     val parsedStatus = parseEnumOrNull<InAppMessage.Status>(status) ?: let {
-        log.info { "parsedStatus NULL" }
         return null
     }
 
@@ -206,11 +203,11 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
 internal fun InAppMessageDto.EventTriggerRuleDto.toEventTriggerRule() =
     InAppMessage.EventTriggerRule(
         eventKey = eventKey,
-        targets = targets.mapNotNull { it.toTargetOrNull(IN_APP_MESSAGE) }
+        targets = targets.mapNotNull { it.toTargetOrNull(PROPERTY) }
     )
 
 internal fun InAppMessageDto.TargetContextDto.toTargetContext() = InAppMessage.TargetContext(
-    targets = targets.mapNotNull { it.toTargetOrNull(IN_APP_MESSAGE) },
+    targets = targets.mapNotNull { it.toTargetOrNull(PROPERTY) },
     overrides = overrides.map { it.toUserOverride() }
 )
 

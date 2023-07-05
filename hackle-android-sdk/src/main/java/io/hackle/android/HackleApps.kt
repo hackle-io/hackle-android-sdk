@@ -145,7 +145,7 @@ internal object HackleApps {
             )
         )
 
-        val inAppMessageRenderer = InAppMessageRenderer(hackleActivityManager)
+        val inAppMessageRenderer = InAppMessageRenderer.create(hackleActivityManager)
         val targetMatcher = HackleCoreContext.get(TargetMatcher::class.java)
         val inAppMessageTriggerDeterminer = InAppMessageTriggerDeterminer(core, targetMatcher)
         val inAppMessageManager = InAppMessageManager(
@@ -179,9 +179,9 @@ internal object HackleApps {
         )
 
         (context as? Application)?.let {
+            it.registerActivityLifecycleCallbacks(hackleActivityManager)
             it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
             it.registerActivityLifecycleCallbacks(userExplorer)
-            it.registerActivityLifecycleCallbacks(hackleActivityManager)
         }
 
         userManager.addListener(sessionManager)

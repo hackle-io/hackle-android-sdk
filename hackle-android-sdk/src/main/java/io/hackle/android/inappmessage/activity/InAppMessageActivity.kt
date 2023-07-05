@@ -31,7 +31,6 @@ import io.hackle.android.inappmessage.view.InAppMessageModalFrameLand
 import io.hackle.android.inappmessage.view.InAppMessageTextContainerView
 import io.hackle.android.internal.utils.parseJson
 import io.hackle.sdk.core.HackleCoreContext
-import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.MessageContext.Action.Behavior.CLICK
@@ -86,22 +85,18 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
 
     private fun initialize(): Boolean {
         inAppMessageId = intent.extras?.getLong("inAppMessageId") ?: let {
-            log.error { "Could not find Id from intent." }
             return false
         }
 
         inAppMessageKey = intent.extras?.getLong("inAppMessageKey") ?: let {
-            log.error { "Could not find Key from intent." }
             return false
         }
 
         messageContext = intent.extras?.getString("messageContext")?.parseJson<InAppMessage.MessageContext>() ?: let {
-            log.error { "Could not find message from intent." }
             return false
         }
 
         message = intent.extras?.getString("message")?.parseJson<Message>() ?: let {
-            log.error { "Could not find message from intent." }
             return false
         }
         images = message.images
@@ -310,13 +305,11 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
                             imageIdx
                         )
                     } catch (e: Exception) {
-                        log.error { "On Image Click intent parse error: ${intent.data}" }
                         finish()
                     }
                 }
 
                 HIDDEN, CLOSE -> {
-                    log.warn { "Invalid action Type : ${action.type}" }
                     finish()
                 }
             }
@@ -352,7 +345,6 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
                             buttonIdx
                         )
                     } catch (e: Exception) {
-                        log.error { "No Activity found to handle Intent : ${intent.data}" }
                         finish()
                     }
                 }
@@ -390,6 +382,7 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
 
     override fun onDestroy() {
         closeTrack(inAppMessageId, inAppMessageKey)
+        InAppMessageRenderer.getInstance().closeCurrent()
         super.onDestroy()
     }
 
@@ -397,9 +390,5 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
     private fun changeToDp(pixel: Int): Int {
         val displayMetrics = resources.displayMetrics
         return (pixel * displayMetrics.density).roundToInt()
-    }
-
-    companion object {
-        private val log = Logger<InAppMessageRenderer>()
     }
 }

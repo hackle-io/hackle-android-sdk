@@ -1,5 +1,6 @@
 package io.hackle.android.internal.inappmessage
 
+import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
@@ -34,7 +35,13 @@ internal class InAppMessageTriggerDeterminer(
                 val decision = core.tryInAppMessage(inAppMessage.key, userEvent.user)
 
                 if (decision.isShow) {
-                    return InAppMessageRenderSource(decision.inAppMessage!!, decision.message!!)
+                    return InAppMessageRenderSource(decision.inAppMessage!!, decision.message!!).also {
+                        InAppMessageTrack.impressionTrack(
+                            decision.inAppMessage!!,
+                            decision.message!!,
+                            decision.reason
+                        )
+                    }
                 }
             }
         }
