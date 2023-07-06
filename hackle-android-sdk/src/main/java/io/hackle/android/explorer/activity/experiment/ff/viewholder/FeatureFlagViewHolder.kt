@@ -4,7 +4,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.Spinner
+import android.widget.TextView
 import io.hackle.android.R
 import io.hackle.android.explorer.activity.experiment.listener.OnOverrideResetListener
 import io.hackle.android.explorer.activity.experiment.listener.OnOverrideSetListener
@@ -71,7 +75,7 @@ internal class FeatureFlagViewHolder private constructor(
     }
 }
 
-private val FeatureFlagItem.keyLabel get() = "# ${experiment.key}"
+private val FeatureFlagItem.keyLabel get() = "[${experiment.key}] ${experiment.name ?: ""}"
 private val FeatureFlagItem.descLabel get() = experiment.status.name
 private val FeatureFlagItem.variationKeys get() = experiment.variations.map { it.key }
 private val FeatureFlagItem.isManualOverridden get() = overriddenVariation != null

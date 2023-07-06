@@ -74,7 +74,7 @@ internal class AbTestViewHolder private constructor(
     }
 }
 
-private val AbTestItem.keyLabel get() = "# ${experiment.key}"
+private val AbTestItem.keyLabel get() = "[${experiment.key}] ${experiment.name ?: ""}"
 private val AbTestItem.descLabel
     get() = listOf(
         "V${experiment.version}",

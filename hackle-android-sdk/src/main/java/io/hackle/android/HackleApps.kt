@@ -178,12 +178,6 @@ internal object HackleApps {
             hackleActivityManager = hackleActivityManager
         )
 
-        (context as? Application)?.let {
-            it.registerActivityLifecycleCallbacks(hackleActivityManager)
-            it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
-            it.registerActivityLifecycleCallbacks(userExplorer)
-        }
-
         userManager.addListener(sessionManager)
 
         val sessionEventTracker = SessionEventTracker(
@@ -193,6 +187,12 @@ internal object HackleApps {
         sessionManager.addListener(sessionEventTracker)
 
         metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
+
+        (context as? Application)?.let {
+            it.registerActivityLifecycleCallbacks(hackleActivityManager)
+            it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+            it.registerActivityLifecycleCallbacks(userExplorer)
+        }
 
         return HackleApp(
             clock = Clock.SYSTEM,

@@ -15,6 +15,7 @@ internal data class WorkspaceDto(
 internal data class ExperimentDto(
     val id: Long,
     val key: Long,
+    val name: String?,
     val status: String,
     val version: Int,
     val variations: List<VariationDto>,

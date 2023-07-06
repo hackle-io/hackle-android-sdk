@@ -9,6 +9,7 @@ import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.CopyOnWriteArrayList
 
 internal class SessionManager(
     private val userManager: UserManager,
@@ -16,7 +17,7 @@ internal class SessionManager(
     private val sessionTimeoutMillis: Long,
 ) : AppStateChangeListener, UserListener {
 
-    private val sessionListeners = mutableListOf<SessionListener>()
+    private val sessionListeners = CopyOnWriteArrayList<SessionListener>()
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
 

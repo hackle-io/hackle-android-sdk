@@ -13,13 +13,14 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
+import java.util.concurrent.CopyOnWriteArrayList
 
 internal class UserManager(
     device: Device,
     private val repository: KeyValueRepository,
 ) : AppStateChangeListener {
 
-    private val userListeners = mutableListOf<UserListener>()
+    private val userListeners = CopyOnWriteArrayList<UserListener>()
     private val defaultUser = User.builder().deviceId(device.id).build()
 
     private var _currentUser: User = defaultUser
