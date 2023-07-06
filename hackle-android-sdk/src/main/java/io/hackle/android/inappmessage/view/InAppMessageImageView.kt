@@ -27,7 +27,6 @@ internal class InAppMessageImageView : ImageView {
         defStyleAttr
     )
 
-    @Suppress("MagicNumber")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthSpec =
             MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY)

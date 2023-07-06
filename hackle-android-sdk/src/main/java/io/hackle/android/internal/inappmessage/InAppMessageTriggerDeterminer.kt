@@ -71,6 +71,9 @@ internal class InAppMessageTriggerDeterminer(
         userEvent: UserEvent,
     ): InAppMessageRenderSource? {
         val decision = core.tryInAppMessage(inAppMessage.key, userEvent.user)
+        if (!decision.isShow) {
+            return null
+        }
         return InAppMessageRenderSource(
             inAppMessage = decision.inAppMessage ?: return null,
             message = decision.message ?: return null,

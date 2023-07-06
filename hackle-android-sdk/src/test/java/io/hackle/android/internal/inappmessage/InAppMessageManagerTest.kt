@@ -81,7 +81,8 @@ class InAppMessageManagerTest {
             )
         } returns InAppMessageRenderSource(
             inAppMessage = inAppMessage,
-            message = inAppMessage.messageContext.messages.first()
+            message = inAppMessage.messageContext.messages.first(),
+            properties = emptyMap()
         )
         every { inAppMessage.key } returns 1L
         every { track.user } returns mockk()
@@ -108,7 +109,8 @@ class InAppMessageManagerTest {
             )
         } returns InAppMessageRenderSource(
             inAppMessage = inAppMessage,
-            message = inAppMessage.messageContext.messages.first()
+            message = inAppMessage.messageContext.messages.first(),
+            properties = emptyMap()
         )
         every { inAppMessage.key } returns 1L
         every { appStateManager.currentState } returns AppState.BACKGROUND
@@ -142,7 +144,8 @@ class InAppMessageManagerTest {
             )
         } returns InAppMessageRenderSource(
             inAppMessage = inAppMessage,
-            message = inAppMessage.messageContext.messages.first()
+            message = inAppMessage.messageContext.messages.first(),
+            properties = emptyMap()
         )
         every { inAppMessage.key } returns 1L
         every { inAppMessage.id } returns 1L

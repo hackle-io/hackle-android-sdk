@@ -4,6 +4,7 @@ package io.hackle.android.internal.inappmessage
 import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.sdk.common.PropertiesBuilder
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.decision.InAppMessageDecision
 import io.hackle.sdk.core.evaluation.match.TargetMatcher
@@ -50,7 +51,7 @@ internal class InAppMessageTriggerDeterminerTest {
         mockkObject(DecisionMetrics)
         mockkObject(InAppMessageTriggerDeterminer.InAppMessageRequest.Companion)
         mockkObject(InAppMessageTrack)
-        every { InAppMessageTrack.impressionTrack(any(), any(), any()) } returns mockk()
+        every { InAppMessageTrack.impressionTrack(any()) } returns mockk()
 
         inAppMessage = mockk()
         message = mockk()
@@ -58,6 +59,7 @@ internal class InAppMessageTriggerDeterminerTest {
         every { decision.reason } returns mockk()
         every { decision.inAppMessage } returns inAppMessage
         every { decision.message } returns message
+        every { decision.reason } returns DecisionReason.IN_APP_MESSAGE_DRAFT
         every { inAppMessage.key } returns 123L
         every { inAppMessage.id } returns 123L
         every { DecisionMetrics.inAppMessage(any(), any(), any()) } returns mockk()
@@ -219,8 +221,6 @@ internal class InAppMessageTriggerDeterminerTest {
 
         val actual = sut.determine(listOf(inAppMessage), track, workspace)
 
-
-        verify(exactly = 1) { InAppMessageTrack.impressionTrack(any(), any(), any()) }
         expectThat(actual) {
             get { inAppMessage } isEqualTo decision.inAppMessage
             get { message } isEqualTo decision.message

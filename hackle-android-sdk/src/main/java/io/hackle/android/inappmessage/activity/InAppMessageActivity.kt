@@ -84,21 +84,15 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
         }
 
     private fun initialize(): Boolean {
-        inAppMessageId = intent.extras?.getLong("inAppMessageId") ?: let {
-            return false
-        }
-
-        inAppMessageKey = intent.extras?.getLong("inAppMessageKey") ?: let {
-            return false
-        }
-
-        messageContext = intent.extras?.getString("messageContext")?.parseJson<InAppMessage.MessageContext>() ?: let {
-            return false
-        }
-
-        message = intent.extras?.getString("message")?.parseJson<Message>() ?: let {
-            return false
-        }
+        val extras = intent.extras ?: return false
+        inAppMessageId = extras.getLong("inAppMessageId")
+        inAppMessageKey = extras.getLong("inAppMessageKey")
+        messageContext = extras.getString("messageContext")
+            ?.parseJson<InAppMessage.MessageContext>()
+            ?: return false
+        message = extras.getString("message")
+            ?.parseJson<Message>()
+            ?: return false
         images = message.images
 
         return true
@@ -113,11 +107,6 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
-            if (!messageContext.orientations.contains(VERTICAL)) {
-                finish()
-                return
-            }
-
             setContentView(R.layout.hackle_iam_modal_text)
             frame = findViewById(R.id.hackle_inappmessage_modal_frame)
             frame.setOnClickListener { finish() }
@@ -128,14 +117,7 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
             modalFrame.setImageViewStyle(message, inAppMessageImage)
             textContainerView = findViewById(R.id.hackle_in_app_message_text_container)
             textContainerView.bind(message)
-
         } else if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-
-            if (!messageContext.orientations.contains(HORIZONTAL)) {
-                finish()
-                return
-            }
-
             setContentView(R.layout.hackle_iam_modal_text_land)
             frame = findViewById(R.id.hackle_inappmessage_modal_frame)
             frame.setOnClickListener { finish() }
@@ -149,7 +131,6 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
         }
         setButtons()
     }
-
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -265,7 +246,7 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
     }
 
     private fun loadImageWithGlide(
-        orientation: InAppMessage.MessageContext.Orientation
+        orientation: InAppMessage.MessageContext.Orientation,
     ) {
         val image = images.first { it.orientation == orientation }
 
@@ -350,7 +331,8 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
                 }
 
                 HIDDEN -> {
-                    val storage = HackleCoreContext.get(AndroidHackleInAppMessageStorage::class.java)
+                    val storage =
+                        HackleCoreContext.get(AndroidHackleInAppMessageStorage::class.java)
                     storage.put(
                         inAppMessageKey,
                         Clock.SYSTEM.currentMillis() + NEXT_24_HOUR_MILLISECONDS
