@@ -13,6 +13,7 @@ internal fun ExperimentDto.toExperimentOrNull(type: Experiment.Type): Experiment
     return Experiment(
         id = id,
         key = key,
+        name = name,
         type = type,
         identifierType = identifierType,
         status = Experiment.Status.fromExecutionStatusOrNull(execution.status) ?: return null,
@@ -225,10 +226,10 @@ internal fun InAppMessageDto.MessageContextDto.toMessageContextOrNull(): InAppMe
     val exposure = exposure.toExposureOrNull() ?: return null
 
     val platformType =
-        platformTypes.map { InAppMessage.MessageContext.PlatformType.from(it) ?: return null }
+        platformTypes.map { parseEnumOrNull<InAppMessage.MessageContext.PlatformType>(it) ?: return null }
 
     val orientations = orientations.map {
-        InAppMessage.MessageContext.Orientation.from(it) ?: return null
+        parseEnumOrNull<InAppMessage.MessageContext.Orientation>(it) ?: return null
     }
 
     return InAppMessage.MessageContext(
