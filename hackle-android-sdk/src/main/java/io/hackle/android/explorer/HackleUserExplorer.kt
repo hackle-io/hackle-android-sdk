@@ -6,9 +6,7 @@ import android.os.Bundle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
-import io.hackle.android.HackleActivity
 import io.hackle.android.R
-import io.hackle.android.explorer.activity.HackleUserExplorerActivity
 import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.view.button.HackleUserExplorerButton
 import io.hackle.android.internal.HackleActivityManager

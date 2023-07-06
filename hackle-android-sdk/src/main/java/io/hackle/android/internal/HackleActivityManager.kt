@@ -5,7 +5,7 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import io.hackle.android.HackleActivity
 
-class HackleActivityManager : ActivityLifecycleCallbacks {
+internal class HackleActivityManager : ActivityLifecycleCallbacks {
 
     var currentActivity: Activity? = null
         private set

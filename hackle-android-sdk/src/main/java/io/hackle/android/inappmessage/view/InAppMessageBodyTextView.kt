@@ -5,7 +5,7 @@ import android.util.AttributeSet
 import android.widget.TextView
 import kotlin.math.min
 
-class InAppMessageBodyTextView : TextView {
+internal class InAppMessageBodyTextView : TextView {
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)

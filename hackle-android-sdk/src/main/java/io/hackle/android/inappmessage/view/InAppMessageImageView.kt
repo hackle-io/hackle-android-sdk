@@ -9,7 +9,7 @@ import android.widget.ImageView
 import io.hackle.sdk.core.internal.log.Logger
 import kotlin.math.min
 
-class InAppMessageImageView : ImageView {
+internal class InAppMessageImageView : ImageView {
 
     private var path = Path()
     private var rect = RectF()

@@ -8,7 +8,7 @@ import android.widget.TextView
 import io.hackle.android.R
 import io.hackle.sdk.core.model.InAppMessage
 
-class InAppMessageTextContainerView : LinearLayout {
+internal class InAppMessageTextContainerView : LinearLayout {
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)

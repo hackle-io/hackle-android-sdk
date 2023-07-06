@@ -10,7 +10,7 @@ import io.hackle.android.R
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
-class InAppMessageModalFrameLand : RelativeLayout {
+internal class InAppMessageModalFrameLand : RelativeLayout {
 
 
     constructor(context: Context) : super(context)
