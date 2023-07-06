@@ -4,5 +4,6 @@ import io.hackle.sdk.core.model.InAppMessage
 
 data class InAppMessageRenderSource(
     val inAppMessage: InAppMessage,
-    val message: InAppMessage.MessageContext.Message
+    val message: InAppMessage.MessageContext.Message,
+    val properties: Map<String, Any>,
 )

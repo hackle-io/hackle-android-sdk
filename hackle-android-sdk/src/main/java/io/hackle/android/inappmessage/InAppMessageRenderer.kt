@@ -2,6 +2,7 @@ package io.hackle.android.inappmessage
 
 import android.content.Intent
 import io.hackle.android.inappmessage.activity.InAppMessageActivity
+import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.inappmessage.InAppMessageRenderSource
 import io.hackle.android.internal.utils.toJson
@@ -30,6 +31,7 @@ internal class InAppMessageRenderer (
         intent.putExtra("inAppMessageId", inAppMessage.id)
         intent.putExtra("inAppMessageKey", inAppMessage.key)
         activity.startActivity(intent)
+        InAppMessageTrack.impressionTrack(inAppMessageRenderSource)
     }
 
     fun closeCurrent() {

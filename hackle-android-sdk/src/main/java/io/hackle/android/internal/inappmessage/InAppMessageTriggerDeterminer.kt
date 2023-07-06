@@ -1,7 +1,7 @@
 package io.hackle.android.internal.inappmessage
 
-import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
+import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.decision.InAppMessageDecision
@@ -17,13 +17,13 @@ import io.hackle.sdk.core.workspace.Workspace
 
 internal class InAppMessageTriggerDeterminer(
     private val core: HackleCore,
-    private val targetMatcher: TargetMatcher
+    private val targetMatcher: TargetMatcher,
 ) {
 
     fun determine(
         inAppMessages: List<InAppMessage>,
         userEvent: UserEvent,
-        workspace: Workspace
+        workspace: Workspace,
     ): InAppMessageRenderSource? {
 
         if (userEvent !is UserEvent.Track) {
@@ -32,17 +32,7 @@ internal class InAppMessageTriggerDeterminer(
 
         for (inAppMessage in inAppMessages) {
             if (isTriggeredEvent(inAppMessage, userEvent, workspace)) {
-                val decision = core.tryInAppMessage(inAppMessage.key, userEvent.user)
-
-                if (decision.isShow) {
-                    return InAppMessageRenderSource(decision.inAppMessage!!, decision.message!!).also {
-                        InAppMessageTrack.impressionTrack(
-                            decision.inAppMessage!!,
-                            decision.message!!,
-                            decision.reason
-                        )
-                    }
-                }
+                return source(inAppMessage, userEvent) ?: continue
             }
         }
 
@@ -52,7 +42,7 @@ internal class InAppMessageTriggerDeterminer(
     private fun isTriggeredEvent(
         inAppMessage: InAppMessage,
         track: UserEvent.Track,
-        workspace: Workspace
+        workspace: Workspace,
     ): Boolean {
         return inAppMessage.eventTriggerRules
             .any { matches(InAppMessageRequest.of(inAppMessage.key, track, workspace), it, track) }
@@ -61,7 +51,7 @@ internal class InAppMessageTriggerDeterminer(
     private fun matches(
         request: InAppMessageRequest,
         rule: InAppMessage.EventTriggerRule,
-        event: UserEvent.Track
+        event: UserEvent.Track,
     ): Boolean {
         if (rule.eventKey != event.event.key) {
             return false
@@ -76,9 +66,21 @@ internal class InAppMessageTriggerDeterminer(
         }
     }
 
+    private fun source(
+        inAppMessage: InAppMessage,
+        userEvent: UserEvent,
+    ): InAppMessageRenderSource? {
+        val decision = core.tryInAppMessage(inAppMessage.key, userEvent.user)
+        return InAppMessageRenderSource(
+            inAppMessage = decision.inAppMessage ?: return null,
+            message = decision.message ?: return null,
+            properties = PropertiesBuilder().add("decision_reason", decision.reason.name).build()
+        )
+    }
+
     private fun HackleCore.tryInAppMessage(
         inAppMessageKey: Long,
-        user: HackleUser
+        user: HackleUser,
     ): InAppMessageDecision {
         val sample = Timer.start()
 
@@ -99,14 +101,14 @@ internal class InAppMessageTriggerDeterminer(
         override val event: UserEvent.Track,
         override val key: Evaluator.Key,
         override val user: HackleUser,
-        override val workspace: Workspace
+        override val workspace: Workspace,
     ) : Evaluator.EventRequest {
 
         companion object {
             fun of(
                 inAppMessageKey: Long,
                 track: UserEvent.Track,
-                workspace: Workspace
+                workspace: Workspace,
             ): InAppMessageRequest {
                 return InAppMessageRequest(
                     event = track,
