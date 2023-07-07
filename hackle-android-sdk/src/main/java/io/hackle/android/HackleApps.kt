@@ -6,6 +6,9 @@ import android.os.Build
 import io.hackle.android.explorer.HackleUserExplorer
 import io.hackle.android.explorer.base.HackleUserExplorerService
 import io.hackle.android.explorer.storage.HackleUserManualOverrideStorage.Companion.create
+import io.hackle.android.inappmessage.InAppMessageRenderer
+import io.hackle.android.inappmessage.storage.AndroidHackleInAppMessageStorage
+import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.EventRepository
@@ -15,6 +18,8 @@ import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.inappmessage.InAppMessageManager
+import io.hackle.android.internal.inappmessage.InAppMessageTriggerDeterminer
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
@@ -30,6 +35,8 @@ import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.PollingWorkspaceHandler
 import io.hackle.android.internal.workspace.WorkspaceCache
 import io.hackle.sdk.core.HackleCore
+import io.hackle.sdk.core.HackleCoreContext
+import io.hackle.sdk.core.evaluation.match.TargetMatcher
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.log.metrics.MetricLoggerFactory
 import io.hackle.sdk.core.internal.metrics.Metrics
@@ -101,6 +108,7 @@ internal object HackleApps {
         )
 
         val appStateManager = AppStateManager()
+        val hackleActivityManager = HackleActivityManager()
 
         val eventProcessor = DefaultEventProcessor(
             deduplicationDeterminer = dedupDeterminer,
@@ -114,17 +122,40 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager
+            appStateManager = appStateManager,
+            hackleActivityManager = hackleActivityManager
         )
 
         val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
         val ffOverrideStorage = create(context, "${PREFERENCES_NAME}_ff_override_$sdkKey")
+        val inAppMessageStorage =
+            AndroidHackleInAppMessageStorage.create(
+                context,
+                "${PREFERENCES_NAME}_in_app_message_$sdkKey"
+            )
+
+        HackleCoreContext.registerInstance(inAppMessageStorage)
 
         val core = HackleCore.create(
             workspaceFetcher = cachedWorkspaceFetcher,
             eventProcessor = eventProcessor,
-            manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
+            manualOverrideStorages = arrayOf(
+                abOverrideStorage,
+                ffOverrideStorage
+            )
         )
+
+        val inAppMessageRenderer = InAppMessageRenderer.create(hackleActivityManager)
+        val targetMatcher = HackleCoreContext.get(TargetMatcher::class.java)
+        val inAppMessageTriggerDeterminer = InAppMessageTriggerDeterminer(core, targetMatcher)
+        val inAppMessageManager = InAppMessageManager(
+            cachedWorkspaceFetcher,
+            appStateManager,
+            inAppMessageRenderer,
+            inAppMessageTriggerDeterminer
+        )
+        eventProcessor.addListener(inAppMessageManager)
+
         val hackleUserResolver = HackleUserResolver(device)
 
         val lifecycleCallbacks = HackleActivityLifecycleCallbacks(
@@ -143,8 +174,10 @@ internal object HackleApps {
                 hackleUserResolver = hackleUserResolver,
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage
-            )
+            ),
+            hackleActivityManager = hackleActivityManager
         )
+
         userManager.addListener(sessionManager)
 
         val sessionEventTracker = SessionEventTracker(
@@ -156,6 +189,7 @@ internal object HackleApps {
         metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
 
         (context as? Application)?.let {
+            it.registerActivityLifecycleCallbacks(hackleActivityManager)
             it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
             it.registerActivityLifecycleCallbacks(userExplorer)
         }

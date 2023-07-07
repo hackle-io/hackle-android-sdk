@@ -5,13 +5,14 @@ import android.widget.ImageView
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager.widget.ViewPager
 import io.hackle.android.Hackle
+import io.hackle.android.internal.HackleActivity
 import io.hackle.android.R
 import io.hackle.android.app
 import io.hackle.android.explorer.activity.experiment.view.ExperimentTabLayout
 import io.hackle.android.explorer.activity.user.IdentifierItem
 import io.hackle.android.explorer.activity.user.IdentifierView
 
-internal class HackleUserExplorerActivity : FragmentActivity() {
+internal class HackleUserExplorerActivity : FragmentActivity(), HackleActivity {
 
     private lateinit var closeButton: ImageView
 

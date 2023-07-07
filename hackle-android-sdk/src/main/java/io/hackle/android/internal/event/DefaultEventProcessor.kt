@@ -1,5 +1,6 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
@@ -36,15 +37,26 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
+    private val hackleActivityManager: HackleActivityManager
 ) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
+    private val eventListeners = mutableListOf<EventListener>()
 
     override fun process(event: UserEvent) {
         try {
-            eventExecutor.execute(AddEventTask(event))
+            val newEvent = decorateScreenName(event)
+            eventExecutor.execute(AddEventTask(newEvent))
+            publish(event)
+
         } catch (e: Exception) {
-            log.error { "Failed to submit AddEventTask: $e" }
+            log.error { "Failed to process event: $e" }
+        }
+    }
+
+    private fun publish(event: UserEvent) {
+        for (listener in eventListeners) {
+            listener.onEventPublish(event)
         }
     }
 
@@ -105,6 +117,10 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
+    fun addListener(listener: EventListener) {
+        this.eventListeners.add(listener)
+    }
+
     override fun onChanged(state: AppState, timestamp: Long) {
         when (state) {
             FOREGROUND -> start()
@@ -124,7 +140,9 @@ internal class DefaultEventProcessor(
                 if (deduplicationDeterminer.isDeduplicationTarget(event)) {
                     return
                 }
+
                 val newEvent = decorateSession(event)
+
                 save(newEvent)
             } catch (e: Exception) {
                 log.error { "Failed to add event: $e" }
@@ -157,8 +175,10 @@ internal class DefaultEventProcessor(
             return event.with(newUser)
         }
 
+
         private fun save(event: UserEvent) {
             eventRepository.save(event)
+
 
             val totalCount = eventRepository.count()
             if (totalCount > eventRepositoryMaxSize) {
@@ -181,6 +201,17 @@ internal class DefaultEventProcessor(
             }
         }
     }
+
+    private fun decorateScreenName(event: UserEvent): UserEvent {
+        val currentActivity = hackleActivityManager.currentActivity ?: return event
+
+        val newUser = event.user.toBuilder()
+            .hackleProperty("screenClass", currentActivity.javaClass.simpleName)
+            .build()
+
+        return event.with(newUser)
+    }
+
 
     companion object {
         private val log = Logger<DefaultEventProcessor>()

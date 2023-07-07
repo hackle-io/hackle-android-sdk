@@ -1,0 +1,953 @@
+{
+  "workspace": {
+    "id": 7356,
+    "environment": {
+      "id": 112712,
+      "primary": true
+    }
+  },
+  "experiments": [
+    {
+      "id": 143448,
+      "key": 1,
+      "status": "DRAFT",
+      "version": 2,
+      "bucketId": 228117,
+      "variations": [
+        {
+          "id": 214098,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214099,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186896,
+        "status": "READY",
+        "userOverrides": [
+          {
+            "userId": "qa@hackle.io",
+            "variationId": 214099
+          },
+          {
+            "userId": "developer@hackle.io",
+            "variationId": 214099
+          }
+        ],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228117
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 143449,
+      "key": 2,
+      "status": "DRAFT",
+      "version": 1,
+      "bucketId": 228075,
+      "variations": [
+        {
+          "id": 214064,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214065,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214066,
+          "key": "C",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186898,
+        "status": "READY",
+        "userOverrides": [],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228075
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 143450,
+      "key": 3,
+      "status": "DRAFT",
+      "version": 1,
+      "bucketId": 228078,
+      "variations": [
+        {
+          "id": 214067,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214068,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214069,
+          "key": "C",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214070,
+          "key": "D",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186900,
+        "status": "READY",
+        "userOverrides": [
+          {
+            "userId": "qa@hackle.io",
+            "variationId": 214068
+          },
+          {
+            "userId": "developer1@hackle.io",
+            "variationId": 214068
+          },
+          {
+            "userId": "developer2@hackle.io",
+            "variationId": 214069
+          },
+          {
+            "userId": "developer3@hackle.io",
+            "variationId": 214070
+          },
+          {
+            "userId": "developer4@hackle.io",
+            "variationId": 214070
+          }
+        ],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228078
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 143451,
+      "key": 4,
+      "status": "COMPLETED",
+      "version": 1,
+      "bucketId": 228081,
+      "variations": [
+        {
+          "id": 214071,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214072,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214073,
+          "key": "C",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186902,
+        "status": "STOPPED",
+        "userOverrides": [
+          {
+            "userId": "qa@hackle.io",
+            "variationId": 214072
+          },
+          {
+            "userId": "developer1@hackle.io",
+            "variationId": 214072
+          },
+          {
+            "userId": "developer12@hackle.io",
+            "variationId": 214073
+          }
+        ],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228081
+        }
+      },
+      "winnerVariationId": 214071,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 155219,
+      "key": 5,
+      "status": "DRAFT",
+      "version": 1,
+      "bucketId": 266213,
+      "variations": [
+        {
+          "id": 244383,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 244384,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 244385,
+          "key": "C",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 210439,
+        "status": "READY",
+        "userOverrides": [
+          {
+            "userId": "qa@hackle.io",
+            "variationId": 244384
+          },
+          {
+            "userId": "developer1@hackle.io",
+            "variationId": 244384
+          },
+          {
+            "userId": "developer12@hackle.io",
+            "variationId": 244385
+          }
+        ],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 266213
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 360345,
+      "key": 6,
+      "status": "DRAFT",
+      "version": 1,
+      "bucketId": 483048,
+      "variations": [
+        {
+          "id": 457563,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 457564,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 420693,
+        "status": "READY",
+        "userOverrides": [],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 483048
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    }
+  ],
+  "featureFlags": [
+    {
+      "id": 143452,
+      "key": 1,
+      "status": "EXECUTED",
+      "version": 1,
+      "bucketId": 228084,
+      "variations": [
+        {
+          "id": 214074,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214075,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186904,
+        "status": "RUNNING",
+        "userOverrides": [
+          {
+            "userId": "anonymous@hackle.io",
+            "variationId": 214074
+          },
+          {
+            "userId": "qa@hackle.io",
+            "variationId": 214075
+          },
+          {
+            "userId": "tester@hackle.io",
+            "variationId": 214075
+          }
+        ],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [
+          {
+            "target": {
+              "conditions": [
+                {
+                  "key": {
+                    "type": "USER_PROPERTY",
+                    "name": "day"
+                  },
+                  "match": {
+                    "type": "MATCH",
+                    "operator": "IN",
+                    "valueType": "STRING",
+                    "values": [
+                      "sat",
+                      "sun"
+                    ]
+                  }
+                },
+                {
+                  "key": {
+                    "type": "USER_PROPERTY",
+                    "name": "version"
+                  },
+                  "match": {
+                    "type": "MATCH",
+                    "operator": "GT",
+                    "valueType": "VERSION",
+                    "values": [
+                      "1.1"
+                    ]
+                  }
+                }
+              ]
+            },
+            "action": {
+              "type": "BUCKET",
+              "bucketId": 228086
+            }
+          }
+        ],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228084
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 143453,
+      "key": 2,
+      "status": "EXECUTED",
+      "version": 1,
+      "bucketId": 228088,
+      "variations": [
+        {
+          "id": 214076,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214077,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186906,
+        "status": "RUNNING",
+        "userOverrides": [],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [
+          {
+            "target": {
+              "conditions": [
+                {
+                  "key": {
+                    "type": "USER_PROPERTY",
+                    "name": "isPayingUser"
+                  },
+                  "match": {
+                    "type": "MATCH",
+                    "operator": "IN",
+                    "valueType": "BOOLEAN",
+                    "values": [
+                      false
+                    ]
+                  }
+                }
+              ]
+            },
+            "action": {
+              "type": "VARIATION",
+              "variationId": 214077
+            }
+          }
+        ],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228088
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 143454,
+      "key": 3,
+      "status": "EXECUTED",
+      "version": 1,
+      "bucketId": 228091,
+      "variations": [
+        {
+          "id": 214078,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 214079,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 186908,
+        "status": "PAUSED",
+        "userOverrides": [
+          {
+            "userId": "tester1",
+            "variationId": 214078
+          },
+          {
+            "userId": "tester2",
+            "variationId": 214078
+          },
+          {
+            "userId": "tester3",
+            "variationId": 214079
+          },
+          {
+            "userId": "tester4",
+            "variationId": 214079
+          },
+          {
+            "userId": "tester5",
+            "variationId": 214079
+          }
+        ],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 228091
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    },
+    {
+      "id": 359470,
+      "key": 4,
+      "status": "EXECUTED",
+      "version": 1,
+      "bucketId": 480137,
+      "variations": [
+        {
+          "id": 455331,
+          "key": "A",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        },
+        {
+          "id": 455332,
+          "key": "B",
+          "status": "ACTIVE",
+          "parameterConfigurationId": null
+        }
+      ],
+      "execution": {
+        "id": 418943,
+        "status": "PAUSED",
+        "userOverrides": [],
+        "segmentOverrides": [],
+        "targetAudiences": [],
+        "targetRules": [],
+        "defaultRule": {
+          "type": "BUCKET",
+          "bucketId": 480137
+        }
+      },
+      "winnerVariationId": null,
+      "identifierType": "$id",
+      "containerId": null
+    }
+  ],
+  "buckets": [
+    {
+      "id": 228075,
+      "seed": 1161351451,
+      "slotSize": 10000,
+      "slots": []
+    },
+    {
+      "id": 228078,
+      "seed": 1802973624,
+      "slotSize": 10000,
+      "slots": []
+    },
+    {
+      "id": 228081,
+      "seed": 1236399638,
+      "slotSize": 10000,
+      "slots": [
+        {
+          "startInclusive": 0,
+          "endExclusive": 667,
+          "variationId": 214071
+        },
+        {
+          "startInclusive": 667,
+          "endExclusive": 1333,
+          "variationId": 214072
+        },
+        {
+          "startInclusive": 1333,
+          "endExclusive": 2000,
+          "variationId": 214073
+        }
+      ]
+    },
+    {
+      "id": 228084,
+      "seed": 216184255,
+      "slotSize": 10000,
+      "slots": [
+        {
+          "startInclusive": 0,
+          "endExclusive": 10000,
+          "variationId": 214075
+        }
+      ]
+    },
+    {
+      "id": 228086,
+      "seed": 216184255,
+      "slotSize": 10000,
+      "slots": [
+        {
+          "startInclusive": 0,
+          "endExclusive": 5000,
+          "variationId": 214074
+        },
+        {
+          "startInclusive": 5000,
+          "endExclusive": 10000,
+          "variationId": 214075
+        }
+      ]
+    },
+    {
+      "id": 228088,
+      "seed": 1354849080,
+      "slotSize": 10000,
+      "slots": [
+        {
+          "startInclusive": 0,
+          "endExclusive": 10000,
+          "variationId": 214077
+        }
+      ]
+    },
+    {
+      "id": 228091,
+      "seed": 6516013,
+      "slotSize": 10000,
+      "slots": [
+        {
+          "startInclusive": 0,
+          "endExclusive": 7000,
+          "variationId": 214078
+        },
+        {
+          "startInclusive": 7000,
+          "endExclusive": 10000,
+          "variationId": 214079
+        }
+      ]
+    },
+    {
+      "id": 228117,
+      "seed": 1069825885,
+      "slotSize": 10000,
+      "slots": []
+    },
+    {
+      "id": 266213,
+      "seed": 291387238,
+      "slotSize": 10000,
+      "slots": []
+    },
+    {
+      "id": 480137,
+      "seed": 502326093,
+      "slotSize": 10000,
+      "slots": [
+        {
+          "startInclusive": 0,
+          "endExclusive": 10000,
+          "variationId": 455331
+        }
+      ]
+    },
+    {
+      "id": 483048,
+      "seed": 1750376113,
+      "slotSize": 10000,
+      "slots": []
+    }
+  ],
+  "events": [
+    {
+      "id": 133130,
+      "key": "sample__click_search_button"
+    },
+    {
+      "id": 133131,
+      "key": "sample__click_search_api_latency"
+    },
+    {
+      "id": 133132,
+      "key": "sample__purchase_complete"
+    },
+    {
+      "id": 133133,
+      "key": "sample__membership_subscription"
+    },
+    {
+      "id": 144010,
+      "key": "new_event"
+    },
+    {
+      "id": 246178,
+      "key": "ddddddnewekqwmekqwe"
+    },
+    {
+      "id": 246186,
+      "key": "asdasdas"
+    },
+    {
+      "id": 246191,
+      "key": "thalajaaa_orwell"
+    },
+    {
+      "id": 346994,
+      "key": "test_orwell"
+    },
+    {
+      "id": 347060,
+      "key": "event_convert_test"
+    },
+    {
+      "id": 351983,
+      "key": "abc_test"
+    },
+    {
+      "id": 351984,
+      "key": "orwell_test"
+    },
+    {
+      "id": 351985,
+      "key": "$session_start"
+    },
+    {
+      "id": 352338,
+      "key": "BINGBINGBING"
+    },
+    {
+      "id": 352434,
+      "key": "url_abc_test"
+    },
+    {
+      "id": 352456,
+      "key": "BBQ"
+    },
+    {
+      "id": 361019,
+      "key": "$session_end"
+    },
+    {
+      "id": 361020,
+      "key": "in_app_test"
+    },
+    {
+      "id": 361021,
+      "key": "in_app_test2"
+    },
+    {
+      "id": 361022,
+      "key": "$in_app_impression"
+    },
+    {
+      "id": 361023,
+      "key": "$in_app_close"
+    },
+    {
+      "id": 361024,
+      "key": "$in_app_hidden"
+    },
+    {
+      "id": 361025,
+      "key": "$in_app_action"
+    },
+    {
+      "id": 361150,
+      "key": "test33"
+    },
+    {
+      "id": 361288,
+      "key": "test44"
+    },
+    {
+      "id": 361481,
+      "key": "t"
+    },
+    {
+      "id": 361697,
+      "key": "qqqqqq"
+    },
+    {
+      "id": 361805,
+      "key": "rt"
+    },
+    {
+      "id": 361806,
+      "key": "r"
+    },
+    {
+      "id": 361887,
+      "key": "in_app_test22"
+    },
+    {
+      "id": 362166,
+      "key": "home"
+    }
+  ],
+  "segments": [
+    {
+      "id": 100431,
+      "key": "testdwdskladmksalda",
+      "type": "USER_PROPERTY",
+      "targets": [
+        {
+          "conditions": [
+            {
+              "key": {
+                "type": "USER_PROPERTY",
+                "name": "enrollNumber"
+              },
+              "match": {
+                "type": "MATCH",
+                "operator": "IN",
+                "valueType": "STRING",
+                "values": [
+                  "dmslkdmsa"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 100446,
+      "key": "twotwtowtowot",
+      "type": "USER_PROPERTY",
+      "targets": [
+        {
+          "conditions": [
+            {
+              "key": {
+                "type": "USER_PROPERTY",
+                "name": "enrollNumber"
+              },
+              "match": {
+                "type": "MATCH",
+                "operator": "IN",
+                "valueType": "STRING",
+                "values": [
+                  "gate"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "containers": [],
+  "parameterConfigurations": [],
+  "remoteConfigParameters": [],
+  "inAppMessages": [
+    {
+      "id": 1,
+      "key": 1,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "status": "PAUSE",
+      "eventTriggerRules": [
+        {
+          "eventKey": "home",
+          "targets": []
+        }
+      ],
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": [
+          "ANDROID",
+          "IOS"
+        ],
+        "orientations": [
+          "VERTICAL",
+          "HORIZONTAL"
+        ],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_ONLY"
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "https://static.hackle.io/images/in_app_message/20230621/8371f5ce-d130-408b-88e1-2288e2b8951a.png",
+                "action": null
+              }
+            ],
+            "text": null,
+            "buttons": [
+              {
+                "text": "test",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              },
+              {
+                "text": "test2",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "WEB_LINK",
+                  "value": ""
+                }
+              }
+            ],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

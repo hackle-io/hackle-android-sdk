@@ -7,8 +7,15 @@
     <application>
         <activity
             android:name="io.hackle.android.explorer.activity.HackleUserExplorerActivity"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/HackleTheme" />
+
+        <activity android:name="io.hackle.android.inappmessage.activity.InAppMessageActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:theme="@style/HackleInAppMessageTheme">
+        </activity>
     </application>
+
 </manifest>
