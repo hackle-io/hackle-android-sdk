@@ -1,8 +1,15 @@
 package io.hackle.android.internal.workspace
 
-import io.hackle.sdk.core.model.*
+import io.hackle.sdk.core.model.Bucket
+import io.hackle.sdk.core.model.Container
+import io.hackle.sdk.core.model.EventType
+import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
 import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
+import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.ParameterConfiguration
+import io.hackle.sdk.core.model.RemoteConfigParameter
+import io.hackle.sdk.core.model.Segment
 import io.hackle.sdk.core.workspace.Workspace
 
 internal class WorkspaceImpl(
@@ -14,10 +21,12 @@ internal class WorkspaceImpl(
     private val containers: Map<Long, Container>,
     private val parameterConfigurations: Map<Long, ParameterConfiguration>,
     private val remoteConfigParameters: Map<String, RemoteConfigParameter>,
+    override val inAppMessages: List<InAppMessage>
 ) : Workspace {
 
     private val _experiments = experiments.associateBy { it.key }
     private val _featureFlags = featureFlags.associateBy { it.key }
+    private val _inAppMessages = inAppMessages.associateBy { it.key }
 
     override fun getEventTypeOrNull(eventTypeKey: String): EventType? {
         return eventTypes[eventTypeKey]
@@ -51,6 +60,11 @@ internal class WorkspaceImpl(
         return remoteConfigParameters[parameterKey]
     }
 
+    override fun getInAppMessageOrNull(inAppMessageKey: Long): InAppMessage? {
+        return _inAppMessages[inAppMessageKey]
+    }
+
+
     companion object {
         fun from(dto: WorkspaceDto): Workspace {
 
@@ -83,6 +97,8 @@ internal class WorkspaceImpl(
                 .mapNotNull { it.toRemoteConfigParameterOrNull() }
                 .associateBy { it.key }
 
+            val inAppMessages = dto.inAppMessages.mapNotNull { it.toInAppMessageOrNull() }
+
             return WorkspaceImpl(
                 experiments = experiments,
                 featureFlags = featureFlags,
@@ -91,7 +107,8 @@ internal class WorkspaceImpl(
                 segments = segments,
                 containers = containers,
                 parameterConfigurations = parameterConfigurations,
-                remoteConfigParameters = remoteConfigParameters
+                remoteConfigParameters = remoteConfigParameters,
+                inAppMessages = inAppMessages
             )
         }
     }
