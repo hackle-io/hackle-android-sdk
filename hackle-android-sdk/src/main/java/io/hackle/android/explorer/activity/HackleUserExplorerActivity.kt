@@ -5,7 +5,7 @@ import android.widget.ImageView
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager.widget.ViewPager
 import io.hackle.android.Hackle
-import io.hackle.android.HackleActivity
+import io.hackle.android.internal.HackleActivity
 import io.hackle.android.R
 import io.hackle.android.app
 import io.hackle.android.explorer.activity.experiment.view.ExperimentTabLayout

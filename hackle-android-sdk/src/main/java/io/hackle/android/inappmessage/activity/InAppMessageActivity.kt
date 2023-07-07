@@ -17,7 +17,7 @@ import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
-import io.hackle.android.HackleActivity
+import io.hackle.android.internal.HackleActivity
 import io.hackle.android.R
 import io.hackle.android.inappmessage.InAppMessageRenderer
 import io.hackle.android.inappmessage.base.InAppMessageTrack
