@@ -1,10 +1,10 @@
 package io.hackle.android.internal.inappmessage
 
 import io.hackle.android.HackleApp
-import io.hackle.android.inappmessage.InAppMessageRenderer
-import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.ui.inappmessage.InAppMessageRenderer
+import io.hackle.android.ui.inappmessage.base.InAppMessageTrack
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.decision.InAppMessageDecision

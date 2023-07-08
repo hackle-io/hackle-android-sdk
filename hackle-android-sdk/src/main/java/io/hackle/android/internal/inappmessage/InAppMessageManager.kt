@@ -1,9 +1,9 @@
 package io.hackle.android.internal.inappmessage
 
-import io.hackle.android.inappmessage.InAppMessageRenderer
 import io.hackle.android.internal.event.EventListener
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.ui.inappmessage.InAppMessageRenderer
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
 

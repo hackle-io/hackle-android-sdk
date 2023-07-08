@@ -1,8 +1,8 @@
 package io.hackle.android.internal.inappmessage
 
 
-import io.hackle.android.inappmessage.base.InAppMessageTrack
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
+import io.hackle.android.ui.inappmessage.base.InAppMessageTrack
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore

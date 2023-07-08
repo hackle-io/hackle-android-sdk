@@ -3,11 +3,6 @@ package io.hackle.android
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import io.hackle.android.explorer.HackleUserExplorer
-import io.hackle.android.explorer.base.HackleUserExplorerService
-import io.hackle.android.explorer.storage.HackleUserManualOverrideStorage.Companion.create
-import io.hackle.android.inappmessage.InAppMessageRenderer
-import io.hackle.android.inappmessage.storage.AndroidHackleInAppMessageStorage
 import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
@@ -17,9 +12,9 @@ import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.inappmessage.InAppMessageManager
 import io.hackle.android.internal.inappmessage.InAppMessageTriggerDeterminer
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
@@ -34,6 +29,11 @@ import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.PollingWorkspaceHandler
 import io.hackle.android.internal.workspace.WorkspaceCache
+import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.explorer.base.HackleUserExplorerService
+import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
+import io.hackle.android.ui.inappmessage.InAppMessageRenderer
+import io.hackle.android.ui.inappmessage.storage.AndroidHackleInAppMessageStorage
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.HackleCoreContext
 import io.hackle.sdk.core.evaluation.match.TargetMatcher
