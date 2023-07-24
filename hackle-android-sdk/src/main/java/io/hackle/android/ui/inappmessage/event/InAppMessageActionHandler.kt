@@ -54,6 +54,31 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
     }
 }
 
+internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: UriHandler) : InAppMessageActionHandler {
+
+    private val log = Logger<InAppMessageLinkActionHandler>()
+
+    override fun supports(action: InAppMessage.Action): Boolean {
+        return action.type == InAppMessage.ActionType.LINK_AND_CLOSE
+    }
+
+    override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
+        val activity = view.activity
+        if (activity == null) {
+            log.warn { "InAppMessage activity is null, not handle action [${view.context.inAppMessage.id}]" }
+            return
+        }
+
+        val link = action.value
+        if (link == null) {
+            log.error { "InAppMessage action value is null, not handle action [${view.context.inAppMessage.id}]" }
+            return
+        }
+        view.close()
+        uriHandler.handle(activity, link)
+    }
+}
+
 internal class InAppMessageHideActionHandler(
     private val storage: InAppMessageHiddenStorage,
     private val clock: Clock

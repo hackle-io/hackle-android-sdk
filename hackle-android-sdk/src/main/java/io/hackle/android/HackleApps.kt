@@ -47,6 +47,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEventTracker
 import io.hackle.android.ui.inappmessage.event.InAppMessageHideActionHandler
 import io.hackle.android.ui.inappmessage.event.InAppMessageImpressionEventProcessor
 import io.hackle.android.ui.inappmessage.event.InAppMessageLinkActionHandler
+import io.hackle.android.ui.inappmessage.event.InAppMessageLinkAndCloseActionHandler
 import io.hackle.android.ui.inappmessage.event.UriHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.sdk.core.HackleCore
@@ -193,6 +194,7 @@ internal object HackleApps {
             handlers = listOf(
                 InAppMessageCloseActionHandler(),
                 InAppMessageLinkActionHandler(uriHandler),
+                InAppMessageLinkAndCloseActionHandler(uriHandler),
                 InAppMessageHideActionHandler(inAppMessageHiddenStorage, Clock.SYSTEM)
             )
         )
