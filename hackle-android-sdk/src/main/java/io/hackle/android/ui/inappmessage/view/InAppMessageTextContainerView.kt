@@ -23,7 +23,7 @@ internal class InAppMessageTextContainerView : LinearLayout {
         setMeasuredDimension(measuredWidth, measuredHeight)
     }
 
-    fun bind(message: InAppMessage.MessageContext.Message) {
+    fun bind(message: InAppMessage.Message) {
         titleTextView = findViewById(R.id.hackle_in_app_title_text)
         bodyTextView = findViewById(R.id.hackle_in_app_body_text)
 

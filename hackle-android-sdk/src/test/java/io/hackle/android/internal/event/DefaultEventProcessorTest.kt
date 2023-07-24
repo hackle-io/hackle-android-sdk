@@ -16,13 +16,23 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import io.mockk.*
+import io.mockk.Called
+import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.*
+import strikt.assertions.hasSize
+import strikt.assertions.isA
+import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
+import strikt.assertions.isSameInstanceAs
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
@@ -30,6 +40,9 @@ class DefaultEventProcessorTest {
 
     @RelaxedMockK
     private lateinit var deduplicationDeterminer: ExposureEventDeduplicationDeterminer
+
+    @RelaxedMockK
+    private lateinit var eventPublisher: UserEventPublisher
 
     @RelaxedMockK
     private lateinit var eventExecutor: Executor
@@ -69,6 +82,7 @@ class DefaultEventProcessorTest {
 
     private fun processor(
         deduplicationDeterminer: ExposureEventDeduplicationDeterminer = this.deduplicationDeterminer,
+        eventPublisher: UserEventPublisher = this.eventPublisher,
         eventExecutor: Executor = this.eventExecutor,
         eventRepository: EventRepository = this.eventRepository,
         eventRepositoryMaxSize: Int = 100,
@@ -84,6 +98,7 @@ class DefaultEventProcessorTest {
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             deduplicationDeterminer = deduplicationDeterminer,
+            eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
             eventRepositoryMaxSize = eventRepositoryMaxSize,
@@ -311,19 +326,14 @@ class DefaultEventProcessorTest {
     }
 
     @Test
-    fun `process - 등록된 eventListener 에게 이벤트를 publish 한다`() {
+    fun `process - 이벤트를 publish 한다`() {
         val sut = processor()
-        val mockListenerOne = mockk<EventListener>(relaxed = true)
-        val mockListenerTwo = mockk<EventListener>(relaxed = true)
-        sut.addListener(mockListenerOne)
-        sut.addListener(mockListenerTwo)
 
         val event = event()
         sut.process(event)
 
 
-        verify(exactly = 1) { mockListenerOne.onEventPublish(event) }
-        verify(exactly = 1) { mockListenerTwo.onEventPublish(event) }
+        verify(exactly = 1) { eventPublisher.publish(any()) }
     }
 
     @Test

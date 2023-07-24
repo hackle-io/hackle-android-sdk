@@ -50,7 +50,7 @@ internal class InAppMessageModalFrame : RelativeLayout {
         }
     }
 
-    fun setModalFrameStyle(message: InAppMessage.MessageContext.Message) {
+    fun setModalFrameStyle(message: InAppMessage.Message) {
         val gradientDrawable = GradientDrawable()
         gradientDrawable.shape = GradientDrawable.RECTANGLE
         val dpi = context.resources.displayMetrics.densityDpi
@@ -60,7 +60,7 @@ internal class InAppMessageModalFrame : RelativeLayout {
     }
 
     fun setImageViewStyle(
-        message: InAppMessage.MessageContext.Message,
+        message: InAppMessage.Message,
         inAppMessageImageView: InAppMessageImageView
     ) {
         if (message.text != null) {
