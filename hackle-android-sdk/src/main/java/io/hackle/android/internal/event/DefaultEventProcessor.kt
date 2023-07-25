@@ -132,7 +132,7 @@ internal class DefaultEventProcessor(
                 val newEvent = decorateSession(event)
 
                 save(newEvent)
-                eventPublisher.publish(event)
+                eventPublisher.publish(newEvent)
             } catch (e: Exception) {
                 log.error { "Failed to add event: $e" }
             }
