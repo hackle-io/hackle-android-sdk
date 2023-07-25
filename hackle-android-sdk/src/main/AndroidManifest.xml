@@ -15,7 +15,7 @@
             android:name="io.hackle.android.ui.inappmessage.activity.InAppMessageActivity"
             android:configChanges="orientation|screenSize"
             android:exported="false"
-            android:theme="@style/HackleInAppMessageTheme"></activity>
+            android:theme="@style/HackleInAppMessageTheme" />
     </application>
 
 </manifest>
