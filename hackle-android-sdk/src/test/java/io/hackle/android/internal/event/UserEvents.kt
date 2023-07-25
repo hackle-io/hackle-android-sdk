@@ -10,11 +10,16 @@ import io.mockk.mockk
 
 object UserEvents {
 
-    fun track(eventKey: String): UserEvent.Track {
+    fun track(
+        eventKey: String,
+        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
+        timestamp: Long = System.currentTimeMillis()
+    ): UserEvent.Track {
         return mockk {
-            every { eventType } returns EventType.Custom(1, eventKey)
-            every { event } returns Event.builder(eventKey).build()
-            every { user } returns HackleUser.builder().identifier(IdentifierType.ID, "user").build()
+            every { this@mockk.eventType } returns EventType.Custom(1, eventKey)
+            every { this@mockk.event } returns Event.builder(eventKey).build()
+            every { this@mockk.user } returns user
+            every { this@mockk.timestamp } returns timestamp
         }
     }
 }

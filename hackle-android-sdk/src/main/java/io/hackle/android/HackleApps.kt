@@ -14,8 +14,10 @@ import io.hackle.android.internal.event.UserEventPublisher
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
+import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageDeterminer
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventMatcher
+import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventTriggerFrequencyCapDeterminer
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventTriggerRuleDeterminer
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageManager
 import io.hackle.android.internal.lifecycle.AppStateManager
@@ -154,6 +156,8 @@ internal object HackleApps {
         val inAppMessageHiddenStorage = AndroidInAppMessageHiddenStorage.create(
             context, "${PREFERENCES_NAME}_in_app_message_$sdkKey"
         )
+        val inAppMessageImpressionStorage =
+            InAppMessageImpressionStorage.create(context, "${PREFERENCES_NAME}_iam_impression_$sdkKey")
 
         EvaluationContext.GLOBAL.register(inAppMessageHiddenStorage)
 
@@ -200,7 +204,7 @@ internal object HackleApps {
         )
         val inAppMessageEventProcessorFactory = InAppMessageEventProcessorFactory(
             processors = listOf(
-                InAppMessageImpressionEventProcessor(),
+                InAppMessageImpressionEventProcessor(inAppMessageImpressionStorage),
                 InAppMessageActionEventProcessor(inAppMessageActionHandlerFactory),
                 InAppMessageCloseEventProcessor()
             )
@@ -216,7 +220,8 @@ internal object HackleApps {
             eventHandler = inAppMessageEventHandler,
         )
         val inAppMessageEventMatcher = InAppMessageEventMatcher(
-            ruleDeterminer = InAppMessageEventTriggerRuleDeterminer(EvaluationContext.GLOBAL.get())
+            ruleDeterminer = InAppMessageEventTriggerRuleDeterminer(EvaluationContext.GLOBAL.get()),
+            frequencyCapDeterminer = InAppMessageEventTriggerFrequencyCapDeterminer(inAppMessageImpressionStorage)
         )
         val inAppMessageDeterminer = InAppMessageDeterminer(
             workspaceFetcher = workspaceFetcher,
