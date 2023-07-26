@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -102,6 +103,10 @@ internal class InAppMessageActivity : FragmentActivity(), HackleActivity {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         layout()
+    }
+
+    override fun onBackPressed() {
+        messageView.close()
     }
 
     // Layout
