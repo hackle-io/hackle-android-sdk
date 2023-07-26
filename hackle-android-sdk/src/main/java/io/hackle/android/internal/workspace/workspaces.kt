@@ -2,9 +2,26 @@ package io.hackle.android.internal.workspace
 
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.enumValueOfOrNull
-import io.hackle.sdk.core.model.*
+import io.hackle.sdk.core.model.Action
+import io.hackle.sdk.core.model.Bucket
+import io.hackle.sdk.core.model.Container
+import io.hackle.sdk.core.model.ContainerGroup
+import io.hackle.sdk.core.model.EventType
+import io.hackle.sdk.core.model.Experiment
+import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.ParameterConfiguration
+import io.hackle.sdk.core.model.RemoteConfigParameter
+import io.hackle.sdk.core.model.Segment
+import io.hackle.sdk.core.model.Slot
 import io.hackle.sdk.core.model.Target
-import io.hackle.sdk.core.model.TargetingType.*
+import io.hackle.sdk.core.model.TargetRule
+import io.hackle.sdk.core.model.TargetingType
+import io.hackle.sdk.core.model.TargetingType.IDENTIFIER
+import io.hackle.sdk.core.model.TargetingType.PROPERTY
+import io.hackle.sdk.core.model.TargetingType.SEGMENT
+import io.hackle.sdk.core.model.ValueType
+import io.hackle.sdk.core.model.Variation
+import java.util.concurrent.TimeUnit
 
 private val log = Logger<WorkspaceImpl>()
 
@@ -102,6 +119,15 @@ private inline fun <reified E : Enum<E>> parseEnumOrNull(name: String): E? {
     return enum
 }
 
+private inline fun <reified E : Enum<E>> parseEnumAllOrNull(names: List<String>): List<E>? {
+    val enums = mutableListOf<E>()
+    for (name in names) {
+        val enum = parseEnumOrNull<E>(name) ?: return null
+        enums.add(enum)
+    }
+    return enums
+}
+
 // Bucket
 internal fun BucketDto.toBucket() = Bucket(
     id = id,
@@ -173,205 +199,161 @@ internal fun RemoteConfigParameterDto.TargetRuleDto.toTargetRuleOrNull(): Remote
 }
 
 internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
-    val parsedTimeUnit = parseEnumOrNull<InAppMessage.TimeUnitType>(timeUnit) ?: let {
-        return null
-    }
+    val status = parseEnumOrNull<InAppMessage.Status>(status) ?: return null
+    val period = when (timeUnit) {
+        "IMMEDIATE" -> InAppMessage.Period.Always
+        "CUSTOM" -> InAppMessage.Period.Custom(
+            startMillisInclusive = startEpochTimeMillis ?: return null,
+            endMillisExclusive = endEpochTimeMillis ?: return null
+        )
 
-    val messageContext = messageContext.toMessageContextOrNull() ?: let {
-        return null
+        else -> return null
     }
-    val parsedStatus = parseEnumOrNull<InAppMessage.Status>(status) ?: let {
-        return null
-    }
+    val messageContext = messageContext.toMessageContextOrNull() ?: return null
+
+    val eventTriggerRules = eventTriggerRules.map { it.toTriggerRule() }
+    val eventFrequencyCap = eventFrequencyCap?.toFrequencyCap()
 
     return InAppMessage(
         id = id,
         key = key,
-        displayTimeRange = when (parsedTimeUnit) {
-            InAppMessage.TimeUnitType.IMMEDIATE -> InAppMessage.Range.Immediate
-            InAppMessage.TimeUnitType.CUSTOM -> InAppMessage.Range.Custom(
-                startEpochTimeMillis ?: return null, endEpochTimeMillis ?: return null
-            )
-        },
-        status = parsedStatus,
-        eventTriggerRules = eventTriggerRules.map { it.toEventTriggerRule() },
+        period = period,
+        status = status,
+        eventTrigger = InAppMessage.EventTrigger(
+            rules = eventTriggerRules,
+            frequencyCap = eventFrequencyCap
+        ),
         targetContext = targetContext.toTargetContext(),
         messageContext = messageContext
     )
 
 }
 
-internal fun InAppMessageDto.EventTriggerRuleDto.toEventTriggerRule() =
-    InAppMessage.EventTriggerRule(
+internal fun InAppMessageDto.EventTriggerRuleDto.toTriggerRule(): InAppMessage.EventTrigger.Rule {
+    return InAppMessage.EventTrigger.Rule(
         eventKey = eventKey,
         targets = targets.mapNotNull { it.toTargetOrNull(PROPERTY) }
     )
+}
 
-internal fun InAppMessageDto.TargetContextDto.toTargetContext() = InAppMessage.TargetContext(
-    targets = targets.mapNotNull { it.toTargetOrNull(PROPERTY) },
-    overrides = overrides.map { it.toUserOverride() }
-)
+internal fun InAppMessageDto.EventFrequencyCapDto.toFrequencyCap(): InAppMessage.EventTrigger.FrequencyCap {
+    return InAppMessage.EventTrigger.FrequencyCap(
+        identifierCaps = identifiers.map { it.toIdentifierCap() },
+        durationCap = duration?.toDurationCapOrNull()
+    )
+}
 
-internal fun InAppMessageDto.TargetContextDto.UserOverrideDto.toUserOverride() =
-    InAppMessage.TargetContext.UserOverride(
+internal fun InAppMessageDto.IdentifierCapDto.toIdentifierCap(): InAppMessage.EventTrigger.IdentifierCap {
+    return InAppMessage.EventTrigger.IdentifierCap(
+        identifierType = identifierType,
+        count = countPerIdentifier.toInt()
+    )
+}
+
+internal fun InAppMessageDto.DurationCapDto.toDurationCapOrNull(): InAppMessage.EventTrigger.DurationCap? {
+    val timeUnit = parseEnumOrNull<TimeUnit>(durationUnit.timeUnit) ?: return null
+    return InAppMessage.EventTrigger.DurationCap(
+        durationMillis = timeUnit.toMillis(durationUnit.amount),
+        count = countPerDuration.toInt()
+    )
+}
+
+internal fun InAppMessageDto.TargetContextDto.toTargetContext(): InAppMessage.TargetContext {
+    return InAppMessage.TargetContext(
+        targets = targets.mapNotNull { it.toTargetOrNull(PROPERTY) },
+        overrides = overrides.map { it.toUserOverride() }
+    )
+}
+
+internal fun InAppMessageDto.TargetContextDto.UserOverrideDto.toUserOverride(): InAppMessage.UserOverride {
+    return InAppMessage.UserOverride(
         identifiers = identifiers,
         identifierType = identifierType
     )
+}
 
 internal fun InAppMessageDto.MessageContextDto.toMessageContextOrNull(): InAppMessage.MessageContext? {
-
-    val messages = messages.map {
-        it.toMessageOrNull() ?: return null
-    }
-    val exposure = exposure.toExposureOrNull() ?: return null
-
-    val platformType =
-        platformTypes.map { parseEnumOrNull<InAppMessage.MessageContext.PlatformType>(it) ?: return null }
-
-    val orientations = orientations.map {
-        parseEnumOrNull<InAppMessage.MessageContext.Orientation>(it) ?: return null
-    }
-
     return InAppMessage.MessageContext(
         defaultLang = defaultLang,
-        platformTypes = platformType,
-        exposure = exposure,
-        messages = messages,
-        orientations = orientations
+        platformTypes = parseEnumAllOrNull(platformTypes) ?: return null,
+        orientations = parseEnumAllOrNull(orientations) ?: return null,
+        messages = messages.map { it.toMessageOrNull() ?: return null }
     )
 }
 
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.ExposureDto.toExposureOrNull(): InAppMessage.MessageContext.Exposure? {
-    val parsedType =
-        parseEnumOrNull<InAppMessage.MessageContext.Exposure.Type>(type) ?: return null
-
-    return InAppMessage.MessageContext.Exposure(
-        type = parsedType,
-        key = key,
-    )
-}
-
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InAppMessage.MessageContext.Message? {
-
-    val buttons = buttons.map {
-        it.toButtonOrNull() ?: return null
-    }
-
-    val images = images.map {
-        it.toImageOrNull() ?: return null
-    }
-
-    val layout = layout.toLayoutOrNull() ?: return null
-
-    val closeButton =
-        if (closeButton == null) null else let { closeButton.toCloseButtonOrNull() ?: return null }
-
-    return InAppMessage.MessageContext.Message(
+internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InAppMessage.Message? {
+    return InAppMessage.Message(
         lang = lang,
-        layout = layout,
-        images = images,
+        layout = layout.toLayoutOrNull() ?: return null,
+        images = images.map { it.toImageOrNull() ?: return null },
         text = text?.toText(),
-        buttons = buttons,
-        background = background.toBackGround(),
-        closeButton = closeButton
+        buttons = buttons.map { it.toButtonOrNull() ?: return null },
+        closeButton = closeButton?.let { it.toButtonOrNull() ?: return null },
+        background = InAppMessage.Message.Background(
+            color = background.color
+        )
     )
 }
 
-internal fun InAppMessageDto.MessageContextDto.MessageDto.CloseButtonDto.toCloseButtonOrNull(): InAppMessage.MessageContext.Message.CloseButton? {
-    val action = action.toActionOrNUll() ?: return null
-
-    return InAppMessage.MessageContext.Message.CloseButton(
-        style = style.toStyle(),
-        action = action
+internal fun InAppMessageDto.MessageContextDto.MessageDto.LayoutDto.toLayoutOrNull(): InAppMessage.Message.Layout? {
+    return InAppMessage.Message.Layout(
+        displayType = parseEnumOrNull<InAppMessage.DisplayType>(displayType) ?: return null,
+        layoutType = parseEnumOrNull<InAppMessage.LayoutType>(layoutType) ?: return null
     )
 }
 
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.CloseButtonDto.StyleDto.toStyle() =
-    InAppMessage.MessageContext.Message.CloseButton.Style(
-        color = color
-    )
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.BackgroundDto.toBackGround() =
-    InAppMessage.MessageContext.Message.Background(
-        color = color
-    )
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.ButtonDto.toButtonOrNull(): InAppMessage.MessageContext.Message.Button? {
-    val action = action.toActionOrNUll() ?: return null
-
-    return InAppMessage.MessageContext.Message.Button(
-        text = text,
-        style = style.toStyle(),
-        action = action
-    )
-}
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.ButtonDto.StyleDto.toStyle() =
-    InAppMessage.MessageContext.Message.Button.Style(
-        textColor = textColor,
-        bgColor = bgColor,
-        borderColor = borderColor
-    )
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.ImageDto.toImageOrNull(): InAppMessage.MessageContext.Message.Image? {
-    val orientation =
-        parseEnumOrNull<InAppMessage.MessageContext.Orientation>(orientation)
-            ?: return null
-
-
-    return InAppMessage.MessageContext.Message.Image(
-        orientation = orientation,
+internal fun InAppMessageDto.MessageContextDto.MessageDto.ImageDto.toImageOrNull(): InAppMessage.Message.Image? {
+    return InAppMessage.Message.Image(
+        orientation = parseEnumOrNull<InAppMessage.Orientation>(orientation) ?: return null,
         imagePath = imagePath,
-        action = if (action != null) action.toActionOrNUll() ?: return null else null
+        action = action?.let { it.toActionOrNull() ?: return null }
     )
-
 }
 
-internal fun InAppMessageDto.MessageContextDto.ActionDto.toActionOrNUll(): InAppMessage.MessageContext.Action? {
-    val parsedType = parseEnumOrNull<InAppMessage.MessageContext.Action.Type>(type) ?: return null
-    val parsedBehavior =
-        parseEnumOrNull<InAppMessage.MessageContext.Action.Behavior>(behavior) ?: return null
-
-    return InAppMessage.MessageContext.Action(
-        behavior = parsedBehavior,
-        type = parsedType,
+internal fun InAppMessageDto.MessageContextDto.ActionDto.toActionOrNull(): InAppMessage.Action? {
+    return InAppMessage.Action(
+        behavior = parseEnumOrNull<InAppMessage.Behavior>(behavior) ?: return null,
+        type = parseEnumOrNull<InAppMessage.ActionType>(type) ?: return null,
         value = value
     )
 }
 
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.TextDto.toText() =
-    InAppMessage.MessageContext.Message.Text(
-        title = title.toTextAttribute(),
-        body = body.toTextAttribute()
-    )
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.TextDto.TextAttributeDto.toTextAttribute() =
-    InAppMessage.MessageContext.Message.Text.TextAttribute(
-        text = text,
-        style = style.toStyle()
-    )
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.TextDto.StyleDto.toStyle() =
-    InAppMessage.MessageContext.Message.Text.Style(
-        textColor = textColor
-    )
-
-internal fun InAppMessageDto.MessageContextDto.MessageDto.LayoutDto.toLayoutOrNull(): InAppMessage.MessageContext.Message.Layout? {
-    val parsedDisplayType =
-        parseEnumOrNull<InAppMessage.MessageContext.Message.Layout.DisplayType>(displayType)
-            ?: return null
-    val parsedLayoutType =
-        parseEnumOrNull<InAppMessage.MessageContext.Message.Layout.LayoutType>(layoutType)
-            ?: return null
-
-    return InAppMessage.MessageContext.Message.Layout(
-        displayType = parsedDisplayType,
-        layoutType = parsedLayoutType
+internal fun InAppMessageDto.MessageContextDto.MessageDto.CloseButtonDto.toButtonOrNull(): InAppMessage.Message.Button? {
+    return InAppMessage.Message.Button(
+        text = "✕",
+        style = InAppMessage.Message.Button.Style(
+            textColor = style.color,
+            bgColor = "#FFFFFF",
+            borderColor = "#FFFFFF"
+        ),
+        action = action.toActionOrNull() ?: return null
     )
 }
 
+internal fun InAppMessageDto.MessageContextDto.MessageDto.ButtonDto.toButtonOrNull(): InAppMessage.Message.Button? {
+    return InAppMessage.Message.Button(
+        text = text,
+        style = InAppMessage.Message.Button.Style(
+            textColor = style.textColor,
+            bgColor = style.bgColor,
+            borderColor = style.borderColor
+        ),
+        action = action.toActionOrNull() ?: return null
+    )
+}
 
+internal fun InAppMessageDto.MessageContextDto.MessageDto.TextDto.toText(): InAppMessage.Message.Text {
+    return InAppMessage.Message.Text(
+        title = title.toAttribute(),
+        body = body.toAttribute()
+    )
+}
+
+internal fun InAppMessageDto.MessageContextDto.MessageDto.TextDto.TextAttributeDto.toAttribute(): InAppMessage.Message.Text.Attribute {
+    return InAppMessage.Message.Text.Attribute(
+        text = text,
+        style = InAppMessage.Message.Text.Style(
+            textColor = style.textColor
+        )
+    )
+}

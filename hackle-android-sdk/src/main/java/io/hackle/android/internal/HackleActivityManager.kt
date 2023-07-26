@@ -3,6 +3,7 @@ package io.hackle.android.internal
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
+import io.hackle.android.ui.HackleActivity
 
 internal class HackleActivityManager : ActivityLifecycleCallbacks {
 

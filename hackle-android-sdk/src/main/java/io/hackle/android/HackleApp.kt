@@ -2,7 +2,6 @@ package io.hackle.android
 
 import android.app.Activity
 import android.content.Context
-import io.hackle.android.explorer.HackleUserExplorer
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -11,6 +10,7 @@ import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.PollingWorkspaceHandler
+import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision

@@ -26,19 +26,17 @@ internal class InAppMessageDtoTest {
                     .and {
                         get { defaultLang } isEqualTo "ko"
                         get { platformTypes } isEqualTo listOf(
-                            InAppMessage.MessageContext.PlatformType.ANDROID,
-                            InAppMessage.MessageContext.PlatformType.IOS
+                            InAppMessage.PlatformType.ANDROID,
+                            InAppMessage.PlatformType.IOS
                         )
                         get { orientations } isEqualTo listOf(
-                            InAppMessage.MessageContext.Orientation.VERTICAL,
-                            InAppMessage.MessageContext.Orientation.HORIZONTAL
+                            InAppMessage.Orientation.VERTICAL,
+                            InAppMessage.Orientation.HORIZONTAL
                         )
-                        get { exposure.type } isEqualTo InAppMessage.MessageContext.Exposure.Type.DEFAULT
-                        get { exposure.key } isEqualTo null
                     }
             }
             .and {
-                get { displayTimeRange } isEqualTo InAppMessage.Range.Immediate
+                get { period } isEqualTo InAppMessage.Period.Always
             }
 
     }
@@ -61,12 +59,6 @@ internal class InAppMessageDtoTest {
 
         //messageContext orientations
         expectThat(workspace.getInAppMessageOrNull(4L))
-
-
-        //messageContext exposure
-        expectThat(workspace.getInAppMessageOrNull(5L))
-            .isNull()
-
 
         //message ImageOrientation
         expectThat(workspace.getInAppMessageOrNull(6L))
@@ -103,7 +95,7 @@ internal class InAppMessageDtoTest {
         expectThat(workspace.getInAppMessageOrNull(13L))
             .isNotNull()
             .hasEventTriggerRules(
-                InAppMessage.EventTriggerRule("home", emptyList())
+                InAppMessage.EventTrigger.Rule("home", emptyList())
             )
 
         //targetContext target
@@ -139,10 +131,10 @@ internal class InAppMessageDtoTest {
         if (allPassed) pass() else fail()
     }
 
-    private fun Assertion.Builder<InAppMessage>.hasEventTriggerRules(vararg rules: InAppMessage.EventTriggerRule) =
+    private fun Assertion.Builder<InAppMessage>.hasEventTriggerRules(vararg rules: InAppMessage.EventTrigger.Rule) =
         assert("InAppMessage.eventTriggerRules") {
             val actual = rules.toList()
-            if (it.eventTriggerRules == actual) {
+            if (it.eventTrigger.rules == actual) {
                 pass()
             } else {
                 fail(actual)
