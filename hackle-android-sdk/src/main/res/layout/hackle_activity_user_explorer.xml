@@ -46,19 +46,19 @@
             android:textColor="@color/hackle_black"
             android:textSize="16dp" />
 
-        <io.hackle.android.explorer.activity.user.IdentifierView
+        <io.hackle.android.ui.explorer.activity.user.IdentifierView
             android:id="@+id/hackle_identifier_default_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
-        <io.hackle.android.explorer.activity.user.IdentifierView
+        <io.hackle.android.ui.explorer.activity.user.IdentifierView
             android:id="@+id/hackle_identifier_device_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
-        <io.hackle.android.explorer.activity.user.IdentifierView
+        <io.hackle.android.ui.explorer.activity.user.IdentifierView
             android:id="@+id/hackle_identifier_user_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -74,7 +74,7 @@
         android:background="@color/hackle_white"
         android:orientation="vertical">
 
-        <io.hackle.android.explorer.activity.experiment.view.ExperimentTabLayout
+        <io.hackle.android.ui.explorer.activity.experiment.view.ExperimentTabLayout
             android:id="@+id/hackle_user_explorer_tab"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

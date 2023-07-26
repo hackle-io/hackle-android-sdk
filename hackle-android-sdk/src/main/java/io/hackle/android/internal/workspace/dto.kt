@@ -148,6 +148,10 @@ internal data class RemoteConfigParameterDto(
     )
 }
 
+internal class DurationDto(
+    val timeUnit: String,
+    val amount: Long
+)
 
 internal data class InAppMessageDto(
     val id: Long,
@@ -157,6 +161,7 @@ internal data class InAppMessageDto(
     val endEpochTimeMillis: Long?,
     val status: String,
     val eventTriggerRules: List<EventTriggerRuleDto>,
+    val eventFrequencyCap: EventFrequencyCapDto?,
     val targetContext: TargetContextDto,
     val messageContext: MessageContextDto
 ) {
@@ -164,6 +169,21 @@ internal data class InAppMessageDto(
     data class EventTriggerRuleDto(
         val eventKey: String,
         val targets: List<TargetDto>
+    )
+
+    data class EventFrequencyCapDto(
+        val identifiers: List<IdentifierCapDto>,
+        val duration: DurationCapDto?
+    )
+
+    data class IdentifierCapDto(
+        val identifierType: String,
+        val countPerIdentifier: Long
+    )
+
+    data class DurationCapDto(
+        val durationUnit: DurationDto,
+        val countPerDuration: Long
     )
 
     data class TargetContextDto(
@@ -239,7 +259,7 @@ internal data class InAppMessageDto(
                 val style: StyleDto,
                 val action: ActionDto
             ) {
-                data class StyleDto (
+                data class StyleDto(
                     val color: String
                 )
             }

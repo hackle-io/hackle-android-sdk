@@ -3,17 +3,16 @@
     android:id="@id/hackle_in_app_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:screenOrientation="portrait"
-    android:background="@android:color/transparent">
-    
+    android:background="@android:color/transparent"
+    android:screenOrientation="portrait">
+
     <RelativeLayout
         android:id="@+id/hackle_inappmessage_modal_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/hackle_inappmessage_frame_background"
-        >
+        android:background="@color/hackle_inappmessage_frame_background">
 
-        <io.hackle.android.inappmessage.view.InAppMessageModalFrame
+        <io.hackle.android.ui.inappmessage.view.InAppMessageModalFrame
             android:id="@+id/hackle_in_app_message_frame"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -28,16 +27,15 @@
             android:minWidth="@dimen/io_hackle_inappmessage_modal_min_width">
 
 
-            <io.hackle.android.inappmessage.view.InAppMessageImageView
+            <io.hackle.android.ui.inappmessage.view.InAppMessageImageView
                 android:id="@+id/hackle_in_app_message_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="16dp"
-                android:adjustViewBounds="true"
-               />
+                android:adjustViewBounds="true" />
 
-            <io.hackle.android.inappmessage.view.InAppMessageTextContainerView
+            <io.hackle.android.ui.inappmessage.view.InAppMessageTextContainerView
                 android:id="@+id/hackle_in_app_message_text_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -60,7 +58,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <io.hackle.android.inappmessage.view.InAppMessageBodyTextView
+                <io.hackle.android.ui.inappmessage.view.InAppMessageBodyTextView
                     android:id="@+id/hackle_in_app_body_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -70,7 +68,7 @@
                     android:textColor="#1c1c1c"
                     android:textSize="16sp" />
 
-            </io.hackle.android.inappmessage.view.InAppMessageTextContainerView>
+            </io.hackle.android.ui.inappmessage.view.InAppMessageTextContainerView>
 
             <LinearLayout
                 android:id="@+id/hackle_button_group"
@@ -129,7 +127,7 @@
                     style="@style/Hackle.InAppMessage.CloseButton" />
             </RelativeLayout>
 
-        </io.hackle.android.inappmessage.view.InAppMessageModalFrame>
+        </io.hackle.android.ui.inappmessage.view.InAppMessageModalFrame>
 
     </RelativeLayout>
 </RelativeLayout>
