@@ -34,6 +34,7 @@ internal data class VariationDto(
 
 internal data class ExecutionDto(
     val status: String,
+    val version: Int,
     val userOverrides: List<UserOverrideDto>,
     val segmentOverrides: List<TargetRuleDto>,
     val targetAudiences: List<TargetDto>,
