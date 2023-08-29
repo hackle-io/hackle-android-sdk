@@ -30,6 +30,7 @@
       "execution": {
         "id": 186896,
         "status": "READY",
+        "version": 1,
         "userOverrides": [
           {
             "userId": "qa@hackle.io",
@@ -81,6 +82,7 @@
       "execution": {
         "id": 186898,
         "status": "READY",
+        "version": 1,
         "userOverrides": [],
         "segmentOverrides": [],
         "targetAudiences": [],
@@ -129,6 +131,7 @@
       "execution": {
         "id": 186900,
         "status": "READY",
+        "version": 1,
         "userOverrides": [
           {
             "userId": "qa@hackle.io",
@@ -192,6 +195,7 @@
       "execution": {
         "id": 186902,
         "status": "STOPPED",
+        "version": 1,
         "userOverrides": [
           {
             "userId": "qa@hackle.io",
@@ -247,6 +251,7 @@
       "execution": {
         "id": 210439,
         "status": "READY",
+        "version": 1,
         "userOverrides": [
           {
             "userId": "qa@hackle.io",
@@ -296,6 +301,7 @@
       "execution": {
         "id": 420693,
         "status": "READY",
+        "version": 1,
         "userOverrides": [],
         "segmentOverrides": [],
         "targetAudiences": [],
@@ -334,6 +340,7 @@
       "execution": {
         "id": 186904,
         "status": "RUNNING",
+        "version": 1,
         "userOverrides": [
           {
             "userId": "anonymous@hackle.io",
@@ -423,6 +430,7 @@
       "execution": {
         "id": 186906,
         "status": "RUNNING",
+        "version": 1,
         "userOverrides": [],
         "segmentOverrides": [],
         "targetAudiences": [],
@@ -484,6 +492,7 @@
       "execution": {
         "id": 186908,
         "status": "PAUSED",
+        "version": 1,
         "userOverrides": [
           {
             "userId": "tester1",
@@ -541,6 +550,7 @@
       "execution": {
         "id": 418943,
         "status": "PAUSED",
+        "version": 1,
         "userOverrides": [],
         "segmentOverrides": [],
         "targetAudiences": [],
