@@ -4,7 +4,7 @@ import io.hackle.android.internal.platform.DeviceInfo
 import java.util.Locale
 import java.util.TimeZone
 
-class MockDeviceInfo(
+internal class MockDeviceInfo(
     connectionType: DeviceInfo.ConnectionType = DeviceInfo.ConnectionType.MOBILE
 ) : DeviceInfo {
 

@@ -2,7 +2,7 @@ package io.hackle.android.mock
 
 import io.hackle.android.internal.platform.PackageInfo
 
-class MockPackageInfo : PackageInfo {
+internal class MockPackageInfo : PackageInfo {
 
     override val packageName: String = "io.hackle.app"
 

@@ -18,7 +18,7 @@ import android.view.WindowManager
 import java.util.Locale
 import java.util.TimeZone
 
-interface DeviceInfo {
+internal interface DeviceInfo {
 
     data class ScreenInfo(
         val orientation: Int,
@@ -49,7 +49,7 @@ interface DeviceInfo {
     val networkInfo: NetworkInfo
 }
 
-class AndroidDeviceInfo(val context: Context) : DeviceInfo {
+internal class AndroidDeviceInfo(val context: Context) : DeviceInfo {
 
     override val osName: String = "Android"
 

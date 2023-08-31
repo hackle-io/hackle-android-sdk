@@ -3,13 +3,13 @@ package io.hackle.android.internal.platform
 import android.content.Context
 import android.os.Build
 
-interface PackageInfo {
+internal interface PackageInfo {
     val packageName: String
     val versionName: String
     val versionCode: Long
 }
 
-class AndroidPackageInfo(val context: Context) : PackageInfo {
+internal class AndroidPackageInfo(val context: Context) : PackageInfo {
 
     private var _packageName: String = ""
     override val packageName: String
