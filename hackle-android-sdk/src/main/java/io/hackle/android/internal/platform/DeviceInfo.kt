@@ -21,11 +21,15 @@ import java.util.TimeZone
 internal interface DeviceInfo {
 
     data class ScreenInfo(
-        val orientation: Int,
+        val orientation: Orientation,
         val width: Int,
         val height: Int,
         val density: Int,
     )
+
+    enum class Orientation {
+        PORTRAIT, LANDSCAPE
+    }
 
     data class NetworkInfo(
         val carrier: String,
@@ -96,10 +100,12 @@ internal class AndroidDeviceInfo(val context: Context) : DeviceInfo {
     override val screenInfo: DeviceInfo.ScreenInfo
         get() {
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val orientation = if (context.resources.configuration.orientation != Configuration.ORIENTATION_PORTRAIT)
+                DeviceInfo.Orientation.LANDSCAPE else DeviceInfo.Orientation.PORTRAIT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val metrics = windowManager.currentWindowMetrics
                 return DeviceInfo.ScreenInfo(
-                    orientation = context.resources.configuration.orientation,
+                    orientation = orientation,
                     density = context.resources.displayMetrics.densityDpi,
                     width = metrics.bounds.width(),
                     height = metrics.bounds.height(),
@@ -108,7 +114,7 @@ internal class AndroidDeviceInfo(val context: Context) : DeviceInfo {
                 val displayMetrics = DisplayMetrics()
                 windowManager.defaultDisplay.getRealMetrics(displayMetrics)
                 return DeviceInfo.ScreenInfo(
-                    orientation = context.resources.configuration.orientation,
+                    orientation = orientation,
                     density = displayMetrics.densityDpi,
                     width = displayMetrics.widthPixels,
                     height = displayMetrics.heightPixels
@@ -124,14 +130,14 @@ internal class AndroidDeviceInfo(val context: Context) : DeviceInfo {
                         .getMethod("getRawHeight")
                         .invoke(windowManager.defaultDisplay) as Int
                     return DeviceInfo.ScreenInfo(
-                        orientation = context.resources.configuration.orientation,
+                        orientation = orientation,
                         density = displayMetrics.densityDpi,
                         width = width,
                         height = height,
                     )
                 } catch (_: Throwable) {
                     return DeviceInfo.ScreenInfo(
-                        orientation = context.resources.configuration.orientation,
+                        orientation = orientation,
                         density = displayMetrics.densityDpi,
                         width = displayMetrics.widthPixels,
                         height = displayMetrics.heightPixels,

@@ -46,6 +46,23 @@ class DeviceTest {
         assertDeviceProperties(device.properties, deviceInfo)
     }
 
+    @Test
+    fun `create device with landscape orientation case`() {
+        val deviceId = UUID.randomUUID().toString()
+        val repository = MapKeyValueRepository()
+        repository.putString("device_id", deviceId)
+        val packageInfo = MockPackageInfo()
+        val deviceInfo = MockDeviceInfo(orientation = DeviceInfo.Orientation.LANDSCAPE)
+        val device = DeviceImpl(
+            packageInfo = packageInfo,
+            deviceInfo = deviceInfo,
+            keyValueRepository = repository,
+        )
+        assertThat(device.id, `is`(deviceId))
+        assertPackageProperties(device.properties, packageInfo)
+        assertDeviceProperties(device.properties, deviceInfo)
+    }
+
     private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
         assertThat(properties["packageName"], `is`(packageInfo.packageName))
         assertThat(properties["versionCode"], `is`(packageInfo.versionCode))
@@ -64,7 +81,9 @@ class DeviceTest {
         assertThat(properties["locale"], `is`(deviceInfo.locale.toString()))
         assertThat(properties["language"], `is`(deviceInfo.locale.language))
         assertThat(properties["timeZone"], `is`(deviceInfo.timezone.id))
-        assertThat(properties["orientation"], `is`(deviceInfo.screenInfo.orientation))
+        val orientation = if (deviceInfo.screenInfo.orientation == DeviceInfo.Orientation.PORTRAIT)
+            "portrait" else "landscape"
+        assertThat(properties["orientation"], `is`(orientation))
         assertThat(properties["screenDpi"], `is`(deviceInfo.screenInfo.density))
         assertThat(properties["screenWidth"], `is`(deviceInfo.screenInfo.width))
         assertThat(properties["screenHeight"], `is`(deviceInfo.screenInfo.height))

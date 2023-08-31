@@ -51,7 +51,8 @@ internal data class DeviceImpl(
             "locale" to deviceInfo.locale.toString(),
             "language" to deviceInfo.locale.language,
             "timeZone" to deviceInfo.timezone.id,
-            "orientation" to deviceInfo.screenInfo.orientation,
+            "orientation" to if (deviceInfo.screenInfo.orientation == DeviceInfo.Orientation.PORTRAIT)
+                "portrait" else "landscape",
             "screenDpi" to deviceInfo.screenInfo.density,
             "screenWidth" to deviceInfo.screenInfo.width,
             "screenHeight" to deviceInfo.screenInfo.height,

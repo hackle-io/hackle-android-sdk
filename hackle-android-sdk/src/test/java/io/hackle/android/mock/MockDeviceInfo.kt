@@ -5,6 +5,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 internal class MockDeviceInfo(
+    orientation: DeviceInfo.Orientation = DeviceInfo.Orientation.PORTRAIT,
     connectionType: DeviceInfo.ConnectionType = DeviceInfo.ConnectionType.MOBILE
 ) : DeviceInfo {
 
@@ -26,7 +27,7 @@ internal class MockDeviceInfo(
 
     override val screenInfo: DeviceInfo.ScreenInfo =
         DeviceInfo.ScreenInfo(
-            orientation = 1,
+            orientation = orientation,
             density = 440,
             width = 1080,
             height = 1920,
