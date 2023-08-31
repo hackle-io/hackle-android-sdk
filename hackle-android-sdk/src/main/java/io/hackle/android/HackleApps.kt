@@ -26,6 +26,8 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
+import io.hackle.android.internal.platform.AndroidDeviceInfo
+import io.hackle.android.internal.platform.AndroidPackageInfo
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.task.TaskExecutors
@@ -77,7 +79,9 @@ internal object HackleApps {
         loggerConfiguration(config)
 
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
-        val device = Device.create(context, globalKeyValueRepository)
+        val packageInfo = AndroidPackageInfo(context)
+        val deviceInfo = AndroidDeviceInfo(context)
+        val device = Device.create(packageInfo, deviceInfo, globalKeyValueRepository)
 
         val httpClient = createHttpClient(context, sdk)
 

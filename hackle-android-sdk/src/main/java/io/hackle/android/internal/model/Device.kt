@@ -1,9 +1,9 @@
 package io.hackle.android.internal.model
 
-import android.content.Context
-import android.os.Build
 import io.hackle.android.internal.database.KeyValueRepository
-import java.util.*
+import io.hackle.android.internal.platform.DeviceInfo
+import io.hackle.android.internal.platform.PackageInfo
+import java.util.UUID
 
 internal data class Device(
     val id: String,
@@ -14,30 +14,37 @@ internal data class Device(
 
         private const val ID_KEY = "device_id"
 
-        fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
+        fun create(packageInfo: PackageInfo, deviceInfo: DeviceInfo, keyValueRepository: KeyValueRepository): Device {
             val deviceId = keyValueRepository.getString(ID_KEY) { UUID.randomUUID().toString() }
+            val screenInfo = deviceInfo.screenInfo
+            val networkInfo = deviceInfo.networkInfo
             val properties = mapOf(
-                "deviceModel" to Build.MODEL,
-                "deviceVendor" to Build.MANUFACTURER,
-                "language" to Locale.getDefault().language,
-                "osName" to "Android",
-                "osVersion" to Build.VERSION.RELEASE,
-                "platform" to "Mobile",
-                "isApp" to true,
-                "versionName" to context.versionName,
+                "packageName" to packageInfo.packageName,
+                "osName" to deviceInfo.osName,
+                "osVersion" to deviceInfo.osVersion,
+                "platform" to "Android",
+                "versionCode" to packageInfo.versionCode,
+                "versionName" to packageInfo.versionName,
+                "deviceModel" to deviceInfo.model,
+                "deviceType" to deviceInfo.type,
+                "deviceBrand" to deviceInfo.brand,
+                "deviceManufacturer" to deviceInfo.manufacturer,
+                "locale" to deviceInfo.locale.toString(),
+                "language" to deviceInfo.locale.language,
+                "timeZone" to deviceInfo.timezone.id,
+                "orientation" to deviceInfo.screenInfo.orientation,
+                "screenDpi" to screenInfo.density,
+                "screenWidth" to screenInfo.width,
+                "screenHeight" to screenInfo.height,
+                "carrierCode" to networkInfo.carrier,
+                "carrierName" to networkInfo.carrierName,
+                "isWifi" to (networkInfo.connectionType == DeviceInfo.ConnectionType.WIFI),
+                "isApp" to true
             )
             return Device(
                 id = deviceId,
                 properties = properties
             )
         }
-
-        private val Context.versionName: String
-            get() =
-                try {
-                    packageManager.getPackageInfo(packageName, 0).versionName
-                } catch (_: Throwable) {
-                    "unknown"
-                }
     }
 }
