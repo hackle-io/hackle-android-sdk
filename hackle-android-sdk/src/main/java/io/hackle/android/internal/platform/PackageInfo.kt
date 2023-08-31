@@ -28,6 +28,7 @@ internal class AndroidPackageInfo(val context: Context) : PackageInfo {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             _packageName = packageInfo.packageName
             _versionName = packageInfo.versionName
+            @Suppress("DEPRECATION")
             _versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                 packageInfo.longVersionCode else packageInfo.versionCode.toLong()
         } catch (_: Throwable) { }
