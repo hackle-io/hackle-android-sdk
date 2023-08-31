@@ -165,6 +165,7 @@ class AndroidDeviceInfo(val context: Context) : DeviceInfo {
         }
     }
 
+    @Suppress("DEPRECATION")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private fun getActiveNetwork(connectivityManager: ConnectivityManager): Network? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
