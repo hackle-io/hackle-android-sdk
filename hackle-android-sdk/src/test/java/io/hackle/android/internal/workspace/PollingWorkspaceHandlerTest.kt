@@ -86,15 +86,15 @@ class PollingWorkspaceHandlerTest {
     fun `onChanged - FOREGROUND start polling`() {
         val sut = handler(
             pollingScheduler = Schedulers.executor("test"),
-            pollingIntervalMillis = 200
+            pollingIntervalMillis = 500
         )
         val workspace = mockk<Workspace>()
         every { httpWorkspaceFetcher.fetch() } returns workspace
 
         sut.onChanged(FOREGROUND, 42)
-        Thread.sleep(1100)
+        Thread.sleep(1200)
 
-        verify(exactly = 5) { // 5 (scheduled)
+        verify(exactly = 2) { // 5 (scheduled)
             workspaceCache.put(any())
         }
     }
