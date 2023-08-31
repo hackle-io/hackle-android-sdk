@@ -5,6 +5,7 @@ import io.hackle.android.internal.database.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.User
 import io.mockk.spyk
 import io.mockk.verify
@@ -20,7 +21,7 @@ class SessionManagerTest {
         vararg listeners: SessionListener,
     ): SessionManager {
         return SessionManager(
-            userManager = UserManager(Device("test_id", emptyMap()), MapKeyValueRepository()),
+            userManager = UserManager(MockDevice("test_id", emptyMap()), MapKeyValueRepository()),
             keyValueRepository = repository,
             sessionTimeoutMillis = sessionTimeoutMillis
         ).also { listeners.forEach(it::addListener) }

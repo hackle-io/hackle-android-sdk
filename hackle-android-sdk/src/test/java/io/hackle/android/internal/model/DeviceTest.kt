@@ -19,7 +19,7 @@ class DeviceTest {
         repository.putString("device_id", deviceId)
         val packageInfo = MockPackageInfo()
         val deviceInfo = MockDeviceInfo()
-        val device = Device.create(
+        val device = DeviceImpl(
             packageInfo = packageInfo,
             deviceInfo = deviceInfo,
             keyValueRepository = repository,
@@ -36,7 +36,7 @@ class DeviceTest {
         repository.putString("device_id", deviceId)
         val packageInfo = MockPackageInfo()
         val deviceInfo = MockDeviceInfo(connectionType = DeviceInfo.ConnectionType.WIFI)
-        val device = Device.create(
+        val device = DeviceImpl(
             packageInfo = packageInfo,
             deviceInfo = deviceInfo,
             keyValueRepository = repository,
