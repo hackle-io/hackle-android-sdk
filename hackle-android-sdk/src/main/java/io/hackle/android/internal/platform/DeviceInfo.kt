@@ -27,8 +27,9 @@ internal interface DeviceInfo {
         val density: Int,
     )
 
-    enum class Orientation {
-        PORTRAIT, LANDSCAPE
+    enum class Orientation(val displayName: String) {
+        PORTRAIT("portrait"),
+        LANDSCAPE("landscape")
     }
 
     data class NetworkInfo(
