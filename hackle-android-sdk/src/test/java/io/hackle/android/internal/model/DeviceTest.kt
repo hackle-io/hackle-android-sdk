@@ -1,10 +1,9 @@
 package io.hackle.android.internal.model
 
 import io.hackle.android.internal.database.MapKeyValueRepository
-import io.hackle.android.internal.platform.DeviceInfo
-import io.hackle.android.internal.platform.PackageInfo
-import io.hackle.android.mock.MockDeviceInfo
-import io.hackle.android.mock.MockPackageInfo
+import io.hackle.android.internal.platform.model.DeviceInfo
+import io.hackle.android.internal.platform.model.PackageInfo
+import io.hackle.android.mock.MockPlatform
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
@@ -17,16 +16,14 @@ class DeviceTest {
         val deviceId = UUID.randomUUID().toString()
         val repository = MapKeyValueRepository()
         repository.putString("device_id", deviceId)
-        val packageInfo = MockPackageInfo()
-        val deviceInfo = MockDeviceInfo()
+        val platform = MockPlatform()
         val device = DeviceImpl(
-            packageInfo = packageInfo,
-            deviceInfo = deviceInfo,
             keyValueRepository = repository,
+            platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, packageInfo)
-        assertDeviceProperties(device.properties, deviceInfo)
+        assertPackageProperties(device.properties, platform.getPackageInfo())
+        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
 
     @Test
@@ -34,16 +31,14 @@ class DeviceTest {
         val deviceId = UUID.randomUUID().toString()
         val repository = MapKeyValueRepository()
         repository.putString("device_id", deviceId)
-        val packageInfo = MockPackageInfo()
-        val deviceInfo = MockDeviceInfo(connectionType = DeviceInfo.ConnectionType.WIFI)
+        val platform = MockPlatform(connectionType = DeviceInfo.ConnectionType.WIFI)
         val device = DeviceImpl(
-            packageInfo = packageInfo,
-            deviceInfo = deviceInfo,
             keyValueRepository = repository,
+            platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, packageInfo)
-        assertDeviceProperties(device.properties, deviceInfo)
+        assertPackageProperties(device.properties, platform.getPackageInfo())
+        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
 
     @Test
@@ -51,16 +46,14 @@ class DeviceTest {
         val deviceId = UUID.randomUUID().toString()
         val repository = MapKeyValueRepository()
         repository.putString("device_id", deviceId)
-        val packageInfo = MockPackageInfo()
-        val deviceInfo = MockDeviceInfo(orientation = DeviceInfo.Orientation.LANDSCAPE)
+        val platform = MockPlatform(orientation = DeviceInfo.Orientation.LANDSCAPE)
         val device = DeviceImpl(
-            packageInfo = packageInfo,
-            deviceInfo = deviceInfo,
             keyValueRepository = repository,
+            platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, packageInfo)
-        assertDeviceProperties(device.properties, deviceInfo)
+        assertPackageProperties(device.properties, platform.getPackageInfo())
+        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
 
     private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
