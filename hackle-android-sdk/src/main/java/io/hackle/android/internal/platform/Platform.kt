@@ -3,7 +3,6 @@ package io.hackle.android.internal.platform
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
-import android.telephony.TelephonyManager
 import io.hackle.android.internal.platform.helper.DeviceHelper
 import io.hackle.android.internal.platform.helper.NetworkHelper
 import io.hackle.android.internal.platform.model.DeviceInfo
@@ -39,7 +38,6 @@ internal class AndroidPlatform(val context: Context) : Platform {
     }
 
     override fun getCurrentDeviceInfo(): DeviceInfo {
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         val orientation = if (context.resources.configuration.orientation != Configuration.ORIENTATION_PORTRAIT)
             DeviceInfo.Orientation.LANDSCAPE else DeviceInfo.Orientation.PORTRAIT
         val displayMetrics = DeviceHelper.getDisplayMetrics(context)
@@ -58,11 +56,7 @@ internal class AndroidPlatform(val context: Context) : Platform {
                 width = displayMetrics.widthPixels,
                 height = displayMetrics.heightPixels,
             ),
-            networkInfo = DeviceInfo.NetworkInfo(
-                carrier = telephonyManager.networkOperator,
-                carrierName = telephonyManager.networkOperatorName,
-                connectionType = NetworkHelper.getConnectionType(context),
-            ),
+            connectionType = NetworkHelper.getConnectionType(context),
         )
     }
 }

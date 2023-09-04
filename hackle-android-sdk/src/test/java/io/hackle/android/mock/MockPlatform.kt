@@ -34,10 +34,6 @@ internal class MockPlatform(
                 width = 1080,
                 height = 1920,
             ),
-            networkInfo = DeviceInfo.NetworkInfo(
-                carrier = "hackle",
-                carrierName = "hackle inc.",
-                connectionType = connectionType
-            )
+            connectionType = connectionType,
         )
 }

@@ -53,9 +53,7 @@ internal data class DeviceImpl(
                 "screenDpi" to deviceInfo.screenInfo.density,
                 "screenWidth" to deviceInfo.screenInfo.width,
                 "screenHeight" to deviceInfo.screenInfo.height,
-                "carrierCode" to deviceInfo.networkInfo.carrier,
-                "carrierName" to deviceInfo.networkInfo.carrierName,
-                "isWifi" to deviceInfo.networkInfo.connectionType.isWifi(),
+                "isWifi" to deviceInfo.connectionType.isWifi(),
                 "isApp" to true
             )
         }

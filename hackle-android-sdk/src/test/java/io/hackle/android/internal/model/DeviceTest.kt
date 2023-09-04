@@ -71,10 +71,7 @@ class DeviceTest {
         assertThat(properties["screenDpi"], `is`(deviceInfo.screenInfo.density))
         assertThat(properties["screenWidth"], `is`(deviceInfo.screenInfo.width))
         assertThat(properties["screenHeight"], `is`(deviceInfo.screenInfo.height))
-
-        assertThat(properties["carrierCode"], `is`(deviceInfo.networkInfo.carrier))
-        assertThat(properties["carrierName"], `is`(deviceInfo.networkInfo.carrierName))
-        assertThat(properties["isWifi"], `is`(deviceInfo.networkInfo.connectionType == DeviceInfo.ConnectionType.WIFI))
+        assertThat(properties["isWifi"], `is`(deviceInfo.connectionType == DeviceInfo.ConnectionType.WIFI))
         assertThat(properties["isApp"], `is`(true))
     }
 }

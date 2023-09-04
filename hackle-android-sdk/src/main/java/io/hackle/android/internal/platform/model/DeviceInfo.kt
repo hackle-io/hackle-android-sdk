@@ -12,8 +12,8 @@ internal data class DeviceInfo(
     val manufacturer: String,
     val locale: Locale,
     val timezone: TimeZone,
+    val connectionType: ConnectionType,
     val screenInfo: ScreenInfo,
-    val networkInfo: NetworkInfo,
 ) {
 
     data class ScreenInfo(
@@ -27,12 +27,6 @@ internal data class DeviceInfo(
         PORTRAIT("portrait"),
         LANDSCAPE("landscape")
     }
-
-    data class NetworkInfo(
-        val carrier: String,
-        val carrierName: String,
-        val connectionType: ConnectionType,
-    )
 
     enum class ConnectionType {
         NONE, WIFI, MOBILE
