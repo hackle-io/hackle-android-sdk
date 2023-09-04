@@ -17,8 +17,9 @@ internal interface Device {
         const val ID_KEY = "device_id"
 
         fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
+            val deviceId = keyValueRepository.getString(ID_KEY) { UUID.randomUUID().toString() }
             return DeviceImpl(
-                keyValueRepository = keyValueRepository,
+                id = deviceId,
                 platform = AndroidPlatform(context),
             )
         }
@@ -26,12 +27,9 @@ internal interface Device {
 }
 
 internal data class DeviceImpl(
-    val keyValueRepository: KeyValueRepository,
+    override val id: String,
     val platform: Platform,
 ) : Device {
-
-    override val id: String
-        get() = keyValueRepository.getString(Device.ID_KEY) { UUID.randomUUID().toString() }
 
     override val properties: Map<String, Any>
         get() {
