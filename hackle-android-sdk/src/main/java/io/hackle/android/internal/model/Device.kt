@@ -51,15 +51,17 @@ internal data class DeviceImpl(
                 "locale" to deviceInfo.locale.toString(),
                 "language" to deviceInfo.locale.language,
                 "timeZone" to deviceInfo.timezone.id,
-                "orientation" to if (deviceInfo.screenInfo.orientation == DeviceInfo.Orientation.PORTRAIT)
-                    "portrait" else "landscape",
+                "orientation" to deviceInfo.screenInfo.orientation.displayName,
                 "screenDpi" to deviceInfo.screenInfo.density,
                 "screenWidth" to deviceInfo.screenInfo.width,
                 "screenHeight" to deviceInfo.screenInfo.height,
                 "carrierCode" to deviceInfo.networkInfo.carrier,
                 "carrierName" to deviceInfo.networkInfo.carrierName,
-                "isWifi" to (deviceInfo.networkInfo.connectionType == DeviceInfo.ConnectionType.WIFI),
+                "isWifi" to deviceInfo.networkInfo.connectionType.isWifi(),
                 "isApp" to true
             )
         }
+
+    private fun DeviceInfo.ConnectionType.isWifi() =
+        this == DeviceInfo.ConnectionType.WIFI
 }
