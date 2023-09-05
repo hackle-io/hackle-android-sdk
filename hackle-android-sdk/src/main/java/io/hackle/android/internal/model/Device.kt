@@ -14,7 +14,7 @@ internal interface Device {
 
     companion object {
 
-        const val ID_KEY = "device_id"
+        private const val ID_KEY = "device_id"
 
         fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
             val deviceId = keyValueRepository.getString(ID_KEY) { UUID.randomUUID().toString() }
