@@ -18,7 +18,7 @@ internal interface Platform {
 
 internal class AndroidPlatform(val context: Context) : Platform {
 
-    private val _packageInfo: PackageInfo
+    private val packageInfo: PackageInfo
 
     init {
         var packageName = ""
@@ -33,14 +33,14 @@ internal class AndroidPlatform(val context: Context) : Platform {
             versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                 packageInfo.longVersionCode else packageInfo.versionCode.toLong()
         } catch (_: Throwable) { }
-        _packageInfo = PackageInfo(
+        packageInfo = PackageInfo(
             packageName = packageName,
             versionName = versionName,
             versionCode = versionCode,
         )
     }
 
-    override fun getPackageInfo(): PackageInfo = _packageInfo
+    override fun getPackageInfo(): PackageInfo = packageInfo
 
     override fun getCurrentDeviceInfo(): DeviceInfo {
         val orientation = if (context.resources.configuration.orientation != Configuration.ORIENTATION_PORTRAIT)
