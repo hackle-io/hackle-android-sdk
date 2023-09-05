@@ -36,10 +36,10 @@ internal data class DeviceImpl(
             val packageInfo = platform.getPackageInfo()
             val deviceInfo = platform.getCurrentDeviceInfo()
             return mapOf(
+                "platform" to "Android",
                 "packageName" to packageInfo.packageName,
                 "osName" to deviceInfo.osName,
                 "osVersion" to deviceInfo.osVersion,
-                "platform" to "Android",
                 "versionCode" to packageInfo.versionCode,
                 "versionName" to packageInfo.versionName,
                 "deviceModel" to deviceInfo.model,
