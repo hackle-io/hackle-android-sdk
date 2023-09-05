@@ -18,23 +18,33 @@ internal interface Platform {
 
 internal class AndroidPlatform(val context: Context) : Platform {
 
+    private var _packageInfo: PackageInfo? = null
+
     @Suppress("DEPRECATION")
     override fun getPackageInfo(): PackageInfo {
-        var packageName = ""
-        var versionName = ""
-        var versionCode = 0L
+        if (_packageInfo != null) {
+            return _packageInfo!!
+        }
+
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageName = packageInfo.packageName
-            versionName = packageInfo.versionName
-            versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+            val packageName = packageInfo.packageName
+            val versionName = packageInfo.versionName
+            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                 packageInfo.longVersionCode else packageInfo.versionCode.toLong()
-        } catch (_: Throwable) { }
-        return PackageInfo(
-            packageName = packageName,
-            versionName = versionName,
-            versionCode = versionCode,
-        )
+            _packageInfo = PackageInfo(
+                packageName = packageName,
+                versionName = versionName,
+                versionCode = versionCode,
+            )
+            return _packageInfo!!
+        } catch (_: Throwable) {
+            return PackageInfo(
+                packageName = "",
+                versionName = "",
+                versionCode = 0L
+            )
+        }
     }
 
     override fun getCurrentDeviceInfo(): DeviceInfo {

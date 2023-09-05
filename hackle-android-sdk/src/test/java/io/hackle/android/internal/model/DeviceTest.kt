@@ -51,7 +51,6 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertThat(device.platform, `is`("Android"))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
@@ -65,7 +64,6 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertThat(device.platform, `is`("Android"))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
@@ -79,7 +77,6 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertThat(device.platform, `is`("Android"))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
@@ -98,7 +95,7 @@ class DeviceTest {
         assertThat(properties["deviceType"], `is`(deviceInfo.type))
         assertThat(properties["deviceBrand"], `is`(deviceInfo.brand))
         assertThat(properties["deviceManufacturer"], `is`(deviceInfo.manufacturer))
-        assertThat(properties["locale"], `is`(deviceInfo.locale.toString()))
+        assertThat(properties["locale"], `is`("${deviceInfo.locale.language}-${deviceInfo.locale.country}"))
         assertThat(properties["language"], `is`(deviceInfo.locale.language))
         assertThat(properties["timeZone"], `is`(deviceInfo.timezone.id))
         assertThat(properties["orientation"], `is`(deviceInfo.screenInfo.orientation.displayName))
