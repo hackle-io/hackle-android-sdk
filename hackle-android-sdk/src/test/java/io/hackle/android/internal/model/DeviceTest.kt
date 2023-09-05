@@ -19,6 +19,7 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
+        assertThat(device.platform, `is`("Android"))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
@@ -32,6 +33,7 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
+        assertThat(device.platform, `is`("Android"))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
@@ -45,6 +47,7 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
+        assertThat(device.platform, `is`("Android"))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
     }
