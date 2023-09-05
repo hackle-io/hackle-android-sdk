@@ -24,7 +24,7 @@ internal class AndroidPlatform(val context: Context) : Platform {
         var packageName = ""
         var versionName = ""
         var versionCode = 0L
-        
+
         try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             packageName = packageInfo.packageName
