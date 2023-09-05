@@ -66,6 +66,7 @@ class DeviceTest {
         assertThat(device.id, `is`(deviceId))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
+        assertThat(device.properties["isWifi"], `is`(true))
     }
 
     @Test
@@ -79,6 +80,7 @@ class DeviceTest {
         assertThat(device.id, `is`(deviceId))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
+        assertThat(device.properties["orientation"], `is`("landscape"))
     }
 
     private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
