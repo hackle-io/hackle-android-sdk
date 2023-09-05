@@ -11,6 +11,38 @@ import java.util.UUID
 class DeviceTest {
 
     @Test
+    fun `create device with static compare`() {
+        val deviceId = UUID.randomUUID().toString()
+        val platform = MockPlatform()
+        val device = DeviceImpl(
+            id = deviceId,
+            platform = platform,
+        )
+        assertThat(device.id, `is`(deviceId))
+        assertThat(device.properties["platform"], `is`("Android"))
+
+        assertThat(device.properties["packageName"], `is`("io.hackle.app"))
+        assertThat(device.properties["versionName"], `is`("1.1.1"))
+        assertThat(device.properties["versionCode"], `is`(10101L))
+
+        assertThat(device.properties["osName"], `is`("DummyOS"))
+        assertThat(device.properties["osVersion"], `is`("1.0.0"))
+        assertThat(device.properties["deviceModel"], `is`("hackle-123a"))
+        assertThat(device.properties["deviceType"], `is`("phone"))
+        assertThat(device.properties["deviceBrand"], `is`("hackle"))
+        assertThat(device.properties["deviceManufacturer"], `is`("hackle manufacture"))
+        assertThat(device.properties["locale"], `is`("ko-KR"))
+        assertThat(device.properties["language"], `is`("ko"))
+        assertThat(device.properties["timeZone"], `is`("Asia/Seoul"))
+        assertThat(device.properties["orientation"], `is`("portrait"))
+        assertThat(device.properties["screenDpi"], `is`(440))
+        assertThat(device.properties["screenWidth"], `is`(1080))
+        assertThat(device.properties["screenHeight"], `is`(1920))
+        assertThat(device.properties["isWifi"], `is`(false))
+        assertThat(device.properties["isApp"], `is`(true))
+    }
+
+    @Test
     fun `create device with normal case`() {
         val deviceId = UUID.randomUUID().toString()
         val platform = MockPlatform()
@@ -54,15 +86,14 @@ class DeviceTest {
 
     private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
         assertThat(properties["packageName"], `is`(packageInfo.packageName))
-        assertThat(properties["versionCode"], `is`(packageInfo.versionCode))
         assertThat(properties["versionName"], `is`(packageInfo.versionName))
+        assertThat(properties["versionCode"], `is`(packageInfo.versionCode))
     }
 
     private fun assertDeviceProperties(properties: Map<String, Any>, deviceInfo: DeviceInfo) {
+        assertThat(properties["platform"], `is`("Android"))
         assertThat(properties["osName"], `is`(deviceInfo.osName))
         assertThat(properties["osVersion"], `is`(deviceInfo.osVersion))
-        assertThat(properties["platform"], `is`("Android"))
-
         assertThat(properties["deviceModel"], `is`(deviceInfo.model))
         assertThat(properties["deviceType"], `is`(deviceInfo.type))
         assertThat(properties["deviceBrand"], `is`(deviceInfo.brand))

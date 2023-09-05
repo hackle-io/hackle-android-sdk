@@ -5,6 +5,7 @@ import io.hackle.android.internal.database.KeyValueRepository
 import io.hackle.android.internal.platform.AndroidPlatform
 import io.hackle.android.internal.platform.Platform
 import io.hackle.android.internal.platform.model.DeviceInfo
+import java.util.Locale
 import java.util.UUID
 
 internal interface Device {
@@ -38,15 +39,15 @@ internal data class DeviceImpl(
             return mapOf(
                 "platform" to "Android",
                 "packageName" to packageInfo.packageName,
+                "versionName" to packageInfo.versionName,
+                "versionCode" to packageInfo.versionCode,
                 "osName" to deviceInfo.osName,
                 "osVersion" to deviceInfo.osVersion,
-                "versionCode" to packageInfo.versionCode,
-                "versionName" to packageInfo.versionName,
                 "deviceModel" to deviceInfo.model,
                 "deviceType" to deviceInfo.type,
                 "deviceBrand" to deviceInfo.brand,
                 "deviceManufacturer" to deviceInfo.manufacturer,
-                "locale" to deviceInfo.locale.toString(),
+                "locale" to deviceInfo.locale.toLocaleString(),
                 "language" to deviceInfo.locale.language,
                 "timeZone" to deviceInfo.timezone.id,
                 "orientation" to deviceInfo.screenInfo.orientation.displayName,
@@ -57,6 +58,8 @@ internal data class DeviceImpl(
                 "isApp" to true
             )
         }
+
+    private fun Locale.toLocaleString() = "${this.language}-${this.country}"
 
     private fun DeviceInfo.ConnectionType.isWifi() =
         this == DeviceInfo.ConnectionType.WIFI
