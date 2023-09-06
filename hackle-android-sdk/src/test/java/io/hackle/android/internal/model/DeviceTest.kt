@@ -83,6 +83,34 @@ class DeviceTest {
         assertThat(device.properties["orientation"], `is`("landscape"))
     }
 
+    @Test
+    fun `rotate screen case`() {
+        val platform = MockPlatform(orientation = DeviceInfo.Orientation.PORTRAIT)
+        val device = DeviceImpl(
+            id = UUID.randomUUID().toString(),
+            platform = platform,
+        )
+        assertThat(device.properties["orientation"], `is`("portrait"))
+        platform.rotateScreen()
+        assertThat(device.properties["orientation"], `is`("landscape"))
+        platform.rotateScreen()
+        assertThat(device.properties["orientation"], `is`("portrait"))
+    }
+
+    @Test
+    fun `change wifi state case`() {
+        val platform = MockPlatform(connectionType = DeviceInfo.ConnectionType.MOBILE)
+        val device = DeviceImpl(
+            id = UUID.randomUUID().toString(),
+            platform = platform,
+        )
+        assertThat(device.properties["isWifi"], `is`(false))
+        platform.changeConnectionType(DeviceInfo.ConnectionType.WIFI)
+        assertThat(device.properties["isWifi"], `is`(true))
+        platform.changeConnectionType(DeviceInfo.ConnectionType.NONE)
+        assertThat(device.properties["isWifi"], `is`(false))
+    }
+
     private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
         assertThat(properties["packageName"], `is`(packageInfo.packageName))
         assertThat(properties["versionName"], `is`(packageInfo.versionName))

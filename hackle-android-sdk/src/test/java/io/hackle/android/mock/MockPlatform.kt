@@ -7,8 +7,8 @@ import java.util.Locale
 import java.util.TimeZone
 
 internal class MockPlatform(
-    val orientation: DeviceInfo.Orientation = DeviceInfo.Orientation.PORTRAIT,
-    val connectionType: DeviceInfo.ConnectionType = DeviceInfo.ConnectionType.MOBILE
+    var orientation: DeviceInfo.Orientation = DeviceInfo.Orientation.PORTRAIT,
+    var connectionType: DeviceInfo.ConnectionType = DeviceInfo.ConnectionType.MOBILE
 ) : Platform {
 
     override fun getPackageInfo(): PackageInfo =
@@ -36,4 +36,13 @@ internal class MockPlatform(
             ),
             connectionType = connectionType,
         )
+
+    fun rotateScreen() {
+        orientation = if (orientation == DeviceInfo.Orientation.PORTRAIT)
+            DeviceInfo.Orientation.LANDSCAPE else DeviceInfo.Orientation.PORTRAIT
+    }
+
+    fun changeConnectionType(connectionType: DeviceInfo.ConnectionType) {
+        this.connectionType = connectionType
+    }
 }
