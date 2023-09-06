@@ -20,7 +20,6 @@ internal data class DeviceInfo(
         val orientation: Orientation,
         val width: Int,
         val height: Int,
-        val density: Int,
     )
 
     enum class Orientation(val displayName: String) {

@@ -30,7 +30,6 @@ internal class MockPlatform(
             timezone = TimeZone.getTimeZone("Asia/Seoul"),
             screenInfo = DeviceInfo.ScreenInfo(
                 orientation = orientation,
-                density = 440,
                 width = 1080,
                 height = 1920,
             ),

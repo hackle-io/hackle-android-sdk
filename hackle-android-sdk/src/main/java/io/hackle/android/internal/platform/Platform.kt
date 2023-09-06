@@ -57,7 +57,6 @@ internal class AndroidPlatform(val context: Context) : Platform {
             timezone = TimeZone.getDefault(),
             screenInfo = DeviceInfo.ScreenInfo(
                 orientation = orientation,
-                density = displayMetrics.densityDpi,
                 width = displayMetrics.widthPixels,
                 height = displayMetrics.heightPixels,
             ),
