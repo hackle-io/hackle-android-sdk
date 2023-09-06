@@ -20,7 +20,7 @@ internal object DeviceHelper {
                 if (context.resources.configuration.smallestScreenWidthDp < 600)
                     "phone" else "tablet"
             Configuration.UI_MODE_TYPE_TELEVISION -> "tv"
-            Configuration.UI_MODE_TYPE_DESK -> "desktop"
+            Configuration.UI_MODE_TYPE_DESK -> "pc"
             Configuration.UI_MODE_TYPE_CAR -> "car"
             Configuration.UI_MODE_TYPE_APPLIANCE -> "appliance"
             Configuration.UI_MODE_TYPE_WATCH -> "watch"
