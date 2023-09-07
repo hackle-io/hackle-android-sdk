@@ -13,11 +13,15 @@ import java.util.Locale
 
 internal object DeviceHelper {
 
+    private const val WINDOW_SIZE_MEDIUM = 600
+
     fun getDeviceType(context: Context): String {
         val service = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         return when (service.currentModeType) {
             Configuration.UI_MODE_TYPE_NORMAL ->
-                if (context.resources.configuration.smallestScreenWidthDp < 600)
+                // Support different screen sizes
+                // https://developer.android.com/guide/topics/large-screens/support-different-screen-sizes
+                if (context.resources.configuration.smallestScreenWidthDp < WINDOW_SIZE_MEDIUM)
                     "phone" else "tablet"
             Configuration.UI_MODE_TYPE_TELEVISION -> "tv"
             Configuration.UI_MODE_TYPE_DESK -> "pc"
