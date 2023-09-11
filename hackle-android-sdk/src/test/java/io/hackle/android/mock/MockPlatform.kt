@@ -33,7 +33,6 @@ internal class MockPlatform(
                 width = 1080,
                 height = 1920,
             ),
-            connectionType = connectionType,
         )
 
     fun rotateScreen() {

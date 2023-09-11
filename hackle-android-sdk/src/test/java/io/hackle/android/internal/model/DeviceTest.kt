@@ -34,10 +34,8 @@ class DeviceTest {
         assertThat(device.properties["locale"], `is`("ko-KR"))
         assertThat(device.properties["language"], `is`("ko"))
         assertThat(device.properties["timeZone"], `is`("Asia/Seoul"))
-        assertThat(device.properties["orientation"], `is`("portrait"))
         assertThat(device.properties["screenWidth"], `is`(1080))
         assertThat(device.properties["screenHeight"], `is`(1920))
-        assertThat(device.properties["isWifi"], `is`(false))
         assertThat(device.properties["isApp"], `is`(true))
     }
 
@@ -52,62 +50,6 @@ class DeviceTest {
         assertThat(device.id, `is`(deviceId))
         assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
-    }
-
-    @Test
-    fun `create device with wifi connection case`() {
-        val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform(connectionType = DeviceInfo.ConnectionType.WIFI)
-        val device = DeviceImpl(
-            id = deviceId,
-            platform = platform,
-        )
-        assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, platform.getPackageInfo())
-        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
-        assertThat(device.properties["isWifi"], `is`(true))
-    }
-
-    @Test
-    fun `create device with landscape orientation case`() {
-        val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform(orientation = DeviceInfo.Orientation.LANDSCAPE)
-        val device = DeviceImpl(
-            id = deviceId,
-            platform = platform,
-        )
-        assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, platform.getPackageInfo())
-        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
-        assertThat(device.properties["orientation"], `is`("landscape"))
-    }
-
-    @Test
-    fun `rotate screen case`() {
-        val platform = MockPlatform(orientation = DeviceInfo.Orientation.PORTRAIT)
-        val device = DeviceImpl(
-            id = UUID.randomUUID().toString(),
-            platform = platform,
-        )
-        assertThat(device.properties["orientation"], `is`("portrait"))
-        platform.rotateScreen()
-        assertThat(device.properties["orientation"], `is`("landscape"))
-        platform.rotateScreen()
-        assertThat(device.properties["orientation"], `is`("portrait"))
-    }
-
-    @Test
-    fun `change wifi state case`() {
-        val platform = MockPlatform(connectionType = DeviceInfo.ConnectionType.MOBILE)
-        val device = DeviceImpl(
-            id = UUID.randomUUID().toString(),
-            platform = platform,
-        )
-        assertThat(device.properties["isWifi"], `is`(false))
-        platform.changeConnectionType(DeviceInfo.ConnectionType.WIFI)
-        assertThat(device.properties["isWifi"], `is`(true))
-        platform.changeConnectionType(DeviceInfo.ConnectionType.NONE)
-        assertThat(device.properties["isWifi"], `is`(false))
     }
 
     private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
@@ -127,10 +69,8 @@ class DeviceTest {
         assertThat(properties["locale"], `is`("${deviceInfo.locale.language}-${deviceInfo.locale.country}"))
         assertThat(properties["language"], `is`(deviceInfo.locale.language))
         assertThat(properties["timeZone"], `is`(deviceInfo.timezone.id))
-        assertThat(properties["orientation"], `is`(deviceInfo.screenInfo.orientation.displayName))
         assertThat(properties["screenWidth"], `is`(deviceInfo.screenInfo.width))
         assertThat(properties["screenHeight"], `is`(deviceInfo.screenInfo.height))
-        assertThat(properties["isWifi"], `is`(deviceInfo.connectionType == DeviceInfo.ConnectionType.WIFI))
         assertThat(properties["isApp"], `is`(true))
     }
 }

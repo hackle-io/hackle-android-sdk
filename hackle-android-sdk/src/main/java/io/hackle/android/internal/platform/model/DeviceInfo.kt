@@ -12,7 +12,6 @@ internal data class DeviceInfo(
     val manufacturer: String,
     val locale: Locale,
     val timezone: TimeZone,
-    val connectionType: ConnectionType,
     val screenInfo: ScreenInfo,
 ) {
 

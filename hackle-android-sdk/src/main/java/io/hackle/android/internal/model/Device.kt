@@ -50,10 +50,8 @@ internal data class DeviceImpl(
                 "locale" to deviceInfo.locale.toLocaleString(),
                 "language" to deviceInfo.locale.language,
                 "timeZone" to deviceInfo.timezone.id,
-                "orientation" to deviceInfo.screenInfo.orientation.displayName,
                 "screenWidth" to deviceInfo.screenInfo.width,
                 "screenHeight" to deviceInfo.screenInfo.height,
-                "isWifi" to deviceInfo.connectionType.isWifi(),
                 "isApp" to true
             )
         }

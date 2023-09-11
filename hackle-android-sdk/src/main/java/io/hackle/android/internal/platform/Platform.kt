@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import io.hackle.android.internal.platform.helper.DeviceHelper
-import io.hackle.android.internal.platform.helper.NetworkHelper
 import io.hackle.android.internal.platform.model.DeviceInfo
 import io.hackle.android.internal.platform.model.PackageInfo
 import java.util.TimeZone
@@ -60,7 +59,6 @@ internal class AndroidPlatform(val context: Context) : Platform {
                 width = displayMetrics.widthPixels,
                 height = displayMetrics.heightPixels,
             ),
-            connectionType = NetworkHelper.getConnectionType(context),
         )
     }
 }
