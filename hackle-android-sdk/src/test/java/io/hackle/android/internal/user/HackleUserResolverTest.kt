@@ -1,6 +1,7 @@
 package io.hackle.android.internal.user
 
 import io.hackle.android.internal.model.Device
+import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.User
 import org.junit.Test
 import strikt.api.expectThat
@@ -10,7 +11,7 @@ class HackleUserResolverTest {
 
     @Test
     fun `resolve`() {
-        val device = Device("hackleDeviceId", mapOf("key" to "hackle_value"))
+        val device = MockDevice("hackleDeviceId", mapOf("key" to "hackle_value"))
         val resolver = HackleUserResolver(device)
 
         val user = User.builder("id")
@@ -37,7 +38,7 @@ class HackleUserResolverTest {
 
     @Test
     fun `식별자 없는 경우`() {
-        val device = Device("hackleDeviceId", mapOf("key" to "hackle_value"))
+        val device = MockDevice("hackleDeviceId", mapOf("key" to "hackle_value"))
         val resolver = HackleUserResolver(device)
 
         val hackleUser = resolver.resolve(User.builder().build())

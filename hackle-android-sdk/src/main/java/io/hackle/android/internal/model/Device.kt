@@ -1,14 +1,17 @@
 package io.hackle.android.internal.model
 
 import android.content.Context
-import android.os.Build
 import io.hackle.android.internal.database.KeyValueRepository
-import java.util.*
+import io.hackle.android.internal.platform.AndroidPlatform
+import io.hackle.android.internal.platform.Platform
+import io.hackle.android.internal.platform.model.DeviceInfo
+import java.util.Locale
+import java.util.UUID
 
-internal data class Device(
-    val id: String,
-    val properties: Map<String, Any>,
-) {
+internal interface Device {
+
+    val id: String
+    val properties: Map<String, Any>
 
     companion object {
 
@@ -16,28 +19,42 @@ internal data class Device(
 
         fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
             val deviceId = keyValueRepository.getString(ID_KEY) { UUID.randomUUID().toString() }
-            val properties = mapOf(
-                "deviceModel" to Build.MODEL,
-                "deviceVendor" to Build.MANUFACTURER,
-                "language" to Locale.getDefault().language,
-                "osName" to "Android",
-                "osVersion" to Build.VERSION.RELEASE,
-                "platform" to "Mobile",
-                "isApp" to true,
-                "versionName" to context.versionName,
-            )
-            return Device(
+            return DeviceImpl(
                 id = deviceId,
-                properties = properties
+                platform = AndroidPlatform(context),
+            )
+        }
+    }
+}
+
+internal data class DeviceImpl(
+    override val id: String,
+    val platform: Platform,
+) : Device {
+
+    override val properties: Map<String, Any>
+        get() {
+            val packageInfo = platform.getPackageInfo()
+            val deviceInfo = platform.getCurrentDeviceInfo()
+            return mapOf(
+                "platform" to "Android",
+                "packageName" to packageInfo.packageName,
+                "versionName" to packageInfo.versionName,
+                "versionCode" to packageInfo.versionCode,
+                "osName" to deviceInfo.osName,
+                "osVersion" to deviceInfo.osVersion,
+                "deviceModel" to deviceInfo.model,
+                "deviceType" to deviceInfo.type,
+                "deviceBrand" to deviceInfo.brand,
+                "deviceManufacturer" to deviceInfo.manufacturer,
+                "locale" to deviceInfo.locale.toLocaleString(),
+                "language" to deviceInfo.locale.language,
+                "timeZone" to deviceInfo.timezone.id,
+                "screenWidth" to deviceInfo.screenInfo.width,
+                "screenHeight" to deviceInfo.screenInfo.height,
+                "isApp" to true
             )
         }
 
-        private val Context.versionName: String
-            get() =
-                try {
-                    packageManager.getPackageInfo(packageName, 0).versionName
-                } catch (_: Throwable) {
-                    "unknown"
-                }
-    }
+    private fun Locale.toLocaleString() = "${this.language}-${this.country}"
 }

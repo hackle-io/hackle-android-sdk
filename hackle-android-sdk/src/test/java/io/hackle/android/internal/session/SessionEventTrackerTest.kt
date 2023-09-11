@@ -2,6 +2,7 @@ package io.hackle.android.internal.session
 
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -20,7 +21,7 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionStarted`() {
         // given
-        val userResolver = HackleUserResolver(Device("device_id", emptyMap()))
+        val userResolver = HackleUserResolver(MockDevice("device_id", emptyMap()))
         val core = mockk<HackleCore>(relaxed = true)
         val sut = SessionEventTracker(userResolver, core)
 
@@ -51,7 +52,7 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionEnded`() {
         // given
-        val userResolver = HackleUserResolver(Device("device_id", emptyMap()))
+        val userResolver = HackleUserResolver(MockDevice("device_id", emptyMap()))
         val core = mockk<HackleCore>(relaxed = true)
         val sut = SessionEventTracker(userResolver, core)
 

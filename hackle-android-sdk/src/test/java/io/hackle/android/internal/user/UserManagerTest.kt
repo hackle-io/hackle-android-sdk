@@ -4,6 +4,7 @@ import io.hackle.android.internal.database.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.utils.toJson
+import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import org.junit.Test
@@ -15,7 +16,7 @@ class UserManagerTest {
 
     @Test
     fun `initialize - User 설정한 경우`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
 
@@ -27,7 +28,7 @@ class UserManagerTest {
 
     @Test
     fun `initialize - from repository`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val user = User.builder("id")
             .userId("userId")
@@ -57,7 +58,7 @@ class UserManagerTest {
 
     @Test
     fun `initialize - from repository null`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
         userManager.initialize(null)
@@ -67,7 +68,7 @@ class UserManagerTest {
 
     @Test
     fun `resolve - user not null`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
 
@@ -79,7 +80,7 @@ class UserManagerTest {
 
     @Test
     fun `resolve - currentUser`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
 
@@ -90,7 +91,7 @@ class UserManagerTest {
 
     @Test
     fun `setUser - 기존 사용자와 다른 경우`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
@@ -112,7 +113,7 @@ class UserManagerTest {
 
     @Test
     fun `setUser - 기존 사용자와 다른 경우 2`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
@@ -137,7 +138,7 @@ class UserManagerTest {
 
     @Test
     fun `setUser - 기존 사용자와 같은 사용자인 경우`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
@@ -157,7 +158,7 @@ class UserManagerTest {
 
     @Test
     fun `onChange - 현재 유저를 저장한다`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
         val listener = UserListenerStub()
@@ -174,7 +175,7 @@ class UserManagerTest {
 
     @Test
     fun `resetUser`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
 
@@ -189,7 +190,7 @@ class UserManagerTest {
 
     @Test
     fun `updateProperties`() {
-        val device = Device("test_device_id", emptyMap())
+        val device = MockDevice("test_device_id", emptyMap())
         val repository = MapKeyValueRepository()
         val userManager = UserManager(device, repository)
 
