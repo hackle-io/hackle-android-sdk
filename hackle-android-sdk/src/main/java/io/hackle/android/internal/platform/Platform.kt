@@ -42,8 +42,6 @@ internal class AndroidPlatform(val context: Context) : Platform {
     override fun getPackageInfo(): PackageInfo = packageInfo
 
     override fun getCurrentDeviceInfo(): DeviceInfo {
-        val orientation = if (context.resources.configuration.orientation != Configuration.ORIENTATION_PORTRAIT)
-            DeviceInfo.Orientation.LANDSCAPE else DeviceInfo.Orientation.PORTRAIT
         val displayMetrics = DeviceHelper.getDisplayMetrics(context)
         return DeviceInfo(
             osName = "Android",
@@ -55,7 +53,6 @@ internal class AndroidPlatform(val context: Context) : Platform {
             locale = DeviceHelper.getDeviceLocale(),
             timezone = TimeZone.getDefault(),
             screenInfo = DeviceInfo.ScreenInfo(
-                orientation = orientation,
                 width = displayMetrics.widthPixels,
                 height = displayMetrics.heightPixels,
             ),

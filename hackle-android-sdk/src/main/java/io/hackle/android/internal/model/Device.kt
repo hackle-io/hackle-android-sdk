@@ -57,7 +57,4 @@ internal data class DeviceImpl(
         }
 
     private fun Locale.toLocaleString() = "${this.language}-${this.country}"
-
-    private fun DeviceInfo.ConnectionType.isWifi() =
-        this == DeviceInfo.ConnectionType.WIFI
 }

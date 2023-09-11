@@ -6,10 +6,7 @@ import io.hackle.android.internal.platform.model.PackageInfo
 import java.util.Locale
 import java.util.TimeZone
 
-internal class MockPlatform(
-    var orientation: DeviceInfo.Orientation = DeviceInfo.Orientation.PORTRAIT,
-    var connectionType: DeviceInfo.ConnectionType = DeviceInfo.ConnectionType.MOBILE
-) : Platform {
+internal class MockPlatform() : Platform {
 
     override fun getPackageInfo(): PackageInfo =
         PackageInfo(
@@ -29,18 +26,8 @@ internal class MockPlatform(
             locale = Locale.KOREA,
             timezone = TimeZone.getTimeZone("Asia/Seoul"),
             screenInfo = DeviceInfo.ScreenInfo(
-                orientation = orientation,
                 width = 1080,
                 height = 1920,
             ),
         )
-
-    fun rotateScreen() {
-        orientation = if (orientation == DeviceInfo.Orientation.PORTRAIT)
-            DeviceInfo.Orientation.LANDSCAPE else DeviceInfo.Orientation.PORTRAIT
-    }
-
-    fun changeConnectionType(connectionType: DeviceInfo.ConnectionType) {
-        this.connectionType = connectionType
-    }
 }

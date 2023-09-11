@@ -16,17 +16,7 @@ internal data class DeviceInfo(
 ) {
 
     data class ScreenInfo(
-        val orientation: Orientation,
         val width: Int,
         val height: Int,
     )
-
-    enum class Orientation(val displayName: String) {
-        PORTRAIT("portrait"),
-        LANDSCAPE("landscape")
-    }
-
-    enum class ConnectionType {
-        NONE, WIFI, MOBILE
-    }
 }
