@@ -31,7 +31,7 @@ internal class HackleActivityManager : ActivityLifecycleCallbacks {
     override fun onActivityPaused(activity: Activity) {}
 
     override fun onActivityStopped(activity: Activity) {
-        if (currentActivity == activity) {
+        if (activity == currentActivity) {
             currentActivity = null
         }
     }
