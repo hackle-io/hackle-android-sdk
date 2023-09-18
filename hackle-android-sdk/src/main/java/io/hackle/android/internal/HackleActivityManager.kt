@@ -11,26 +11,30 @@ internal class HackleActivityManager : ActivityLifecycleCallbacks {
         private set
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        currentActivity = if (activity is HackleActivity) {
-            return
-        } else activity
+        if (activity !is HackleActivity) {
+            currentActivity = activity
+        }
     }
 
     override fun onActivityStarted(activity: Activity) {
-        currentActivity = if (activity is HackleActivity) {
-            return
-        } else activity
+        if (activity !is HackleActivity) {
+            currentActivity = activity
+        }
     }
 
     override fun onActivityResumed(activity: Activity) {
-        currentActivity = if (activity is HackleActivity) {
-            return
-        } else activity
+        if (activity !is HackleActivity) {
+            currentActivity = activity
+        }
     }
 
     override fun onActivityPaused(activity: Activity) {}
 
-    override fun onActivityStopped(activity: Activity) {}
+    override fun onActivityStopped(activity: Activity) {
+        if (activity == currentActivity) {
+            currentActivity = null
+        }
+    }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
