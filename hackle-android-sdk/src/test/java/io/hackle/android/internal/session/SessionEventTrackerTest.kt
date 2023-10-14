@@ -1,7 +1,5 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.model.Device
-import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
