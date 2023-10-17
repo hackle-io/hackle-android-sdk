@@ -4,7 +4,6 @@ import io.hackle.android.internal.model.Device
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifiers
-import io.hackle.sdk.core.model.UserCohorts
 
 internal fun User.identifierEquals(other: User?): Boolean {
     if (other == null) {

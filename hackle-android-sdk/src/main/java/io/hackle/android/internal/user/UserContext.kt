@@ -1,7 +1,6 @@
 package io.hackle.android.internal.user
 
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.model.UserCohorts
 
 internal class UserContext private constructor(
     val user: User,

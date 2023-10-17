@@ -9,7 +9,7 @@ import io.hackle.sdk.core.internal.scheduler.Scheduler
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class PollingSynchronizer(
-    private val delegate: Synchronizer,
+    private val delegate: CompositeSynchronizer,
     private val scheduler: Scheduler,
     private val intervalMillis: Long,
 ) : Synchronizer, AppStateChangeListener {
@@ -19,6 +19,14 @@ internal class PollingSynchronizer(
     override fun sync() {
         try {
             delegate.sync()
+        } catch (e: Exception) {
+            log.error { "Failed to sync $delegate: $e" }
+        }
+    }
+
+    fun sync(type: SynchronizerType) {
+        try {
+            delegate.sync(type)
         } catch (e: Exception) {
             log.error { "Failed to sync $delegate: $e" }
         }
@@ -34,7 +42,11 @@ internal class PollingSynchronizer(
                 return
             }
 
-            pollingJob = scheduler.schedulePeriodically(intervalMillis, intervalMillis, MILLISECONDS) { sync() }
+            pollingJob = scheduler.schedulePeriodically(
+                intervalMillis,
+                intervalMillis,
+                MILLISECONDS
+            ) { sync() }
             log.info { "$this started polling. Poll every ${intervalMillis}ms." }
         }
     }

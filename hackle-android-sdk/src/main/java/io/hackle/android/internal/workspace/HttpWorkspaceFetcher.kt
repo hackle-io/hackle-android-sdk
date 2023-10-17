@@ -22,7 +22,7 @@ internal class HttpWorkspaceFetcher(
     fun fetchIfModified(): Workspace? {
         val request = createRequest()
         val response = execute(request)
-        return handleResponse(response)
+        return response.use { handleResponse(it) }
     }
 
     private fun createRequest(): Request {

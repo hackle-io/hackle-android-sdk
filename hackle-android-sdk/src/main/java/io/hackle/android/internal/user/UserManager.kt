@@ -14,7 +14,6 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
-import io.hackle.sdk.core.model.UserCohorts
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import java.util.concurrent.CopyOnWriteArrayList

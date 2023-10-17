@@ -7,7 +7,9 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.sync.Synchronizer
+import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.sync.SynchronizerType
+import io.hackle.android.internal.sync.SynchronizerType.COHORT
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.*
@@ -34,7 +36,7 @@ class HackleApp internal constructor(
     private val core: HackleCore,
     private val eventExecutor: Executor,
     private val backgroundExecutor: ExecutorService,
-    private val synchronizer: Synchronizer,
+    private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
@@ -63,26 +65,21 @@ class HackleApp internal constructor(
     fun setUser(user: User, callback: Runnable? = null) {
         try {
             userManager.setUser(user)
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set user: $e" }
-        } finally {
-            sync(callback)
+            callback?.run()
         }
-    }
-
-    fun asdf() {
-
-        Hackle.app.deviceId
     }
 
     @JvmOverloads
     fun setUserId(userId: String?, callback: Runnable? = null) {
         try {
             userManager.setUserId(userId)
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set userId: $e" }
-        } finally {
-            sync(callback)
+            callback?.run()
         }
     }
 
@@ -90,10 +87,10 @@ class HackleApp internal constructor(
     fun setDeviceId(deviceId: String, callback: Runnable? = null) {
         try {
             userManager.setDeviceId(deviceId)
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set deviceId: $e" }
-        } finally {
-            sync(callback)
+            callback?.run()
         }
     }
 
@@ -113,7 +110,7 @@ class HackleApp internal constructor(
         } catch (e: Exception) {
             log.error { "Unexpected exception while update user properties: $e" }
         } finally {
-            sync(callback)
+            callback?.run()
         }
     }
 
@@ -122,18 +119,18 @@ class HackleApp internal constructor(
         try {
             userManager.resetUser()
             track(PropertyOperations.clearAll().toEvent())
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
-        } finally {
-            sync(callback)
+            callback?.run()
         }
     }
 
-    private fun sync(callback: Runnable?) {
+    private fun sync(type: SynchronizerType, callback: Runnable?) {
         try {
             backgroundExecutor.submit {
                 try {
-                    synchronizer.sync()
+                    synchronizer.sync(type)
                 } finally {
                     callback?.run()
                 }
