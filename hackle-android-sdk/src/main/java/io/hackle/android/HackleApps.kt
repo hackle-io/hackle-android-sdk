@@ -268,7 +268,8 @@ internal object HackleApps {
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
             device = device,
-            userExplorer = userExplorer
+            userExplorer = userExplorer,
+            sdk = sdk
         )
     }
 

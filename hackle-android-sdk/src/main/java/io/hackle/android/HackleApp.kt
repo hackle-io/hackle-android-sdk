@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
@@ -40,6 +41,7 @@ class HackleApp internal constructor(
     private val eventProcessor: DefaultEventProcessor,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
+    internal val sdk: Sdk
 ) : Closeable {
 
     /**
