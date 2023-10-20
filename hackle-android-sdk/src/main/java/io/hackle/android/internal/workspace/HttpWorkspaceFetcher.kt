@@ -1,5 +1,6 @@
 package io.hackle.android.internal.workspace
 
+import io.hackle.android.internal.http.HEADER_IF_MODIFIED_SINCE
 import io.hackle.android.internal.http.HEADER_LAST_MODIFIED
 import io.hackle.android.internal.http.isNotModified
 import io.hackle.android.internal.http.parse
@@ -28,7 +29,7 @@ internal class HttpWorkspaceFetcher(
     private fun createRequest(): Request {
         return Request.Builder()
             .url(url)
-            .apply { lastModified?.let { header(HEADER_LAST_MODIFIED, it) } }
+            .apply { lastModified?.let { header(HEADER_IF_MODIFIED_SINCE, it) } }
             .build()
     }
 

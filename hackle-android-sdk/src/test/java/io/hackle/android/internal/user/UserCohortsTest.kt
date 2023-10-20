@@ -2,8 +2,6 @@ package io.hackle.android.internal.user
 
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifier
-import io.hackle.sdk.core.model.UserCohort
-import io.hackle.sdk.core.model.UserCohorts
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.first

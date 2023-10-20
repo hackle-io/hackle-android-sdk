@@ -14,3 +14,4 @@ internal val Response.isNotModified: Boolean
 internal inline fun <reified T> ResponseBody.parse(): T = string().parseJson()
 
 internal const val HEADER_LAST_MODIFIED = "Last-Modified"
+internal const val HEADER_IF_MODIFIED_SINCE = "If-Modified-Since"

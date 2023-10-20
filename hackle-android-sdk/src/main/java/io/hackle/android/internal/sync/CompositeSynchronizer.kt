@@ -5,7 +5,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 
-enum class SynchronizerType {
+internal enum class SynchronizerType {
     WORKSPACE,
     COHORT
 }

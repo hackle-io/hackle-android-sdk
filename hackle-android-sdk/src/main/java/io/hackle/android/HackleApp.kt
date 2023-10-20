@@ -131,11 +131,14 @@ class HackleApp internal constructor(
             backgroundExecutor.submit {
                 try {
                     synchronizer.sync(type)
+                } catch (e: Exception) {
+                    log.error { "Failed to sync: $e" }
                 } finally {
                     callback?.run()
                 }
             }
         } catch (e: Exception) {
+            log.error { "Failed to submit sync task: $e" }
             callback?.run()
         }
     }

@@ -39,13 +39,18 @@ internal class UserManager(
     fun initialize(user: User?) {
         synchronized(LOCK) {
             val initUser = user ?: loadUser() ?: defaultUser
-            context = UserContext.of(initUser, UserCohorts.empty())
+            context = UserContext.of(initUser.with(device), UserCohorts.empty())
             log.debug { "UserManager initialized [$context]" }
         }
     }
 
     fun resolve(user: User?): HackleUser {
-        val context = user?.let { setUser(user) } ?: currentContext
+        if (user == null) {
+            return toHackleUser(currentContext)
+        }
+        val context = synchronized(LOCK) {
+            updateUser(user)
+        }
         return toHackleUser(context)
     }
 
@@ -70,58 +75,63 @@ internal class UserManager(
     }
 
     override fun sync() {
-        val cohorts = cohortFetcher.fetch(currentUser)
+        val cohorts = try {
+            cohortFetcher.fetch(currentUser)
+        } catch (e: Exception) {
+            log.error { "Failed to fetch cohorts: $e" }
+            return
+        }
         synchronized(LOCK) {
             context = context.update(cohorts)
         }
     }
 
-    fun setUser(user: User): UserContext {
+    fun setUser(user: User): User {
         return synchronized(LOCK) {
-            updateUser(user)
+            updateUser(user).user
         }
     }
 
-    fun resetUser(): UserContext {
+    fun resetUser(): User {
         return synchronized(LOCK) {
-            update { defaultUser }
+            updateContext { defaultUser }.user
         }
     }
 
-    fun setUserId(userId: String?): UserContext {
+    fun setUserId(userId: String?): User {
         return synchronized(LOCK) {
             val user = context.user.toBuilder().userId(userId).build()
-            updateUser(user)
+            updateUser(user).user
         }
     }
 
-    fun setDeviceId(deviceId: String): UserContext {
+    fun setDeviceId(deviceId: String): User {
         return synchronized(LOCK) {
             val user = context.user.toBuilder().deviceId(deviceId).build()
-            updateUser(user)
+            updateUser(user).user
         }
     }
 
-    fun updateProperties(operations: PropertyOperations): UserContext {
+    fun updateProperties(operations: PropertyOperations): User {
         return synchronized(LOCK) {
-            operateProperties(operations)
+            operateProperties(operations).user
         }
     }
 
     private fun updateUser(user: User): UserContext {
-        return update { currentUser ->
+        return updateContext { currentUser ->
             user.with(device).mergeWith(currentUser)
         }
     }
 
     private fun operateProperties(operations: PropertyOperations): UserContext {
-        return update { currentUser ->
+        return updateContext { currentUser ->
             val properties = operations.operate(currentUser.properties)
             currentUser.copy(properties = properties)
         }
     }
 
-    private fun update(updater: (User) -> User): UserContext {
+    private fun updateContext(updater: (User) -> User): UserContext {
         val oldUser = this.context.user
         val newUser = updater(oldUser)
 
@@ -175,7 +185,7 @@ internal class UserManager(
         }
     }
 
-    private data class UserModel(
+    data class UserModel(
         val id: String?,
         val userId: String?,
         val deviceId: String?,
