@@ -22,6 +22,10 @@ internal class HackleBridge(
         private const val KEY_PARAMETERS = "_parameters"
     }
 
+    fun getAppSdkKey(): String {
+        return app.sdk.key
+    }
+
     fun invoke(string: String): String? {
         try {
             val data = string.parseJson<Map<String, Any>?>() ?: return null

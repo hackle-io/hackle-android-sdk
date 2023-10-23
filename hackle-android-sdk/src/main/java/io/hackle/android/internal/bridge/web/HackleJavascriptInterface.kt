@@ -17,7 +17,7 @@ internal class HackleJavascriptInterface(app: HackleApp) {
 
     @JavascriptInterface
     fun getAppSdkKey(): String {
-        return Hackle.app.sdk.key
+        return bridge.getAppSdkKey()
     }
 
     @JavascriptInterface
