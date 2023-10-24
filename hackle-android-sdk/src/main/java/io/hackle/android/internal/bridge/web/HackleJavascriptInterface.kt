@@ -1,9 +1,7 @@
 package io.hackle.android.internal.bridge.web
 
 import android.webkit.JavascriptInterface
-import io.hackle.android.Hackle
 import io.hackle.android.HackleApp
-import io.hackle.android.app
 import io.hackle.android.internal.bridge.HackleBridge
 
 @Suppress("unused")
@@ -26,7 +24,7 @@ internal class HackleJavascriptInterface(app: HackleApp) {
     }
 
     @JavascriptInterface
-    fun invoke(string: String): String? {
+    fun invoke(string: String): String {
         return bridge.invoke(string)
     }
 }

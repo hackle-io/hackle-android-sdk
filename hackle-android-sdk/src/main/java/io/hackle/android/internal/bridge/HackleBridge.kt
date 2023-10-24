@@ -1,7 +1,12 @@
 package io.hackle.android.internal.bridge
 
 import io.hackle.android.HackleApp
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.bridge.model.BridgeResponse
+import io.hackle.android.internal.bridge.model.DecisionDto
+import io.hackle.android.internal.bridge.model.FeatureFlagDecisionDto
+import io.hackle.android.internal.bridge.model.Invocation
+import io.hackle.android.internal.bridge.model.Invocation.Command
+import io.hackle.android.internal.bridge.model.toDto
 import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
@@ -9,111 +14,92 @@ import io.hackle.sdk.common.PropertyOperation
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
-import io.hackle.sdk.common.decision.Decision
-import io.hackle.sdk.common.decision.FeatureFlagDecision
 
 internal class HackleBridge(
     private val app: HackleApp
 ) {
 
-    companion object {
-        private const val KEY_HACKLE = "_hackle"
-        private const val KEY_COMMAND = "_command"
-        private const val KEY_PARAMETERS = "_parameters"
-    }
-
     fun getAppSdkKey(): String {
         return app.sdk.key
     }
 
-    fun invoke(string: String): String? {
+    fun invoke(string: String): String {
         try {
-            val data = string.parseJson<Map<String, Any>?>() ?: return null
-            @Suppress("UNCHECKED_CAST")
-            val invocation = data[KEY_HACKLE] as? Map<String, Any> ?: return null
-            val command = invocation[KEY_COMMAND] as? String ?: return null
-            @Suppress("UNCHECKED_CAST")
-            val parameters = invocation[KEY_PARAMETERS] as? Map<String, Any> ?: HashMap()
-            return invoke(command, parameters)
+            val invocation = Invocation(string)
+            val returnValue = invoke(invocation.command, invocation.parameters)
+            return BridgeResponse(
+                success = true,
+                message = "OK",
+                data = returnValue
+            ).toJson()
         } catch (throwable: Throwable) {
-            return null
+            return BridgeResponse(
+                success = false,
+                message = throwable.message
+            ).toJson()
         }
     }
 
-    fun invoke(command: String, parameters: Map<String, Any>): String? {
-        var returnValue: String? = null
+    private fun invoke(command: Command, parameters: Map<String, Any>): Any? {
+        var returnValue: Any? = null
         when (command) {
-            "getSessionId" -> returnValue = app.sessionId
-            "getUser" -> returnValue = app.user.toJson()
-            "setUser" -> setUser(parameters)
-            "setUserId" -> setUserId(parameters)
-            "setDeviceId" -> setDeviceId(parameters)
-            "setUserProperty" -> setUserProperty(parameters)
-            "updateUserProperties" -> updateUserProperties(parameters)
-            "resetUser" -> app.resetUser()
-            "variation" -> returnValue = variation(parameters)
-            "variationDetail" -> returnValue = variationDetail(parameters)
-            "isFeatureOn" -> returnValue = isFeatureOn(parameters)
-            "featureFlagDetail" -> returnValue = featureFlagDetail(parameters)
-            "track" -> track(parameters)
-            "remoteConfig" -> returnValue = remoteConfig(parameters)
-            "showUserExplorer" -> app.showUserExplorer()
+            Command.GET_SESSION_ID -> returnValue = app.sessionId
+            Command.GET_USER -> returnValue = app.user.toDto()
+            Command.SET_USER -> setUser(parameters)
+            Command.SET_USER_ID -> setUserId(parameters)
+            Command.SET_DEVICE_ID -> setDeviceId(parameters)
+            Command.SET_USER_PROPERTY -> setUserProperty(parameters)
+            Command.UPDATE_USER_PROPERTY -> updateUserProperties(parameters)
+            Command.RESET_USER -> app.resetUser()
+            Command.VARIATION -> returnValue = variation(parameters)
+            Command.VARIATION_DETAIL -> returnValue = variationDetail(parameters)
+            Command.IS_FEATURE_ON -> returnValue = isFeatureOn(parameters)
+            Command.FEATURE_FLAG_DETAIL -> returnValue = featureFlagDetail(parameters)
+            Command.TRACK -> track(parameters)
+            Command.REMOTE_CONFIG -> returnValue = remoteConfig(parameters)
+            Command.SHOW_USER_EXPLORER -> app.showUserExplorer()
         }
         return returnValue
     }
 
     private fun setUser(parameters: Map<String, Any>) {
         @Suppress("UNCHECKED_CAST")
-        val data = parameters["user"] as? Map<String, Any> ?: return
+        val data = parameters["user"] as? Map<String, Any>
+            ?: throw IllegalArgumentException("Valid 'user' parameter must be provided.")
         val user = data.toUser()
         app.setUser(user)
     }
 
     private fun setUserId(parameters: Map<String, Any>) {
-        if (parameters.containsKey("userId")) {
-            val userId = parameters["userId"] as? String
-            app.setUserId(userId)
-        }
+        val userId = parameters["userId"] as? String
+            ?: throw IllegalArgumentException("Valid 'userId' parameter must be provided.")
+        app.setUserId(userId)
     }
 
     private fun setDeviceId(parameters: Map<String, Any>) {
-        if (parameters.containsKey("deviceId")) {
-            val deviceId = parameters["deviceId"] as? String ?: return
-            app.setDeviceId(deviceId)
-        }
+        val deviceId = parameters["deviceId"] as? String
+            ?: throw IllegalArgumentException("Valid 'deviceId' parameter must be provided.")
+        app.setDeviceId(deviceId)
     }
 
     private fun setUserProperty(parameters: Map<String, Any>) {
-        val key = parameters["key"] as? String ?: return
+        val key = parameters["key"] as? String
+            ?: throw IllegalArgumentException("Valid 'key' parameter must be provided.")
         val value = parameters["value"]
         app.setUserProperty(key, value)
     }
 
     private fun updateUserProperties(parameters: Map<String, Any>) {
         @Suppress("UNCHECKED_CAST")
-        val operations = parameters["operations"] as? Map<String, Map<String, Any>> ?: return
-        val builder = PropertyOperations.builder()
-        for ((operationText, properties) in operations) {
-            try {
-                when (PropertyOperation.from(operationText)) {
-                    PropertyOperation.SET -> properties.forEach { (key, value) -> builder.set(key, value) }
-                    PropertyOperation.SET_ONCE -> properties.forEach { (key, value) -> builder.setOnce(key, value) }
-                    PropertyOperation.UNSET -> properties.forEach { (key, _) -> builder.unset(key) }
-                    PropertyOperation.INCREMENT -> properties.forEach { (key, value) -> builder.increment(key, value) }
-                    PropertyOperation.APPEND -> properties.forEach { (key, value) -> builder.append(key, value) }
-                    PropertyOperation.APPEND_ONCE -> properties.forEach { (key, value) -> builder.appendOnce(key, value) }
-                    PropertyOperation.PREPEND -> properties.forEach { (key, value) -> builder.prepend(key, value) }
-                    PropertyOperation.PREPEND_ONCE -> properties.forEach { (key, value) -> builder.prependOnce(key, value) }
-                    PropertyOperation.REMOVE -> properties.forEach { (key, value) -> builder.remove(key, value) }
-                    PropertyOperation.CLEAR_ALL -> properties.forEach { (_, _) -> builder.clearAll() }
-                }
-            } catch (_: Throwable) { }
-        }
-        app.updateUserProperties(builder.build())
+        val operations = parameters["operations"] as? Map<String, Map<String, Any>>
+            ?: throw IllegalArgumentException("Valid 'operations' parameter must be provided.")
+        val propertyOperations = operations.toPropertyOperations()
+        app.updateUserProperties(propertyOperations)
     }
 
-    private fun variation(parameters: Map<String, Any>): String? {
-        val experimentKey = parameters["experimentKey"] as? Number ?: return null
+    private fun variation(parameters: Map<String, Any>): String {
+        val experimentKey = parameters["experimentKey"] as? Number
+            ?: throw IllegalArgumentException("Valid 'experimentKey' parameter must be provided.")
         val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
         if (parameters.containsKey("userId")) {
@@ -144,8 +130,9 @@ internal class HackleBridge(
         ).name
     }
 
-    private fun variationDetail(parameters: Map<String, Any>): String? {
-        val experimentKey = parameters["experimentKey"] as? Number ?: return null
+    private fun variationDetail(parameters: Map<String, Any>): DecisionDto {
+        val experimentKey = parameters["experimentKey"] as? Number
+            ?: throw IllegalArgumentException("Valid 'experimentKey' parameter must be provided.")
         val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
         if (parameters.containsKey("userId")) {
@@ -155,7 +142,7 @@ internal class HackleBridge(
                     experimentKey = experimentKey.toLong(),
                     userId = userId,
                     defaultVariation = defaultVariation
-                ).toMap().toJson()
+                ).toDto()
             }
         }
         if (parameters.containsKey("user")) {
@@ -167,24 +154,25 @@ internal class HackleBridge(
                     experimentKey = experimentKey.toLong(),
                     user = user,
                     defaultVariation = defaultVariation
-                ).toMap().toJson()
+                ).toDto()
             }
         }
         return app.variationDetail(
             experimentKey = experimentKey.toLong(),
             defaultVariation = defaultVariation
-        ).toMap().toJson()
+        ).toDto()
     }
 
-    private fun isFeatureOn(parameters: Map<String, Any>): String? {
-        val featureKey = parameters["featureKey"] as? Number ?: return null
+    private fun isFeatureOn(parameters: Map<String, Any>): Boolean {
+        val featureKey = parameters["featureKey"] as? Number
+            ?: throw IllegalArgumentException("Valid 'featureKey' parameter must be provided.")
         if (parameters.containsKey("userId")) {
             val userId = parameters["userId"] as? String
             if (userId != null) {
                 return app.isFeatureOn(
                     featureKey = featureKey.toLong(),
                     userId = userId
-                ).toString()
+                )
             }
         }
         if (parameters.containsKey("user")) {
@@ -195,21 +183,22 @@ internal class HackleBridge(
                 return app.isFeatureOn(
                     featureKey = featureKey.toLong(),
                     user = user
-                ).toString()
+                )
             }
         }
-        return app.isFeatureOn(featureKey = featureKey.toLong()).toString()
+        return app.isFeatureOn(featureKey = featureKey.toLong())
     }
 
-    private fun featureFlagDetail(parameters: Map<String, Any>): String? {
-        val featureKey = parameters["featureKey"] as? Number ?: return null
+    private fun featureFlagDetail(parameters: Map<String, Any>): FeatureFlagDecisionDto {
+        val featureKey = parameters["featureKey"] as? Number
+            ?: throw IllegalArgumentException("Valid 'featureKey' parameter must be provided.")
         if (parameters.containsKey("userId")) {
             val userId = parameters["userId"] as? String
             if (userId != null) {
                 return app.featureFlagDetail(
                     featureKey = featureKey.toLong(),
                     userId = userId
-                ).toMap().toJson()
+                ).toDto()
             }
         }
         if (parameters.containsKey("user")) {
@@ -220,17 +209,17 @@ internal class HackleBridge(
                 return app.featureFlagDetail(
                     featureKey = featureKey.toLong(),
                     user = user
-                ).toMap().toJson()
+                ).toDto()
             }
         }
-        return app.featureFlagDetail(featureKey = featureKey.toLong())
-            .toMap().toJson()
+        return app.featureFlagDetail(featureKey = featureKey.toLong()).toDto()
     }
 
     private fun track(parameters: Map<String, Any>) {
         @Suppress("UNCHECKED_CAST")
-        val data = parameters["event"] as? Map<String, Any> ?: return
-        val event = data.toEvent() ?: return
+        val data = parameters["event"] as? Map<String, Any>
+        val event = data?.toEvent()
+            ?: throw IllegalArgumentException("Valid 'event' parameter must be provided.")
         if (parameters.containsKey("userId")) {
             val userId = parameters["userId"] as? String
             if (userId != null) {
@@ -250,7 +239,7 @@ internal class HackleBridge(
         app.track(event)
     }
 
-    private fun remoteConfig(parameters: Map<String, Any>): String? {
+    private fun remoteConfig(parameters: Map<String, Any>): String {
         var user: User? = null
         if (parameters.containsKey("userId")) {
             val userId = parameters["userId"] as? String
@@ -275,23 +264,28 @@ internal class HackleBridge(
                 app.remoteConfig()
             }
 
-        val key = parameters["key"] as? String ?: return null
-        val valueType = parameters["valueType"] as? String ?: return null
+        val key = parameters["key"] as? String
+            ?: throw IllegalArgumentException("Valid 'key' parameter must be provided.")
+        val valueType = parameters["valueType"] as? String
+            ?: throw IllegalArgumentException("Valid 'valueType' parameter must be provided.")
         when (valueType) {
             "string" -> {
-                val defaultValue = parameters["defaultValue"] as? String ?: return null
+                val defaultValue = parameters["defaultValue"] as? String
+                    ?: throw IllegalArgumentException("Valid 'defaultValue' parameter must be provided.")
                 return config.getString(key, defaultValue)
             }
             "number" -> {
-                val defaultValue = parameters["defaultValue"] as? Number ?: return null
+                val defaultValue = parameters["defaultValue"] as? Number
+                    ?: throw IllegalArgumentException("Valid 'defaultValue' parameter must be provided.")
                 return config.getDouble(key, defaultValue.toDouble()).toString()
             }
             "boolean" -> {
-                val defaultValue = parameters["defaultValue"] as? Boolean ?: return null
+                val defaultValue = parameters["defaultValue"] as? Boolean
+                    ?: throw IllegalArgumentException("Valid 'defaultValue' parameter must be provided.")
                 return config.getBoolean(key, defaultValue).toString()
             }
             else -> {
-                return null
+                throw IllegalArgumentException("Valid 'valueType' parameter must be provided.")
             }
         }
     }
@@ -321,25 +315,24 @@ internal class HackleBridge(
         return builder.build()
     }
 
-    private fun Decision.toMap(): Map<String, Any> {
-        val toReturn: MutableMap<String, Any> = HashMap()
-        experiment?.apply {
-            toReturn["experiment"] = mapOf<String, Any>("key" to key, "version" to version)
+    private fun Map<String, Map<String, Any>>.toPropertyOperations(): PropertyOperations {
+        val builder = PropertyOperations.builder()
+        for ((operationText, properties) in this) {
+            try {
+                when (PropertyOperation.from(operationText)) {
+                    PropertyOperation.SET -> properties.forEach { (key, value) -> builder.set(key, value) }
+                    PropertyOperation.SET_ONCE -> properties.forEach { (key, value) -> builder.setOnce(key, value) }
+                    PropertyOperation.UNSET -> properties.forEach { (key, _) -> builder.unset(key) }
+                    PropertyOperation.INCREMENT -> properties.forEach { (key, value) -> builder.increment(key, value) }
+                    PropertyOperation.APPEND -> properties.forEach { (key, value) -> builder.append(key, value) }
+                    PropertyOperation.APPEND_ONCE -> properties.forEach { (key, value) -> builder.appendOnce(key, value) }
+                    PropertyOperation.PREPEND -> properties.forEach { (key, value) -> builder.prepend(key, value) }
+                    PropertyOperation.PREPEND_ONCE -> properties.forEach { (key, value) -> builder.prependOnce(key, value) }
+                    PropertyOperation.REMOVE -> properties.forEach { (key, value) -> builder.remove(key, value) }
+                    PropertyOperation.CLEAR_ALL -> properties.forEach { (_, _) -> builder.clearAll() }
+                }
+            } catch (_: Throwable) { }
         }
-        toReturn["variation"] = variation
-        toReturn["reason"] = reason
-        toReturn["config"] = parameters
-        return toReturn
-    }
-
-    private fun FeatureFlagDecision.toMap(): Map<String, Any> {
-        val toReturn: MutableMap<String, Any> = HashMap()
-        featureFlag?.apply {
-            toReturn["featureFlag"] = mapOf<String, Any>("key" to key, "version" to version)
-        }
-        toReturn["isOn"] = isOn
-        toReturn["reason"] = reason
-        toReturn["config"] = parameters
-        return toReturn
+        return builder.build()
     }
 }
