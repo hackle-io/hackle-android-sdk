@@ -1,6 +1,5 @@
 package io.hackle.android.ui.explorer.base
 
-import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage
 import io.hackle.sdk.common.decision.Decision
@@ -15,14 +14,12 @@ import io.hackle.sdk.core.user.HackleUser
 internal class HackleUserExplorerService(
     private val core: HackleCore,
     private val userManager: UserManager,
-    private val hackleUserResolver: HackleUserResolver,
     private val abTestOverrideStorage: HackleUserManualOverrideStorage,
     private val featureFlagOverrideStorage: HackleUserManualOverrideStorage,
 ) {
 
     fun currentUser(): HackleUser {
-        val currentUser = userManager.currentUser
-        return hackleUserResolver.resolve(currentUser)
+        return userManager.resolve(null)
     }
 
     fun getAbTestDecisions(): List<Pair<Experiment, Decision>> {

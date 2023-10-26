@@ -16,6 +16,7 @@ import io.mockk.verify
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import okhttp3.ResponseBody
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -206,10 +207,12 @@ class EventDispatcherTest {
     }
 
     private fun mockResponse(code: Int) {
-        val response = mockk<Response> {
-            every { code() } returns code
-            every { isSuccessful } returns (code in (200..299))
-        }
+        val response = Response.Builder()
+            .request(mockk())
+            .protocol(mockk())
+            .code(code)
+            .message(code.toString())
+            .build()
         val call = mockk<Call> {
             every { execute() } returns response
         }
