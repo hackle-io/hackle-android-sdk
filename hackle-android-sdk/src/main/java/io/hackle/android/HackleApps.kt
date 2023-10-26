@@ -28,13 +28,15 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.sync.CompositeSynchronizer
+import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.sync.SynchronizerType.COHORT
+import io.hackle.android.internal.sync.SynchronizerType.WORKSPACE
 import io.hackle.android.internal.task.TaskExecutors
-import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.workspace.CachedWorkspaceFetcher
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
-import io.hackle.android.internal.workspace.PollingWorkspaceHandler
-import io.hackle.android.internal.workspace.WorkspaceCache
+import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
@@ -81,24 +83,48 @@ internal object HackleApps {
 
         val httpClient = createHttpClient(context, sdk)
 
-        // WorkspaceFetcher
+        // Synchronizer
 
-        val workspaceCache = WorkspaceCache()
+        val compositeSynchronizer = CompositeSynchronizer(
+            executor = TaskExecutors.default()
+        )
+        val pollingSynchronizer = PollingSynchronizer(
+            delegate = compositeSynchronizer,
+            scheduler = Schedulers.executor("HacklePollingSynchronizer-"),
+            intervalMillis = config.pollingIntervalMillis.toLong()
+        )
+
+        // WorkspaceManager (fetcher, synchronizer)
+
         val httpWorkspaceFetcher = HttpWorkspaceFetcher(
-            baseSdkUri = config.sdkUri,
+            sdk = sdk,
+            sdkUri = config.sdkUri,
             httpClient = httpClient
         )
 
-        val workspaceHandler = PollingWorkspaceHandler(
-            workspaceCache = workspaceCache,
+        val workspaceManager = WorkspaceManager(
             httpWorkspaceFetcher = httpWorkspaceFetcher,
-            pollingScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
-            pollingIntervalMillis = config.pollingIntervalMillis.toLong()
         )
+        compositeSynchronizer.add(WORKSPACE, workspaceManager)
 
-        val workspaceFetcher = CachedWorkspaceFetcher(
-            workspaceCache = workspaceCache
+        // UserManager
+
+        val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
+        val userManager = UserManager(
+            device = device,
+            repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey"),
+            cohortFetcher = cohortFetcher
         )
+        compositeSynchronizer.add(COHORT, userManager)
+
+        // SessionManager
+
+        val sessionManager = SessionManager(
+            userManager = userManager,
+            sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
+            keyValueRepository = globalKeyValueRepository,
+        )
+        userManager.addListener(sessionManager)
 
         // EventProcessor
 
@@ -116,15 +142,7 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
-        val userManager = UserManager(
-            device = device,
-            repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
-        )
-        val sessionManager = SessionManager(
-            userManager = userManager,
-            sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
-            keyValueRepository = globalKeyValueRepository,
-        )
+
         val dedupDeterminer = ExposureEventDeduplicationDeterminer(
             exposureEventDedupIntervalMillis = config.exposureEventDedupIntervalMillis
         )
@@ -157,13 +175,16 @@ internal object HackleApps {
             context, "${PREFERENCES_NAME}_in_app_message_$sdkKey"
         )
         val inAppMessageImpressionStorage =
-            InAppMessageImpressionStorage.create(context, "${PREFERENCES_NAME}_iam_impression_$sdkKey")
+            InAppMessageImpressionStorage.create(
+                context,
+                "${PREFERENCES_NAME}_iam_impression_$sdkKey"
+            )
 
         EvaluationContext.GLOBAL.register(inAppMessageHiddenStorage)
 
         val core = HackleCore.create(
             context = EvaluationContext.GLOBAL,
-            workspaceFetcher = workspaceFetcher,
+            workspaceFetcher = workspaceManager,
             eventProcessor = eventProcessor,
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
@@ -174,17 +195,15 @@ internal object HackleApps {
             eventExecutor = eventExecutor,
             appStateManager = appStateManager
         )
-        lifecycleCallbacks.addListener(workspaceHandler)
+        lifecycleCallbacks.addListener(pollingSynchronizer)
         lifecycleCallbacks.addListener(sessionManager)
         lifecycleCallbacks.addListener(userManager)
         lifecycleCallbacks.addListener(eventProcessor)
-        userManager.addListener(sessionManager)
 
-        // UserResolver, SessionEventTracker
+        // SessionEventTracker
 
-        val hackleUserResolver = HackleUserResolver(device)
         val sessionEventTracker = SessionEventTracker(
-            hackleUserResolver = hackleUserResolver,
+            userManager = userManager,
             core = core
         )
         sessionManager.addListener(sessionEventTracker)
@@ -221,10 +240,12 @@ internal object HackleApps {
         )
         val inAppMessageEventMatcher = InAppMessageEventMatcher(
             ruleDeterminer = InAppMessageEventTriggerRuleDeterminer(EvaluationContext.GLOBAL.get()),
-            frequencyCapDeterminer = InAppMessageEventTriggerFrequencyCapDeterminer(inAppMessageImpressionStorage)
+            frequencyCapDeterminer = InAppMessageEventTriggerFrequencyCapDeterminer(
+                inAppMessageImpressionStorage
+            )
         )
         val inAppMessageDeterminer = InAppMessageDeterminer(
-            workspaceFetcher = workspaceFetcher,
+            workspaceFetcher = workspaceManager,
             eventMatcher = inAppMessageEventMatcher,
             core = core,
         )
@@ -241,7 +262,6 @@ internal object HackleApps {
             explorerService = HackleUserExplorerService(
                 core = core,
                 userManager = userManager,
-                hackleUserResolver = hackleUserResolver,
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage
             ),
@@ -252,18 +272,22 @@ internal object HackleApps {
 
         metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
 
+        // LifecycleCallbacks
+
         (context as? Application)?.let {
             it.registerActivityLifecycleCallbacks(hackleActivityManager)
             it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
             it.registerActivityLifecycleCallbacks(userExplorer)
         }
 
+        // Instantiate
+
         return HackleApp(
             clock = Clock.SYSTEM,
             core = core,
             eventExecutor = eventExecutor,
-            workspaceHandler = workspaceHandler,
-            hackleUserResolver = hackleUserResolver,
+            backgroundExecutor = TaskExecutors.default(),
+            synchronizer = pollingSynchronizer,
             userManager = userManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,

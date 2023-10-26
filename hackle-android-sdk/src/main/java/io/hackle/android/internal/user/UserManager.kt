@@ -7,24 +7,29 @@ import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.properties.operate
+import io.hackle.android.internal.sync.Synchronizer
 import io.hackle.android.internal.utils.parseJson
 import io.hackle.android.internal.utils.toJson
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
+import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
 import java.util.concurrent.CopyOnWriteArrayList
 
+
 internal class UserManager(
-    device: Device,
+    private val device: Device,
     private val repository: KeyValueRepository,
-) : AppStateChangeListener {
+    private val cohortFetcher: UserCohortFetcher,
+) : Synchronizer, AppStateChangeListener {
 
     private val userListeners = CopyOnWriteArrayList<UserListener>()
     private val defaultUser = User.builder().deviceId(device.id).build()
-
-    private var _currentUser: User = defaultUser
-    val currentUser: User get() = synchronized(LOCK) { _currentUser }
+    private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty())
+    private val currentContext: UserContext get() = synchronized(LOCK) { context }
+    val currentUser: User get() = currentContext.user
 
     fun addListener(listener: UserListener) {
         userListeners.add(listener)
@@ -33,75 +38,112 @@ internal class UserManager(
 
     fun initialize(user: User?) {
         synchronized(LOCK) {
-            _currentUser = user ?: loadUser() ?: defaultUser
-            log.debug { "UserManager initialized [$_currentUser]" }
+            val initUser = user ?: loadUser() ?: defaultUser
+            context = UserContext.of(initUser.with(device), UserCohorts.empty())
+            log.debug { "UserManager initialized [$context]" }
         }
     }
 
-    fun resolve(user: User?): User {
-        return if (user != null) {
-            setUser(user)
-        } else {
-            currentUser
+    fun resolve(user: User?): HackleUser {
+        if (user == null) {
+            return toHackleUser(currentContext)
+        }
+        val context = synchronized(LOCK) {
+            updateUser(user)
+        }
+        return toHackleUser(context)
+    }
+
+    fun toHackleUser(user: User): HackleUser {
+        val context = currentContext.with(user)
+        return toHackleUser(context)
+    }
+
+    private fun toHackleUser(context: UserContext): HackleUser {
+        return HackleUser.builder()
+            .identifiers(context.user.identifiers)
+            .identifier(IdentifierType.ID, context.user.id)
+            .identifier(IdentifierType.ID, device.id, overwrite = false)
+            .identifier(IdentifierType.USER, context.user.userId)
+            .identifier(IdentifierType.DEVICE, context.user.deviceId)
+            .identifier(IdentifierType.DEVICE, device.id, overwrite = false)
+            .identifier(IdentifierType.HACKLE_DEVICE_ID, device.id)
+            .properties(context.user.properties)
+            .hackleProperties(device.properties)
+            .cohorts(context.cohorts.rawCohorts())
+            .build()
+    }
+
+    override fun sync() {
+        val cohorts = try {
+            cohortFetcher.fetch(currentUser)
+        } catch (e: Exception) {
+            log.error { "Failed to fetch cohorts: $e" }
+            return
+        }
+        synchronized(LOCK) {
+            context = context.update(cohorts)
         }
     }
 
     fun setUser(user: User): User {
         return synchronized(LOCK) {
-            updateUser(user)
+            updateUser(user).user
         }
     }
 
     fun resetUser(): User {
         return synchronized(LOCK) {
-            update { defaultUser }
+            updateContext { defaultUser }.user
         }
     }
 
     fun setUserId(userId: String?): User {
         return synchronized(LOCK) {
-            val user = _currentUser.toBuilder().userId(userId).build()
-            updateUser(user)
+            val user = context.user.toBuilder().userId(userId).build()
+            updateUser(user).user
         }
     }
 
     fun setDeviceId(deviceId: String): User {
         return synchronized(LOCK) {
-            val user = _currentUser.toBuilder().deviceId(deviceId).build()
-            updateUser(user)
+            val user = context.user.toBuilder().deviceId(deviceId).build()
+            updateUser(user).user
         }
     }
 
     fun updateProperties(operations: PropertyOperations): User {
         return synchronized(LOCK) {
-            operateProperties(operations)
+            operateProperties(operations).user
         }
     }
 
-    private fun updateUser(user: User): User {
-        return update { currentUser ->
-            user.mergeWith(currentUser)
+    private fun updateUser(user: User): UserContext {
+        return updateContext { currentUser ->
+            user.with(device).mergeWith(currentUser)
         }
     }
 
-    private fun operateProperties(operations: PropertyOperations): User {
-        return update { currentUser ->
+    private fun operateProperties(operations: PropertyOperations): UserContext {
+        return updateContext { currentUser ->
             val properties = operations.operate(currentUser.properties)
             currentUser.copy(properties = properties)
         }
     }
 
-    private fun update(updater: (User) -> User): User {
-        val oldUser = this._currentUser
+    private fun updateContext(updater: (User) -> User): UserContext {
+        val oldUser = this.context.user
         val newUser = updater(oldUser)
-        _currentUser = newUser
+
+        val newContext = context.with(newUser)
+        context = newContext
 
         if (!newUser.identifierEquals(oldUser)) {
             changeUser(oldUser, newUser, Clock.SYSTEM.currentMillis())
         }
 
-        log.debug { "User updated [$_currentUser]" }
-        return newUser
+        log.debug { "User updated [$newContext]" }
+        return newContext
     }
 
     private fun changeUser(oldUser: User, newUser: User, timestamp: Long) {
@@ -143,7 +185,7 @@ internal class UserManager(
         }
     }
 
-    private data class UserModel(
+    data class UserModel(
         val id: String?,
         val userId: String?,
         val deviceId: String?,
