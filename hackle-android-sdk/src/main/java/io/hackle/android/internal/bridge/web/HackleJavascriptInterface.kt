@@ -20,7 +20,7 @@ internal class HackleJavascriptInterface(app: HackleApp) {
 
     @JavascriptInterface
     fun getInvocationType(): String {
-        return "default"
+        return "function"
     }
 
     @JavascriptInterface
