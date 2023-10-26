@@ -1,231 +1,906 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.database.KeyValueRepository
 import io.hackle.android.internal.database.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.utils.toJson
 import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
+import io.hackle.sdk.core.model.Cohort
+import io.hackle.sdk.core.model.Identifier
+import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.*
+import strikt.assertions.hasSize
+import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThan
+import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 
 class UserManagerTest {
 
+    private lateinit var repository: KeyValueRepository
+    private lateinit var cohortFetcher: UserCohortFetcher
+    private lateinit var sut: UserManager
 
-    @Test
-    fun `initialize - User 설정한 경우`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
+    private lateinit var listener: UserListener
 
-        val user = User.of("hello")
-        userManager.initialize(user)
+    @Before
+    fun before() {
+        repository = MapKeyValueRepository()
+        cohortFetcher = mockk()
+        sut = UserManager(MockDevice("hackle_device_id", emptyMap()), repository, cohortFetcher)
 
-        expectThat(userManager.currentUser) isSameInstanceAs user
+        listener = mockk(relaxed = true)
+        sut.addListener(listener)
     }
 
     @Test
-    fun `initialize - from repository`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val user = User.builder("id")
-            .userId("userId")
-            .deviceId("deviceId")
-            .identifier("customId", "customValue")
-            .property("string", "value")
-            .property("int", 42)
-            .property("long", 42L)
-            .property("boolean", false)
-            .property("null", null)
+    fun `initialize - with default user`() {
+        sut.initialize(null)
+        val user = sut.currentUser
+        expectThat(user) isEqualTo User.builder()
+            .id("hackle_device_id")
+            .deviceId("hackle_device_id")
             .build()
-        repository.putString("user", user.toJson())
-        val userManager = UserManager(device, repository)
-
-        userManager.initialize(null)
-
-        expectThat(userManager.currentUser) {
-            get { identifiers } isEqualTo user.identifiers
-            get { properties }.and {
-                get("string") isEqualTo "value"
-                get("int") isEqualTo 42.0
-                get("long") isEqualTo 42.0
-                get("boolean") isEqualTo false
-            }
-        }
     }
 
     @Test
-    fun `initialize - from repository null`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-        userManager.initialize(null)
-        expectThat(userManager.currentUser).isEqualTo(User.builder().deviceId("test_device_id")
-            .build())
+    fun `initialize - with saved user`() {
+        repository.putString(
+            "user",
+            UserManager.UserModel.from(
+                User.builder()
+                    .deviceId("saved_device_id")
+                    .userId("saved_user_id")
+                    .build()
+            ).toJson()
+        )
+        sut.initialize(null)
+        val user = sut.currentUser
+        expectThat(user) isEqualTo User.builder()
+            .id("hackle_device_id")
+            .deviceId("saved_device_id")
+            .userId("saved_user_id")
+            .build()
     }
 
     @Test
-    fun `resolve - user not null`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-
-        val user = User.builder().deviceId("42").build()
-        val actual = userManager.resolve(user)
-
-        expectThat(actual) isEqualTo user
+    fun `initialize - init saved user`() {
+        repository.putString(
+            "user",
+            UserManager.UserModel.from(
+                User.builder()
+                    .deviceId("saved_device_id")
+                    .userId("saved_user_id")
+                    .build()
+            ).toJson()
+        )
+        sut.initialize(
+            User.builder()
+                .deviceId("init_device_id")
+                .userId("init_user_id")
+                .build()
+        )
+        val user = sut.currentUser
+        expectThat(user) isEqualTo User.builder()
+            .id("hackle_device_id")
+            .deviceId("init_device_id")
+            .userId("init_user_id")
+            .build()
     }
+
 
     @Test
     fun `resolve - currentUser`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-
-        val actual = userManager.resolve(null)
-
-        expectThat(actual) isEqualTo User.builder().deviceId("test_device_id").build()
-    }
-
-    @Test
-    fun `setUser - 기존 사용자와 다른 경우`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-        val listener = UserListenerStub()
-        userManager.addListener(listener)
-
-        val user = User.builder().deviceId("42").build()
-        val actual = userManager.setUser(user)
-
-        expectThat(actual) isEqualTo user
-        expectThat(listener.history) {
-            hasSize(1)
-            first().and {
-                get { first } isEqualTo User.builder().deviceId("test_device_id").build()
-                get { second } isEqualTo user
-                get { third } isGreaterThan 0
-            }
-        }
-    }
-
-    @Test
-    fun `setUser - 기존 사용자와 다른 경우 2`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-        val listener = UserListenerStub()
-        userManager.addListener(listener)
-
-        val oldUser = User.builder().deviceId("a").property("a", "a").build()
-        val newUser = User.builder().deviceId("b").property("b", "b").build()
-
-        userManager.initialize(oldUser)
-        val actual = userManager.setUser(newUser)
-
-        expectThat(actual).isEqualTo(newUser)
-        expectThat(listener.history) {
-            hasSize(1)
-            first().and {
-                get { first } isEqualTo oldUser
-                get { second } isEqualTo newUser
-                get { third } isGreaterThan 0
-            }
-        }
-    }
-
-    @Test
-    fun `setUser - 기존 사용자와 같은 사용자인 경우`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-        val listener = UserListenerStub()
-        userManager.addListener(listener)
-
-        val oldUser = User.builder().deviceId("a").property("a", "a").build()
-        val newUser = User.builder().deviceId("a").property("b", "b").build()
-
-        userManager.initialize(oldUser)
-        val actual = userManager.setUser(newUser)
-
-        expectThat(actual).isEqualTo(
-            User.builder().deviceId("a").property("a", "a").property("b", "b").build()
+        sut.initialize(
+            User.builder()
+                .id("init_id")
+                .deviceId("init_device_id")
+                .userId("init_user_id")
+                .build()
         )
-        expectThat(listener.history).hasSize(0)
+
+        val actual = sut.resolve(null)
+        expectThat(actual).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "init_id")
+                .identifier(IdentifierType.DEVICE, "init_device_id")
+                .identifier(IdentifierType.USER, "init_user_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .build()
+        )
     }
 
     @Test
-    fun `onChange - 현재 유저를 저장한다`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-        val listener = UserListenerStub()
-        userManager.addListener(listener)
+    fun `resolve - inputUser`() {
+        sut.initialize(null)
 
-        val user = User.builder().deviceId("a").property("a", "a").build()
-        userManager.initialize(user)
-        userManager.onChanged(AppState.BACKGROUND, 42)
-
-        expectThat(repository.getString("user"))
-            .isNotNull()
-            .isEqualTo(user.toJson())
+        val actual = sut.resolve(User.builder().id("input_id").build())
+        expectThat(actual).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "input_id")
+                .identifier(IdentifierType.DEVICE, "hackle_device_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .build()
+        )
     }
 
     @Test
-    fun `resetUser`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
-
-        val user = User.builder().deviceId("a").property("a", "a").build()
-        userManager.initialize(user)
-
-        val actual = userManager.resetUser()
-        expectThat(actual) isEqualTo User.builder().deviceId("test_device_id").build()
-        expectThat(userManager.currentUser) isEqualTo User.builder().deviceId("test_device_id")
+    fun `toHackleUser - merge with current context`() {
+        // given
+        val userCohorts = UserCohorts.builder()
+            .put(
+                UserCohort(
+                    Identifier("\$id", "id"),
+                    listOf(Cohort(42))
+                )
+            )
             .build()
+        every { cohortFetcher.fetch(any()) } returns userCohorts
+
+        // when
+        sut.initialize(User.builder().id("id").property("a", "a").build())
+        sut.sync()
+        val hackleUser =
+            sut.toHackleUser(User.builder().id("id").userId("user_id").property("b", "b").build())
+
+        // then
+        expectThat(hackleUser).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "id")
+                .identifier(IdentifierType.DEVICE, "hackle_device_id")
+                .identifier(IdentifierType.USER, "user_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .property("b", "b")
+                .cohort(Cohort(42))
+                .build()
+        )
     }
 
     @Test
-    fun `updateProperties`() {
-        val device = MockDevice("test_device_id", emptyMap())
-        val repository = MapKeyValueRepository()
-        val userManager = UserManager(device, repository)
+    fun `toHackleUser - full`() {
+        val hackleUser = sut.toHackleUser(
+            User.builder()
+                .id("id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .identifier("custom", "custom_id")
+                .property("age", 42)
+                .build()
+        )
+        expectThat(hackleUser).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "id")
+                .identifier(IdentifierType.DEVICE, "device_id")
+                .identifier(IdentifierType.USER, "user_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .identifier("custom", "custom_id")
+                .property("age", 42)
+                .build()
+        )
+    }
 
-        val user = User.builder()
-            .userId("user")
-            .deviceId("device")
-            .property("a", 42)
-            .property("b", "b")
-            .property("c", "c")
+    @Test
+    fun `toHackleUser - fill default id`() {
+        val hackleUser = sut.toHackleUser(User.builder().build())
+        expectThat(hackleUser).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "hackle_device_id")
+                .identifier(IdentifierType.DEVICE, "hackle_device_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .build()
+        )
+    }
+
+    @Test
+    fun `toHackleUser - hackle properties`() {
+        val sut = UserManager(
+            MockDevice("hackle_device_id", mapOf("age" to 42)),
+            repository,
+            cohortFetcher
+        )
+        val hackleUser = sut.toHackleUser(User.builder().build())
+        expectThat(hackleUser.hackleProperties.size).isGreaterThan(0)
+    }
+
+    @Test
+    fun `sync - update userCohorts`() {
+        val userCohorts = UserCohorts.builder()
+            .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
             .build()
-        userManager.initialize(user)
+        every { cohortFetcher.fetch(any()) } returns userCohorts
+
+        sut.initialize(null)
+        expectThat(sut.resolve(null).cohorts).hasSize(0)
+
+        sut.sync()
+        expectThat(sut.resolve(null).cohorts).isEqualTo(listOf(Cohort(42)))
+    }
+
+    @Test
+    fun `sync - when error on fetch cohort then do not update cohort`() {
+        every { cohortFetcher.fetch(any()) } throws IllegalArgumentException("fail")
+
+        sut.initialize(null)
+        expectThat(sut.resolve(null).cohorts).hasSize(0)
+
+        sut.sync()
+        expectThat(sut.resolve(null).cohorts).hasSize(0)
+    }
+
+    @Test
+    fun `setUser - decorate hackleDeviceId`() {
+        val user = sut.setUser(User.builder().build())
+        expectThat(user).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .build()
+        )
+    }
+
+    @Test
+    fun `setUser - defaultUser to deviceId`() {
+        sut.initialize(null)
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .build()
+        )
+
+        sut.setUser(User.builder().deviceId("device_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("hackle_device_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - defaultUser to deviceId, userId`() {
+        sut.initialize(null)
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .build()
+        )
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("hackle_device_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId to deviceId(diff)`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id_2")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id_2")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id_2")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId to deviceId, userId(new)`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId to deviceId(diff), userId(new)`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id_2")
+                .userId("user_id")
+                .build()
+        )
+
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id_2")
+                .userId("user_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id_2")
+                    .userId("user_id")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId, userId to deviceId`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id")
+                .build()
+        )
+
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId, userId to deviceId(diff)`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id_2")
+                .build()
+        )
+
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id_2")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id_2")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId, userId to deviceId(diff), userId`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id_2")
+                .userId("user_id")
+                .build()
+        )
+
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id_2")
+                .userId("user_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id_2")
+                    .userId("user_id")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - deviceId, userId to deviceId, userId(diff)`() {
+        sut.initialize(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        sut.setUser(
+            User.builder()
+                .deviceId("device_id")
+                .userId("user_id_2")
+                .build()
+        )
+
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .userId("user_id_2")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id")
+                    .build(),
+                User.builder()
+                    .id("hackle_device_id")
+                    .deviceId("device_id")
+                    .userId("user_id_2")
+                    .build(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `setUser - update cohorts`() {
+        val userCohorts = UserCohorts.builder()
+            .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
+            .put(UserCohort(Identifier("\$deviceId", "hackle_device_id"), listOf(Cohort(43))))
+            .build()
+        every { cohortFetcher.fetch(any()) } returns userCohorts
+
+        sut.initialize(null)
+        sut.sync()
+
+        sut.setUser(User.builder().deviceId("device_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.resolve(null)).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "hackle_device_id")
+                .identifier(IdentifierType.DEVICE, "device_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .cohort(Cohort(42))
+                .build()
+        )
+    }
+
+    @Test
+    fun `updateProperties - update`() {
+        sut.initialize(null)
 
         val operations = PropertyOperations.builder()
             .set("d", "d")
             .increment("a", 42)
             .append("c", "cc")
             .build()
-
-        val actual = userManager.updateProperties(operations)
-        expectThat(actual) isEqualTo User.builder()
-            .userId("user")
-            .deviceId("device")
-            .property("a", 84.0)
-            .property("b", "b")
-            .property("c", listOf("c", "cc"))
-            .property("d", "d")
-            .build()
-
+        val actual = sut.updateProperties(operations)
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .property("a", 42)
+                .property("c", listOf("cc"))
+                .property("d", "d")
+                .build()
+        )
     }
 
-    private class UserListenerStub : UserListener {
+    @Test
+    fun `updateProperties - existed properties`() {
+        sut.initialize(
+            User.builder()
+                .property("a", 42)
+                .property("b", "b")
+                .property("c", "c")
+                .build()
+        )
 
-        val history = mutableListOf<Triple<User, User, Long>>()
-        override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-            history += Triple(oldUser, newUser, timestamp)
+        val operations = PropertyOperations.builder()
+            .set("d", "d")
+            .increment("a", 42)
+            .append("c", "cc")
+            .build()
+        val actual = sut.updateProperties(operations)
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .property("a", 84.0)
+                .property("b", "b")
+                .property("c", listOf("c", "cc"))
+                .property("d", "d")
+                .build()
+        )
+    }
+
+    @Test
+    fun `setUserId - new`() {
+        sut.initialize(null)
+        val actual = sut.setUserId("user_id")
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(any(), any(), any())
         }
+    }
+
+    @Test
+    fun `setUserId - unset`() {
+        sut.initialize(User.builder().userId("user_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        val actual = sut.setUserId(null)
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `setUserId - change`() {
+        sut.initialize(User.builder().userId("user_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        val actual = sut.setUserId("user_id_2")
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id_2")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id_2")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `setUserId - same`() {
+        sut.initialize(User.builder().userId("user_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+
+        val actual = sut.setUserId("user_id")
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("hackle_device_id")
+                .userId("user_id")
+                .build()
+        )
+        verify(exactly = 0) {
+            listener.onUserUpdated(any(), any(), any())
+        }
+    }
+
+
+    @Test
+    fun `setDeviceId - new`() {
+        sut.initialize(null)
+        val actual = sut.setDeviceId("device_id")
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `setDeviceId - change`() {
+        sut.initialize(User.builder().deviceId("device_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+
+        val actual = sut.setDeviceId("device_id_2")
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id_2")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id_2")
+                .build()
+        )
+        verify(exactly = 1) {
+            listener.onUserUpdated(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `setDeviceId - same`() {
+        sut.initialize(User.builder().deviceId("device_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+
+        val actual = sut.setDeviceId("device_id")
+        expectThat(actual).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        verify(exactly = 0) {
+            listener.onUserUpdated(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `onChanged - foreground`() {
+        sut.onChanged(AppState.FOREGROUND, 42)
+    }
+
+    @Test
+    fun `onChanged - background`() {
+        expectThat(repository.getString("user")).isNull()
+        sut.onChanged(AppState.BACKGROUND, 42)
+        expectThat(repository.getString("user")).isNotNull()
     }
 }

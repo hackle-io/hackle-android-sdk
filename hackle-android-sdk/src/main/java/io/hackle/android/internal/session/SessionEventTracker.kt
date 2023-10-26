@@ -1,6 +1,6 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -9,7 +9,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.user.IdentifierType
 
 internal class SessionEventTracker(
-    private val hackleUserResolver: HackleUserResolver,
+    private val userManager: UserManager,
     private val core: HackleCore,
 ) : SessionListener {
 
@@ -22,11 +22,9 @@ internal class SessionEventTracker(
     }
 
     private fun track(eventKey: String, session: Session, user: User, timestamp: Long) {
-        val event = Event.builder(eventKey)
-            .property("sessionId", session.id)
-            .build()
+        val event = Event.of(eventKey)
 
-        val hackleUser = hackleUserResolver.resolve(user)
+        val hackleUser = userManager.toHackleUser(user)
             .toBuilder()
             .identifier(IdentifierType.SESSION, session.id, overwrite = false)
             .build()
