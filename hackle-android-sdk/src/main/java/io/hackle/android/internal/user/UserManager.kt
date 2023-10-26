@@ -142,7 +142,7 @@ internal class UserManager(
             changeUser(oldUser, newUser, Clock.SYSTEM.currentMillis())
         }
 
-        log.debug { "User updated [$newContext]" }
+        log.debug { "User updated [${newContext.user}]" }
         return newContext
     }
 
