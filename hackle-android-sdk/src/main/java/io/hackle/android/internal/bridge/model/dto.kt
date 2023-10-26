@@ -1,76 +1,81 @@
 package io.hackle.android.internal.bridge.model
 
-import com.google.gson.annotations.SerializedName
-import io.hackle.sdk.common.HackleExperiment
+import io.hackle.android.internal.utils.filterNotNull
+import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.PropertyOperation
+import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 
-internal data class UserDto(
-    @SerializedName("id")
-    val id: String?,
-    @SerializedName("userId")
-    val userId: String?,
-    @SerializedName("deviceId")
-    val deviceId: String?,
-    @SerializedName("identifiers")
-    val identifiers: Map<String, String>,
-    @SerializedName("properties")
-    val properties: Map<String, Any>,
-)
+internal fun User.toMap(): Map<String, Any> {
+    val toReturn: MutableMap<String, Any?> = HashMap()
+    toReturn["id"] = id
+    toReturn["userId"] = userId
+    toReturn["deviceId"] = deviceId
+    toReturn["identifiers"] = identifiers
+    toReturn["properties"] = properties
+    return toReturn.filterNotNull()
+}
 
-internal fun User.toDto() = UserDto(
-    id = id,
-    userId = userId,
-    deviceId = deviceId,
-    identifiers = identifiers,
-    properties = properties
-)
+internal fun User.Companion.from(map: Map<String, Any>): User {
+    val builder = builder()
+    builder.id(map["id"] as? String)
+    builder.userId(map["userId"] as? String)
+    builder.deviceId(map["deviceId"] as? String)
+    @Suppress("UNCHECKED_CAST")
+    builder.identifiers(map["identifiers"] as? Map<String, String>)
+    @Suppress("UNCHECKED_CAST")
+    builder.properties(map["properties"] as? Map<String, Any>)
+    return builder.build()
+}
 
-internal data class HackleExperimentDto(
-    @SerializedName("key")
-    val key: Long,
-    @SerializedName("version")
-    val version: Int
-)
+internal fun Decision.toMap(): Map<String, Any> {
+    val toReturn: MutableMap<String, Any> = HashMap()
+    toReturn["variation"] = variation
+    toReturn["reason"] = reason
+    toReturn["config"] = mapOf("parameters" to parameters)
+    return toReturn
+}
 
-internal fun HackleExperiment.toDto() = HackleExperimentDto(
-    key = key,
-    version = version
-)
+internal fun FeatureFlagDecision.toMap(): Map<String, Any> {
+    val toReturn: MutableMap<String, Any> = HashMap()
+    toReturn["isOn"] = isOn
+    toReturn["reason"] = reason
+    toReturn["config"] = mapOf("parameters" to parameters)
+    return toReturn
+}
 
-internal data class DecisionDto(
-    @SerializedName("experiment")
-    val experiment: HackleExperimentDto?,
-    @SerializedName("variation")
-    val variation: String,
-    @SerializedName("reason")
-    val reason: String,
-    @SerializedName("config")
-    val config: Map<String, Any>
-)
+internal fun Event.Companion.from(map: Map<String, Any>): Event? {
+    val key = map["key"] as? String ?: return null
+    val builder = builder(key)
+    (map["value"] as? Number)?.apply {
+        builder.value(toDouble())
+    }
+    @Suppress("UNCHECKED_CAST")
+    (map["properties"] as? Map<String, Any>)?.apply {
+        builder.properties(this)
+    }
+    return builder.build()
+}
 
-internal fun Decision.toDto() = DecisionDto(
-    experiment = experiment?.toDto(),
-    variation = variation.name,
-    reason = reason.name,
-    config = config.parameters
-)
-
-internal data class FeatureFlagDecisionDto(
-    @SerializedName("featureFlag")
-    val featureFlag: HackleExperimentDto?,
-    @SerializedName("isOn")
-    val isOn: Boolean,
-    @SerializedName("reason")
-    val reason: String,
-    @SerializedName("config")
-    val config: Map<String, Any>
-)
-
-internal fun FeatureFlagDecision.toDto() = FeatureFlagDecisionDto(
-    featureFlag = featureFlag?.toDto(),
-    isOn = isOn,
-    reason = reason.name,
-    config = config.parameters
-)
+internal fun PropertyOperations.Companion.from(map: Map<String, Map<String, Any>>): PropertyOperations {
+    val builder = builder()
+    for ((operationText, properties) in map) {
+        try {
+            when (PropertyOperation.from(operationText)) {
+                PropertyOperation.SET -> properties.forEach { (key, value) -> builder.set(key, value) }
+                PropertyOperation.SET_ONCE -> properties.forEach { (key, value) -> builder.setOnce(key, value) }
+                PropertyOperation.UNSET -> properties.forEach { (key, _) -> builder.unset(key) }
+                PropertyOperation.INCREMENT -> properties.forEach { (key, value) -> builder.increment(key, value) }
+                PropertyOperation.APPEND -> properties.forEach { (key, value) -> builder.append(key, value) }
+                PropertyOperation.APPEND_ONCE -> properties.forEach { (key, value) -> builder.appendOnce(key, value) }
+                PropertyOperation.PREPEND -> properties.forEach { (key, value) -> builder.prepend(key, value) }
+                PropertyOperation.PREPEND_ONCE -> properties.forEach { (key, value) -> builder.prependOnce(key, value) }
+                PropertyOperation.REMOVE -> properties.forEach { (key, value) -> builder.remove(key, value) }
+                PropertyOperation.CLEAR_ALL -> properties.forEach { (_, _) -> builder.clearAll() }
+            }
+        } catch (_: Throwable) { }
+    }
+    return builder.build()
+}

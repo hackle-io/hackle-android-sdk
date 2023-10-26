@@ -2,7 +2,7 @@ package io.hackle.android.internal.bridge.model
 
 import io.hackle.android.internal.utils.parseJson
 
-internal class Invocation(string: String) {
+internal class BridgeInvocation(string: String) {
 
     companion object {
         private const val KEY_HACKLE = "_hackle"

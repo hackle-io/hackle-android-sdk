@@ -291,7 +291,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -330,12 +330,12 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with variation with user id`() {
+    fun `invoke with variation with user string`() {
         every { app.variation(any(), any<String>(), any()) } returns Variation.B
         val parameters = mapOf(
             "experimentKey" to 1,
             "defaultVariation" to "D",
-            "userId" to "abcd1234"
+            "user" to "abcd1234"
         )
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
@@ -354,7 +354,7 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with variation with user`() {
+    fun `invoke with variation with user object`() {
         every { app.variation(any(), any<User>(), any()) } returns Variation.B
         val user = mapOf(
             "id" to "foo",
@@ -409,7 +409,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -434,17 +434,20 @@ class HackleBridgeTest {
             assertNull(map["experiment"])
             assertThat(map["variation"], `is`("B"))
             assertThat(map["reason"], `is`("DEFAULT_RULE"))
-            assertThat(map.containsKey("config"), `is`(true))
+
+            val config = map["config"] as Map<*, *>
+            val configParameters = config["parameters"] as Map<*, *>
+            assertThat(configParameters.isEmpty(), `is`(true))
         }
     }
 
     @Test
-    fun `invoke with variation detail with user id`() {
+    fun `invoke with variation detail with user string`() {
         every { app.variationDetail(any(), any<String>(), any()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
         val parameters = mapOf(
             "experimentKey" to 1,
             "defaultVariation" to "D",
-            "userId" to "abcd1234"
+            "user" to "abcd1234"
         )
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
@@ -463,12 +466,15 @@ class HackleBridgeTest {
             assertNull(map["experiment"])
             assertThat(map["variation"], `is`("B"))
             assertThat(map["reason"], `is`("DEFAULT_RULE"))
-            assertThat(map.containsKey("config"), `is`(true))
+
+            val config = map["config"] as Map<*, *>
+            val configParameters = config["parameters"] as Map<*, *>
+            assertThat(configParameters.isEmpty(), `is`(true))
         }
     }
 
     @Test
-    fun `invoke with variation detail with user`() {
+    fun `invoke with variation detail with user object`() {
         every { app.variationDetail(any(), any<User>(), any()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
         val user = mapOf(
             "id" to "foo",
@@ -516,7 +522,10 @@ class HackleBridgeTest {
             assertNull(map["experiment"])
             assertThat(map["variation"], `is`("B"))
             assertThat(map["reason"], `is`("DEFAULT_RULE"))
-            assertThat(map.containsKey("config"), `is`(true))
+
+            val config = map["config"] as Map<*, *>
+            val configParameters = config["parameters"] as Map<*, *>
+            assertThat(configParameters.isEmpty(), `is`(true))
         }
     }
 
@@ -528,7 +537,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -552,9 +561,9 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with is feature on with user id`() {
+    fun `invoke with is feature on with user string`() {
         every { app.isFeatureOn(any(), any<String>()) } returns true
-        val parameters = mapOf("featureKey" to 1, "userId" to "abcd1234")
+        val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
@@ -571,7 +580,7 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with is feature on with user`() {
+    fun `invoke with is feature on with user object`() {
         every { app.isFeatureOn(any(), any<User>()) } returns true
         val user = mapOf(
             "id" to "foo",
@@ -621,7 +630,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -645,14 +654,17 @@ class HackleBridgeTest {
             assertNull(map["featureFlag"])
             assertThat(map["isOn"], `is`(true))
             assertThat(map["reason"], `is`("DEFAULT_RULE"))
-            assertThat(map.containsKey("config"), `is`(true))
+
+            val config = map["config"] as Map<*, *>
+            val configParameters = config["parameters"] as Map<*, *>
+            assertThat(configParameters.isEmpty(), `is`(true))
         }
     }
 
     @Test
-    fun `invoke with feature flag detail with user id`() {
+    fun `invoke with feature flag detail with user string`() {
         every { app.featureFlagDetail(any(), any<String>()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
-        val parameters = mapOf("featureKey" to 1, "userId" to "abcd1234")
+        val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
@@ -669,12 +681,15 @@ class HackleBridgeTest {
             assertNull(map["featureFlag"])
             assertThat(map["isOn"], `is`(true))
             assertThat(map["reason"], `is`("DEFAULT_RULE"))
-            assertThat(map.containsKey("config"), `is`(true))
+
+            val config = map["config"] as Map<*, *>
+            val configParameters = config["parameters"] as Map<*, *>
+            assertThat(configParameters.isEmpty(), `is`(true))
         }
     }
 
     @Test
-    fun `invoke with feature flag detail with user`() {
+    fun `invoke with feature flag detail with user object`() {
         every { app.featureFlagDetail(any(), any<User>()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
         val user = mapOf(
             "id" to "foo",
@@ -717,7 +732,10 @@ class HackleBridgeTest {
             assertNull(map["featureFlag"])
             assertThat(map["isOn"], `is`(true))
             assertThat(map["reason"], `is`("DEFAULT_RULE"))
-            assertThat(map.containsKey("config"), `is`(true))
+
+            val config = map["config"] as Map<*, *>
+            val configParameters = config["parameters"] as Map<*, *>
+            assertThat(configParameters.isEmpty(), `is`(true))
         }
     }
 
@@ -729,13 +747,102 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
 
     @Test
-    fun `invoke with track`() {
+    fun `invoke with track with event string`() {
+        val parameters = mapOf("event" to "foo")
+        val jsonString = createJsonString("track", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.track(withArg<String> {
+                assertThat(it, `is`("foo"))
+            })
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with track with event string with user string`() {
+        val parameters = mapOf(
+            "event" to "foo",
+            "user" to "abcd1234"
+        )
+        val jsonString = createJsonString("track", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.track(
+                withArg<String> {
+                    assertThat(it, `is`("foo"))
+                },
+                withArg<String> {
+                    assertThat(it, `is`("abcd1234"))
+                }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with track with event string with user object`() {
+        val user = mapOf(
+            "id" to "foo",
+            "userId" to "bar",
+            "deviceId" to "abcd1234",
+            "identifiers" to mapOf("foo" to "bar"),
+            "properties" to mapOf(
+                "number" to 123,
+                "string" to "text",
+                "array" to arrayOf(123, "123")
+            )
+        )
+        val parameters = mapOf(
+            "event" to "foo",
+            "user" to user
+        )
+        val jsonString = createJsonString("track", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.track(
+                withArg<String> {
+                    assertThat(it, `is`("foo"))
+                },
+                withArg<User> {
+                    assertThat(it.id, `is`("foo"))
+                    assertThat(it.userId, `is`("bar"))
+                    assertThat(it.deviceId, `is`("abcd1234"))
+                    assertThat(it.identifiers.size, `is`(1))
+                    assertThat(it.identifiers["foo"], `is`("bar"))
+                    assertThat(it.properties.size, `is`(3))
+                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
+                    assertThat(it.properties["string"], `is`("text"))
+                    val array = it.properties["array"] as ArrayList<*>
+                    assertThat(array.size, `is`(2))
+                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
+                    assertThat(array[1], `is`("123"))
+                }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with track with event object`() {
         val event = mapOf(
             "key" to "foo",
             "value" to 123,
@@ -760,6 +867,94 @@ class HackleBridgeTest {
     }
 
     @Test
+    fun `invoke with track with event object with user string`() {
+        val event = mapOf(
+            "key" to "foo",
+            "value" to 123,
+            "properties" to mapOf("abc" to "def")
+        )
+        val parameters = mapOf(
+            "event" to event,
+            "user" to "abcd1234"
+        )
+        val jsonString = createJsonString("track", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.track(
+                withArg<Event> {
+                    assertThat(it.key, `is`("foo"))
+                    assertThat(it.value, `is`(123.0))
+                    assertThat(it.properties.size, `is`(1))
+                    assertThat(it.properties["abc"], `is`("def"))
+                },
+                withArg<String> {
+                    assertThat(it, `is`("abcd1234"))
+                }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with track with event object with user object`() {
+        val event = mapOf(
+            "key" to "foo",
+            "value" to 123,
+            "properties" to mapOf("abc" to "def")
+        )
+        val user = mapOf(
+            "id" to "foo",
+            "userId" to "bar",
+            "deviceId" to "abcd1234",
+            "identifiers" to mapOf("foo" to "bar"),
+            "properties" to mapOf(
+                "number" to 123,
+                "string" to "text",
+                "array" to arrayOf(123, "123")
+            )
+        )
+        val parameters = mapOf(
+            "event" to event,
+            "user" to user
+        )
+        val jsonString = createJsonString("track", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.track(
+                withArg<Event> {
+                    assertThat(it.key, `is`("foo"))
+                    assertThat(it.value, `is`(123.0))
+                    assertThat(it.properties.size, `is`(1))
+                    assertThat(it.properties["abc"], `is`("def"))
+                },
+                withArg<User> {
+                    assertThat(it.id, `is`("foo"))
+                    assertThat(it.userId, `is`("bar"))
+                    assertThat(it.deviceId, `is`("abcd1234"))
+                    assertThat(it.identifiers.size, `is`(1))
+                    assertThat(it.identifiers["foo"], `is`("bar"))
+                    assertThat(it.properties.size, `is`(3))
+                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
+                    assertThat(it.properties["string"], `is`("text"))
+                    val array = it.properties["array"] as ArrayList<*>
+                    assertThat(array.size, `is`(2))
+                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
+                    assertThat(array[1], `is`("123"))
+                }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
     fun `invoke with track with invalid parameters`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("track", parameters)
@@ -767,7 +962,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -797,7 +992,35 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with remote config with user - string`() {
+    fun `invoke with remote config with user string - string`() {
+        every { app.remoteConfig(any()).getString(any(), any()) } returns "foo"
+        val parameters = mapOf(
+            "key" to "foo",
+            "valueType" to "string",
+            "defaultValue" to "abc",
+            "user" to "abcd1234"
+        )
+        val jsonString = createJsonString("remoteConfig", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.remoteConfig(
+                withArg {
+                    assertThat(it.userId, `is`("abcd1234"))
+                }
+            ).getString(
+                withArg { assertThat(it, `is`("foo")) },
+                withArg { assertThat(it, `is`("abc")) }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertThat(data, `is`("foo"))
+        }
+    }
+
+    @Test
+    fun `invoke with remote config with user object - string`() {
         every { app.remoteConfig(any()).getString(any(), any()) } returns "foo"
         val user = mapOf(
             "id" to "foo",
@@ -871,7 +1094,35 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with remote config with user - number`() {
+    fun `invoke with remote config with user string - number`() {
+        every { app.remoteConfig(any()).getDouble(any(), any()) } returns 123.0
+        val parameters = mapOf(
+            "key" to "foo",
+            "valueType" to "number",
+            "defaultValue" to 1000.0,
+            "user" to "abcd1234"
+        )
+        val jsonString = createJsonString("remoteConfig", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.remoteConfig(
+                withArg {
+                    assertThat(it.userId, `is`("abcd1234"))
+                }
+            ).getDouble(
+                withArg { assertThat(it, `is`("foo")) },
+                withArg { assertThat(it, `is`(1000.0)) }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertThat(data, `is`("123.0"))
+        }
+    }
+
+    @Test
+    fun `invoke with remote config with user object - number`() {
         every { app.remoteConfig(any()).getDouble(any(), any()) } returns 123.0
         val user = mapOf(
             "id" to "foo",
@@ -945,7 +1196,35 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `invoke with remote config with user - boolean`() {
+    fun `invoke with remote config with user string - boolean`() {
+        every { app.remoteConfig(any()).getBoolean(any(), any()) } returns true
+        val parameters = mapOf(
+            "key" to "foo",
+            "valueType" to "boolean",
+            "defaultValue" to false,
+            "user" to "abcd1234"
+        )
+        val jsonString = createJsonString("remoteConfig", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.remoteConfig(
+                withArg {
+                    assertThat(it.userId, `is`("abcd1234"))
+                }
+            ).getBoolean(
+                withArg { assertThat(it, `is`("foo")) },
+                withArg { assertThat(it, `is`(false)) }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertThat(data, `is`("true"))
+        }
+    }
+
+    @Test
+    fun `invoke with remote config with user object - boolean`() {
         every { app.remoteConfig(any()).getBoolean(any(), any()) } returns true
         val user = mapOf(
             "id" to "foo",
@@ -1004,7 +1283,22 @@ class HackleBridgeTest {
         verify { remoteConfig wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with show user explorer`() {
+        every { app.showUserExplorer() } answers { }
+        val jsonString = createJsonString("showUserExplorer")
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.showUserExplorer()
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
             assertNull(data)
         }
     }
