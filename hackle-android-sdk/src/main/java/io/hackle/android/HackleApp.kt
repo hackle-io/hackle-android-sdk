@@ -7,9 +7,10 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.sync.SynchronizerType
+import io.hackle.android.internal.sync.SynchronizerType.COHORT
 import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.workspace.PollingWorkspaceHandler
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.Variation.Companion.CONTROL
@@ -25,6 +26,7 @@ import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.model.toEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 
 /**
  * Entry point of Hackle Sdk.
@@ -33,8 +35,8 @@ class HackleApp internal constructor(
     private val clock: Clock,
     private val core: HackleCore,
     private val eventExecutor: Executor,
-    private val workspaceHandler: PollingWorkspaceHandler,
-    private val hackleUserResolver: HackleUserResolver,
+    private val backgroundExecutor: ExecutorService,
+    private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
@@ -59,52 +61,85 @@ class HackleApp internal constructor(
         Metrics.counter("user.explorer.show").increment()
     }
 
-    fun setUser(user: User) {
+    @JvmOverloads
+    fun setUser(user: User, callback: Runnable? = null) {
         try {
             userManager.setUser(user)
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set user: $e" }
+            callback?.run()
         }
     }
 
-    fun setUserId(userId: String?) {
+    @JvmOverloads
+    fun setUserId(userId: String?, callback: Runnable? = null) {
         try {
             userManager.setUserId(userId)
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set userId: $e" }
+            callback?.run()
         }
     }
 
-    fun setDeviceId(deviceId: String) {
+    @JvmOverloads
+    fun setDeviceId(deviceId: String, callback: Runnable? = null) {
         try {
             userManager.setDeviceId(deviceId)
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set deviceId: $e" }
+            callback?.run()
         }
     }
 
-    fun setUserProperty(key: String, value: Any?) {
+    @JvmOverloads
+    fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
         val operations = PropertyOperations.builder()
             .set(key, value)
             .build()
-        updateUserProperties(operations)
+        updateUserProperties(operations, callback)
     }
 
-    fun updateUserProperties(operations: PropertyOperations) {
+    @JvmOverloads
+    fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
         try {
             track(operations.toEvent())
             userManager.updateProperties(operations)
         } catch (e: Exception) {
             log.error { "Unexpected exception while update user properties: $e" }
+        } finally {
+            callback?.run()
         }
     }
 
-    fun resetUser() {
+    @JvmOverloads
+    fun resetUser(callback: Runnable? = null) {
         try {
             userManager.resetUser()
             track(PropertyOperations.clearAll().toEvent())
+            sync(COHORT, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
+            callback?.run()
+        }
+    }
+
+    private fun sync(type: SynchronizerType, callback: Runnable?) {
+        try {
+            backgroundExecutor.submit {
+                try {
+                    synchronizer.sync(type)
+                } catch (e: Exception) {
+                    log.error { "Failed to sync: $e" }
+                } finally {
+                    callback?.run()
+                }
+            }
+        } catch (e: Exception) {
+            log.error { "Failed to submit sync task: $e" }
+            callback?.run()
         }
     }
 
@@ -142,8 +177,7 @@ class HackleApp internal constructor(
     ): Decision {
         val sample = Timer.start()
         return try {
-            val currentUser = userManager.resolve(user)
-            val hackleUser = hackleUserResolver.resolve(currentUser)
+            val hackleUser = userManager.resolve(user)
             core.experiment(experimentKey, hackleUser, defaultVariation)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
@@ -165,8 +199,7 @@ class HackleApp internal constructor(
 
     private fun allVariationDetailsInternal(user: User?): Map<Long, Decision> {
         return try {
-            val currentUser = userManager.resolve(user)
-            val hackleUser = hackleUserResolver.resolve(currentUser)
+            val hackleUser = userManager.resolve(user)
             core.experiments(hackleUser)
                 .mapKeysTo(hashMapOf()) { (experiment, _) -> experiment.key }
         } catch (t: Throwable) {
@@ -204,8 +237,7 @@ class HackleApp internal constructor(
     private fun featureFlagDetailInternal(featureKey: Long, user: User?): FeatureFlagDecision {
         val sample = Timer.start()
         return try {
-            val currentUser = userManager.resolve(user)
-            val hackleUser = hackleUserResolver.resolve(currentUser)
+            val hackleUser = userManager.resolve(user)
             core.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
@@ -235,8 +267,7 @@ class HackleApp internal constructor(
 
     private fun trackInternal(event: Event, user: User?) {
         try {
-            val currentUser = userManager.resolve(user)
-            val hackleUser = hackleUserResolver.resolve(currentUser)
+            val hackleUser = userManager.resolve(user)
             core.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
@@ -247,7 +278,7 @@ class HackleApp internal constructor(
      * Returns a instance of Hackle Remote Config.
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(null, core, userManager, hackleUserResolver)
+        return HackleRemoteConfigImpl(null, core, userManager)
     }
 
     override fun close() {
@@ -260,7 +291,7 @@ class HackleApp internal constructor(
             try {
                 sessionManager.initialize()
                 eventProcessor.initialize()
-                workspaceHandler.initialize()
+                synchronizer.sync()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }
@@ -359,7 +390,7 @@ class HackleApp internal constructor(
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, core, userManager, hackleUserResolver)
+        return HackleRemoteConfigImpl(user, core, userManager)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))

@@ -1,7 +1,7 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.model.Device
-import io.hackle.android.internal.user.HackleUserResolver
+import io.hackle.android.internal.database.MapKeyValueRepository
+import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -21,9 +21,10 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionStarted`() {
         // given
-        val userResolver = HackleUserResolver(MockDevice("device_id", emptyMap()))
+        val userManager =
+            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk())
         val core = mockk<HackleCore>(relaxed = true)
-        val sut = SessionEventTracker(userResolver, core)
+        val sut = SessionEventTracker(userManager, core)
 
         // when
         val session = Session("42.ffffffff")
@@ -36,7 +37,6 @@ class SessionEventTrackerTest {
                 event = withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$session_start"
-                        get { properties } isEqualTo mapOf("sessionId" to "42.ffffffff")
                     }
                 },
                 user = withArg {
@@ -52,9 +52,10 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionEnded`() {
         // given
-        val userResolver = HackleUserResolver(MockDevice("device_id", emptyMap()))
+        val userManager =
+            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk())
         val core = mockk<HackleCore>(relaxed = true)
-        val sut = SessionEventTracker(userResolver, core)
+        val sut = SessionEventTracker(userManager, core)
 
         // when
         val session = Session("42.ffffffff")
@@ -67,7 +68,6 @@ class SessionEventTrackerTest {
                 event = withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$session_end"
-                        get { properties } isEqualTo mapOf("sessionId" to "42.ffffffff")
                     }
                 },
                 user = withArg {

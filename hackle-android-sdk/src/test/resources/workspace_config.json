@@ -953,6 +953,11 @@
             "closeButton": {
               "style": {
                 "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
               }
             }
           }
