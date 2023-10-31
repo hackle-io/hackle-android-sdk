@@ -2,7 +2,7 @@ package io.hackle.android.internal.bridge.model
 
 import io.hackle.android.internal.utils.toJson
 
-class BridgeResponse private constructor(
+internal class BridgeResponse private constructor(
     val success: Boolean,
     val message: String,
     val data: Any? = null
