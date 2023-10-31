@@ -7,10 +7,6 @@ import io.hackle.android.internal.bridge.HackleBridge
 @Suppress("unused")
 internal class HackleJavascriptInterface(app: HackleApp) {
 
-    companion object {
-        const val NAME = "_hackleApp"
-    }
-
     private val bridge = HackleBridge(app)
 
     @JavascriptInterface
@@ -26,5 +22,9 @@ internal class HackleJavascriptInterface(app: HackleApp) {
     @JavascriptInterface
     fun invoke(string: String): String {
         return bridge.invoke(string)
+    }
+
+    companion object {
+        const val NAME = "_hackleApp"
     }
 }

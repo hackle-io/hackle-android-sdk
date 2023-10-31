@@ -4,12 +4,6 @@ import io.hackle.android.internal.utils.parseJson
 
 internal class BridgeInvocation(string: String) {
 
-    companion object {
-        private const val KEY_HACKLE = "_hackle"
-        private const val KEY_COMMAND = "command"
-        private const val KEY_PARAMETERS = "parameters"
-    }
-
     enum class Command(val text: String) {
         GET_SESSION_ID("getSessionId"),
         GET_USER("getUser"),
@@ -52,5 +46,11 @@ internal class BridgeInvocation(string: String) {
         }
         @Suppress("UNCHECKED_CAST")
         this.parameters = invocation[KEY_PARAMETERS] as? Map<String, Any> ?: HashMap()
+    }
+
+    companion object {
+        private const val KEY_HACKLE = "_hackle"
+        private const val KEY_COMMAND = "command"
+        private const val KEY_PARAMETERS = "parameters"
     }
 }
