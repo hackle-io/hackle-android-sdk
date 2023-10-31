@@ -4,14 +4,20 @@ import io.hackle.android.HackleApp
 import io.hackle.android.internal.bridge.model.BridgeInvocation
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
 import io.hackle.android.internal.bridge.model.BridgeResponse
+import io.hackle.android.internal.bridge.model.DecisionDto
+import io.hackle.android.internal.bridge.model.EventDto
+import io.hackle.android.internal.bridge.model.FeatureFlagDecisionDto
+import io.hackle.android.internal.bridge.model.PropertyOperationsDto
+import io.hackle.android.internal.bridge.model.UserDto
 import io.hackle.android.internal.bridge.model.from
-import io.hackle.android.internal.bridge.model.toMap
+import io.hackle.android.internal.bridge.model.toDto
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 
+@Suppress("DEPRECATION")
 internal class HackleBridge(
     private val app: HackleApp
 ) {
@@ -21,76 +27,75 @@ internal class HackleBridge(
     }
 
     fun invoke(string: String): String {
-        var response: BridgeResponse
-        try {
+        val response: BridgeResponse = try {
             val invocation = BridgeInvocation(string)
-            response = invoke(invocation.command, invocation.parameters)
+            invoke(invocation.command, invocation.parameters)
         } catch (throwable: Throwable) {
-            response = BridgeResponse.error(throwable)
+            BridgeResponse.error(throwable)
         }
         return response.toJsonString()
     }
 
     private fun invoke(command: BridgeInvocation.Command, parameters: Map<String, Any>): BridgeResponse {
-        when (command) {
+        return when (command) {
             GET_SESSION_ID -> {
-                return BridgeResponse.success(app.sessionId)
+                BridgeResponse.success(app.sessionId)
             }
             GET_USER -> {
-                val data = app.user.toMap()
-                return BridgeResponse.success(data)
+                val data = app.user.toDto()
+                BridgeResponse.success(data)
             }
             SET_USER -> {
                 setUser(parameters)
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             SET_USER_ID -> {
                 setUserId(parameters)
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             SET_DEVICE_ID -> {
                 setDeviceId(parameters)
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             SET_USER_PROPERTY -> {
                 setUserProperty(parameters)
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             UPDATE_USER_PROPERTY -> {
                 updateUserProperties(parameters)
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             RESET_USER -> {
                 app.resetUser()
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             VARIATION -> {
                 val data = variation(parameters)
-                return BridgeResponse.success(data)
+                BridgeResponse.success(data)
             }
             VARIATION_DETAIL -> {
                 val data = variationDetail(parameters)
-                return BridgeResponse.success(data)
+                BridgeResponse.success(data)
             }
             IS_FEATURE_ON -> {
                 val data = isFeatureOn(parameters)
-                return BridgeResponse.success(data)
+                BridgeResponse.success(data)
             }
             FEATURE_FLAG_DETAIL -> {
                 val data = featureFlagDetail(parameters)
-                return BridgeResponse.success(data)
+                BridgeResponse.success(data)
             }
             TRACK -> {
                 track(parameters)
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
             REMOTE_CONFIG -> {
                 val data = remoteConfig(parameters)
-                return BridgeResponse.success(data)
+                BridgeResponse.success(data)
             }
             SHOW_USER_EXPLORER -> {
                 app.showUserExplorer()
-                return BridgeResponse.success()
+                BridgeResponse.success()
             }
         }
     }
@@ -98,7 +103,8 @@ internal class HackleBridge(
     private fun setUser(parameters: Map<String, Any>) {
         @Suppress("UNCHECKED_CAST")
         val data = checkNotNull(parameters["user"] as? Map<String, Any>)
-        val user = User.from(data)
+        val dto = UserDto.from(data)
+        val user = User.from(dto)
         app.setUser(user)
     }
 
@@ -120,8 +126,8 @@ internal class HackleBridge(
 
     private fun updateUserProperties(parameters: Map<String, Any>) {
         @Suppress("UNCHECKED_CAST")
-        val data = checkNotNull(parameters["operations"] as? Map<String, Map<String, Any>>)
-        val operations = PropertyOperations.from(data)
+        val dto = checkNotNull(parameters["operations"] as? PropertyOperationsDto)
+        val operations = PropertyOperations.from(dto)
         app.updateUserProperties(operations)
     }
 
@@ -142,7 +148,8 @@ internal class HackleBridge(
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as? Map<String, Any>
             if (data != null) {
-                val user = User.from(data)
+                val dto = UserDto.from(data)
+                val user = User.from(dto)
                 return app.variation(
                     experimentKey = experimentKey.toLong(),
                     user = user,
@@ -156,7 +163,7 @@ internal class HackleBridge(
         ).name
     }
 
-    private fun variationDetail(parameters: Map<String, Any>): Map<String, Any> {
+    private fun variationDetail(parameters: Map<String, Any>): DecisionDto {
         val experimentKey = parameters["experimentKey"] as? Number
             ?: throw IllegalArgumentException("Valid 'experimentKey' parameter must be provided.")
         val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
@@ -168,25 +175,26 @@ internal class HackleBridge(
                     experimentKey = experimentKey.toLong(),
                     userId = userId,
                     defaultVariation = defaultVariation
-                ).toMap()
+                ).toDto()
             }
         }
         if (parameters["user"] is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as? Map<String, Any>
             if (data != null) {
-                val user = User.from(data)
+                val dto = UserDto.from(data)
+                val user = User.from(dto)
                 return app.variationDetail(
                     experimentKey = experimentKey.toLong(),
                     user = user,
                     defaultVariation = defaultVariation
-                ).toMap()
+                ).toDto()
             }
         }
         return app.variationDetail(
             experimentKey = experimentKey.toLong(),
             defaultVariation = defaultVariation
-        ).toMap()
+        ).toDto()
     }
 
     private fun isFeatureOn(parameters: Map<String, Any>): Boolean {
@@ -204,7 +212,8 @@ internal class HackleBridge(
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as? Map<String, Any>
             if (data != null) {
-                val user = User.from(data)
+                val dto = UserDto.from(data)
+                val user = User.from(dto)
                 return app.isFeatureOn(
                     featureKey = featureKey.toLong(),
                     user = user
@@ -214,7 +223,7 @@ internal class HackleBridge(
         return app.isFeatureOn(featureKey = featureKey.toLong())
     }
 
-    private fun featureFlagDetail(parameters: Map<String, Any>): Map<String, Any> {
+    private fun featureFlagDetail(parameters: Map<String, Any>): FeatureFlagDecisionDto {
         val featureKey = checkNotNull(parameters["featureKey"] as? Number)
         if (parameters["user"] is String) {
             val userId = parameters["user"] as? String
@@ -222,21 +231,22 @@ internal class HackleBridge(
                 return app.featureFlagDetail(
                     featureKey = featureKey.toLong(),
                     userId = userId
-                ).toMap()
+                ).toDto()
             }
         }
         if (parameters["user"] is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as? Map<String, Any>
             if (data != null) {
-                val user = User.from(data)
+                val dto = UserDto.from(data)
+                val user = User.from(dto)
                 return app.featureFlagDetail(
                     featureKey = featureKey.toLong(),
                     user = user
-                ).toMap()
+                ).toDto()
             }
         }
-        return app.featureFlagDetail(featureKey = featureKey.toLong()).toMap()
+        return app.featureFlagDetail(featureKey = featureKey.toLong()).toDto()
     }
 
     private fun track(parameters: Map<String, Any>) {
@@ -246,7 +256,8 @@ internal class HackleBridge(
         } else if (parameters["event"] is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
             val data = parameters["event"] as Map<String, Any>
-            val event = checkNotNull(Event.from(data))
+            val dto = EventDto.from(data)
+            val event = Event.from(dto)
             track(event = event, parameters = parameters)
         } else {
             throw IllegalArgumentException("Valid parameter must be provided.")
@@ -264,7 +275,8 @@ internal class HackleBridge(
         if (parameters["user"] is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as Map<String, Any>
-            val user = User.from(data)
+            val dto = UserDto.from(data)
+            val user = User.from(dto)
             app.track(eventKey = eventKey, user = user)
             return
         }
@@ -282,7 +294,8 @@ internal class HackleBridge(
         if (parameters["user"] is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as Map<String, Any>
-            val user = User.from(data)
+            val dto = UserDto.from(data)
+            val user = User.from(dto)
             app.track(event = event, user = user)
             return
         }
@@ -300,7 +313,8 @@ internal class HackleBridge(
         if (parameters["user"] is Map<*, *>) {
             @Suppress("UNCHECKED_CAST")
             val data = parameters["user"] as Map<String, Any>
-            user = User.from(data)
+            val dto = UserDto.from(data)
+            user = User.from(dto)
         }
 
         val config: HackleRemoteConfig =

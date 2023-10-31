@@ -177,7 +177,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -205,7 +205,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }
@@ -236,7 +236,7 @@ class HackleBridgeTest {
         verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
-            assertThat(message.isNullOrEmpty(), `is`(false))
+            assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
         }
     }

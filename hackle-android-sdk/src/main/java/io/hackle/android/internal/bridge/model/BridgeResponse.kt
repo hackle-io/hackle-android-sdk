@@ -19,33 +19,13 @@ internal class BridgeResponse private constructor(
 
     companion object {
 
+        private val SUCCESS = BridgeResponse(success = true, message = "OK")
+
         fun success(): BridgeResponse {
-            return BridgeResponse(success = true, message = "OK")
+            return SUCCESS
         }
 
-        fun success(data: Boolean? = null): BridgeResponse {
-            if (data == null) {
-                return success()
-            }
-            return BridgeResponse(
-                success = true,
-                message = "OK",
-                data = data
-            )
-        }
-
-        fun success(data: String? = null): BridgeResponse {
-            if (data == null) {
-                return success()
-            }
-            return BridgeResponse(
-                success = true,
-                message = "OK",
-                data = data
-            )
-        }
-
-        fun success(data: Map<String, Any>? = null): BridgeResponse {
+        fun success(data: Any? = null): BridgeResponse {
             if (data == null) {
                 return success()
             }
@@ -61,7 +41,7 @@ internal class BridgeResponse private constructor(
         }
 
         fun error(throwable: Throwable): BridgeResponse {
-            return BridgeResponse(success = false, message = throwable.message ?: "")
+            return BridgeResponse(success = false, message = throwable.message ?: "FAIL")
         }
     }
 }

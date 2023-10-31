@@ -1,6 +1,6 @@
 package io.hackle.android.internal.bridge.model
 
-import io.hackle.android.internal.utils.filterNotNull
+import com.google.gson.annotations.SerializedName
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.PropertyOperation
 import io.hackle.sdk.common.PropertyOperations
@@ -8,60 +8,125 @@ import io.hackle.sdk.common.User
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 
-internal fun User.toMap(): Map<String, Any> {
-    val toReturn: MutableMap<String, Any?> = HashMap()
-    toReturn["id"] = id
-    toReturn["userId"] = userId
-    toReturn["deviceId"] = deviceId
-    toReturn["identifiers"] = identifiers
-    toReturn["properties"] = properties
-    return toReturn.filterNotNull()
+internal data class UserDto(
+    @SerializedName(KEY_ID)
+    val id: String?,
+    @SerializedName(KEY_USER_ID)
+    val userId: String?,
+    @SerializedName(KEY_DEVICE_ID)
+    val deviceId: String?,
+    @SerializedName(KEY_IDENTIFIERS)
+    val identifiers: Map<String, String>,
+    @SerializedName(KEY_PROPERTIES)
+    val properties: Map<String, Any>
+) {
+
+    companion object {
+        private const val KEY_ID = "id"
+        private const val KEY_USER_ID = "userId"
+        private const val KEY_DEVICE_ID = "deviceId"
+        private const val KEY_IDENTIFIERS = "identifiers"
+        private const val KEY_PROPERTIES = "properties"
+
+        @Suppress("UNCHECKED_CAST")
+        fun from(map: Map<String, Any>): UserDto {
+            return UserDto(
+                id = map[KEY_ID] as? String,
+                userId = map[KEY_USER_ID] as? String,
+                deviceId = map[KEY_DEVICE_ID] as? String,
+                identifiers = map[KEY_IDENTIFIERS] as? Map<String, String> ?: HashMap(),
+                properties = map[KEY_PROPERTIES] as? Map<String, Any> ?: HashMap()
+            )
+        }
+    }
 }
 
-internal fun User.Companion.from(map: Map<String, Any>): User {
+internal data class DecisionDto(
+    @SerializedName("variation")
+    val variation: String,
+    @SerializedName("reason")
+    val reason: String,
+    @SerializedName("config")
+    val config: Map<String, Any>
+)
+
+internal data class FeatureFlagDecisionDto(
+    @SerializedName("isOn")
+    val isOn: Boolean,
+    @SerializedName("reason")
+    val reason: String,
+    @SerializedName("config")
+    val config: Map<String, Any>
+)
+
+internal data class EventDto(
+    @SerializedName(KEY_KEY)
+    val key: String,
+    @SerializedName(KEY_VALUE)
+    val value: Double?,
+    @SerializedName(KEY_PROPERTIES)
+    val properties: Map<String, Any>?
+) {
+
+    companion object {
+
+        private const val KEY_KEY = "key"
+        private const val KEY_VALUE = "value"
+        private const val KEY_PROPERTIES = "properties"
+
+        @Suppress("UNCHECKED_CAST")
+        fun from(map: Map<String, Any>): EventDto {
+            return EventDto(
+                key = checkNotNull(map[KEY_KEY] as? String),
+                value = (map[KEY_VALUE] as? Number)?.toDouble(),
+                properties = map[KEY_PROPERTIES] as? Map<String, Any>
+            )
+        }
+    }
+}
+
+typealias PropertyOperationsDto = Map<String, Map<String, Any>>
+
+internal fun User.Companion.from(dto: UserDto): User {
     val builder = builder()
-    builder.id(map["id"] as? String)
-    builder.userId(map["userId"] as? String)
-    builder.deviceId(map["deviceId"] as? String)
-    @Suppress("UNCHECKED_CAST")
-    builder.identifiers(map["identifiers"] as? Map<String, String>)
-    @Suppress("UNCHECKED_CAST")
-    builder.properties(map["properties"] as? Map<String, Any>)
+    builder.id(dto.id)
+    builder.userId(dto.userId)
+    builder.deviceId(dto.deviceId)
+    builder.identifiers(dto.identifiers)
+    builder.properties(dto.properties)
     return builder.build()
 }
 
-internal fun Decision.toMap(): Map<String, Any> {
-    val toReturn: MutableMap<String, Any> = HashMap()
-    toReturn["variation"] = variation
-    toReturn["reason"] = reason
-    toReturn["config"] = mapOf("parameters" to parameters)
-    return toReturn
-}
+internal fun User.toDto() = UserDto(
+    id = id,
+    userId = userId,
+    deviceId = deviceId,
+    identifiers = identifiers,
+    properties = properties
+)
 
-internal fun FeatureFlagDecision.toMap(): Map<String, Any> {
-    val toReturn: MutableMap<String, Any> = HashMap()
-    toReturn["isOn"] = isOn
-    toReturn["reason"] = reason
-    toReturn["config"] = mapOf("parameters" to parameters)
-    return toReturn
-}
+internal fun Decision.toDto() = DecisionDto(
+    variation = variation.toString(),
+    reason = reason.toString(),
+    config = mapOf("parameters" to config.parameters)
+)
 
-internal fun Event.Companion.from(map: Map<String, Any>): Event? {
-    val key = map["key"] as? String ?: return null
-    val builder = builder(key)
-    (map["value"] as? Number)?.apply {
-        builder.value(toDouble())
-    }
-    @Suppress("UNCHECKED_CAST")
-    (map["properties"] as? Map<String, Any>)?.apply {
-        builder.properties(this)
-    }
+internal fun FeatureFlagDecision.toDto() = FeatureFlagDecisionDto(
+    isOn = isOn,
+    reason = reason.toString(),
+    config = mapOf("parameters" to config.parameters)
+)
+
+internal fun Event.Companion.from(dto: EventDto): Event {
+    val builder = builder(dto.key)
+    dto.value?.apply { builder.value(this) }
+    dto.properties?.apply { builder.properties(this) }
     return builder.build()
 }
 
-internal fun PropertyOperations.Companion.from(map: Map<String, Map<String, Any>>): PropertyOperations {
+internal fun PropertyOperations.Companion.from(dto: PropertyOperationsDto): PropertyOperations {
     val builder = builder()
-    for ((operationText, properties) in map) {
+    for ((operationText, properties) in dto) {
         try {
             when (PropertyOperation.from(operationText)) {
                 PropertyOperation.SET -> properties.forEach { (key, value) -> builder.set(key, value) }
