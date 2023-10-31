@@ -1,7 +1,6 @@
 package io.hackle.android.internal.remoteconfig
 
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
-import io.hackle.android.internal.user.HackleUserResolver
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
@@ -16,7 +15,6 @@ internal class HackleRemoteConfigImpl(
     private val user: User?,
     private val core: HackleCore,
     private val userManager: UserManager,
-    private val hackleUserResolver: HackleUserResolver,
 ) : HackleRemoteConfig {
 
     override fun getString(key: String, defaultValue: String): String {
@@ -46,8 +44,7 @@ internal class HackleRemoteConfigImpl(
     ): RemoteConfigDecision<T> {
         val sample = Timer.start()
         return try {
-            val currentUser = userManager.resolve(user)
-            val hackleUser = hackleUserResolver.resolve(currentUser)
+            val hackleUser = userManager.resolve(user)
             core.remoteConfig(key, hackleUser, requiredType, defaultValue)
         } catch (e: Exception) {
             log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }
