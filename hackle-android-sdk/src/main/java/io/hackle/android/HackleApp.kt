@@ -1,9 +1,14 @@
 package io.hackle.android
 
+import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
+import android.os.Build
+import android.webkit.WebView
+import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
@@ -42,6 +47,7 @@ class HackleApp internal constructor(
     private val eventProcessor: DefaultEventProcessor,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
+    internal val sdk: Sdk
 ) : Closeable {
 
     /**
@@ -279,6 +285,22 @@ class HackleApp internal constructor(
      */
     fun remoteConfig(): HackleRemoteConfig {
         return HackleRemoteConfigImpl(null, core, userManager)
+    }
+
+    /**
+     * Injects the supplied Java object into this WebView.
+     *
+     * @param webView  Target WebView. MUST NOT be null.
+     */
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    fun setWebViewBridge(webView: WebView) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            throw IllegalStateException(
+                "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
+                        "JavaScript can use reflection to manipulate application")
+        }
+        val jsInterface = HackleJavascriptInterface(this)
+        webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
     override fun close() {
