@@ -4,9 +4,7 @@ import io.hackle.android.HackleApp
 import io.hackle.android.internal.bridge.model.BridgeInvocation
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
 import io.hackle.android.internal.bridge.model.BridgeResponse
-import io.hackle.android.internal.bridge.model.DecisionDto
 import io.hackle.android.internal.bridge.model.EventDto
-import io.hackle.android.internal.bridge.model.FeatureFlagDecisionDto
 import io.hackle.android.internal.bridge.model.PropertyOperationsDto
 import io.hackle.android.internal.bridge.model.UserDto
 import io.hackle.android.internal.bridge.model.from
@@ -29,292 +27,257 @@ internal class HackleBridge(
     fun invoke(string: String): String {
         val response: BridgeResponse = try {
             val invocation = BridgeInvocation(string)
-            invoke(invocation.command, invocation.parameters)
+            invoke(invocation)
         } catch (throwable: Throwable) {
             BridgeResponse.error(throwable)
         }
         return response.toJsonString()
     }
 
-    private fun invoke(command: BridgeInvocation.Command, parameters: Map<String, Any>): BridgeResponse {
-        return when (command) {
-            GET_SESSION_ID -> {
-                BridgeResponse.success(app.sessionId)
-            }
-            GET_USER -> {
-                val data = app.user.toDto()
-                BridgeResponse.success(data)
-            }
-            SET_USER -> {
-                setUser(parameters)
-                BridgeResponse.success()
-            }
-            SET_USER_ID -> {
-                setUserId(parameters)
-                BridgeResponse.success()
-            }
-            SET_DEVICE_ID -> {
-                setDeviceId(parameters)
-                BridgeResponse.success()
-            }
-            SET_USER_PROPERTY -> {
-                setUserProperty(parameters)
-                BridgeResponse.success()
-            }
-            UPDATE_USER_PROPERTY -> {
-                updateUserProperties(parameters)
-                BridgeResponse.success()
-            }
-            RESET_USER -> {
-                app.resetUser()
-                BridgeResponse.success()
-            }
-            VARIATION -> {
-                val data = variation(parameters)
-                BridgeResponse.success(data)
-            }
-            VARIATION_DETAIL -> {
-                val data = variationDetail(parameters)
-                BridgeResponse.success(data)
-            }
-            IS_FEATURE_ON -> {
-                val data = isFeatureOn(parameters)
-                BridgeResponse.success(data)
-            }
-            FEATURE_FLAG_DETAIL -> {
-                val data = featureFlagDetail(parameters)
-                BridgeResponse.success(data)
-            }
-            TRACK -> {
-                track(parameters)
-                BridgeResponse.success()
-            }
-            REMOTE_CONFIG -> {
-                val data = remoteConfig(parameters)
-                BridgeResponse.success(data)
-            }
-            SHOW_USER_EXPLORER -> {
-                app.showUserExplorer()
-                BridgeResponse.success()
-            }
+    private fun invoke(invocation: BridgeInvocation): BridgeResponse {
+        return when (invocation.command) {
+            GET_SESSION_ID -> BridgeResponse.success(app.sessionId)
+            GET_USER -> BridgeResponse.success(app.user.toDto())
+            SET_USER -> setUser(invocation)
+            SET_USER_ID -> setUserId(invocation)
+            SET_DEVICE_ID -> setDeviceId(invocation)
+            SET_USER_PROPERTY -> setUserProperty(invocation)
+            UPDATE_USER_PROPERTY -> updateUserProperties(invocation)
+            RESET_USER -> resetUser()
+            VARIATION -> variation(invocation)
+            VARIATION_DETAIL -> variationDetail(invocation)
+            IS_FEATURE_ON -> isFeatureOn(invocation)
+            FEATURE_FLAG_DETAIL -> featureFlagDetail(invocation)
+            TRACK -> track(invocation)
+            REMOTE_CONFIG -> remoteConfig(invocation)
+            SHOW_USER_EXPLORER -> showUserExplorer()
         }
     }
 
-    private fun setUser(parameters: Map<String, Any>) {
-        @Suppress("UNCHECKED_CAST")
-        val data = checkNotNull(parameters["user"] as? Map<String, Any>)
-        val dto = UserDto.from(data)
+    private fun setUser(invocation: BridgeInvocation): BridgeResponse {
+        val dto = invocation.getParameterNotNull<UserDto>("user")
         val user = User.from(dto)
         app.setUser(user)
+        return BridgeResponse.success()
     }
 
-    private fun setUserId(parameters: Map<String, Any>) {
-        val userId = checkNotNull(parameters["userId"] as? String)
+    private fun setUserId(invocation: BridgeInvocation): BridgeResponse {
+        val userId = invocation.getParameterNotNull<String>("userId")
         app.setUserId(userId)
+        return BridgeResponse.success()
     }
 
-    private fun setDeviceId(parameters: Map<String, Any>) {
-        val deviceId = checkNotNull(parameters["deviceId"] as? String)
+    private fun setDeviceId(invocation: BridgeInvocation): BridgeResponse {
+        val deviceId = invocation.getParameterNotNull<String>("deviceId")
         app.setDeviceId(deviceId)
+        return BridgeResponse.success()
     }
 
-    private fun setUserProperty(parameters: Map<String, Any>) {
-        val key = checkNotNull(parameters["key"] as? String)
-        val value = parameters["value"]
+    private fun setUserProperty(invocation: BridgeInvocation): BridgeResponse {
+        val key = invocation.getParameterNotNull<String>("key")
+        val value = invocation.getParameter<String>("value")
         app.setUserProperty(key, value)
+        return BridgeResponse.success()
     }
 
-    private fun updateUserProperties(parameters: Map<String, Any>) {
-        @Suppress("UNCHECKED_CAST")
-        val dto = checkNotNull(parameters["operations"] as? PropertyOperationsDto)
+    private fun updateUserProperties(invocation: BridgeInvocation): BridgeResponse {
+        val dto = invocation.getParameterNotNull<PropertyOperationsDto>("operations")
         val operations = PropertyOperations.from(dto)
         app.updateUserProperties(operations)
+        return BridgeResponse.success()
     }
 
-    private fun variation(parameters: Map<String, Any>): String {
-        val experimentKey = checkNotNull(parameters["experimentKey"] as? Number)
-        val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
-        val defaultVariation = Variation.fromOrControl(defaultVariationKey)
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as String
-            return app.variation(
-                experimentKey = experimentKey.toLong(),
-                userId = userId,
-                defaultVariation = defaultVariation
-            ).name
-        }
+    private fun resetUser(): BridgeResponse {
+        app.resetUser()
+        return BridgeResponse.success()
+    }
 
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as? Map<String, Any>
-            if (data != null) {
-                val dto = UserDto.from(data)
+    private fun variation(invocation: BridgeInvocation): BridgeResponse {
+        val experimentKey = invocation.getParameterNotNull<Number>("experimentKey")
+        val defaultVariationKey = invocation.getParameter<String>("defaultVariation") ?: ""
+        val defaultVariation = Variation.fromOrControl(defaultVariationKey)
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
+                val result = app.variation(
+                    experimentKey = experimentKey.toLong(),
+                    userId = userId,
+                    defaultVariation = defaultVariation
+                )
+                return BridgeResponse.success(result.name)
+            }
+
+            val dto = invocation.getParameter<UserDto>("user")
+            if (dto != null) {
                 val user = User.from(dto)
-                return app.variation(
+                val result = app.variation(
                     experimentKey = experimentKey.toLong(),
                     user = user,
                     defaultVariation = defaultVariation
-                ).name
+                )
+                return BridgeResponse.success(result.name)
             }
         }
-        return app.variation(
+        val result = app.variation(
             experimentKey = experimentKey.toLong(),
             defaultVariation = defaultVariation
-        ).name
+        )
+        return BridgeResponse.success(result.name)
     }
 
-    private fun variationDetail(parameters: Map<String, Any>): DecisionDto {
-        val experimentKey = parameters["experimentKey"] as? Number
-            ?: throw IllegalArgumentException("Valid 'experimentKey' parameter must be provided.")
-        val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
+    private fun variationDetail(invocation: BridgeInvocation): BridgeResponse {
+        val experimentKey = invocation.getParameterNotNull<Number>("experimentKey")
+        val defaultVariationKey = invocation.getParameter<String>("defaultVariation") ?: ""
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as? String
-            if (userId != null) {
-                return app.variationDetail(
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
+                val result = app.variationDetail(
                     experimentKey = experimentKey.toLong(),
                     userId = userId,
                     defaultVariation = defaultVariation
                 ).toDto()
+                return BridgeResponse.success(result)
             }
-        }
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as? Map<String, Any>
-            if (data != null) {
-                val dto = UserDto.from(data)
+
+            val dto = invocation.getParameter<UserDto>("user")
+            if (dto != null) {
                 val user = User.from(dto)
-                return app.variationDetail(
+                val result = app.variationDetail(
                     experimentKey = experimentKey.toLong(),
                     user = user,
                     defaultVariation = defaultVariation
                 ).toDto()
+                return BridgeResponse.success(result)
             }
         }
-        return app.variationDetail(
+        val result = app.variationDetail(
             experimentKey = experimentKey.toLong(),
             defaultVariation = defaultVariation
         ).toDto()
+        return BridgeResponse.success(result)
     }
 
-    private fun isFeatureOn(parameters: Map<String, Any>): Boolean {
-        val featureKey = checkNotNull(parameters["featureKey"] as? Number)
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as? String
-            if (userId != null) {
-                return app.isFeatureOn(
+    private fun isFeatureOn(invocation: BridgeInvocation): BridgeResponse {
+        val featureKey = invocation.getParameterNotNull<Number>("featureKey")
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
+                val result = app.isFeatureOn(
                     featureKey = featureKey.toLong(),
                     userId = userId
                 )
+                return BridgeResponse.success(result)
             }
-        }
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as? Map<String, Any>
-            if (data != null) {
-                val dto = UserDto.from(data)
+
+            val dto = invocation.getParameter<UserDto>("user")
+            if (dto != null) {
                 val user = User.from(dto)
-                return app.isFeatureOn(
+                val result = app.isFeatureOn(
                     featureKey = featureKey.toLong(),
                     user = user
                 )
+                return BridgeResponse.success(result)
             }
         }
-        return app.isFeatureOn(featureKey = featureKey.toLong())
+        val result = app.isFeatureOn(featureKey.toLong())
+        return BridgeResponse.success(result)
     }
 
-    private fun featureFlagDetail(parameters: Map<String, Any>): FeatureFlagDecisionDto {
-        val featureKey = checkNotNull(parameters["featureKey"] as? Number)
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as? String
-            if (userId != null) {
-                return app.featureFlagDetail(
+    private fun featureFlagDetail(invocation: BridgeInvocation): BridgeResponse {
+        val featureKey = invocation.getParameterNotNull<Number>("featureKey")
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
+                val result = app.featureFlagDetail(
                     featureKey = featureKey.toLong(),
                     userId = userId
                 ).toDto()
+                return BridgeResponse.success(result)
             }
-        }
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as? Map<String, Any>
-            if (data != null) {
-                val dto = UserDto.from(data)
+
+            val dto = invocation.getParameter<UserDto>("user")
+            if (dto != null) {
                 val user = User.from(dto)
-                return app.featureFlagDetail(
+                val result = app.featureFlagDetail(
                     featureKey = featureKey.toLong(),
                     user = user
                 ).toDto()
+                return BridgeResponse.success(result)
             }
         }
-        return app.featureFlagDetail(featureKey = featureKey.toLong()).toDto()
+        val result = app.featureFlagDetail(featureKey.toLong()).toDto()
+        return BridgeResponse.success(result)
     }
 
-    private fun track(parameters: Map<String, Any>) {
-        if (parameters["event"] is String) {
-            val eventKey = parameters["event"] as String
-            track(eventKey = eventKey, parameters = parameters)
-        } else if (parameters["event"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["event"] as Map<String, Any>
-            val dto = EventDto.from(data)
-            val event = Event.from(dto)
-            track(event = event, parameters = parameters)
-        } else {
-            throw IllegalArgumentException("Valid parameter must be provided.")
+    private fun track(invocation: BridgeInvocation): BridgeResponse {
+        val eventKey = invocation.getParameter<String>("event")
+        if (!eventKey.isNullOrEmpty()) {
+            return track(eventKey = eventKey, invocation = invocation)
         }
+
+        val dto = invocation.getParameterNotNull<EventDto>("event")
+        val event = Event.from(dto)
+        return track(event = event, invocation = invocation)
     }
 
-    private fun track(eventKey: String, parameters: Map<String, Any>) {
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as? String
-            if (userId != null) {
+    private fun track(eventKey: String, invocation: BridgeInvocation): BridgeResponse {
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
                 app.track(eventKey = eventKey, userId = userId)
-                return
+                return BridgeResponse.success()
+            }
+
+            val dto = invocation.getParameter<UserDto>("user")
+            if (dto != null) {
+                val user = User.from(dto)
+                app.track(eventKey = eventKey, user = user)
+                return BridgeResponse.success()
             }
         }
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as Map<String, Any>
-            val dto = UserDto.from(data)
-            val user = User.from(dto)
-            app.track(eventKey = eventKey, user = user)
-            return
-        }
-        app.track(eventKey = eventKey)
+
+        app.track(eventKey)
+        return BridgeResponse.success()
     }
 
-    private fun track(event: Event, parameters: Map<String, Any>) {
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as? String
-            if (userId != null) {
+    private fun track(event: Event, invocation: BridgeInvocation): BridgeResponse {
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
                 app.track(event = event, userId = userId)
-                return
+                return BridgeResponse.success()
+            }
+
+            val dto = invocation.getParameter<UserDto>("user")
+            if (dto != null) {
+                val user = User.from(dto)
+                app.track(event = event, user = user)
+                return BridgeResponse.success()
             }
         }
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as Map<String, Any>
-            val dto = UserDto.from(data)
-            val user = User.from(dto)
-            app.track(event = event, user = user)
-            return
-        }
+
         app.track(event)
+        return BridgeResponse.success()
     }
 
-    private fun remoteConfig(parameters: Map<String, Any>): String {
+    private fun remoteConfig(invocation: BridgeInvocation): BridgeResponse {
+        val key = invocation.getParameterNotNull<String>("key")
+        val valueType = invocation.getParameterNotNull<String>("valueType")
+
         var user: User? = null
-        if (parameters["user"] is String) {
-            val userId = parameters["user"] as String
-            user = User.builder()
-                .userId(userId)
-                .build()
-        }
-        if (parameters["user"] is Map<*, *>) {
-            @Suppress("UNCHECKED_CAST")
-            val data = parameters["user"] as Map<String, Any>
-            val dto = UserDto.from(data)
-            user = User.from(dto)
+        if (invocation.hasParameter("user")) {
+            val userId = invocation.getParameter<String>("user")
+            if (!userId.isNullOrEmpty()) {
+                user = User.builder()
+                    .userId(userId)
+                    .build()
+            } else {
+                val dto = invocation.getParameter<UserDto>("user")
+                if (dto != null) {
+                    user = User.from(dto)
+                }
+            }
         }
 
         val config: HackleRemoteConfig =
@@ -323,24 +286,28 @@ internal class HackleBridge(
             } else {
                 app.remoteConfig()
             }
-
-        val key = checkNotNull(parameters["key"] as? String)
-        when (checkNotNull(parameters["valueType"] as? String)) {
+        val result = when (valueType) {
             "string" -> {
-                val defaultValue = checkNotNull(parameters["defaultValue"] as? String)
-                return config.getString(key, defaultValue)
+                val defaultValue = invocation.getParameterNotNull<String>("defaultValue")
+                config.getString(key, defaultValue)
             }
             "number" -> {
-                val defaultValue = checkNotNull(parameters["defaultValue"] as? Number)
-                return config.getDouble(key, defaultValue.toDouble()).toString()
+                val defaultValue = invocation.getParameterNotNull<Number>("defaultValue")
+                config.getDouble(key, defaultValue.toDouble()).toString()
             }
             "boolean" -> {
-                val defaultValue = checkNotNull(parameters["defaultValue"] as? Boolean)
-                return config.getBoolean(key, defaultValue).toString()
+                val defaultValue = invocation.getParameterNotNull<Boolean>("defaultValue")
+                config.getBoolean(key, defaultValue).toString()
             }
             else -> {
                 throw IllegalArgumentException("Valid parameter must be provided.")
             }
         }
+        return BridgeResponse.success(result)
+    }
+
+    fun showUserExplorer(): BridgeResponse {
+        app.showUserExplorer()
+        return BridgeResponse.success()
     }
 }
