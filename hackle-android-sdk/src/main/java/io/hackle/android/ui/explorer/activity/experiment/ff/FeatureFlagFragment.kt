@@ -13,7 +13,6 @@ import io.hackle.android.Hackle
 import io.hackle.android.R
 import io.hackle.android.app
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
-import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 
 internal class FeatureFlagFragment : Fragment() {
 

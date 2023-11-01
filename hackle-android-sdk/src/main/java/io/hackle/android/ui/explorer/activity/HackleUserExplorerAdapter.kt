@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import io.hackle.android.ui.explorer.activity.experiment.ab.AbTestFragment
 import io.hackle.android.ui.explorer.activity.experiment.ff.FeatureFlagFragment
 import io.hackle.android.ui.explorer.activity.experiment.model.experimentType
-import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
 import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
