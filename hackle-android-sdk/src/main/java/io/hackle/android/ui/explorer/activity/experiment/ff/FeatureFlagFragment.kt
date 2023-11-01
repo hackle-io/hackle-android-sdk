@@ -9,13 +9,13 @@ import android.widget.ListView
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.fragment.app.Fragment
+import io.hackle.android.Hackle
 import io.hackle.android.R
+import io.hackle.android.app
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 
-internal class FeatureFlagFragment(
-    private val explorerService: HackleUserExplorerService,
-) : Fragment() {
+internal class FeatureFlagFragment : Fragment() {
 
     private lateinit var root: View
     private lateinit var itemView: ListView
@@ -27,6 +27,7 @@ internal class FeatureFlagFragment(
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
+        val explorerService = Hackle.app.userExplorer.explorerService
         root = inflater.inflate(R.layout.hackle_fragment_feature_flag, container, false)
         itemView = root.findViewById(R.id.hackle_view_feature_flag_items)
         adapter = FeatureFlagAdapter(root.context, explorerService)

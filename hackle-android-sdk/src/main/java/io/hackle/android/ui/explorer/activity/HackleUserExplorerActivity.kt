@@ -42,7 +42,7 @@ internal class HackleUserExplorerActivity : FragmentActivity(), HackleActivity {
         userId.bind(IdentifierItem(getString(R.string.hackle_label_user_id), user.userId))
 
         viewPager = findViewById(R.id.hackle_user_explorer_view_pager)
-        adapter = HackleUserExplorerAdapter(explorerService, supportFragmentManager)
+        adapter = HackleUserExplorerAdapter(supportFragmentManager)
         viewPager.adapter = adapter
         tab = findViewById(R.id.hackle_user_explorer_tab)
         viewPager.addOnPageChangeListener(ExperimentTabLayout.ExperimentOnPageChangeListener(tab))

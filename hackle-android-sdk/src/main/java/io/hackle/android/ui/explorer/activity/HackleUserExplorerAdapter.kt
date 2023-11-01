@@ -12,7 +12,6 @@ import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
 import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
 
 internal class HackleUserExplorerAdapter(
-    private val explorerService: HackleUserExplorerService,
     fm: FragmentManager,
 ) : FragmentStatePagerAdapter(fm) {
 
@@ -22,8 +21,8 @@ internal class HackleUserExplorerAdapter(
 
     override fun getItem(position: Int): Fragment {
         return when (experimentType(position)) {
-            AB_TEST -> AbTestFragment(explorerService)
-            FEATURE_FLAG -> FeatureFlagFragment(explorerService)
+            AB_TEST -> AbTestFragment()
+            FEATURE_FLAG -> FeatureFlagFragment()
         }
     }
 }

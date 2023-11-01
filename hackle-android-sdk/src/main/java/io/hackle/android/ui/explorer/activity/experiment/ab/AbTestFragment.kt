@@ -9,13 +9,13 @@ import android.widget.ListView
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.fragment.app.Fragment
+import io.hackle.android.Hackle
 import io.hackle.android.R
+import io.hackle.android.app
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 
-internal class AbTestFragment(
-    private val explorerService: HackleUserExplorerService,
-) : Fragment() {
+internal class AbTestFragment : Fragment() {
 
     private lateinit var root: View
     private lateinit var itemView: ListView
@@ -28,6 +28,7 @@ internal class AbTestFragment(
         savedInstanceState: Bundle?,
     ): View {
 
+        val explorerService = Hackle.app.userExplorer.explorerService
         root = inflater.inflate(R.layout.hackle_fragment_ab_test, container, false)
         itemView = root.findViewById(R.id.hackle_view_ab_test_items)
         adapter = AbTestAdapter(root.context, explorerService)
