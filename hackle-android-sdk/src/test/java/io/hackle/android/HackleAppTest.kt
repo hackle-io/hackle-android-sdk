@@ -1,6 +1,7 @@
 package io.hackle.android
 
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
@@ -85,7 +86,8 @@ class HackleAppTest {
             sessionManager,
             eventProcessor,
             MockDevice("hackle_device_id", emptyMap()),
-            userExplorer
+            userExplorer,
+            Sdk.of("", HackleConfig.DEFAULT)
         )
     }
 
