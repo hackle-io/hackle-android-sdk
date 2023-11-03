@@ -7,6 +7,7 @@ import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -314,6 +315,8 @@ class HackleApp internal constructor(
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 synchronizer.sync()
+
+                LifecycleManager.dispatchStart()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }
@@ -426,6 +429,11 @@ class HackleApp internal constructor(
 
         private val LOCK = Any()
         private var INSTANCE: HackleApp? = null
+
+        @JvmStatic
+        fun registerActivityLifecycleCallbacks(context: Context) {
+            LifecycleManager.registerActivityLifecycleCallbacks(context)
+        }
 
         /**
          * Returns a singleton instance of [HackleApp]

@@ -7,7 +7,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import io.hackle.android.R
-import io.hackle.android.internal.HackleActivityManager
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
@@ -15,7 +15,7 @@ import io.hackle.sdk.core.internal.log.Logger
 
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
-    private val hackleActivityManager: HackleActivityManager,
+    private val activityProvider: ActivityProvider,
 ) : Application.ActivityLifecycleCallbacks {
 
     private var isShow: Boolean = false
@@ -29,7 +29,7 @@ internal class HackleUserExplorer(
 
     private fun attach() {
         try {
-            val activity = hackleActivityManager.currentActivity ?: return
+            val activity = activityProvider.currentActivity ?: return
 
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
                 return
@@ -51,7 +51,7 @@ internal class HackleUserExplorer(
     }
 
     override fun onActivityStarted(activity: Activity) {
-        hackleActivityManager.currentActivity ?: return
+        activityProvider.currentActivity ?: return
         if (isShow) {
             attach()
         }
