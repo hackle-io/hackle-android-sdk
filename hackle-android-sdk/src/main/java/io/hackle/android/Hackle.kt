@@ -1,7 +1,6 @@
 package io.hackle.android
 
 import android.content.Context
-import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 
