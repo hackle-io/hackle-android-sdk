@@ -27,6 +27,8 @@ internal object LifecycleManager
     override val currentState: AppState
         get() = _currentState ?: AppState.BACKGROUND
 
+    private val dispatchStarted = AtomicBoolean(false)
+
     private val appInLaunched = AtomicBoolean(false)
     private val appInForegrounded = AtomicBoolean(false)
 
@@ -35,10 +37,8 @@ internal object LifecycleManager
 
     private val listeners: MutableList<AppStateChangeListener> = CopyOnWriteArrayList()
 
-    private val started = AtomicBoolean(false)
-
     fun dispatchStart() {
-        if (!started.getAndSet(true)) {
+        if (!dispatchStarted.getAndSet(true)) {
             _currentState?.let {
                 dispatch(it, System.currentTimeMillis())
             }
@@ -98,7 +98,7 @@ internal object LifecycleManager
 
         logger.debug { "Changed app state [$state:$timeInMillis]" }
 
-        if (started.get()) {
+        if (dispatchStarted.get()) {
             dispatch(state, timeInMillis)
         }
     }
