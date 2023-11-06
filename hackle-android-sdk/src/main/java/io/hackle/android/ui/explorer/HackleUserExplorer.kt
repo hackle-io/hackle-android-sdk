@@ -1,13 +1,12 @@
 package io.hackle.android.ui.explorer
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import io.hackle.android.R
-import io.hackle.android.internal.HackleActivityManager
+import io.hackle.android.internal.lifecycle.ActivityProvider
+import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppStateChangeListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
@@ -15,8 +14,8 @@ import io.hackle.sdk.core.internal.log.Logger
 
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
-    private val hackleActivityManager: HackleActivityManager,
-) : Application.ActivityLifecycleCallbacks {
+    private val activityProvider: ActivityProvider,
+) : AppStateChangeListener {
 
     private var isShow: Boolean = false
 
@@ -29,7 +28,7 @@ internal class HackleUserExplorer(
 
     private fun attach() {
         try {
-            val activity = hackleActivityManager.currentActivity ?: return
+            val activity = activityProvider.currentActivity ?: return
 
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
                 return
@@ -47,28 +46,15 @@ internal class HackleUserExplorer(
         }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-    }
-
-    override fun onActivityStarted(activity: Activity) {
-        hackleActivityManager.currentActivity ?: return
-        if (isShow) {
-            attach()
+    override fun onChanged(state: AppState, timestamp: Long) {
+        when(state) {
+            AppState.FOREGROUND -> {
+                if (activityProvider.currentActivity != null && isShow) {
+                    attach()
+                }
+            }
+            AppState.BACKGROUND -> {}
         }
-    }
-
-    override fun onActivityResumed(activity: Activity) {}
-
-    override fun onActivityPaused(activity: Activity) {
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-    }
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-    }
-
-    override fun onActivityDestroyed(activity: Activity) {
     }
 
     companion object {

@@ -1,12 +1,12 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.lifecycle.AppStateProvider
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -63,10 +63,10 @@ class DefaultEventProcessorTest {
     private lateinit var userManager: UserManager
 
     @RelaxedMockK
-    private lateinit var appStateManager: AppStateManager
+    private lateinit var appStateProvider: AppStateProvider
 
     @RelaxedMockK
-    private lateinit var hackleActivityManager: HackleActivityManager
+    private lateinit var activityProvider: ActivityProvider
 
     @Before
     fun before() {
@@ -74,9 +74,9 @@ class DefaultEventProcessorTest {
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
         every { deduplicationDeterminer.isDeduplicationTarget(any()) } returns false
         every { sessionManager.currentSession } returns null
-        every { appStateManager.currentState } returns AppState.FOREGROUND
+        every { appStateProvider.currentState } returns AppState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
-        every { hackleActivityManager.currentActivity } returns null
+        every { activityProvider.currentActivity } returns null
     }
 
 
@@ -93,8 +93,8 @@ class DefaultEventProcessorTest {
         eventDispatcher: EventDispatcher = this.eventDispatcher,
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
-        appStateManager: AppStateManager = this.appStateManager,
-        hackleActivityManager: HackleActivityManager = this.hackleActivityManager
+        appStateProvider: AppStateProvider = this.appStateProvider,
+        activityProvider: ActivityProvider = this.activityProvider
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             deduplicationDeterminer = deduplicationDeterminer,
@@ -109,8 +109,8 @@ class DefaultEventProcessorTest {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager,
-            hackleActivityManager = hackleActivityManager
+            appStateProvider = appStateProvider,
+            activityProvider = activityProvider
         )
     }
 
@@ -168,7 +168,7 @@ class DefaultEventProcessorTest {
         val sut = processor()
         val user = HackleUser.of("id")
         val event = event(user = user, timestamp = 42)
-        every { appStateManager.currentState } returns AppState.BACKGROUND
+        every { appStateProvider.currentState } returns AppState.BACKGROUND
 
         // when
         sut.process(event)

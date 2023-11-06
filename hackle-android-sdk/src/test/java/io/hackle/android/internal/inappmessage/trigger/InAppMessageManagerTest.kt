@@ -3,7 +3,7 @@ package io.hackle.android.internal.inappmessage.trigger
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenter
 import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.lifecycle.AppStateProvider
 import io.hackle.android.support.InAppMessages
 import io.mockk.Called
 import io.mockk.MockKAnnotations
@@ -28,7 +28,7 @@ class InAppMessageManagerTest {
     private lateinit var presenter: InAppMessagePresenter
 
     @RelaxedMockK
-    private lateinit var appStateManager: AppStateManager
+    private lateinit var appStateProvider: AppStateProvider
 
     @InjectMockKs
     private lateinit var sut: InAppMessageManager
@@ -36,7 +36,7 @@ class InAppMessageManagerTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        every { appStateManager.currentState } returns AppState.FOREGROUND
+        every { appStateProvider.currentState } returns AppState.FOREGROUND
     }
 
     @Test
@@ -72,7 +72,7 @@ class InAppMessageManagerTest {
         // given
         val context = InAppMessages.context()
         every { determiner.determineOrNull(any()) } returns context
-        every { appStateManager.currentState } returns AppState.BACKGROUND
+        every { appStateProvider.currentState } returns AppState.BACKGROUND
 
         // when
         sut.onEvent(mockk())

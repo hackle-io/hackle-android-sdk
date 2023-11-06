@@ -1,14 +1,14 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.lifecycle.AppStateProvider
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -37,8 +37,8 @@ internal class DefaultEventProcessor(
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
-    private val appStateManager: AppStateManager,
-    private val hackleActivityManager: HackleActivityManager,
+    private val appStateProvider: AppStateProvider,
+    private val activityProvider: ActivityProvider,
 ) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
@@ -143,7 +143,7 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            if (appStateManager.currentState == FOREGROUND) {
+            if (appStateProvider.currentState == FOREGROUND) {
                 sessionManager.updateLastEventTime(event.timestamp)
             } else {
                 // Corner case when an event is processed between onPause and onResume
@@ -192,7 +192,7 @@ internal class DefaultEventProcessor(
     }
 
     private fun decorateScreenName(event: UserEvent): UserEvent {
-        val currentActivity = hackleActivityManager.currentActivity ?: return event
+        val currentActivity = activityProvider.currentActivity ?: return event
 
         val newUser = event.user.toBuilder()
             .hackleProperty("screenClass", currentActivity.javaClass.simpleName)
