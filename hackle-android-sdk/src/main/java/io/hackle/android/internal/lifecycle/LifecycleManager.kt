@@ -69,11 +69,11 @@ internal object LifecycleManager
             _currentActivity = WeakReference(activity)
         }
 
-        dispatch(AppState.FOREGROUND)
+        dispatchIfNeeded(AppState.FOREGROUND)
     }
 
     override fun onActivityPaused(activity: Activity) {
-        dispatch(AppState.BACKGROUND)
+        dispatchIfNeeded(AppState.BACKGROUND)
     }
 
     private fun dispatchIfNeeded(state: AppState, timeInMillis: Long = System.currentTimeMillis()) {
