@@ -22,7 +22,6 @@ internal object LifecycleManager
     override val currentActivity: Activity?
         get() = _currentActivity?.get()
 
-    private var _lastStateChangeTimeInMillis: Long = 0L
     private var _currentState: AppState? = null
     override val currentState: AppState
         get() = _currentState ?: AppState.BACKGROUND
@@ -94,7 +93,6 @@ internal object LifecycleManager
         }
 
         _currentState = state
-        _lastStateChangeTimeInMillis = timeInMillis
 
         logger.debug { "Changed app state [$state:$timeInMillis]" }
 
