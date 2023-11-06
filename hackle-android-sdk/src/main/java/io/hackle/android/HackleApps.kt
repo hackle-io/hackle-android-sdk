@@ -157,8 +157,8 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateProvider = LifecycleManager,
-            activityProvider = LifecycleManager
+            appStateProvider = LifecycleManager.getInstance(),
+            activityProvider = LifecycleManager.getInstance()
         )
 
         // Core
@@ -217,7 +217,7 @@ internal object HackleApps {
             processorFactory = inAppMessageEventProcessorFactory
         )
         val inAppMessageUi = InAppMessageUi.create(
-            activityProvider = LifecycleManager,
+            activityProvider = LifecycleManager.getInstance(),
             messageViewFactory = InAppMessageViewFactory(),
             eventHandler = inAppMessageEventHandler,
         )
@@ -235,7 +235,7 @@ internal object HackleApps {
         val inAppMessageManager = InAppMessageManager(
             determiner = inAppMessageDeterminer,
             presenter = inAppMessageUi,
-            appStateProvider = LifecycleManager
+            appStateProvider = LifecycleManager.getInstance()
         )
         eventPublisher.add(inAppMessageManager)
 
@@ -248,7 +248,7 @@ internal object HackleApps {
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage
             ),
-            activityProvider = LifecycleManager
+            activityProvider = LifecycleManager.getInstance()
         )
 
         // Metrics
@@ -256,13 +256,13 @@ internal object HackleApps {
         metricConfiguration(config, eventExecutor, httpExecutor, httpClient)
 
         // Lifecycle
-        LifecycleManager.addListener(pollingSynchronizer)
-        LifecycleManager.addListener(sessionManager)
-        LifecycleManager.addListener(userManager)
-        LifecycleManager.addListener(eventProcessor)
-        LifecycleManager.addListener(userExplorer)
+        LifecycleManager.getInstance().addListener(pollingSynchronizer)
+        LifecycleManager.getInstance().addListener(sessionManager)
+        LifecycleManager.getInstance().addListener(userManager)
+        LifecycleManager.getInstance().addListener(eventProcessor)
+        LifecycleManager.getInstance().addListener(userExplorer)
 
-        LifecycleManager.registerActivityLifecycleCallbacks(context)
+        LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
 
         // Instantiate
 
@@ -299,7 +299,7 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        LifecycleManager.addListener(monitoringMetricRegistry)
+        LifecycleManager.getInstance().addListener(monitoringMetricRegistry)
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 

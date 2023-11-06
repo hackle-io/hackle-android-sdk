@@ -9,13 +9,11 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
-internal object LifecycleManager
+internal class LifecycleManager
     : Application.ActivityLifecycleCallbacks,
     ActivityProvider,
     AppStateProvider
 {
-
-    private val logger = Logger<LifecycleManager>()
 
     private var _currentActivity: WeakReference<Activity>? = null
     override val currentActivity: Activity?
@@ -29,10 +27,10 @@ internal object LifecycleManager
 
     private val dispatchStarted = AtomicBoolean(false)
 
-    fun dispatchStart() {
+    fun dispatchStart(timeInMillis: Long = System.currentTimeMillis()) {
         if (!dispatchStarted.getAndSet(true)) {
             logger.debug { "Dispatch Start" }
-            _currentState?.let { dispatch(it) }
+            _currentState?.let { dispatch(it, timeInMillis) }
         }
     }
 
@@ -83,7 +81,7 @@ internal object LifecycleManager
         }
     }
 
-    private fun dispatch(state: AppState, timeInMillis: Long = System.currentTimeMillis()) {
+    private fun dispatch(state: AppState, timeInMillis: Long) {
         _currentState = state
 
         for (listener in listeners) {
@@ -98,4 +96,18 @@ internal object LifecycleManager
 
     override fun onActivityDestroyed(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+
+    companion object {
+
+        private val logger = Logger<LifecycleManager>()
+        private var _instance: LifecycleManager? = null
+
+        fun getInstance(): LifecycleManager {
+            return _instance ?: synchronized(this) {
+                _instance ?: LifecycleManager().also {
+                    _instance = it
+                }
+            }
+        }
+    }
 }

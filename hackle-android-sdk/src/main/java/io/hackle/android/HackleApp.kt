@@ -319,7 +319,7 @@ class HackleApp internal constructor(
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }
             } finally {
-                LifecycleManager.dispatchStart()
+                LifecycleManager.getInstance().dispatchStart()
                 onReady.run()
             }
         }
@@ -431,7 +431,8 @@ class HackleApp internal constructor(
 
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
-            LifecycleManager.registerActivityLifecycleCallbacks(context)
+            LifecycleManager.getInstance()
+                .registerActivityLifecycleCallbacks(context)
         }
 
         /**
