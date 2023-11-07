@@ -8,7 +8,6 @@ import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleState
 import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleStateListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
-import io.hackle.android.ui.HackleActivity
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
 import io.hackle.sdk.core.internal.log.Logger
@@ -32,10 +31,6 @@ internal class HackleUserExplorer(
             val activity = activityProvider.currentActivity ?: return
 
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
-                return
-            }
-
-            if (activity is HackleActivity) {
                 return
             }
 

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.log.Logger
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
@@ -49,14 +50,14 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        if (currentActivity != activity) {
+        if (currentActivity != activity && activity !is HackleActivity) {
             currentActivity = activity
         }
     }
 
 
     override fun onActivityStarted(activity: Activity) {
-        if (currentActivity != activity) {
+        if (currentActivity != activity && activity !is HackleActivity) {
             currentActivity = activity
         }
     }
@@ -68,7 +69,7 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
     }
 
     override fun onActivityResumed(activity: Activity) {
-        if (currentActivity != activity) {
+        if (currentActivity != activity && activity !is HackleActivity) {
             currentActivity = activity
         }
         dispatch(LifecycleState.FOREGROUND)
