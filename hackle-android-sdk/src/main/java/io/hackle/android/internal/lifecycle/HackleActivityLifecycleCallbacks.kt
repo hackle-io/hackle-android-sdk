@@ -12,7 +12,7 @@ import java.util.concurrent.Executor
 internal class HackleActivityLifecycleCallbacks(
     private val eventExecutor: Executor,
     private val appStateManager: AppStateManager,
-) : Application.ActivityLifecycleCallbacks {
+) : LifecycleManager.LifecycleEventListener {
 
     private val listeners = CopyOnWriteArrayList<AppStateChangeListener>()
 
@@ -21,23 +21,13 @@ internal class HackleActivityLifecycleCallbacks(
         log.info { "AppStateChangeListener added [$listener]" }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
-
-    override fun onActivityStarted(activity: Activity) {}
-
-    override fun onActivityResumed(activity: Activity) {
-        dispatch(FOREGROUND, System.currentTimeMillis())
+    override fun onEvent(event: LifecycleManager.Event, timeInMillis: Long) {
+        when (event) {
+            LifecycleManager.Event.ON_RESUME -> dispatch(FOREGROUND, timeInMillis)
+            LifecycleManager.Event.ON_PAUSE -> dispatch(BACKGROUND, timeInMillis)
+            else -> Unit
+        }
     }
-
-    override fun onActivityPaused(activity: Activity) {
-        dispatch(BACKGROUND, System.currentTimeMillis())
-    }
-
-    override fun onActivityStopped(activity: Activity) {}
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-
-    override fun onActivityDestroyed(activity: Activity) {}
 
     private fun dispatch(state: AppState, timestamp: Long) {
         eventExecutor.execute {

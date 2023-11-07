@@ -1,9 +1,9 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
@@ -38,7 +38,7 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
-    private val hackleActivityManager: HackleActivityManager,
+    private val activityProvider: ActivityProvider,
 ) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
@@ -192,7 +192,7 @@ internal class DefaultEventProcessor(
     }
 
     private fun decorateScreenName(event: UserEvent): UserEvent {
-        val currentActivity = hackleActivityManager.currentActivity ?: return event
+        val currentActivity = activityProvider.currentActivity ?: return event
 
         val newUser = event.user.toBuilder()
             .hackleProperty("screenClass", currentActivity.javaClass.simpleName)

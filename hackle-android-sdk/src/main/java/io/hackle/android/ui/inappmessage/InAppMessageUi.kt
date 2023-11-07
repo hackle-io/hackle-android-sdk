@@ -1,9 +1,9 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenter
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @see InAppMessageUi.instance
  */
 internal class InAppMessageUi(
-    private val hackleActivityManager: HackleActivityManager,
+    private val activityProvider: ActivityProvider,
     private val messageViewFactory: InAppMessageViewFactory,
     val eventHandler: InAppMessageEventHandler,
 ) : InAppMessagePresenter {
@@ -42,7 +42,7 @@ internal class InAppMessageUi(
     }
 
     private fun presentNow(context: InAppMessagePresentationContext) {
-        val activity = hackleActivityManager.currentActivity ?: return
+        val activity = activityProvider.currentActivity ?: return
         if (currentMessageView != null) return
         if (!isSupportedOrientation(activity, context)) return
 
@@ -72,12 +72,12 @@ internal class InAppMessageUi(
         private var INSTANCE: InAppMessageUi? = null
 
         fun create(
-            hackleActivityManager: HackleActivityManager,
+            activityProvider: ActivityProvider,
             messageViewFactory: InAppMessageViewFactory,
             eventHandler: InAppMessageEventHandler,
         ): InAppMessageUi {
             return INSTANCE
-                ?: InAppMessageUi(hackleActivityManager, messageViewFactory, eventHandler)
+                ?: InAppMessageUi(activityProvider, messageViewFactory, eventHandler)
                     .also { INSTANCE = it }
         }
 

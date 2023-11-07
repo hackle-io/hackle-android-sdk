@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import io.hackle.android.internal.HackleActivityManager
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
@@ -25,7 +25,7 @@ import kotlin.concurrent.thread
 class InAppMessageUiTest {
 
     @RelaxedMockK
-    private lateinit var hackleActivityManager: HackleActivityManager
+    private lateinit var activityProvider: ActivityProvider
 
     @RelaxedMockK
     private lateinit var messageViewFactory: InAppMessageViewFactory
@@ -50,14 +50,14 @@ class InAppMessageUiTest {
         }
         view = mockk(relaxUnitFun = true)
 
-        every { hackleActivityManager.currentActivity } returns activity
+        every { activityProvider.currentActivity } returns activity
         every { messageViewFactory.create(any(), any()) } returns view
     }
 
     @Test
     fun `when current activity is null then should not open`() {
         // given
-        every { hackleActivityManager.currentActivity } returns null
+        every { activityProvider.currentActivity } returns null
 
         // when
         sut.present(InAppMessages.context())

@@ -1,10 +1,10 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.EventEntity
 import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.session.Session
@@ -66,7 +66,7 @@ class DefaultEventProcessorTest {
     private lateinit var appStateManager: AppStateManager
 
     @RelaxedMockK
-    private lateinit var hackleActivityManager: HackleActivityManager
+    private lateinit var activityProvider: ActivityProvider
 
     @Before
     fun before() {
@@ -76,7 +76,7 @@ class DefaultEventProcessorTest {
         every { sessionManager.currentSession } returns null
         every { appStateManager.currentState } returns AppState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
-        every { hackleActivityManager.currentActivity } returns null
+        every { activityProvider.currentActivity } returns null
     }
 
 
@@ -94,7 +94,7 @@ class DefaultEventProcessorTest {
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
         appStateManager: AppStateManager = this.appStateManager,
-        hackleActivityManager: HackleActivityManager = this.hackleActivityManager
+        activityProvider: ActivityProvider = this.activityProvider
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             deduplicationDeterminer = deduplicationDeterminer,
@@ -110,7 +110,7 @@ class DefaultEventProcessorTest {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            hackleActivityManager = hackleActivityManager
+            activityProvider = activityProvider
         )
     }
 
