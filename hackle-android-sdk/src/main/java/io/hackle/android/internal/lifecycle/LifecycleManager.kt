@@ -46,26 +46,26 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        if (_currentActivity != activity) {
+        if (currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
     }
 
 
     override fun onActivityStarted(activity: Activity) {
-        if (_currentActivity != activity) {
+        if (currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
     }
 
     override fun onActivityStopped(activity: Activity) {
-        if (activity == _currentActivity) {
+        if (activity == currentActivity) {
             _currentActivity = null
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
-        if (_currentActivity != activity) {
+        if (currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
         dispatch(LifecycleState.FOREGROUND)
