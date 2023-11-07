@@ -34,11 +34,11 @@ internal class LifecycleManagerTest {
 
         verify { listener wasNot Called }
 
-        val timeInMillis = 12345L
-        lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
+        val timestamp = 12345L
+        lifecycleManager.dispatchStart(timestamp = timestamp)
 
         verify(exactly = 1) {
-            listener.onState(LifecycleState.FOREGROUND, timeInMillis)
+            listener.onState(LifecycleState.FOREGROUND, timestamp)
         }
     }
 
@@ -52,11 +52,11 @@ internal class LifecycleManagerTest {
 
         verify { listener wasNot Called }
 
-        val timeInMillis = 12345L
-        lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
+        val timestamp = 12345L
+        lifecycleManager.dispatchStart(timestamp = timestamp)
 
         verify(exactly = 1) {
-            listener.onState(LifecycleState.FOREGROUND, timeInMillis)
+            listener.onState(LifecycleState.FOREGROUND, timestamp)
         }
     }
 
@@ -69,11 +69,11 @@ internal class LifecycleManagerTest {
 
         verify { listener wasNot Called }
 
-        val timeInMillis = 12345L
-        lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
+        val timestamp = 12345L
+        lifecycleManager.dispatchStart(timestamp = timestamp)
 
         verify(exactly = 1) {
-            listener.onState(LifecycleState.FOREGROUND, timeInMillis)
+            listener.onState(LifecycleState.FOREGROUND, timestamp)
         }
     }
 
@@ -86,14 +86,14 @@ internal class LifecycleManagerTest {
 
         verify { listener wasNot Called }
 
-        val timeInMillis = 12345L
-        lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
+        val timestamp = 12345L
+        lifecycleManager.dispatchStart(timestamp = timestamp)
         lifecycleManager.dispatchStart()
         lifecycleManager.dispatchStart()
         lifecycleManager.dispatchStart()
 
         verify(exactly = 1) {
-            listener.onState(LifecycleState.FOREGROUND, timeInMillis)
+            listener.onState(LifecycleState.FOREGROUND, timestamp)
         }
     }
 
