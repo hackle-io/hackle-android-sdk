@@ -1,10 +1,8 @@
 package io.hackle.android.internal.lifecycle
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
+import io.hackle.android.internal.lifecycle.LifecycleManager.*
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
@@ -12,7 +10,7 @@ import java.util.concurrent.Executor
 internal class HackleActivityLifecycleCallbacks(
     private val eventExecutor: Executor,
     private val appStateManager: AppStateManager,
-) : LifecycleManager.LifecycleEventListener {
+) : LifecycleEventListener {
 
     private val listeners = CopyOnWriteArrayList<AppStateChangeListener>()
 
@@ -21,10 +19,10 @@ internal class HackleActivityLifecycleCallbacks(
         log.info { "AppStateChangeListener added [$listener]" }
     }
 
-    override fun onEvent(event: LifecycleManager.Event, timeInMillis: Long) {
+    override fun onEvent(event: LifecycleEvent, timeInMillis: Long) {
         when (event) {
-            LifecycleManager.Event.ON_RESUME -> dispatch(FOREGROUND, timeInMillis)
-            LifecycleManager.Event.ON_PAUSE -> dispatch(BACKGROUND, timeInMillis)
+            LifecycleEvent.ON_RESUME -> dispatch(FOREGROUND, timeInMillis)
+            LifecycleEvent.ON_PAUSE -> dispatch(BACKGROUND, timeInMillis)
             else -> {}
         }
     }

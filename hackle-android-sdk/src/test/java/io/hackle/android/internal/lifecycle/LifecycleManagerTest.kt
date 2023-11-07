@@ -1,6 +1,7 @@
 package io.hackle.android.internal.lifecycle
 
 import android.app.Activity
+import io.hackle.android.internal.lifecycle.LifecycleManager.*
 import io.mockk.Called
 import io.mockk.mockk
 import io.mockk.verify
@@ -22,7 +23,7 @@ class LifecycleManagerTest {
 
     @Test
     fun `receive latest lifecycle event right after dispatch start`() {
-        val listener = mockk<LifecycleManager.LifecycleEventListener>()
+        val listener = mockk<LifecycleEventListener>()
         lifecycleManager.addEventListener(listener)
 
         lifecycleManager.onActivityCreated(mockk(), mockk())
@@ -35,13 +36,13 @@ class LifecycleManagerTest {
         lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
 
         verify(exactly = 1) {
-            listener.onEvent(LifecycleManager.Event.ON_RESUME, timeInMillis)
+            listener.onEvent(LifecycleEvent.ON_RESUME, timeInMillis)
         }
     }
 
     @Test
     fun `receive sequential lifecycle event`() {
-        val listener = mockk<LifecycleManager.LifecycleEventListener>()
+        val listener = mockk<LifecycleEventListener>()
         lifecycleManager.dispatchStart()
         lifecycleManager.addEventListener(listener)
 
@@ -53,12 +54,12 @@ class LifecycleManagerTest {
         lifecycleManager.onActivityDestroyed(mockk())
 
         verifySequence {
-            listener.onEvent(LifecycleManager.Event.ON_CREATE, any())
-            listener.onEvent(LifecycleManager.Event.ON_START, any())
-            listener.onEvent(LifecycleManager.Event.ON_RESUME, any())
-            listener.onEvent(LifecycleManager.Event.ON_PAUSE, any())
-            listener.onEvent(LifecycleManager.Event.ON_STOP, any())
-            listener.onEvent(LifecycleManager.Event.ON_DESTROY, any())
+            listener.onEvent(LifecycleEvent.ON_CREATE, any())
+            listener.onEvent(LifecycleEvent.ON_START, any())
+            listener.onEvent(LifecycleEvent.ON_RESUME, any())
+            listener.onEvent(LifecycleEvent.ON_PAUSE, any())
+            listener.onEvent(LifecycleEvent.ON_STOP, any())
+            listener.onEvent(LifecycleEvent.ON_DESTROY, any())
         }
     }
 

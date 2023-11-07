@@ -1,5 +1,6 @@
 package io.hackle.android.internal.lifecycle
 
+import io.hackle.android.internal.lifecycle.LifecycleManager.*
 import io.mockk.Called
 import io.mockk.mockk
 import io.mockk.verify
@@ -19,7 +20,7 @@ class HackleActivityLifecycleCallbacksTest {
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
 
-        callbacks.onEvent(LifecycleManager.Event.ON_RESUME, mockk())
+        callbacks.onEvent(LifecycleEvent.ON_RESUME, 0)
 
         expectThat(executor.executeCount) isEqualTo 1
         expectThat(appStateManager.currentState) isEqualTo AppState.FOREGROUND
@@ -39,7 +40,7 @@ class HackleActivityLifecycleCallbacksTest {
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
 
-        callbacks.onEvent(LifecycleManager.Event.ON_PAUSE, mockk())
+        callbacks.onEvent(LifecycleEvent.ON_PAUSE, 0)
 
         expectThat(executor.executeCount) isEqualTo 1
         expectThat(appStateManager.currentState) isEqualTo AppState.BACKGROUND
@@ -57,10 +58,10 @@ class HackleActivityLifecycleCallbacksTest {
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
 
-        callbacks.onEvent(LifecycleManager.Event.ON_CREATE, mockk())
-        callbacks.onEvent(LifecycleManager.Event.ON_START, mockk())
-        callbacks.onEvent(LifecycleManager.Event.ON_STOP, mockk())
-        callbacks.onEvent(LifecycleManager.Event.ON_DESTROY, mockk())
+        callbacks.onEvent(LifecycleEvent.ON_CREATE, 100L)
+        callbacks.onEvent(LifecycleEvent.ON_START, 200L)
+        callbacks.onEvent(LifecycleEvent.ON_STOP, 300L)
+        callbacks.onEvent(LifecycleEvent.ON_DESTROY, 400L)
 
         expectThat(executor.executeCount) isEqualTo 0
         expectThat(appStateManager.currentState) isEqualTo AppState.BACKGROUND

@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class LifecycleManager : Application.ActivityLifecycleCallbacks, ActivityProvider {
 
-    enum class Event {
+    enum class LifecycleEvent {
         ON_CREATE,
         ON_DESTROY,
         ON_START,
@@ -21,14 +21,14 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
     }
 
     interface LifecycleEventListener {
-        fun onEvent(event: Event, timeInMillis: Long)
+        fun onEvent(event: LifecycleEvent, timeInMillis: Long)
     }
 
     private var _currentActivity: WeakReference<Activity>? = null
     override val currentActivity: Activity?
         get() = _currentActivity?.get()
 
-    private var currentEvent: Event? = null
+    private var currentEvent: LifecycleEvent? = null
     private val listeners: MutableList<LifecycleEventListener> = CopyOnWriteArrayList()
     private val dispatchStarted = AtomicBoolean(false)
 
@@ -53,25 +53,25 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
         if (_currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
-        dispatch(Event.ON_CREATE)
+        dispatch(LifecycleEvent.ON_CREATE)
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        dispatch(Event.ON_DESTROY)
+        dispatch(LifecycleEvent.ON_DESTROY)
     }
 
     override fun onActivityStarted(activity: Activity) {
         if (_currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
-        dispatch(Event.ON_START)
+        dispatch(LifecycleEvent.ON_START)
     }
 
     override fun onActivityStopped(activity: Activity) {
         if (activity == _currentActivity) {
             _currentActivity = null
         }
-        dispatch(Event.ON_STOP)
+        dispatch(LifecycleEvent.ON_STOP)
     }
 
     override fun onActivityResumed(activity: Activity) {
@@ -79,14 +79,14 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
             _currentActivity = WeakReference(activity)
         }
 
-        dispatch(Event.ON_RESUME)
+        dispatch(LifecycleEvent.ON_RESUME)
     }
 
     override fun onActivityPaused(activity: Activity) {
-        dispatch(Event.ON_PAUSE)
+        dispatch(LifecycleEvent.ON_PAUSE)
     }
 
-    private fun dispatch(event: Event, timeInMillis: Long = System.currentTimeMillis()) {
+    private fun dispatch(event: LifecycleEvent, timeInMillis: Long = System.currentTimeMillis()) {
         currentEvent = event
 
         if (dispatchStarted.get()) {
@@ -98,8 +98,6 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
                 }
                 logger.debug { "Dispatched lifecycle event [$event:$timeInMillis]" }
             }
-        } else {
-            logger.debug { "Skipped dispatching lifecycle event [$event:$timeInMillis]" }
         }
     }
 
