@@ -19,10 +19,10 @@ internal class HackleActivityLifecycleCallbacks(
         log.info { "AppStateChangeListener added [$listener]" }
     }
 
-    override fun onState(state: LifecycleState, timeInMillis: Long) {
+    override fun onState(state: LifecycleState, timestamp: Long) {
         when (state) {
-            LifecycleState.FOREGROUND -> dispatch(FOREGROUND, timeInMillis)
-            LifecycleState.BACKGROUND -> dispatch(BACKGROUND, timeInMillis)
+            LifecycleState.FOREGROUND -> dispatch(FOREGROUND, timestamp)
+            LifecycleState.BACKGROUND -> dispatch(BACKGROUND, timestamp)
         }
     }
 

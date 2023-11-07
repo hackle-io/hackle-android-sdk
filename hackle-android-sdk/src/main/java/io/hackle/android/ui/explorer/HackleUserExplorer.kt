@@ -46,7 +46,7 @@ internal class HackleUserExplorer(
         }
     }
 
-    override fun onState(state: LifecycleState, timeInMillis: Long) {
+    override fun onState(state: LifecycleState, timestamp: Long) {
         when (state) {
             LifecycleState.FOREGROUND -> {
                 activityProvider.currentActivity ?: return

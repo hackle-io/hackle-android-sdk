@@ -17,12 +17,15 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
     }
 
     interface LifecycleStateListener {
-        fun onState(state: LifecycleState, timeInMillis: Long)
+        fun onState(state: LifecycleState, timestamp: Long)
     }
 
     private var _currentActivity: WeakReference<Activity>? = null
-    override val currentActivity: Activity?
+    override var currentActivity: Activity?
         get() = _currentActivity?.get()
+        private set(newValue) {
+            _currentActivity = WeakReference(newValue)
+        }
 
     private var currentState: LifecycleState? = null
     private val listeners: MutableList<LifecycleStateListener> = CopyOnWriteArrayList()
@@ -34,10 +37,10 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
         app.registerActivityLifecycleCallbacks(this)
     }
 
-    fun dispatchStart(timeInMillis: Long = System.currentTimeMillis()) {
+    fun dispatchStart(timestamp: Long = System.currentTimeMillis()) {
         if (!dispatchStarted.getAndSet(true)) {
             logger.debug { "Dispatch Start" }
-            currentState?.let { dispatch(it, timeInMillis) }
+            currentState?.let { dispatch(it, timestamp) }
         }
     }
 
@@ -47,26 +50,26 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
         if (currentActivity != activity) {
-            _currentActivity = WeakReference(activity)
+            currentActivity = activity
         }
     }
 
 
     override fun onActivityStarted(activity: Activity) {
         if (currentActivity != activity) {
-            _currentActivity = WeakReference(activity)
+            currentActivity = activity
         }
     }
 
     override fun onActivityStopped(activity: Activity) {
         if (activity == currentActivity) {
-            _currentActivity = null
+            currentActivity = null
         }
     }
 
     override fun onActivityResumed(activity: Activity) {
         if (currentActivity != activity) {
-            _currentActivity = WeakReference(activity)
+            currentActivity = activity
         }
         dispatch(LifecycleState.FOREGROUND)
     }
@@ -75,17 +78,17 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
         dispatch(LifecycleState.BACKGROUND)
     }
 
-    private fun dispatch(state: LifecycleState, timeInMillis: Long = System.currentTimeMillis()) {
+    private fun dispatch(state: LifecycleState, timestamp: Long = System.currentTimeMillis()) {
         currentState = state
 
         if (dispatchStarted.get()) {
             for (listener in listeners) {
                 try {
-                    listener.onState(state, timeInMillis)
+                    listener.onState(state, timestamp)
                 } catch (throwable: Throwable) {
                     logger.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $throwable" }
                 }
-                logger.debug { "Dispatched lifecycle state [$state:$timeInMillis]" }
+                logger.debug { "Dispatched lifecycle state [$state:$timestamp]" }
             }
         }
     }
