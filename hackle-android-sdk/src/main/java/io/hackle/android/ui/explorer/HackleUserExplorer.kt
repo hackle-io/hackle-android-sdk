@@ -53,7 +53,7 @@ internal class HackleUserExplorer(
                     attach()
                 }
             }
-            else -> Unit
+            else -> {}
         }
     }
 

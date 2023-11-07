@@ -25,7 +25,7 @@ internal class HackleActivityLifecycleCallbacks(
         when (event) {
             LifecycleManager.Event.ON_RESUME -> dispatch(FOREGROUND, timeInMillis)
             LifecycleManager.Event.ON_PAUSE -> dispatch(BACKGROUND, timeInMillis)
-            else -> Unit
+            else -> {}
         }
     }
 
