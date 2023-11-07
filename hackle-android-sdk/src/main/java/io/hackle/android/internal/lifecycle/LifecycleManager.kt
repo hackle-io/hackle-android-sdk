@@ -11,25 +11,21 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal class LifecycleManager : Application.ActivityLifecycleCallbacks, ActivityProvider {
 
-    enum class LifecycleEvent {
-        ON_CREATE,
-        ON_DESTROY,
-        ON_START,
-        ON_STOP,
-        ON_RESUME,
-        ON_PAUSE,
+    enum class LifecycleState {
+        FOREGROUND,
+        BACKGROUND,
     }
 
-    interface LifecycleEventListener {
-        fun onEvent(event: LifecycleEvent, timeInMillis: Long)
+    interface LifecycleStateListener {
+        fun onState(state: LifecycleState, timeInMillis: Long)
     }
 
     private var _currentActivity: WeakReference<Activity>? = null
     override val currentActivity: Activity?
         get() = _currentActivity?.get()
 
-    private var currentEvent: LifecycleEvent? = null
-    private val listeners: MutableList<LifecycleEventListener> = CopyOnWriteArrayList()
+    private var currentState: LifecycleState? = null
+    private val listeners: MutableList<LifecycleStateListener> = CopyOnWriteArrayList()
     private val dispatchStarted = AtomicBoolean(false)
 
     fun registerActivityLifecycleCallbacks(context: Context) {
@@ -41,11 +37,11 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
     fun dispatchStart(timeInMillis: Long = System.currentTimeMillis()) {
         if (!dispatchStarted.getAndSet(true)) {
             logger.debug { "Dispatch Start" }
-            currentEvent?.let { dispatch(it, timeInMillis) }
+            currentState?.let { dispatch(it, timeInMillis) }
         }
     }
 
-    fun addEventListener(listener: LifecycleEventListener) {
+    fun addStateListener(listener: LifecycleStateListener) {
         listeners += listener
     }
 
@@ -53,53 +49,48 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
         if (_currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
-        dispatch(LifecycleEvent.ON_CREATE)
     }
 
-    override fun onActivityDestroyed(activity: Activity) {
-        dispatch(LifecycleEvent.ON_DESTROY)
-    }
 
     override fun onActivityStarted(activity: Activity) {
         if (_currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
-        dispatch(LifecycleEvent.ON_START)
     }
 
     override fun onActivityStopped(activity: Activity) {
         if (activity == _currentActivity) {
             _currentActivity = null
         }
-        dispatch(LifecycleEvent.ON_STOP)
     }
 
     override fun onActivityResumed(activity: Activity) {
         if (_currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
-        dispatch(LifecycleEvent.ON_RESUME)
+        dispatch(LifecycleState.FOREGROUND)
     }
 
     override fun onActivityPaused(activity: Activity) {
-        dispatch(LifecycleEvent.ON_PAUSE)
+        dispatch(LifecycleState.BACKGROUND)
     }
 
-    private fun dispatch(event: LifecycleEvent, timeInMillis: Long = System.currentTimeMillis()) {
-        currentEvent = event
+    private fun dispatch(state: LifecycleState, timeInMillis: Long = System.currentTimeMillis()) {
+        currentState = state
 
         if (dispatchStarted.get()) {
             for (listener in listeners) {
                 try {
-                    listener.onEvent(event, timeInMillis)
+                    listener.onState(state, timeInMillis)
                 } catch (throwable: Throwable) {
-                    logger.error { "Unexpected exception calling ${listener::class.java.simpleName}[$event]: $throwable" }
+                    logger.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $throwable" }
                 }
-                logger.debug { "Dispatched lifecycle event [$event:$timeInMillis]" }
+                logger.debug { "Dispatched lifecycle state [$state:$timeInMillis]" }
             }
         }
     }
 
+    override fun onActivityDestroyed(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
     companion object {

@@ -10,7 +10,7 @@ import java.util.concurrent.Executor
 internal class HackleActivityLifecycleCallbacks(
     private val eventExecutor: Executor,
     private val appStateManager: AppStateManager,
-) : LifecycleEventListener {
+) : LifecycleStateListener {
 
     private val listeners = CopyOnWriteArrayList<AppStateChangeListener>()
 
@@ -19,11 +19,10 @@ internal class HackleActivityLifecycleCallbacks(
         log.info { "AppStateChangeListener added [$listener]" }
     }
 
-    override fun onEvent(event: LifecycleEvent, timeInMillis: Long) {
-        when (event) {
-            LifecycleEvent.ON_RESUME -> dispatch(FOREGROUND, timeInMillis)
-            LifecycleEvent.ON_PAUSE -> dispatch(BACKGROUND, timeInMillis)
-            else -> {}
+    override fun onState(state: LifecycleState, timeInMillis: Long) {
+        when (state) {
+            LifecycleState.FOREGROUND -> dispatch(FOREGROUND, timeInMillis)
+            LifecycleState.BACKGROUND -> dispatch(BACKGROUND, timeInMillis)
         }
     }
 

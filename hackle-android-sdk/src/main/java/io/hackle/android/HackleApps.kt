@@ -272,8 +272,8 @@ internal object HackleApps {
 
         // LifecycleCallbacks
 
-        LifecycleManager.getInstance().addEventListener(lifecycleCallbacks)
-        LifecycleManager.getInstance().addEventListener(userExplorer)
+        LifecycleManager.getInstance().addStateListener(lifecycleCallbacks)
+        LifecycleManager.getInstance().addStateListener(userExplorer)
         LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
 
         // Instantiate

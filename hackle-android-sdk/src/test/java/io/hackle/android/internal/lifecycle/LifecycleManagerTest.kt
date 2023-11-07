@@ -1,7 +1,8 @@
 package io.hackle.android.internal.lifecycle
 
 import android.app.Activity
-import io.hackle.android.internal.lifecycle.LifecycleManager.*
+import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleState
+import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleStateListener
 import io.mockk.Called
 import io.mockk.mockk
 import io.mockk.verify
@@ -23,8 +24,8 @@ class LifecycleManagerTest {
 
     @Test
     fun `receive latest lifecycle event right after dispatch start`() {
-        val listener = mockk<LifecycleEventListener>()
-        lifecycleManager.addEventListener(listener)
+        val listener = mockk<LifecycleStateListener>()
+        lifecycleManager.addStateListener(listener)
 
         lifecycleManager.onActivityCreated(mockk(), mockk())
         lifecycleManager.onActivityStarted(mockk())
@@ -36,14 +37,14 @@ class LifecycleManagerTest {
         lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
 
         verify(exactly = 1) {
-            listener.onEvent(LifecycleEvent.ON_RESUME, timeInMillis)
+            listener.onState(LifecycleState.FOREGROUND, timeInMillis)
         }
     }
 
     @Test
     fun `should receive on event once even dispatch start multiple times`() {
-        val listener = mockk<LifecycleEventListener>()
-        lifecycleManager.addEventListener(listener)
+        val listener = mockk<LifecycleStateListener>()
+        lifecycleManager.addStateListener(listener)
 
         lifecycleManager.onActivityCreated(mockk(), mockk())
         lifecycleManager.onActivityStarted(mockk())
@@ -58,15 +59,15 @@ class LifecycleManagerTest {
         lifecycleManager.dispatchStart()
 
         verify(exactly = 1) {
-            listener.onEvent(LifecycleEvent.ON_RESUME, timeInMillis)
+            listener.onState(LifecycleState.FOREGROUND, timeInMillis)
         }
     }
 
     @Test
     fun `receive sequential lifecycle event`() {
-        val listener = mockk<LifecycleEventListener>()
+        val listener = mockk<LifecycleStateListener>()
         lifecycleManager.dispatchStart()
-        lifecycleManager.addEventListener(listener)
+        lifecycleManager.addStateListener(listener)
 
         lifecycleManager.onActivityCreated(mockk(), mockk())
         lifecycleManager.onActivityStarted(mockk())
@@ -76,12 +77,8 @@ class LifecycleManagerTest {
         lifecycleManager.onActivityDestroyed(mockk())
 
         verifySequence {
-            listener.onEvent(LifecycleEvent.ON_CREATE, any())
-            listener.onEvent(LifecycleEvent.ON_START, any())
-            listener.onEvent(LifecycleEvent.ON_RESUME, any())
-            listener.onEvent(LifecycleEvent.ON_PAUSE, any())
-            listener.onEvent(LifecycleEvent.ON_STOP, any())
-            listener.onEvent(LifecycleEvent.ON_DESTROY, any())
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.BACKGROUND, any())
         }
     }
 
