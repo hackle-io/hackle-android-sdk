@@ -70,7 +70,7 @@ class InAppMessageDeterminerTest {
     }
 
     @Test
-    fun `일치하는 InAppMessage가 하나도 없으묜 null 리턴`() {
+    fun `일치하는 InAppMessage가 하나도 없으면 null 리턴`() {
         // given
         determine(
             decision(true),
