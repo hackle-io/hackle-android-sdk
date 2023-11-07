@@ -1,6 +1,5 @@
 package io.hackle.android
 
-import android.app.Application
 import android.content.Context
 import android.os.Build
 import io.hackle.android.internal.database.AndroidKeyValueRepository
