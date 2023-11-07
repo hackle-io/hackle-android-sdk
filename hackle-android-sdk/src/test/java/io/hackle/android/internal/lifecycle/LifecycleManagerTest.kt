@@ -41,6 +41,28 @@ class LifecycleManagerTest {
     }
 
     @Test
+    fun `should receive on event once even dispatch start multiple times`() {
+        val listener = mockk<LifecycleEventListener>()
+        lifecycleManager.addEventListener(listener)
+
+        lifecycleManager.onActivityCreated(mockk(), mockk())
+        lifecycleManager.onActivityStarted(mockk())
+        lifecycleManager.onActivityResumed(mockk())
+
+        verify { listener wasNot Called }
+
+        val timeInMillis = 12345L
+        lifecycleManager.dispatchStart(timeInMillis = timeInMillis)
+        lifecycleManager.dispatchStart()
+        lifecycleManager.dispatchStart()
+        lifecycleManager.dispatchStart()
+
+        verify(exactly = 1) {
+            listener.onEvent(LifecycleEvent.ON_RESUME, timeInMillis)
+        }
+    }
+
+    @Test
     fun `receive sequential lifecycle event`() {
         val listener = mockk<LifecycleEventListener>()
         lifecycleManager.dispatchStart()
