@@ -78,7 +78,6 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
         if (_currentActivity != activity) {
             _currentActivity = WeakReference(activity)
         }
-
         dispatch(LifecycleEvent.ON_RESUME)
     }
 
