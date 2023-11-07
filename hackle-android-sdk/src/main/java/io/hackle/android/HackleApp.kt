@@ -319,7 +319,6 @@ class HackleApp internal constructor(
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }
             } finally {
-                LifecycleManager.getInstance().dispatchStart()
                 onReady.run()
             }
         }
@@ -505,6 +504,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
+                        .also { LifecycleManager.getInstance().repeatCurrentState() }
                         .also { INSTANCE = it }
             }
         }

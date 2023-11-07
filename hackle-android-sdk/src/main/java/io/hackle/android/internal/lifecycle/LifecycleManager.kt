@@ -30,7 +30,6 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
 
     private var currentState: LifecycleState? = null
     private val listeners: MutableList<LifecycleStateListener> = CopyOnWriteArrayList()
-    private val dispatchStarted = AtomicBoolean(false)
 
     fun registerActivityLifecycleCallbacks(context: Context) {
         val app = context.applicationContext as Application
@@ -38,10 +37,10 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
         app.registerActivityLifecycleCallbacks(this)
     }
 
-    fun dispatchStart(timestamp: Long = System.currentTimeMillis()) {
-        if (!dispatchStarted.getAndSet(true)) {
-            logger.debug { "Dispatch Start" }
-            currentState?.let { dispatch(it, timestamp) }
+    fun repeatCurrentState(timestamp: Long = System.currentTimeMillis()) {
+        currentState?.let {
+            logger.debug { "Repeat current lifecycle state [$it:$timestamp]" }
+            dispatchForce(it, timestamp)
         }
     }
 
@@ -81,16 +80,17 @@ internal class LifecycleManager : Application.ActivityLifecycleCallbacks, Activi
 
     private fun dispatch(state: LifecycleState, timestamp: Long = System.currentTimeMillis()) {
         currentState = state
+        dispatchForce(state, timestamp)
+    }
 
-        if (dispatchStarted.get()) {
-            for (listener in listeners) {
-                try {
-                    listener.onState(state, timestamp)
-                } catch (throwable: Throwable) {
-                    logger.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $throwable" }
-                }
-                logger.debug { "Dispatched lifecycle state [$state:$timestamp]" }
+    private fun dispatchForce(state: LifecycleState, timestamp: Long = System.currentTimeMillis()) {
+        for (listener in listeners) {
+            try {
+                listener.onState(state, timestamp)
+            } catch (throwable: Throwable) {
+                logger.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $throwable" }
             }
+            logger.debug { "Dispatched lifecycle state [$state:$timestamp]" }
         }
     }
 

@@ -27,15 +27,13 @@ internal class LifecycleManagerTest {
     }
 
     @Test
-    fun `receive latest lifecycle state right after dispatch start`() {
+    fun `receive latest lifecycle state right after repeat current state`() {
         val listener = mockk<LifecycleStateListener>()
-        lifecycleManager.addStateListener(listener)
         lifecyclePlayer.startActivity(mockk())
 
-        verify { listener wasNot Called }
-
         val timestamp = 12345L
-        lifecycleManager.dispatchStart(timestamp = timestamp)
+        lifecycleManager.addStateListener(listener)
+        lifecycleManager.repeatCurrentState(timestamp = timestamp)
 
         verify(exactly = 1) {
             listener.onState(LifecycleState.FOREGROUND, timestamp)
@@ -43,17 +41,14 @@ internal class LifecycleManagerTest {
     }
 
     @Test
-    fun `should receive foreground state right after dispatch start after activity transition`() {
+    fun `should receive foreground state right after repeat current state after activity transition`() {
         val listener = mockk<LifecycleStateListener>()
-        lifecycleManager.addStateListener(listener)
-
         lifecyclePlayer.startActivity(mockk())
         lifecyclePlayer.startActivity(mockk())
-
-        verify { listener wasNot Called }
 
         val timestamp = 12345L
-        lifecycleManager.dispatchStart(timestamp = timestamp)
+        lifecycleManager.addStateListener(listener)
+        lifecycleManager.repeatCurrentState(timestamp = timestamp)
 
         verify(exactly = 1) {
             listener.onState(LifecycleState.FOREGROUND, timestamp)
@@ -61,16 +56,13 @@ internal class LifecycleManagerTest {
     }
 
     @Test
-    fun `should receive background state right after dispatch start after activity hided`() {
+    fun `should receive background state right after repeat current state after activity hided`() {
         val listener = mockk<LifecycleStateListener>()
-        lifecycleManager.addStateListener(listener)
-
         lifecyclePlayer.startActivity(mockk())
 
-        verify { listener wasNot Called }
-
         val timestamp = 12345L
-        lifecycleManager.dispatchStart(timestamp = timestamp)
+        lifecycleManager.addStateListener(listener)
+        lifecycleManager.repeatCurrentState(timestamp = timestamp)
 
         verify(exactly = 1) {
             listener.onState(LifecycleState.FOREGROUND, timestamp)
@@ -78,35 +70,80 @@ internal class LifecycleManagerTest {
     }
 
     @Test
-    fun `should receive on state once even dispatch start multiple times`() {
+    fun `should receive current state multiple times`() {
+        val listener = mockk<LifecycleStateListener>()
+        lifecyclePlayer.startActivity(mockk())
+        lifecycleManager.addStateListener(listener)
+
+        lifecycleManager.repeatCurrentState()
+        lifecycleManager.repeatCurrentState()
+        lifecycleManager.repeatCurrentState()
+        lifecycleManager.repeatCurrentState()
+
+        verifySequence {
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.FOREGROUND, any())
+        }
+    }
+
+    @Test
+    fun `receive single activity open sequential lifecycle state`() {
         val listener = mockk<LifecycleStateListener>()
         lifecycleManager.addStateListener(listener)
 
         lifecyclePlayer.startActivity(mockk())
 
-        verify { listener wasNot Called }
-
-        val timestamp = 12345L
-        lifecycleManager.dispatchStart(timestamp = timestamp)
-        lifecycleManager.dispatchStart()
-        lifecycleManager.dispatchStart()
-        lifecycleManager.dispatchStart()
-
-        verify(exactly = 1) {
-            listener.onState(LifecycleState.FOREGROUND, timestamp)
+        verifySequence {
+            listener.onState(LifecycleState.FOREGROUND, any())
         }
     }
 
     @Test
-    fun `receive sequential lifecycle state`() {
+    fun `receive single activity open and close sequential lifecycle state`() {
         val listener = mockk<LifecycleStateListener>()
-        lifecycleManager.dispatchStart()
         lifecycleManager.addStateListener(listener)
 
         lifecyclePlayer.startActivity(mockk())
         lifecyclePlayer.finishActivity()
 
         verifySequence {
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.BACKGROUND, any())
+        }
+    }
+
+    @Test
+    fun `receive multiple activity open sequential lifecycle state`() {
+        val listener = mockk<LifecycleStateListener>()
+        lifecycleManager.addStateListener(listener)
+
+        lifecyclePlayer.startActivity(mockk())
+        lifecyclePlayer.startActivity(mockk())
+
+        verifySequence {
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.BACKGROUND, any())
+            listener.onState(LifecycleState.FOREGROUND, any())
+        }
+    }
+
+    @Test
+    fun `receive multiple activity open and close sequential lifecycle state`() {
+        val listener = mockk<LifecycleStateListener>()
+        lifecycleManager.addStateListener(listener)
+
+        lifecyclePlayer.startActivity(mockk())
+        lifecyclePlayer.startActivity(mockk())
+        lifecyclePlayer.finishActivity()
+        lifecyclePlayer.finishActivity()
+
+        verifySequence {
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.BACKGROUND, any())
+            listener.onState(LifecycleState.FOREGROUND, any())
+            listener.onState(LifecycleState.BACKGROUND, any())
             listener.onState(LifecycleState.FOREGROUND, any())
             listener.onState(LifecycleState.BACKGROUND, any())
         }
