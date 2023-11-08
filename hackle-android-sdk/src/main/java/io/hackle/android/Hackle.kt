@@ -8,6 +8,10 @@ object Hackle
 
 val Hackle.app: HackleApp get() = HackleApp.getInstance()
 
+fun Hackle.registerActivityLifecycleCallbacks(context: Context) {
+    HackleApp.registerActivityLifecycleCallbacks(context)
+}
+
 fun Hackle.initialize(
     context: Context,
     sdkKey: String,
