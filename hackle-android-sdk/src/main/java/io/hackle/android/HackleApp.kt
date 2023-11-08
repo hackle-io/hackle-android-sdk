@@ -7,6 +7,7 @@ import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -427,6 +428,11 @@ class HackleApp internal constructor(
         private val LOCK = Any()
         private var INSTANCE: HackleApp? = null
 
+        @JvmStatic
+        fun registerActivityLifecycleCallbacks(context: Context) {
+            LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
+        }
+
         /**
          * Returns a singleton instance of [HackleApp]
          *
@@ -498,6 +504,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
+                        .also { LifecycleManager.getInstance().repeatCurrentState() }
                         .also { INSTANCE = it }
             }
         }

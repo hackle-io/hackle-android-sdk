@@ -1,10 +1,8 @@
 package io.hackle.android.internal.lifecycle
 
-import android.app.Activity
-import android.app.Application
-import android.os.Bundle
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
+import io.hackle.android.internal.lifecycle.LifecycleManager.*
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
@@ -12,7 +10,7 @@ import java.util.concurrent.Executor
 internal class HackleActivityLifecycleCallbacks(
     private val eventExecutor: Executor,
     private val appStateManager: AppStateManager,
-) : Application.ActivityLifecycleCallbacks {
+) : LifecycleStateListener {
 
     private val listeners = CopyOnWriteArrayList<AppStateChangeListener>()
 
@@ -21,23 +19,12 @@ internal class HackleActivityLifecycleCallbacks(
         log.info { "AppStateChangeListener added [$listener]" }
     }
 
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
-
-    override fun onActivityStarted(activity: Activity) {}
-
-    override fun onActivityResumed(activity: Activity) {
-        dispatch(FOREGROUND, System.currentTimeMillis())
+    override fun onState(state: LifecycleState, timestamp: Long) {
+        when (state) {
+            LifecycleState.FOREGROUND -> dispatch(FOREGROUND, timestamp)
+            LifecycleState.BACKGROUND -> dispatch(BACKGROUND, timestamp)
+        }
     }
-
-    override fun onActivityPaused(activity: Activity) {
-        dispatch(BACKGROUND, System.currentTimeMillis())
-    }
-
-    override fun onActivityStopped(activity: Activity) {}
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-
-    override fun onActivityDestroyed(activity: Activity) {}
 
     private fun dispatch(state: AppState, timestamp: Long) {
         eventExecutor.execute {

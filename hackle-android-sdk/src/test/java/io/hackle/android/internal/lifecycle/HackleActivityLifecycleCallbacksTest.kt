@@ -1,5 +1,6 @@
 package io.hackle.android.internal.lifecycle
 
+import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleState
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
@@ -18,8 +19,7 @@ class HackleActivityLifecycleCallbacksTest {
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
 
-
-        callbacks.onActivityResumed(mockk())
+        callbacks.onState(LifecycleState.FOREGROUND, 0)
 
         expectThat(executor.executeCount) isEqualTo 1
         expectThat(appStateManager.currentState) isEqualTo AppState.FOREGROUND
@@ -39,8 +39,7 @@ class HackleActivityLifecycleCallbacksTest {
         val listener = mockk<AppStateChangeListener>()
         callbacks.addListener(listener)
 
-
-        callbacks.onActivityPaused(mockk())
+        callbacks.onState(LifecycleState.BACKGROUND, 0)
 
         expectThat(executor.executeCount) isEqualTo 1
         expectThat(appStateManager.currentState) isEqualTo AppState.BACKGROUND

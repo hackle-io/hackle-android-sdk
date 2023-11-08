@@ -1,9 +1,7 @@
 package io.hackle.android
 
-import android.app.Application
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.HackleActivityManager
 import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.EventRepository
@@ -22,6 +20,7 @@ import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventTriggerR
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageManager
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
+import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
@@ -148,7 +147,6 @@ internal object HackleApps {
         )
 
         val appStateManager = AppStateManager()
-        val hackleActivityManager = HackleActivityManager()
 
         val eventProcessor = DefaultEventProcessor(
             deduplicationDeterminer = dedupDeterminer,
@@ -164,7 +162,7 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            hackleActivityManager = hackleActivityManager
+            activityProvider = LifecycleManager.getInstance()
         )
 
         // Core
@@ -234,7 +232,7 @@ internal object HackleApps {
             processorFactory = inAppMessageEventProcessorFactory
         )
         val inAppMessageUi = InAppMessageUi.create(
-            hackleActivityManager = hackleActivityManager,
+            activityProvider = LifecycleManager.getInstance(),
             messageViewFactory = InAppMessageViewFactory(),
             eventHandler = inAppMessageEventHandler,
         )
@@ -265,7 +263,7 @@ internal object HackleApps {
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage
             ),
-            hackleActivityManager = hackleActivityManager
+            activityProvider = LifecycleManager.getInstance()
         )
 
         // Metrics
@@ -274,11 +272,9 @@ internal object HackleApps {
 
         // LifecycleCallbacks
 
-        (context as? Application)?.let {
-            it.registerActivityLifecycleCallbacks(hackleActivityManager)
-            it.registerActivityLifecycleCallbacks(lifecycleCallbacks)
-            it.registerActivityLifecycleCallbacks(userExplorer)
-        }
+        LifecycleManager.getInstance().addStateListener(lifecycleCallbacks)
+        LifecycleManager.getInstance().addStateListener(userExplorer)
+        LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
 
         // Instantiate
 
