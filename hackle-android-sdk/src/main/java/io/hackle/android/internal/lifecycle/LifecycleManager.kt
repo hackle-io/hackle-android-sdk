@@ -8,7 +8,6 @@ import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.log.Logger
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal class LifecycleManager : Application.ActivityLifecycleCallbacks, ActivityProvider {
 
