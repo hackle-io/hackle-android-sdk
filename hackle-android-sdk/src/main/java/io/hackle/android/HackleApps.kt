@@ -2,9 +2,9 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.database.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
-import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
@@ -127,7 +127,7 @@ internal object HackleApps {
 
         // EventProcessor
 
-        val databaseHelper = DatabaseHelper[context, sdkKey]
+        val databaseHelper = DatabaseHelper.getWorkspaceDatabase(context, sdkKey)
         val eventRepository = EventRepository(databaseHelper)
         val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
         val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")

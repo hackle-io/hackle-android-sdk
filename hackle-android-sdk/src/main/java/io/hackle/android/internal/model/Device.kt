@@ -1,10 +1,9 @@
 package io.hackle.android.internal.model
 
 import android.content.Context
-import io.hackle.android.internal.database.KeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.platform.AndroidPlatform
 import io.hackle.android.internal.platform.Platform
-import io.hackle.android.internal.platform.model.DeviceInfo
 import java.util.Locale
 import java.util.UUID
 

@@ -1,6 +1,6 @@
 package io.hackle.android.internal.inappmessage.trigger
 
-import io.hackle.android.internal.database.MapKeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpression
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage

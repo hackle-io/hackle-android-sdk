@@ -1,7 +1,7 @@
 //package io.hackle.android.internal.session
 //
 //import io.hackle.android.internal.database.KeyValueRepository
-//import io.hackle.android.internal.database.MapKeyValueRepository
+//import io.hackle.android.internal.database.repository.MapKeyValueRepository
 //import io.hackle.android.internal.lifecycle.AppState
 //import io.hackle.android.internal.model.Device
 //import io.hackle.android.internal.user.UserManager
