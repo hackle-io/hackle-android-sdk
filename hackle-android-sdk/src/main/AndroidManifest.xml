@@ -3,19 +3,33 @@
     package="io.hackle.android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application>
         <activity
-            android:name="io.hackle.android.ui.explorer.activity.HackleUserExplorerActivity"
+            android:name=".ui.explorer.activity.HackleUserExplorerActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/HackleTheme" />
 
         <activity
-            android:name="io.hackle.android.ui.inappmessage.activity.InAppMessageActivity"
+            android:name=".ui.inappmessage.activity.InAppMessageActivity"
             android:configChanges="orientation|screenSize"
             android:exported="false"
             android:theme="@style/HackleInAppMessageTheme" />
+
+        <activity
+            android:name=".ui.notification.NotificationTrampolineActivity"
+            android:exported="false"
+            android:theme="@style/Hackle.NotificationTrampoline.Transparent" />
+
+        <receiver android:name=".ui.notification.NotificationBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
