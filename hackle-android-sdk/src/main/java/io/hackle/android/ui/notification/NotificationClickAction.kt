@@ -6,15 +6,9 @@ enum class NotificationClickAction(val text: String) {
     DEEP_LINK("DEEP_LINK");
 
     companion object {
-
         private val ALL = NotificationClickAction.values().associateBy { it.text }
-
         fun from(name: String): NotificationClickAction {
             return requireNotNull(ALL[name]) { "name[$name]" }
-        }
-
-        fun exists(name: String): Boolean {
-            return ALL.containsKey(name)
         }
     }
 }
