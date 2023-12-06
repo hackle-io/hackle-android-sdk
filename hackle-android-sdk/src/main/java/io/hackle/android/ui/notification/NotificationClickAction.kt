@@ -1,6 +1,6 @@
 package io.hackle.android.ui.notification
 
-enum class NotificationClickAction(val text: String) {
+internal enum class NotificationClickAction(val text: String) {
 
     APP_OPEN("APP_OPEN"),
     DEEP_LINK("DEEP_LINK");

@@ -24,7 +24,7 @@ import io.hackle.android.ui.notification.Constants.KEY_THUMBNAIL_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_TITLE
 import io.hackle.sdk.core.internal.log.Logger
 
-object NotificationFactory {
+internal object NotificationFactory {
 
     private val log = Logger<NotificationFactory>()
 

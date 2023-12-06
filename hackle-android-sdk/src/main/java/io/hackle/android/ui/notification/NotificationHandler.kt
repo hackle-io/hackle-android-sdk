@@ -10,7 +10,7 @@ import io.hackle.android.ui.notification.Constants.KEY_MESSAGE_ID
 import io.hackle.android.ui.notification.Constants.KEY_SHOW_FOREGROUND
 import io.hackle.sdk.core.internal.log.Logger
 
-object NotificationHandler {
+internal object NotificationHandler {
 
     private const val TAG = "hackle_notification"
     private val log = Logger<NotificationHandler>()
