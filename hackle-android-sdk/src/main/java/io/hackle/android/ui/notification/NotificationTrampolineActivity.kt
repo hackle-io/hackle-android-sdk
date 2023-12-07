@@ -5,6 +5,9 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import io.hackle.android.internal.database.Database
+import io.hackle.android.internal.database.DatabaseHelper
+import io.hackle.android.internal.database.repository.NotificationRepository
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationTrampolineActivity : Activity() {
@@ -28,8 +31,20 @@ internal class NotificationTrampolineActivity : Activity() {
             return
         }
 
+        saveNotificationData(notificationData)
         trampoline(intent.data, notificationExtras, notificationData)
         finish()
+    }
+
+    private fun saveNotificationData(data: NotificationData) {
+        try {
+            val sharedDatabase = DatabaseHelper.getSharedDatabase(this)
+            val repository = NotificationRepository(sharedDatabase)
+            repository.save(data)
+            log.debug { "Saved notification data : ${data.messageId}" }
+        } catch (e: Exception) {
+            log.debug { "Notification data save error" }
+        }
     }
 
     private fun trampoline(uri: Uri?, extras: Bundle, data: NotificationData) {

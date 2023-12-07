@@ -11,7 +11,7 @@ import io.hackle.android.ui.notification.Constants.KEY_HACKLE
 import io.hackle.android.ui.notification.Constants.KEY_LARGE_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_LINK
 import io.hackle.android.ui.notification.Constants.KEY_MESSAGE_ID
-import io.hackle.android.ui.notification.Constants.KEY_SERVER_SENT_TIME
+import io.hackle.android.ui.notification.Constants.KEY_FCM_SENT_TIME
 import io.hackle.android.ui.notification.Constants.KEY_SHOW_FOREGROUND
 import io.hackle.android.ui.notification.Constants.KEY_THUMBNAIL_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_TITLE
@@ -22,7 +22,7 @@ internal data class NotificationData(
     val workspaceId: Long,
     val environmentId: Long,
     val campaignId: Long,
-    val serverSentTime: Long,
+    val fcmSentTime: Long,
     val showForeground: Boolean,
     val iconColorFilter: String?,
     val title: String?,
@@ -48,7 +48,7 @@ internal data class NotificationData(
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong() ,
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
                     campaignId = checkNotNull(hackle[KEY_CAMPAIGN_ID] as? Number).toLong(),
-                    serverSentTime = data.getLong(KEY_SERVER_SENT_TIME),
+                    fcmSentTime = data.getLong(KEY_FCM_SENT_TIME),
                     showForeground = hackle[KEY_SHOW_FOREGROUND] as? Boolean ?: false,
                     iconColorFilter = hackle[KEY_COLOR_FILTER] as? String,
                     title = hackle[KEY_TITLE] as? String,
