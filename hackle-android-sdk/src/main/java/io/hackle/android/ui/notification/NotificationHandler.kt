@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.ui.notification.Constants.KEY_HACKLE
-import io.hackle.android.ui.notification.Constants.KEY_MESSAGE_ID
-import io.hackle.android.ui.notification.Constants.KEY_SHOW_FOREGROUND
 import io.hackle.sdk.core.internal.log.Logger
 
 internal object NotificationHandler {
@@ -17,7 +15,7 @@ internal object NotificationHandler {
 
     fun isHackleIntent(intent: Intent): Boolean {
         val extras = intent.extras ?: return false
-        return extras.getString(KEY_HACKLE) == "true"
+        return extras.containsKey(KEY_HACKLE)
     }
 
     private fun isAppInForeground(context: Context): Boolean {
@@ -39,32 +37,37 @@ internal object NotificationHandler {
         return false
     }
 
-    private fun shouldDisplayNotificationInForeground(intent: Intent): Boolean {
-        val extras = intent.extras ?: return false
-        return extras.getString(KEY_SHOW_FOREGROUND) == "true"
-    }
-
     fun handleNotificationIntent(context: Context, intent: Intent): Boolean {
         if (!isHackleIntent(intent)) {
             log.debug { "Non hackle notification received." }
             return false
         }
 
-        val notificationExtras = intent.extras ?: return false
-        log.debug { "Hackle notification received : $notificationExtras" }
-
-        if (!shouldDisplayNotificationInForeground(intent) && isAppInForeground(context)) {
-            log.debug { "Bypass hackle notification handling because app in foregrounded." }
+        val notificationExtras = intent.extras
+        if (notificationExtras == null) {
+            log.debug { "No data received." }
             return false
         }
 
-        try {
-            val messageId = checkNotNull(notificationExtras.getString(KEY_MESSAGE_ID)) {
-                "$KEY_MESSAGE_ID must not be null"
+        val notificationData = NotificationData.from(intent)
+        if (notificationData == null) {
+            log.debug { "Notification data parse error." }
+            return false
+        }
+
+        log.debug { "Parsed notification data : $notificationData" }
+
+        if (!notificationData.showForeground) {
+            if (isAppInForeground(context)) {
+                log.debug { "Bypass notification handling because app in foregrounded." }
+                return false
             }
-            val notification = NotificationFactory.createNotification(context, notificationExtras)
+        }
+
+        try {
+            val notification = NotificationFactory.createNotification(context, notificationExtras, notificationData)
             val notificationManager = NotificationManagerCompat.from(context)
-            notificationManager.notify(TAG, messageId.hashCode(), notification)
+            notificationManager.notify(TAG, notificationData.notificationId, notification)
         } catch (e: Exception) {
             log.debug { e.message ?: "Handle notification intent error." }
             return false

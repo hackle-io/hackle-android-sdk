@@ -16,30 +16,24 @@ import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_NAME
-import io.hackle.android.ui.notification.Constants.KEY_BODY
-import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
-import io.hackle.android.ui.notification.Constants.KEY_LARGE_IMAGE_URL
-import io.hackle.android.ui.notification.Constants.KEY_LINK
-import io.hackle.android.ui.notification.Constants.KEY_THUMBNAIL_IMAGE_URL
-import io.hackle.android.ui.notification.Constants.KEY_TITLE
 import io.hackle.sdk.core.internal.log.Logger
 
 internal object NotificationFactory {
 
     private val log = Logger<NotificationFactory>()
 
-    fun createNotification(context: Context, bundle: Bundle): Notification {
+    fun createNotification(context: Context, extras: Bundle, data: NotificationData): Notification {
         val channelId = getDefaultNotificationChannelId(context)
         val builder = NotificationCompat.Builder(context, channelId)
         builder.setAutoCancel(true)
         setPriority(builder)
         setVisibility(builder)
-        setSmallIcon(context, builder, bundle)
-        setThumbnailIcon(context, builder, bundle)
-        setContentTitle(builder, bundle)
-        setContentText(builder, bundle)
-        setContentIntent(context, builder, bundle)
-        setBigPictureStyle(context, builder, bundle)
+        setSmallIcon(context, builder, data)
+        setThumbnailIcon(context, builder, data)
+        setContentTitle(builder, data)
+        setContentText(builder, data)
+        setContentIntent(context, builder, extras, data)
+        setBigPictureStyle(context, builder, data)
         return builder.build()
     }
 
@@ -68,40 +62,43 @@ internal object NotificationFactory {
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
     }
 
-    private fun setSmallIcon(context: Context, builder: NotificationCompat.Builder, bundle: Bundle) {
+    private fun setSmallIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val metadata = context.packageManager
             .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
         builder.setSmallIcon(metadata.icon)
 
-        if (bundle.containsKey(KEY_COLOR_FILTER)) {
-            val colorFilterString = bundle.getString(KEY_COLOR_FILTER)
-            builder.color = Color.parseColor(colorFilterString)
+        if (!data.iconColorFilter.isNullOrEmpty()) {
+            try {
+                builder.color = Color.parseColor(data.iconColorFilter)
+            } catch (_: Exception) {
+                log.debug { "Hex color parsing error : ${data.iconColorFilter}" }
+            }
         }
     }
 
-    private fun setThumbnailIcon(context: Context, builder: NotificationCompat.Builder, bundle: Bundle) {
-        val imageUrl = bundle.getString(KEY_THUMBNAIL_IMAGE_URL) ?: return
+    private fun setThumbnailIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
+        val imageUrl = data.thumbnailImageUrl ?: return
         val image = loadImageFromUrl(context, imageUrl) ?: return
         builder.setLargeIcon(image)
     }
 
-    private fun setContentTitle(builder: NotificationCompat.Builder, bundle: Bundle) {
-        val title = bundle.getString(KEY_TITLE) ?: return
+    private fun setContentTitle(builder: NotificationCompat.Builder, data: NotificationData) {
+        val title = data.title ?: return
         builder.setContentTitle(title)
     }
 
-    private fun setContentText(builder: NotificationCompat.Builder, bundle: Bundle) {
-        val body = bundle.getString(KEY_BODY) ?: return
+    private fun setContentText(builder: NotificationCompat.Builder, data: NotificationData) {
+        val body = data.body ?: return
         builder.setContentText(body)
     }
 
-    private fun setContentIntent(context: Context, builder: NotificationCompat.Builder, bundle: Bundle) {
+    private fun setContentIntent(context: Context, builder: NotificationCompat.Builder, extras: Bundle, data: NotificationData) {
         val notificationIntent = Intent(context, NotificationTrampolineActivity::class.java)
         notificationIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        bundle.getString(KEY_LINK)?.apply {
+        data.link?.apply {
             notificationIntent.data = Uri.parse(this)
         }
-        notificationIntent.putExtras(bundle)
+        notificationIntent.putExtras(extras)
         val pendingIntent = PendingIntent.getActivity(
             context,
             System.currentTimeMillis().toInt(),
@@ -111,25 +108,25 @@ internal object NotificationFactory {
         builder.setContentIntent(pendingIntent)
     }
 
-    private fun setBigPictureStyle(context: Context, builder: NotificationCompat.Builder, bundle: Bundle) {
-        if (!bundle.containsKey(KEY_LARGE_IMAGE_URL)) {
+    private fun setBigPictureStyle(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
+        if (data.largeImageUrl.isNullOrEmpty()) {
             return
         }
 
         val bigPictureStyle = NotificationCompat.BigPictureStyle()
-        setBigThumbnailIcon(context, bigPictureStyle, bundle)
-        setBigPicture(context, bigPictureStyle, bundle)
+        setBigThumbnailIcon(context, bigPictureStyle, data)
+        setBigPicture(context, bigPictureStyle, data)
         builder.setStyle(bigPictureStyle)
     }
 
-    private fun setBigThumbnailIcon(context: Context, bigPictureStyle: NotificationCompat.BigPictureStyle, bundle: Bundle) {
-        val imageUrl = bundle.getString(KEY_THUMBNAIL_IMAGE_URL) ?: return
+    private fun setBigThumbnailIcon(context: Context, bigPictureStyle: NotificationCompat.BigPictureStyle, data: NotificationData) {
+        val imageUrl = data.thumbnailImageUrl ?: return
         val image = loadImageFromUrl(context, imageUrl) ?: return
         bigPictureStyle.bigLargeIcon(image)
     }
 
-    private fun setBigPicture(context: Context, bigPictureStyle: NotificationCompat.BigPictureStyle, bundle: Bundle) {
-        val imageUrl = bundle.getString(KEY_LARGE_IMAGE_URL) ?: return
+    private fun setBigPicture(context: Context, bigPictureStyle: NotificationCompat.BigPictureStyle, data: NotificationData) {
+        val imageUrl = data.largeImageUrl ?: return
         val image = loadImageFromUrl(context, imageUrl) ?: return
         bigPictureStyle.bigPicture(image)
     }
