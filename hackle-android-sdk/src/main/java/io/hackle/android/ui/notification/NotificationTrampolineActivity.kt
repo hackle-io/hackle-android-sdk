@@ -5,8 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import io.hackle.android.internal.database.DatabaseHelper
-import io.hackle.android.internal.database.repository.NotificationRepository
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationTrampolineActivity : Activity() {
@@ -30,25 +28,13 @@ internal class NotificationTrampolineActivity : Activity() {
             return
         }
 
-        saveNotificationData(notificationData)
+        NotificationHandler.getInstance(this).handleNotificationData(notificationData)
         trampoline(intent.data, notificationExtras, notificationData)
         finish()
     }
 
-    private fun saveNotificationData(data: NotificationData) {
-        try {
-            val sharedDatabase = DatabaseHelper.getSharedDatabase(this)
-            val repository = NotificationRepository(sharedDatabase)
-            val entity = data.toDto()
-            repository.save(entity)
-            log.debug { "Saved notification data : ${entity.messageId}[${entity.clickTimestamp}]" }
-        } catch (e: Exception) {
-            log.debug { "Notification data save error" }
-        }
-    }
-
     private fun trampoline(uri: Uri?, extras: Bundle, data: NotificationData) {
-        log.debug { "Notification click action : ${data.clickAction}" }
+        log.debug { "Notification click action: ${data.clickAction}" }
 
         when (data.clickAction) {
             NotificationClickAction.APP_OPEN -> {
@@ -69,7 +55,7 @@ internal class NotificationTrampolineActivity : Activity() {
                         startLauncherActivity(extras)
                     }
 
-                    log.debug { "Redirected to : $uri" }
+                    log.debug { "Redirected to: $uri" }
                 }
             }
         }

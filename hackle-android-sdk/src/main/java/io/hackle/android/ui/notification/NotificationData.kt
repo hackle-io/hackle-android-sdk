@@ -7,11 +7,11 @@ import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_ID
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_ENVIRONMENT_ID
+import io.hackle.android.ui.notification.Constants.KEY_FCM_SENT_TIME
 import io.hackle.android.ui.notification.Constants.KEY_HACKLE
 import io.hackle.android.ui.notification.Constants.KEY_LARGE_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_LINK
 import io.hackle.android.ui.notification.Constants.KEY_MESSAGE_ID
-import io.hackle.android.ui.notification.Constants.KEY_FCM_SENT_TIME
 import io.hackle.android.ui.notification.Constants.KEY_SHOW_FOREGROUND
 import io.hackle.android.ui.notification.Constants.KEY_THUMBNAIL_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_TITLE

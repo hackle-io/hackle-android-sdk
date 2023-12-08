@@ -48,7 +48,7 @@ internal object NotificationFactory {
                     NotificationManager.IMPORTANCE_DEFAULT
                 )
                 notificationManager.createNotificationChannel(channel)
-                log.debug { "Created default notification channel name : $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
+                log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
             }
         }
         return DEFAULT_NOTIFICATION_CHANNEL_ID
@@ -71,7 +71,7 @@ internal object NotificationFactory {
             try {
                 builder.color = Color.parseColor(data.iconColorFilter)
             } catch (_: Exception) {
-                log.debug { "Hex color parsing error : ${data.iconColorFilter}" }
+                log.debug { "Hex color parsing error: ${data.iconColorFilter}" }
             }
         }
     }
@@ -139,7 +139,7 @@ internal object NotificationFactory {
                 .submit()
                 .get()
         } catch (e: Exception) {
-            log.debug { "Failed to load image : $url" }
+            log.debug { "Failed to load image: $url" }
         }
         return null
     }
