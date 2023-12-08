@@ -40,7 +40,7 @@ internal class NotificationTrampolineActivity : Activity() {
         try {
             val sharedDatabase = DatabaseHelper.getSharedDatabase(this)
             val repository = NotificationRepository(sharedDatabase)
-            repository.save(data)
+            repository.save(data.toDto())
             log.debug { "Saved notification data : ${data.messageId}" }
         } catch (e: Exception) {
             log.debug { "Notification data save error" }

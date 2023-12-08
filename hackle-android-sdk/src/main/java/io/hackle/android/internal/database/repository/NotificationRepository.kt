@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import io.hackle.android.internal.database.shared.NotificationEntity
 import io.hackle.android.internal.database.shared.SharedDatabase
-import io.hackle.android.ui.notification.NotificationData
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationRepository(
@@ -26,23 +25,23 @@ internal class NotificationRepository(
             .use { statement -> statement.simpleQueryForLong() }
     }
 
-    fun save(data: NotificationData) {
+    fun save(entity: NotificationEntity) {
         try {
-            database.execute { db -> save(db, data) }
+            database.execute { db -> save(db, entity) }
         } catch (e: Exception) {
             log.error(e) { "Failed to save event" }
         }
     }
 
-    private fun save(db: SQLiteDatabase, data: NotificationData) {
+    private fun save(db: SQLiteDatabase, entity: NotificationEntity) {
         val values = ContentValues()
-        values.put(NotificationEntity.COLUMN_MESSAGE_ID, data.messageId)
-        values.put(NotificationEntity.COLUMN_WORKSPACE_ID, data.workspaceId)
-        values.put(NotificationEntity.COLUMN_ENVIRONMENT_ID, data.environmentId)
-        values.put(NotificationEntity.COLUMN_CAMPAIGN_ID, data.campaignId)
-        values.put(NotificationEntity.COLUMN_FCM_SENT_TIME, data.fcmSentTime)
-        values.put(NotificationEntity.COLUMN_CLICK_ACTION, data.clickAction.text)
-        values.put(NotificationEntity.COLUMN_LINK, data.link)
+        values.put(NotificationEntity.COLUMN_MESSAGE_ID, entity.messageId)
+        values.put(NotificationEntity.COLUMN_WORKSPACE_ID, entity.workspaceId)
+        values.put(NotificationEntity.COLUMN_ENVIRONMENT_ID, entity.environmentId)
+        values.put(NotificationEntity.COLUMN_CAMPAIGN_ID, entity.campaignId)
+        values.put(NotificationEntity.COLUMN_FCM_SENT_TIME, entity.fcmSentTime)
+        values.put(NotificationEntity.COLUMN_CLICK_ACTION, entity.clickAction)
+        values.put(NotificationEntity.COLUMN_LINK, entity.link)
         db.insert(NotificationEntity.TABLE_NAME, null, values)
     }
 
