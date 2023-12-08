@@ -8,15 +8,24 @@ import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationHandler(context: Context) {
 
-    interface NotificationEventTracker {
+    interface NotificationDataReceiver {
 
-        fun receive(data: NotificationData)
+        fun receive(data: NotificationData, timestamp: Long)
     }
 
     private val repository = NotificationRepository(DatabaseHelper.getSharedDatabase(context))
+    private var receiver: NotificationDataReceiver? = null
+
+    fun setNotificationDataReceiver(receiver: NotificationDataReceiver) {
+        this.receiver = receiver
+    }
 
     fun handleNotificationData(data: NotificationData, timestamp: Long = System.currentTimeMillis()) {
-        saveInLocal(data, timestamp)
+        if (receiver != null) {
+            receiver?.receive(data, timestamp)
+        } else {
+            saveInLocal(data, timestamp)
+        }
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
