@@ -29,7 +29,7 @@ internal class NotificationRepository(
         try {
             database.execute { db -> save(db, entity) }
         } catch (e: Exception) {
-            log.error(e) { "Failed to save event" }
+            log.error { "Failed to save event: $e" }
         }
     }
 
@@ -39,7 +39,7 @@ internal class NotificationRepository(
         values.put(NotificationEntity.COLUMN_WORKSPACE_ID, entity.workspaceId)
         values.put(NotificationEntity.COLUMN_ENVIRONMENT_ID, entity.environmentId)
         values.put(NotificationEntity.COLUMN_CAMPAIGN_ID, entity.campaignId)
-        values.put(NotificationEntity.COLUMN_FCM_SENT_TIME, entity.fcmSentTime)
+        values.put(NotificationEntity.COLUMN_FCM_SENT_TIMESTAMP, entity.fcmSentTimestamp)
         values.put(NotificationEntity.COLUMN_CLICK_ACTION, entity.clickAction)
         values.put(NotificationEntity.COLUMN_LINK, entity.link)
         db.insert(NotificationEntity.TABLE_NAME, null, values)
@@ -51,7 +51,7 @@ internal class NotificationRepository(
                 getNotifications(db, workspaceId, environmentId, limit)
             }
         } catch (e: Exception) {
-            log.error(e) { "Failed to get notifications" }
+            log.error { "Failed to get notifications: $e" }
             emptyList()
         }
     }
@@ -67,7 +67,7 @@ internal class NotificationRepository(
                 "WHERE ${NotificationEntity.COLUMN_WORKSPACE_ID} = $workspaceId AND " +
                     "${NotificationEntity.COLUMN_ENVIRONMENT_ID} = $environmentId"
         if (limit != null) {
-            query += " ORDER BY ${NotificationEntity.COLUMN_FCM_SENT_TIME} ASC LIMIT $limit"
+            query += " ORDER BY ${NotificationEntity.COLUMN_FCM_SENT_TIMESTAMP} ASC LIMIT $limit"
         }
         return db.rawQuery(query, null).use { cursor ->
             val toReturn = mutableListOf<NotificationEntity>()
@@ -80,6 +80,25 @@ internal class NotificationRepository(
             cursor.close()
             return@use toReturn
         }
+    }
+
+    fun delete(messageId: String) {
+        try {
+            database.execute { db -> delete(db, messageId) }
+        } catch (e: Exception) {
+            log.error { "Failed to delete notification: $e" }
+        }
+    }
+
+    private fun delete(
+        db: SQLiteDatabase,
+        messageId: String
+    ) {
+        db.delete(
+            NotificationEntity.TABLE_NAME,
+            "${NotificationEntity.COLUMN_MESSAGE_ID}=?",
+            arrayOf(messageId)
+        )
     }
 
     companion object {

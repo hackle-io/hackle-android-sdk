@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import io.hackle.android.internal.database.Database
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.NotificationRepository
 import io.hackle.sdk.core.internal.log.Logger
@@ -40,8 +39,9 @@ internal class NotificationTrampolineActivity : Activity() {
         try {
             val sharedDatabase = DatabaseHelper.getSharedDatabase(this)
             val repository = NotificationRepository(sharedDatabase)
-            repository.save(data.toDto())
-            log.debug { "Saved notification data : ${data.messageId}" }
+            val entity = data.toDto()
+            repository.save(entity)
+            log.debug { "Saved notification data : ${entity.messageId}[${entity.clickTimestamp}]" }
         } catch (e: Exception) {
             log.debug { "Notification data save error" }
         }
