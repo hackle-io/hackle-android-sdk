@@ -1,7 +1,7 @@
 package io.hackle.android.internal.workspace.dto
 
 import io.hackle.android.internal.utils.parseJson
-import io.hackle.android.internal.workspace.WorkspaceDto
+import io.hackle.android.internal.workspace.WorkspaceConfigDto
 import io.hackle.android.internal.workspace.WorkspaceImpl
 import io.hackle.sdk.core.workspace.Workspace
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
@@ -13,7 +13,7 @@ internal class ResourcesWorkspaceFetcher(fileName: String) : WorkspaceFetcher {
     private val workspace: Workspace
 
     init {
-        val dto = String(Files.readAllBytes(Paths.get("src/test/resources/$fileName"))).parseJson<WorkspaceDto>()
+        val dto = String(Files.readAllBytes(Paths.get("src/test/resources/$fileName"))).parseJson<WorkspaceConfigDto>()
         workspace = WorkspaceImpl.from(dto)
     }
 
