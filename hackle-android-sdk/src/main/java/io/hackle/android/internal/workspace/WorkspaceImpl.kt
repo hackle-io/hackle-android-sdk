@@ -66,7 +66,7 @@ internal class WorkspaceImpl(
 
 
     companion object {
-        fun from(dto: WorkspaceDto): Workspace {
+        fun from(dto: WorkspaceConfigDto): Workspace {
 
             val experiments: List<Experiment> =
                 dto.experiments.mapNotNull { it.toExperimentOrNull(AB_TEST) }
