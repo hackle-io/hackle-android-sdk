@@ -5,6 +5,7 @@ import android.os.Build
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.EventRepository
+import io.hackle.android.internal.database.repository.NotificationRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
@@ -25,6 +26,7 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
+import io.hackle.android.internal.notification.NotificationEventTracker
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.CompositeSynchronizer
@@ -53,6 +55,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageLinkActionHandler
 import io.hackle.android.ui.inappmessage.event.InAppMessageLinkAndCloseActionHandler
 import io.hackle.android.ui.inappmessage.event.UriHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
+import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext
 import io.hackle.sdk.core.evaluation.get
@@ -253,6 +256,20 @@ internal object HackleApps {
             appStateManager = appStateManager
         )
         eventPublisher.add(inAppMessageManager)
+
+        // Notification
+
+        val notificationEventTracker = NotificationEventTracker(
+            core = core,
+            executor = TaskExecutors.default(),
+            workspaceFetcher = workspaceManager,
+            userManager = userManager,
+            repository = NotificationRepository(
+                DatabaseHelper.getSharedDatabase(context)
+            )
+        )
+        NotificationHandler.getInstance(context)
+            .setNotificationDataReceiver(notificationEventTracker)
 
         // UserExplorer
 

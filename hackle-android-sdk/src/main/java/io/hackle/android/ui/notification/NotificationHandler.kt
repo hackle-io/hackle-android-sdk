@@ -4,43 +4,26 @@ import android.content.Context
 import android.content.Intent
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.NotificationRepository
-import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.android.internal.task.TaskExecutors
 
 internal class NotificationHandler(context: Context) {
 
-    interface NotificationDataReceiver {
-
-        fun receive(data: NotificationData, timestamp: Long)
-    }
-
-    private val repository = NotificationRepository(DatabaseHelper.getSharedDatabase(context))
-    private var receiver: NotificationDataReceiver? = null
+    private var receiver: NotificationDataReceiver =
+        DefaultNotificationDataReceiver(
+            executor = TaskExecutors.default(),
+            repository = NotificationRepository(DatabaseHelper.getSharedDatabase(context))
+        )
 
     fun setNotificationDataReceiver(receiver: NotificationDataReceiver) {
         this.receiver = receiver
     }
 
     fun handleNotificationData(data: NotificationData, timestamp: Long = System.currentTimeMillis()) {
-        if (receiver != null) {
-            receiver?.receive(data, timestamp)
-        } else {
-            saveInLocal(data, timestamp)
-        }
-    }
-
-    private fun saveInLocal(data: NotificationData, timestamp: Long) {
-        try {
-            val entity = data.toDto(timestamp)
-            repository.save(entity)
-            log.debug { "Saved notification data: ${entity.messageId}[${entity.clickTimestamp}]" }
-        } catch (e: Exception) {
-            log.debug { "Notification data save error: $e" }
-        }
+        receiver.onNotificationDataReceived(data, timestamp)
     }
 
     companion object {
 
-        private val log = Logger<NotificationHandler>()
         private var _instance: NotificationHandler? = null
 
         fun getInstance(context: Context): NotificationHandler {
