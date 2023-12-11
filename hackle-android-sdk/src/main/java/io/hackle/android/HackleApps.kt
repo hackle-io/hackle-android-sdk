@@ -26,7 +26,7 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
-import io.hackle.android.internal.notification.NotificationEventTracker
+import io.hackle.android.internal.notification.NotificationDataManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.CompositeSynchronizer
@@ -259,9 +259,9 @@ internal object HackleApps {
 
         // Notification
 
-        val notificationEventTracker = NotificationEventTracker(
+        val notificationDataManager = NotificationDataManager(
             core = core,
-            executor = TaskExecutors.default(),
+            executor = eventExecutor,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
             repository = NotificationRepository(
@@ -269,7 +269,7 @@ internal object HackleApps {
             )
         )
         NotificationHandler.getInstance(context)
-            .setNotificationDataReceiver(notificationEventTracker)
+            .setNotificationDataReceiver(notificationDataManager)
 
         // UserExplorer
 
@@ -304,6 +304,7 @@ internal object HackleApps {
             userManager = userManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
+            notificationDataManager = notificationDataManager,
             device = device,
             userExplorer = userExplorer,
             sdk = sdk
