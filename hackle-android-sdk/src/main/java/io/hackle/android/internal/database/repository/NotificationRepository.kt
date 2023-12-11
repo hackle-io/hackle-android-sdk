@@ -82,9 +82,10 @@ internal class NotificationRepository(
         }
     }
 
-    fun delete(messageId: String) {
+    fun delete(entities: List<NotificationEntity>) {
         try {
-            database.execute { db -> delete(db, messageId) }
+            val messageIds = entities.map { it.messageId }
+            database.execute { db -> delete(db, messageIds) }
         } catch (e: Exception) {
             log.error { "Failed to delete notification: $e" }
         }
@@ -92,12 +93,12 @@ internal class NotificationRepository(
 
     private fun delete(
         db: SQLiteDatabase,
-        messageId: String
+        messageIds: List<String>
     ) {
         db.delete(
             NotificationEntity.TABLE_NAME,
             "${NotificationEntity.COLUMN_MESSAGE_ID}=?",
-            arrayOf(messageId)
+            messageIds.toTypedArray()
         )
     }
 

@@ -37,17 +37,6 @@ internal class NotificationManager(
         }
     }
 
-    private fun notifyPushTokenChanged() {
-        val fcmToken = preferences.getString(KEY_FCM_TOKEN)
-        if (fcmToken.isNullOrEmpty()) {
-            log.debug { "Push token is empty." }
-            return
-        }
-
-        val event = RegisterPushTokenEvent(fcmToken).toTrackEvent()
-        track(event)
-    }
-
     fun flush() {
         executor.execute(FlushTask())
     }
@@ -75,6 +64,17 @@ internal class NotificationManager(
         } catch (e: Exception) {
             log.error { "Failed to handle notification data: ${data.messageId}" }
         }
+    }
+
+    private fun notifyPushTokenChanged() {
+        val fcmToken = preferences.getString(KEY_FCM_TOKEN)
+        if (fcmToken.isNullOrEmpty()) {
+            log.debug { "Push token is empty." }
+            return
+        }
+
+        val event = RegisterPushTokenEvent(fcmToken).toTrackEvent()
+        track(event)
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
@@ -122,10 +122,10 @@ internal class NotificationManager(
 
                     for (notification in notifications) {
                         track(notification.toTrackEvent())
-                        repository.delete(notification.messageId)
                         log.debug { "Notification data[${notification.messageId}] successfully processed." }
                     }
 
+                    repository.delete(notifications)
                     Thread.sleep(300L)
                 }
             } catch (e: Exception) {
