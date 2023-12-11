@@ -26,7 +26,7 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
-import io.hackle.android.internal.notification.NotificationDataManager
+import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.CompositeSynchronizer
@@ -81,6 +81,7 @@ internal object HackleApps {
         loggerConfiguration(config)
 
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
+        val keyValueRepositoryBySdkKey = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         val device = Device.create(context, globalKeyValueRepository)
 
         val httpClient = createHttpClient(context, sdk)
@@ -114,7 +115,7 @@ internal object HackleApps {
         val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
         val userManager = UserManager(
             device = device,
-            repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey"),
+            repository = keyValueRepositoryBySdkKey,
             cohortFetcher = cohortFetcher
         )
         compositeSynchronizer.add(COHORT, userManager)
@@ -259,17 +260,19 @@ internal object HackleApps {
 
         // Notification
 
-        val notificationDataManager = NotificationDataManager(
+        val notificationManager = NotificationManager(
             core = core,
             executor = eventExecutor,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
+            preferences = keyValueRepositoryBySdkKey,
             repository = NotificationRepository(
                 DatabaseHelper.getSharedDatabase(context)
             )
         )
         NotificationHandler.getInstance(context)
-            .setNotificationDataReceiver(notificationDataManager)
+            .setNotificationDataReceiver(notificationManager)
+        userManager.addListener(notificationManager)
 
         // UserExplorer
 
@@ -304,7 +307,7 @@ internal object HackleApps {
             userManager = userManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
-            notificationDataManager = notificationDataManager,
+            notificationManager = notificationManager,
             device = device,
             userExplorer = userExplorer,
             sdk = sdk

@@ -11,7 +11,7 @@ import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
-import io.hackle.android.internal.notification.NotificationDataManager
+import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -47,7 +47,7 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
-    private val notificationDataManager: NotificationDataManager,
+    private val notificationManager: NotificationManager,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
     internal val sdk: Sdk
@@ -306,6 +306,14 @@ class HackleApp internal constructor(
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
+    fun setPushToken(token: String) {
+        try {
+            notificationManager.setPushToken(token)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while set registered push token: $t" }
+        }
+    }
+
     override fun close() {
         core.tryClose()
     }
@@ -317,7 +325,7 @@ class HackleApp internal constructor(
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 synchronizer.sync()
-                notificationDataManager.flush()
+                notificationManager.flush()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }

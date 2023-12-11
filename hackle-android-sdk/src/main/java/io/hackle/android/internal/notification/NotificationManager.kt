@@ -1,26 +1,59 @@
 package io.hackle.android.internal.notification
 
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.NotificationRepository
+import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.android.ui.notification.NotificationDataReceiver
 import io.hackle.android.ui.notification.toDto
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
 import java.util.concurrent.Executor
 
-internal class NotificationDataManager(
+internal class NotificationManager(
     private val core: HackleCore,
     private val executor: Executor,
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
+    private val preferences: KeyValueRepository,
     private val repository: NotificationRepository,
-) : NotificationDataReceiver {
+) : NotificationDataReceiver, UserListener {
+
+    fun setPushToken(fcmToken: String) {
+        try {
+            val saved = preferences.getString(KEY_FCM_TOKEN)
+            if (saved == fcmToken) {
+                return
+            }
+
+            preferences.putString(KEY_FCM_TOKEN, fcmToken)
+            notifyPushTokenChanged()
+        } catch (e: Exception) {
+            log.debug { "Failed to register FCM push token: $e" }
+        }
+    }
+
+    private fun notifyPushTokenChanged() {
+        val fcmToken = preferences.getString(KEY_FCM_TOKEN)
+        if (fcmToken.isNullOrEmpty()) {
+            log.debug { "Push token is empty." }
+            return
+        }
+
+        val event = RegisterPushTokenEvent(fcmToken).toTrackEvent()
+        track(event)
+    }
 
     fun flush() {
         executor.execute(FlushTask())
+    }
+
+    override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
+        notifyPushTokenChanged()
     }
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
@@ -62,7 +95,7 @@ internal class NotificationDataManager(
         log.debug { "${event.key} event queued." }
     }
 
-    inner class FlushTask(
+    private inner class FlushTask(
         private val batchSize: Int = 5
     ) : Runnable {
 
@@ -103,7 +136,9 @@ internal class NotificationDataManager(
 
     companion object {
 
-        private val log = Logger<NotificationDataManager>()
+        private const val KEY_FCM_TOKEN = "fcm_token"
+
+        private val log = Logger<NotificationManager>()
 
     }
 }

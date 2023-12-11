@@ -49,6 +49,8 @@ fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
 fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
 fun Hackle.resetUser() = app.resetUser()
 
+fun Hackle.setPushToken(token: String) = app.setPushToken(token)
+
 @Deprecated(
     "Use remoteConfig() with setUser(user) instead",
     ReplaceWith("app.remoteConfig()")
