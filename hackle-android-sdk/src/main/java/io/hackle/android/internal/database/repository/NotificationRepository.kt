@@ -27,7 +27,7 @@ internal class NotificationRepository(
 
     fun save(entity: NotificationEntity) {
         try {
-            database.execute { db -> save(db, entity) }
+            database.execute(transaction = true) { db -> save(db, entity) }
         } catch (e: Exception) {
             log.error { "Failed to save event: $e" }
         }
@@ -45,9 +45,9 @@ internal class NotificationRepository(
         db.insert(NotificationEntity.TABLE_NAME, null, values)
     }
 
-    fun getNotifications(workspaceId: Long, environmentId: Long, limit: Int): List<NotificationEntity> {
+    fun getNotifications(workspaceId: Long, environmentId: Long, limit: Int? = null): List<NotificationEntity> {
         return try {
-            database.execute(transaction = true) { db ->
+            database.execute(readOnly = true) { db ->
                 getNotifications(db, workspaceId, environmentId, limit)
             }
         } catch (e: Exception) {
@@ -85,7 +85,7 @@ internal class NotificationRepository(
     fun delete(entities: List<NotificationEntity>) {
         try {
             val messageIds = entities.map { it.messageId }
-            database.execute { db -> delete(db, messageIds) }
+            database.execute(transaction = true) { db -> delete(db, messageIds) }
         } catch (e: Exception) {
             log.error { "Failed to delete notification: $e" }
         }
