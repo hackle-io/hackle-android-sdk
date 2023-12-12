@@ -13,6 +13,7 @@ import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class NotificationManager(
     private val core: HackleCore,
@@ -22,6 +23,8 @@ internal class NotificationManager(
     private val preferences: KeyValueRepository,
     private val repository: NotificationRepository,
 ) : NotificationDataReceiver, UserListener {
+
+    private val flushing = AtomicBoolean(false)
 
     fun setPushToken(fcmToken: String) {
         try {
@@ -38,6 +41,10 @@ internal class NotificationManager(
     }
 
     fun flush() {
+        if (flushing.getAndSet(true)) {
+            return
+        }
+
         executor.execute(FlushTask())
     }
 
@@ -96,13 +103,11 @@ internal class NotificationManager(
     }
 
     private inner class FlushTask(
-        private val batchSize: Int = 5
+        private val batchSize: Int = DEFAULT_FLUSH_BATCH_SIZE
     ) : Runnable {
 
         override fun run() {
             try {
-                log.debug { "Flushing notification data." }
-
                 val workspace = workspaceFetcher.fetch()
                 if (workspace == null) {
                     log.debug { "Workspace data is empty." }
@@ -130,6 +135,9 @@ internal class NotificationManager(
                 }
             } catch (e: Exception) {
                 log.debug { "Failed to flush notification data: $e" }
+            } finally {
+                flushing.set(false)
+                log.debug { "Flushed notification data." }
             }
         }
     }
@@ -137,6 +145,7 @@ internal class NotificationManager(
     companion object {
 
         private const val KEY_FCM_TOKEN = "fcm_token"
+        private const val DEFAULT_FLUSH_BATCH_SIZE = 5
 
         private val log = Logger<NotificationManager>()
 

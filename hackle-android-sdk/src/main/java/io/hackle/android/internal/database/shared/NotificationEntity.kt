@@ -40,7 +40,6 @@ internal data class NotificationEntity(
             ")"
 
         fun from(cursor: Cursor): NotificationEntity {
-
             return NotificationEntity(
                 messageId =  cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)),
                 workspaceId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID)),
