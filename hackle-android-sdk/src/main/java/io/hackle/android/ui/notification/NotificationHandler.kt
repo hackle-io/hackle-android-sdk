@@ -3,7 +3,7 @@ package io.hackle.android.ui.notification
 import android.content.Context
 import android.content.Intent
 import io.hackle.android.internal.database.DatabaseHelper
-import io.hackle.android.internal.database.repository.NotificationRepository
+import io.hackle.android.internal.database.repository.NotificationRepositoryImpl
 import io.hackle.android.internal.task.TaskExecutors
 
 internal class NotificationHandler(context: Context) {
@@ -11,7 +11,7 @@ internal class NotificationHandler(context: Context) {
     private var receiver: NotificationDataReceiver =
         DefaultNotificationDataReceiver(
             executor = TaskExecutors.default(),
-            repository = NotificationRepository(DatabaseHelper.getSharedDatabase(context))
+            repository = NotificationRepositoryImpl(DatabaseHelper.getSharedDatabase(context))
         )
 
     fun setNotificationDataReceiver(receiver: NotificationDataReceiver) {

@@ -6,6 +6,7 @@ import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.repository.NotificationRepository
+import io.hackle.android.internal.database.repository.NotificationRepositoryImpl
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
@@ -266,7 +267,7 @@ internal object HackleApps {
             workspaceFetcher = workspaceManager,
             userManager = userManager,
             preferences = keyValueRepositoryBySdkKey,
-            repository = NotificationRepository(
+            repository = NotificationRepositoryImpl(
                 DatabaseHelper.getSharedDatabase(context)
             )
         )

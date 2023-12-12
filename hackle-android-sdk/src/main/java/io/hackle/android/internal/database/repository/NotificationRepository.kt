@@ -6,13 +6,23 @@ import io.hackle.android.internal.database.shared.NotificationEntity
 import io.hackle.android.internal.database.shared.SharedDatabase
 import io.hackle.sdk.core.internal.log.Logger
 
-internal class NotificationRepository(
-    private val database: SharedDatabase
-) {
+internal interface NotificationRepository {
+    fun count(): Int
 
-    fun count(): Long {
+    fun save(entity: NotificationEntity)
+
+    fun getNotifications(workspaceId: Long, environmentId: Long, limit: Int? = null): List<NotificationEntity>
+
+    fun delete(entities: List<NotificationEntity>)
+}
+
+internal class NotificationRepositoryImpl(
+    private val database: SharedDatabase
+) : NotificationRepository {
+
+    override fun count(): Int {
         return try {
-            database.execute(readOnly = true) { db -> count(db) }
+            database.execute(readOnly = true) { db -> count(db).toInt() }
         } catch (e: Exception) {
             log.error { "Failed to count push messages: $e" }
             0
@@ -25,7 +35,7 @@ internal class NotificationRepository(
             .use { statement -> statement.simpleQueryForLong() }
     }
 
-    fun save(entity: NotificationEntity) {
+    override fun save(entity: NotificationEntity) {
         try {
             database.execute(transaction = true) { db -> save(db, entity) }
         } catch (e: Exception) {
@@ -45,7 +55,7 @@ internal class NotificationRepository(
         db.insert(NotificationEntity.TABLE_NAME, null, values)
     }
 
-    fun getNotifications(workspaceId: Long, environmentId: Long, limit: Int? = null): List<NotificationEntity> {
+    override fun getNotifications(workspaceId: Long, environmentId: Long, limit: Int?): List<NotificationEntity> {
         return try {
             database.execute(readOnly = true) { db ->
                 getNotifications(db, workspaceId, environmentId, limit)
@@ -82,7 +92,7 @@ internal class NotificationRepository(
         }
     }
 
-    fun delete(entities: List<NotificationEntity>) {
+    override fun delete(entities: List<NotificationEntity>) {
         try {
             val messageIds = entities.map { it.messageId }
             database.execute(transaction = true) { db -> delete(db, messageIds) }

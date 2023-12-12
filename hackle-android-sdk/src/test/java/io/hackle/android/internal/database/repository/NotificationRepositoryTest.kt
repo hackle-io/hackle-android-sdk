@@ -34,7 +34,7 @@ internal class NotificationRepositoryTest {
     @MockK
     private lateinit var db: SQLiteDatabase
 
-    private lateinit var sut: NotificationRepository
+    private lateinit var sut: NotificationRepositoryImpl
 
     @Before
     fun before() {
@@ -49,7 +49,7 @@ internal class NotificationRepositoryTest {
         } answers {
             thirdArg<(SQLiteDatabase) -> Any>().invoke(db)
         }
-        sut = NotificationRepository(database)
+        sut = NotificationRepositoryImpl(database)
     }
 
     @Test
