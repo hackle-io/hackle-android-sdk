@@ -48,7 +48,7 @@ internal data class NotificationData(
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong() ,
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
                     campaignId = checkNotNull(hackle[KEY_CAMPAIGN_ID] as? Number).toLong(),
-                    fcmSentTimestamp = data.getLong(KEY_FCM_SENT_TIME),
+                    fcmSentTimestamp = data.getLong(KEY_FCM_SENT_TIME, 0L),
                     showForeground = hackle[KEY_SHOW_FOREGROUND] as? Boolean ?: false,
                     iconColorFilter = hackle[KEY_COLOR_FILTER] as? String,
                     title = hackle[KEY_TITLE] as? String,
