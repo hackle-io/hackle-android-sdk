@@ -19,7 +19,7 @@ class NotificationDataTest {
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
             "environmentId" to 2222,
-            "campaignId" to 3333,
+            "pushMessageId" to 3333,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
@@ -41,7 +41,7 @@ class NotificationDataTest {
         assertThat(result.fcmSentTimestamp, `is`(1234567890))
         assertThat(result.workspaceId, `is`(1111))
         assertThat(result.environmentId, `is`(2222))
-        assertThat(result.campaignId, `is`(3333))
+        assertThat(result.pushMessageId, `is`(3333))
         assertThat(result.showForeground, `is`(true))
         assertThat(result.iconColorFilter, `is`("#FFFFFF"))
         assertThat(result.title, `is`("foo"))
@@ -57,7 +57,7 @@ class NotificationDataTest {
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
             "environmentId" to 2222,
-            "campaignId" to 3333
+            "pushMessageId" to 3333
         )
         val bundle = mockBundleOf(mapOf(
             "google.message_id" to "abcd1234",
@@ -72,7 +72,7 @@ class NotificationDataTest {
         assertThat(result.fcmSentTimestamp, `is`(0))
         assertThat(result.workspaceId, `is`(1111))
         assertThat(result.environmentId, `is`(2222))
-        assertThat(result.campaignId, `is`(3333))
+        assertThat(result.pushMessageId, `is`(3333))
         assertThat(result.showForeground, `is`(false))
         assertNull(result.iconColorFilter)
         assertNull(result.title)
@@ -100,7 +100,7 @@ class NotificationDataTest {
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
             "environmentId" to 2222,
-            "campaignId" to 3333,
+            "pushMessageId" to 3333,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
@@ -123,7 +123,7 @@ class NotificationDataTest {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
             "environmentId" to 2222,
-            "campaignId" to 3333,
+            "pushMessageId" to 3333,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
@@ -147,7 +147,7 @@ class NotificationDataTest {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
-            "campaignId" to 3333,
+            "pushMessageId" to 3333,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
@@ -167,7 +167,7 @@ class NotificationDataTest {
     }
 
     @Test
-    fun `should return null if campaign id is empty`() {
+    fun `should return null if push message id is empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,

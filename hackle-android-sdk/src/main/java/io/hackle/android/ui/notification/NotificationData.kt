@@ -3,7 +3,7 @@ package io.hackle.android.ui.notification
 import android.content.Intent
 import io.hackle.android.internal.utils.parseJson
 import io.hackle.android.ui.notification.Constants.KEY_BODY
-import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_ID
+import io.hackle.android.ui.notification.Constants.KEY_PUSH_MESSAGE_ID
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_ENVIRONMENT_ID
@@ -21,7 +21,7 @@ internal data class NotificationData(
     val messageId: String,
     val workspaceId: Long,
     val environmentId: Long,
-    val campaignId: Long,
+    val pushMessageId: Long,
     val fcmSentTimestamp: Long,
     val showForeground: Boolean,
     val iconColorFilter: String?,
@@ -47,7 +47,7 @@ internal data class NotificationData(
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong() ,
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
-                    campaignId = checkNotNull(hackle[KEY_CAMPAIGN_ID] as? Number).toLong(),
+                    pushMessageId = checkNotNull(hackle[KEY_PUSH_MESSAGE_ID] as? Number).toLong(),
                     fcmSentTimestamp = data.getLong(KEY_FCM_SENT_TIME, 0L),
                     showForeground = hackle[KEY_SHOW_FOREGROUND] as? Boolean ?: false,
                     iconColorFilter = hackle[KEY_COLOR_FILTER] as? String,

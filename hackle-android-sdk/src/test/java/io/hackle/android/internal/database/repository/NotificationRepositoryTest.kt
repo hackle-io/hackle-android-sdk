@@ -4,7 +4,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import io.hackle.android.internal.database.shared.NotificationEntity
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_CAMPAIGN_ID
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_ID
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_CLICK_ACTION
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_CLICK_TIMESTAMP
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_ENVIRONMENT_ID
@@ -143,7 +143,7 @@ internal class NotificationRepositoryTest {
         every { cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID) } answers { 0 }
         every { cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID) } answers { 1 }
         every { cursor.getColumnIndexOrThrow(COLUMN_ENVIRONMENT_ID) } answers { 2 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_ID) } answers { 3 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_ID) } answers { 3 }
         every { cursor.getColumnIndexOrThrow(COLUMN_FCM_SENT_TIMESTAMP) } answers { 4 }
         every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_ACTION) } answers { 5 }
         every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP) } answers { 6 }

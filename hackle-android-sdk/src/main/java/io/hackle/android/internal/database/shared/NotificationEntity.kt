@@ -8,7 +8,7 @@ internal data class NotificationEntity(
     val messageId: String,
     val workspaceId: Long,
     val environmentId: Long,
-    val campaignId: Long,
+    val pushMessageId: Long,
     val fcmSentTimestamp: Long,
     val clickAction: String,
     val clickTimestamp: Long?,
@@ -21,7 +21,7 @@ internal data class NotificationEntity(
         const val COLUMN_MESSAGE_ID = "message_id"
         const val COLUMN_WORKSPACE_ID = "workspace_id"
         const val COLUMN_ENVIRONMENT_ID = "environment_id"
-        const val COLUMN_CAMPAIGN_ID = "campaign_id"
+        const val COLUMN_PUSH_MESSAGE_ID = "push_message_id"
         const val COLUMN_FCM_SENT_TIMESTAMP = "fcm_sent_timestamp"
         const val COLUMN_CLICK_ACTION = "click_action"
         const val COLUMN_CLICK_TIMESTAMP = "click_timestamp"
@@ -32,7 +32,7 @@ internal data class NotificationEntity(
                 "$COLUMN_MESSAGE_ID TEXT PRIMARY KEY," +
                 "$COLUMN_WORKSPACE_ID INTEGER NOT NULL," +
                 "$COLUMN_ENVIRONMENT_ID INTEGER NOT NULL," +
-                "$COLUMN_CAMPAIGN_ID INTEGER NOT NULL," +
+                "$COLUMN_PUSH_MESSAGE_ID INTEGER NOT NULL," +
                 "$COLUMN_FCM_SENT_TIMESTAMP INTEGER NOT NULL," +
                 "$COLUMN_CLICK_ACTION TEXT," +
                 "$COLUMN_CLICK_TIMESTAMP INTEGER," +
@@ -44,7 +44,7 @@ internal data class NotificationEntity(
                 messageId =  cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)),
                 workspaceId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID)),
                 environmentId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ENVIRONMENT_ID)),
-                campaignId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_ID)),
+                pushMessageId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_ID)),
                 fcmSentTimestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_FCM_SENT_TIMESTAMP)),
                 clickAction = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CLICK_ACTION)),
                 clickTimestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP)),

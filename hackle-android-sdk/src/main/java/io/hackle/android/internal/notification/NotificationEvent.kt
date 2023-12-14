@@ -14,7 +14,7 @@ internal fun RegisterPushTokenEvent.toTrackEvent() =
 internal fun NotificationData.toTrackEvent(clickTimestamp: Long) =
     Event.Builder("\$push_click")
         .property("message_id", messageId)
-        .property("campaign_id", campaignId)
+        .property("push_message_id", pushMessageId)
         .property("fcm_sent_timestamp", fcmSentTimestamp)
         .property("click_action", clickAction.text)
         .property("click_timestamp", clickTimestamp)
@@ -24,7 +24,7 @@ internal fun NotificationData.toTrackEvent(clickTimestamp: Long) =
 internal fun NotificationEntity.toTrackEvent() =
     Event.Builder("\$push_click")
         .property("message_id", messageId)
-        .property("campaign_id", campaignId)
+        .property("push_message_id", pushMessageId)
         .property("fcm_sent_timestamp", fcmSentTimestamp)
         .property("click_action", clickAction)
         .property("click_timestamp", clickTimestamp)

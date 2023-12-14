@@ -25,7 +25,7 @@ class NotificationEventTest {
             messageId = "abcd1234",
             workspaceId = 123L,
             environmentId = 456L,
-            campaignId = 789L,
+            pushMessageId = 789L,
             fcmSentTimestamp = 1234567890L,
             showForeground = true,
             iconColorFilter = "#FF00FF",
@@ -39,7 +39,7 @@ class NotificationEventTest {
         val to = from.toTrackEvent(987654321L)
         assertThat(to.key, `is`("\$push_click"))
         assertThat(to.properties["message_id"], `is`("abcd1234"))
-        assertThat(to.properties["campaign_id"], `is`(789L))
+        assertThat(to.properties["push_message_id"], `is`(789L))
         assertThat(to.properties["fcm_sent_timestamp"], `is`(1234567890L))
         assertThat(to.properties["click_action"], `is`("APP_OPEN"))
         assertThat(to.properties["click_timestamp"], `is`(987654321L))
@@ -52,7 +52,7 @@ class NotificationEventTest {
             messageId = "abcd1234",
             workspaceId = 123L,
             environmentId = 456L,
-            campaignId = 789L,
+            pushMessageId = 789L,
             fcmSentTimestamp = 1234567890L,
             clickAction = "APP_OPEN",
             clickTimestamp = 987654321L,
@@ -61,7 +61,7 @@ class NotificationEventTest {
         val to = from.toTrackEvent()
         assertThat(to.key, `is`("\$push_click"))
         assertThat(to.properties["message_id"], `is`("abcd1234"))
-        assertThat(to.properties["campaign_id"], `is`(789L))
+        assertThat(to.properties["push_message_id"], `is`(789L))
         assertThat(to.properties["fcm_sent_timestamp"], `is`(1234567890L))
         assertThat(to.properties["click_action"], `is`("APP_OPEN"))
         assertThat(to.properties["click_timestamp"], `is`(987654321L))

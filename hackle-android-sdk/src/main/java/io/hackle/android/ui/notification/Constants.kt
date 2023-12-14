@@ -11,7 +11,7 @@ internal object Constants {
     const val KEY_HACKLE = "hackle"
     const val KEY_WORKSPACE_ID = "workspaceId"
     const val KEY_ENVIRONMENT_ID = "environmentId"
-    const val KEY_CAMPAIGN_ID = "campaignId"
+    const val KEY_PUSH_MESSAGE_ID = "pushMessageId"
     const val KEY_SHOW_FOREGROUND = "showForeground"
     const val KEY_COLOR_FILTER = "colorFilter"
     const val KEY_TITLE = "title"

@@ -48,7 +48,7 @@ internal class NotificationRepositoryImpl(
         values.put(NotificationEntity.COLUMN_MESSAGE_ID, entity.messageId)
         values.put(NotificationEntity.COLUMN_WORKSPACE_ID, entity.workspaceId)
         values.put(NotificationEntity.COLUMN_ENVIRONMENT_ID, entity.environmentId)
-        values.put(NotificationEntity.COLUMN_CAMPAIGN_ID, entity.campaignId)
+        values.put(NotificationEntity.COLUMN_PUSH_MESSAGE_ID, entity.pushMessageId)
         values.put(NotificationEntity.COLUMN_FCM_SENT_TIMESTAMP, entity.fcmSentTimestamp)
         values.put(NotificationEntity.COLUMN_CLICK_ACTION, entity.clickAction)
         values.put(NotificationEntity.COLUMN_LINK, entity.link)
