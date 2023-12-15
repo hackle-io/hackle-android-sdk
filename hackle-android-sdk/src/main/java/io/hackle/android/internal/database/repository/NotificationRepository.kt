@@ -24,7 +24,7 @@ internal class NotificationRepositoryImpl(
         return try {
             database.execute(readOnly = true) { db -> count(db).toInt() }
         } catch (e: Exception) {
-            log.error { "Failed to count push messages: $e" }
+            log.error { "Failed to count notifications: $e" }
             0
         }
     }
