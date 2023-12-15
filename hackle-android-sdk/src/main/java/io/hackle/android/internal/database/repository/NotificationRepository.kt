@@ -39,7 +39,7 @@ internal class NotificationRepositoryImpl(
         try {
             database.execute(transaction = true) { db -> save(db, entity) }
         } catch (e: Exception) {
-            log.error { "Failed to save event: $e" }
+            log.error { "Failed to save notification: $e" }
         }
     }
 
