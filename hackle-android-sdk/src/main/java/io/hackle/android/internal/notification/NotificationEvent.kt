@@ -4,11 +4,13 @@ import io.hackle.android.internal.database.shared.NotificationEntity
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.sdk.common.Event
 
-internal data class RegisterPushTokenEvent(val fcmToken: String)
+internal data class RegisterPushTokenEvent(val token: String)
 
-internal fun RegisterPushTokenEvent.toTrackEvent() =
-    Event.Builder("\$push_token")
-        .property("fcm_token", fcmToken)
+internal fun RegisterPushTokenEvent.toTrackEvent(
+    providerType: NotificationProviderType = NotificationProviderType.FIREBASE_CLOUD_MESSAGING
+) = Event.Builder("\$push_token")
+        .property("provider_type", providerType.text)
+        .property("token", token)
         .build()
 
 internal fun NotificationData.toTrackEvent(clickTimestamp: Long) =

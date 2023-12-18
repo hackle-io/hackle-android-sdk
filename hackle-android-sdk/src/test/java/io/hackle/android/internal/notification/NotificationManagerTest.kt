@@ -63,7 +63,8 @@ class NotificationManagerTest {
             core.track(
                 withArg {
                     assertThat(it.key, `is`("\$push_token"))
-                    assertThat(it.properties["fcm_token"], `is`("abcd1234"))
+                    assertThat(it.properties["provider_type"], `is`("FCM"))
+                    assertThat(it.properties["token"], `is`("abcd1234"))
                 },
                 any(), any()
             )
@@ -81,7 +82,8 @@ class NotificationManagerTest {
             core.track(
                 withArg {
                     assertThat(it.key, `is`("\$push_token"))
-                    assertThat(it.properties["fcm_token"], `is`("bar"))
+                    assertThat(it.properties["provider_type"], `is`("FCM"))
+                    assertThat(it.properties["token"], `is`("bar"))
                 },
                 any(), any()
             )
@@ -109,7 +111,7 @@ class NotificationManagerTest {
             core.track(
                 withArg {
                     assertThat(it.key, `is`("\$push_token"))
-                    assertThat(it.properties["fcm_token"], `is`("foo"))
+                    assertThat(it.properties["token"], `is`("foo"))
                 },
                 any(), any()
             )
