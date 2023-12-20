@@ -111,11 +111,11 @@ internal class NotificationRepositoryImpl(
         db: SQLiteDatabase,
         messageIds: List<String>
     ) {
-        db.delete(
-            NotificationEntity.TABLE_NAME,
-            "${NotificationEntity.COLUMN_MESSAGE_ID}=?",
-            messageIds.toTypedArray()
-        )
+        val format = "?".repeat(messageIds.size)
+            .toCharArray()
+            .joinToString(",")
+        val whereClause = "${NotificationEntity.COLUMN_MESSAGE_ID} IN ($format)"
+        db.delete(NotificationEntity.TABLE_NAME, whereClause, messageIds.toTypedArray())
     }
 
     companion object {
