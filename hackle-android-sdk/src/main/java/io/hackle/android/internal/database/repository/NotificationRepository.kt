@@ -49,9 +49,11 @@ internal class NotificationRepositoryImpl(
         values.put(NotificationEntity.COLUMN_WORKSPACE_ID, entity.workspaceId)
         values.put(NotificationEntity.COLUMN_ENVIRONMENT_ID, entity.environmentId)
         values.put(NotificationEntity.COLUMN_PUSH_MESSAGE_ID, entity.pushMessageId)
-        values.put(NotificationEntity.COLUMN_FCM_SENT_TIMESTAMP, entity.fcmSentTimestamp)
-        values.put(NotificationEntity.COLUMN_CLICK_ACTION, entity.clickAction)
-        values.put(NotificationEntity.COLUMN_LINK, entity.link)
+        values.put(NotificationEntity.COLUMN_PUSH_MESSAGE_KEY, entity.pushMessageKey)
+        values.put(NotificationEntity.COLUMN_PUSH_MESSAGE_EXECUTION_ID, entity.pushMessageExecutionId)
+        values.put(NotificationEntity.COLUMN_PUSH_MESSAGE_DELIVERY_ID, entity.pushMessageDeliveryId)
+        values.put(NotificationEntity.COLUMN_CLICK_TIMESTAMP, entity.clickTimestamp)
+        values.put(NotificationEntity.COLUMN_DEBUG, entity.debug)
         db.insert(NotificationEntity.TABLE_NAME, null, values)
     }
 
@@ -77,7 +79,7 @@ internal class NotificationRepositoryImpl(
                 "WHERE ${NotificationEntity.COLUMN_WORKSPACE_ID} = $workspaceId AND " +
                     "${NotificationEntity.COLUMN_ENVIRONMENT_ID} = $environmentId"
         if (limit != null) {
-            query += " ORDER BY ${NotificationEntity.COLUMN_FCM_SENT_TIMESTAMP} ASC LIMIT $limit"
+            query += " ORDER BY ${NotificationEntity.COLUMN_CLICK_TIMESTAMP} ASC LIMIT $limit"
         }
         return db.rawQuery(query, null).use { cursor ->
             val toReturn = mutableListOf<NotificationEntity>()

@@ -13,22 +13,22 @@ internal fun RegisterPushTokenEvent.toTrackEvent(
         .property("token", token)
         .build()
 
-internal fun NotificationData.toTrackEvent(clickTimestamp: Long) =
+internal fun NotificationData.toTrackEvent() =
     Event.Builder("\$push_click")
         .property("message_id", messageId)
         .property("push_message_id", pushMessageId)
-        .property("fcm_sent_timestamp", fcmSentTimestamp)
-        .property("click_action", clickAction.text)
-        .property("click_timestamp", clickTimestamp)
-        .property("link", link)
+        .property("push_message_key", pushMessageKey)
+        .property("push_message_execution_id", pushMessageExecutionId)
+        .property("push_message_delivery_id", pushMessageDeliveryId)
+        .property("debug", debug)
         .build()
 
 internal fun NotificationEntity.toTrackEvent() =
     Event.Builder("\$push_click")
         .property("message_id", messageId)
         .property("push_message_id", pushMessageId)
-        .property("fcm_sent_timestamp", fcmSentTimestamp)
-        .property("click_action", clickAction)
-        .property("click_timestamp", clickTimestamp)
-        .property("link", link)
+        .property("push_message_key", pushMessageKey)
+        .property("push_message_execution_id", pushMessageExecutionId)
+        .property("push_message_delivery_id", pushMessageDeliveryId)
+        .property("debug", debug)
         .build()

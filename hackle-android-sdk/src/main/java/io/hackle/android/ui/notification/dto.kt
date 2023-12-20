@@ -8,8 +8,9 @@ internal fun NotificationData.toDto(clickTimestamp: Long = System.currentTimeMil
         workspaceId = workspaceId,
         environmentId = environmentId,
         pushMessageId = pushMessageId,
-        fcmSentTimestamp = fcmSentTimestamp,
-        clickAction = clickAction.text,
+        pushMessageKey = pushMessageKey,
+        pushMessageExecutionId = pushMessageExecutionId,
+        pushMessageDeliveryId = pushMessageDeliveryId,
         clickTimestamp = clickTimestamp,
-        link = link
+        debug = debug
     )

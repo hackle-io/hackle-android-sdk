@@ -34,7 +34,7 @@ internal class NotificationManager(
             }
 
             preferences.putString(KEY_FCM_TOKEN, fcmToken)
-            notifyPushTokenChanged()
+            notifyPushTokenChanged(System.currentTimeMillis())
         } catch (e: Exception) {
             log.debug { "Failed to register FCM push token: $e" }
         }
@@ -49,7 +49,7 @@ internal class NotificationManager(
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-        notifyPushTokenChanged()
+        notifyPushTokenChanged(timestamp)
     }
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
@@ -67,13 +67,13 @@ internal class NotificationManager(
                 return
             }
 
-            track(data.toTrackEvent(timestamp))
+            track(data.toTrackEvent(), timestamp)
         } catch (e: Exception) {
             log.error { "Failed to handle notification data: ${data.messageId}" }
         }
     }
 
-    private fun notifyPushTokenChanged() {
+    private fun notifyPushTokenChanged(timestamp: Long) {
         val fcmToken = preferences.getString(KEY_FCM_TOKEN)
         if (fcmToken.isNullOrEmpty()) {
             log.debug { "Push token is empty." }
@@ -81,7 +81,7 @@ internal class NotificationManager(
         }
 
         val event = RegisterPushTokenEvent(fcmToken).toTrackEvent()
-        track(event)
+        track(event, timestamp)
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
@@ -96,9 +96,9 @@ internal class NotificationManager(
         }
     }
 
-    private fun track(event: Event) {
+    private fun track(event: Event, timestamp: Long) {
         val hackleUser = userManager.toHackleUser(userManager.currentUser)
-        core.track(event, hackleUser, System.currentTimeMillis())
+        core.track(event, hackleUser, timestamp)
         log.debug { "${event.key} event queued." }
     }
 
@@ -126,7 +126,7 @@ internal class NotificationManager(
                     }
 
                     for (notification in notifications) {
-                        track(notification.toTrackEvent())
+                        track(notification.toTrackEvent(), notification.clickTimestamp ?: System.currentTimeMillis())
                         log.debug { "Notification data[${notification.messageId}] successfully processed." }
                     }
 
