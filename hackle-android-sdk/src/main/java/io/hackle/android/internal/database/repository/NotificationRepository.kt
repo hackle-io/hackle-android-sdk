@@ -2,12 +2,13 @@ package io.hackle.android.internal.database.repository
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.text.TextUtils
 import io.hackle.android.internal.database.shared.NotificationEntity
 import io.hackle.android.internal.database.shared.SharedDatabase
 import io.hackle.sdk.core.internal.log.Logger
 
 internal interface NotificationRepository {
-    fun count(): Int
+    fun count(workspaceId: Long, environmentId: Long): Int
 
     fun save(entity: NotificationEntity)
 
@@ -20,17 +21,20 @@ internal class NotificationRepositoryImpl(
     private val database: SharedDatabase
 ) : NotificationRepository {
 
-    override fun count(): Int {
+    override fun count(workspaceId: Long, environmentId: Long): Int {
         return try {
-            database.execute(readOnly = true) { db -> count(db).toInt() }
+            database.execute(readOnly = true) { db -> count(db, workspaceId, environmentId).toInt() }
         } catch (e: Exception) {
             log.error { "Failed to count notifications: $e" }
             0
         }
     }
 
-    private fun count(db: SQLiteDatabase): Long {
-        val query = "SELECT COUNT(*) FROM ${NotificationEntity.TABLE_NAME}"
+    private fun count(db: SQLiteDatabase, workspaceId: Long, environmentId: Long): Long {
+        val query =
+            "SELECT COUNT(*) FROM ${NotificationEntity.TABLE_NAME} " +
+                "WHERE ${NotificationEntity.COLUMN_WORKSPACE_ID} = $workspaceId AND " +
+                    "${NotificationEntity.COLUMN_ENVIRONMENT_ID} = $environmentId"
         return db.compileStatement(query)
             .use { statement -> statement.simpleQueryForLong() }
     }

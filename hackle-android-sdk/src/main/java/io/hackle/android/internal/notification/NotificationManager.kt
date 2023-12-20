@@ -14,6 +14,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.ceil
 
 internal class NotificationManager(
     private val core: HackleCore,
@@ -114,7 +115,14 @@ internal class NotificationManager(
                     return
                 }
 
-                while (true) {
+                val totalCount = repository.count(
+                    workspaceId = workspace.id,
+                    environmentId = workspace.environmentId
+                )
+                val loop = ceil(totalCount.toDouble() / batchSize.toDouble()).toInt()
+                log.debug { "Total notification data: $totalCount" }
+
+                for (index in 0 until loop) {
                     val notifications = repository.getNotifications(
                         workspaceId = workspace.id,
                         environmentId = workspace.environmentId,
@@ -131,13 +139,15 @@ internal class NotificationManager(
                     }
 
                     repository.delete(notifications)
+                    log.debug { "Flushed notification data: ${notifications.size} items" }
+
                     Thread.sleep(300L)
                 }
             } catch (e: Exception) {
                 log.debug { "Failed to flush notification data: $e" }
             } finally {
                 flushing.set(false)
-                log.debug { "Flushed notification data." }
+                log.debug { "Finished notification data flush task." }
             }
         }
     }
