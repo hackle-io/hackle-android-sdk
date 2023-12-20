@@ -50,12 +50,11 @@ internal class NotificationTrampolineActivity : Activity() {
                     trampolineIntent.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                     try {
                         startActivity(trampolineIntent)
+                        log.debug { "Redirected to: $uri" }
                     } catch (e: ActivityNotFoundException) {
                         log.debug { "Failed to land anywhere." }
                         startLauncherActivity(extras)
                     }
-
-                    log.debug { "Redirected to: $uri" }
                 }
             }
         }
