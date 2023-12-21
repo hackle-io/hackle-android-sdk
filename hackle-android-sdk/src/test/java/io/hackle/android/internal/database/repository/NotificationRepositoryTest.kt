@@ -4,13 +4,14 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import io.hackle.android.internal.database.shared.NotificationEntity
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_CLICK_ACTION
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_CLICK_TIMESTAMP
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_DEBUG
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_ENVIRONMENT_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_FCM_SENT_TIMESTAMP
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_LINK
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_MESSAGE_ID
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_DELIVERY_ID
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_EXECUTION_ID
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_ID
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_KEY
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_WORKSPACE_ID
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.TABLE_NAME
 import io.hackle.android.internal.database.shared.SharedDatabase
@@ -58,10 +59,10 @@ internal class NotificationRepositoryTest {
         every { statement.simpleQueryForLong() } returns 42
         every { db.compileStatement(any()) } returns statement
 
-        val actual = sut.count()
+        val actual = sut.count(1, 2)
         expectThat(actual) isEqualTo 42
         verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
-        verify(exactly = 1) { db.compileStatement("SELECT COUNT(*) FROM notifications") }
+        verify(exactly = 1) { db.compileStatement("SELECT COUNT(*) FROM notifications WHERE workspace_id = 1 AND environment_id = 2") }
         verify(exactly = 1) { statement.close() }
     }
 
@@ -69,7 +70,7 @@ internal class NotificationRepositoryTest {
     fun `should return count 0 when exception occurred`() {
         every { db.compileStatement(any()) } throws IllegalArgumentException()
 
-        val actual = sut.count()
+        val actual = sut.count(1, 2)
         expectThat(actual) isEqualTo 0
     }
 
@@ -93,11 +94,10 @@ internal class NotificationRepositoryTest {
     @Test
     fun `get notification entities`() {
         val cursor = cursor(
-            listOf("0", 123L, 456L, 111L, 1234567890L, "APP_OPEN", 9876543210L, ""),
-            listOf("1", 123L, 456L, 222L, 1111111111L, "DEEP_LINK", 3333333333L, "rocketman://main"),
-            listOf("2", 123L, 456L, 333L, 2222222222L, "DEEP_LINK", 4444444444L, "rocketman://hidden"),
+            listOf("0", 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, 1),
+            listOf("1", 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, 0),
+            listOf("2", 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, 0),
         )
-
         every { db.rawQuery(any(), any()) } returns cursor
 
         val actual = sut.getNotifications(123, 456)
@@ -106,26 +106,26 @@ internal class NotificationRepositoryTest {
         verify(exactly = 1) { db.rawQuery("SELECT * FROM notifications WHERE workspace_id = 123 AND environment_id = 456", null) }
         expectThat(actual) {
             hasSize(3)
-            get { this[0] } isEqualTo NotificationEntity("0", 123L, 456L, 111L, 1234567890L, "APP_OPEN", 9876543210L, "")
-            get { this[1] } isEqualTo NotificationEntity("1", 123L, 456L, 222L, 1111111111L, "DEEP_LINK", 3333333333L, "rocketman://main")
-            get { this[2] } isEqualTo NotificationEntity("2", 123L, 456L, 333L, 2222222222L, "DEEP_LINK", 4444444444L, "rocketman://hidden")
+            get { this[0] } isEqualTo NotificationEntity("0", 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, true)
+            get { this[1] } isEqualTo NotificationEntity("1", 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, false)
+            get { this[2] } isEqualTo NotificationEntity("2", 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, false)
         }
     }
 
     @Test
-    fun delete() {
+    fun `delete multiple rows`() {
         val statement = mockk<SQLiteStatement>(relaxUnitFun = true)
         every { db.compileStatement(any()) } returns statement
 
         val entities = listOf(
-            NotificationEntity("0", 123L, 456L, 789L, 0L, "APP_OPEN", 0L, ""),
-            NotificationEntity("1", 123L, 456L, 789L, 0L, "APP_OPEN", 0L, ""),
-            NotificationEntity("2", 123L, 456L, 789L, 0L, "APP_OPEN", 0L, "")
+            NotificationEntity("0", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationEntity("1", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationEntity("2", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
         )
         sut.delete(entities)
 
         verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
-        verify(exactly = 1) { db.delete("notifications", "message_id=?", arrayOf("0", "1", "2")) }
+        verify(exactly = 1) { db.delete("notifications", "message_id IN (?,?,?)", arrayOf("0", "1", "2")) }
     }
 
     private fun cursor(vararg rows: List<Any>): Cursor {
@@ -144,10 +144,11 @@ internal class NotificationRepositoryTest {
         every { cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID) } answers { 1 }
         every { cursor.getColumnIndexOrThrow(COLUMN_ENVIRONMENT_ID) } answers { 2 }
         every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_ID) } answers { 3 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_FCM_SENT_TIMESTAMP) } answers { 4 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_ACTION) } answers { 5 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP) } answers { 6 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_LINK) } answers { 7 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_KEY) } answers { 4 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID) } answers { 5 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID) } answers { 6 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP) } answers { 7 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_DEBUG) } answers { 8 }
 
         every { cursor.getLong(any()) } answers { rows[currentIndex][firstArg()] as Long }
         every { cursor.getInt(any()) } answers { rows[currentIndex][firstArg()] as Int }

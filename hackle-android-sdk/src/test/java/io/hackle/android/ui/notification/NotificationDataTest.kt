@@ -7,8 +7,10 @@ import io.mockk.every
 import io.mockk.mockk
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NotificationDataTest {
@@ -20,13 +22,17 @@ class NotificationDataTest {
             "workspaceId" to 1111,
             "environmentId" to 2222,
             "pushMessageId" to 3333,
+            "pushMessageKey" to 4444,
+            "pushMessageExecutionId" to 5555,
+            "pushMessageDeliveryId" to 6666,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
             "body" to "bar",
             "thumbnailImageUrl" to "https://foo.com",
             "largeImageUrl" to "https://bar.com",
-            "link" to "foo://bar"
+            "link" to "foo://bar",
+            "debug" to true
         )
         val bundle = mockBundleOf(mapOf(
             "google.message_id" to "abcd1234",
@@ -38,10 +44,12 @@ class NotificationDataTest {
         val result = NotificationData.from(intent)
         assertNotNull(result)
         assertThat(result!!.messageId, `is`("abcd1234"))
-        assertThat(result.fcmSentTimestamp, `is`(1234567890))
-        assertThat(result.workspaceId, `is`(1111))
-        assertThat(result.environmentId, `is`(2222))
-        assertThat(result.pushMessageId, `is`(3333))
+        assertThat(result.workspaceId, `is`(1111L))
+        assertThat(result.environmentId, `is`(2222L))
+        assertThat(result.pushMessageId, `is`(3333L))
+        assertThat(result.pushMessageKey, `is`(4444L))
+        assertThat(result.pushMessageExecutionId, `is`(5555L))
+        assertThat(result.pushMessageDeliveryId, `is`(6666L))
         assertThat(result.showForeground, `is`(true))
         assertThat(result.iconColorFilter, `is`("#FFFFFF"))
         assertThat(result.title, `is`("foo"))
@@ -49,6 +57,7 @@ class NotificationDataTest {
         assertThat(result.thumbnailImageUrl, `is`("https://foo.com"))
         assertThat(result.largeImageUrl, `is`("https://bar.com"))
         assertThat(result.link, `is`("foo://bar"))
+        assertTrue(result.debug)
     }
 
     @Test
@@ -56,8 +65,7 @@ class NotificationDataTest {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
-            "environmentId" to 2222,
-            "pushMessageId" to 3333
+            "environmentId" to 2222
         )
         val bundle = mockBundleOf(mapOf(
             "google.message_id" to "abcd1234",
@@ -69,10 +77,12 @@ class NotificationDataTest {
         val result = NotificationData.from(intent)
         assertNotNull(result)
         assertThat(result!!.messageId, `is`("abcd1234"))
-        assertThat(result.fcmSentTimestamp, `is`(0))
-        assertThat(result.workspaceId, `is`(1111))
-        assertThat(result.environmentId, `is`(2222))
-        assertThat(result.pushMessageId, `is`(3333))
+        assertThat(result.workspaceId, `is`(1111L))
+        assertThat(result.environmentId, `is`(2222L))
+        assertNull(result.pushMessageId)
+        assertNull(result.pushMessageKey)
+        assertNull(result.pushMessageExecutionId)
+        assertNull(result.pushMessageDeliveryId)
         assertThat(result.showForeground, `is`(false))
         assertNull(result.iconColorFilter)
         assertNull(result.title)
@@ -80,6 +90,7 @@ class NotificationDataTest {
         assertNull(result.thumbnailImageUrl)
         assertNull(result.largeImageUrl)
         assertNull(result.link)
+        assertFalse(result.debug)
     }
 
     @Test
@@ -95,42 +106,22 @@ class NotificationDataTest {
     }
 
     @Test
-    fun `should return null if message id is empty`() {
-        val intent = mockk<Intent>()
-        val map = mapOf<String, Any>(
-            "workspaceId" to 1111,
-            "environmentId" to 2222,
-            "pushMessageId" to 3333,
-            "showForeground" to true,
-            "colorFilter" to "#FFFFFF",
-            "title" to "foo",
-            "body" to "bar",
-            "thumbnailImageUrl" to "https://foo.com",
-            "largeImageUrl" to "https://bar.com",
-            "link" to "foo://bar"
-        )
-        val bundle = mockBundleOf(mapOf(
-            "google.sent_time" to 1234567890,
-            "hackle" to map.toJson()
-        ))
-        every { intent.extras } returns bundle
-
-        assertNull(NotificationData.from(intent))
-    }
-
-    @Test
     fun `should return null if workspace id is empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
             "environmentId" to 2222,
             "pushMessageId" to 3333,
+            "pushMessageKey" to 4444,
+            "pushMessageExecutionId" to 5555,
+            "pushMessageDeliveryId" to 6666,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
             "body" to "bar",
             "thumbnailImageUrl" to "https://foo.com",
             "largeImageUrl" to "https://bar.com",
-            "link" to "foo://bar"
+            "link" to "foo://bar",
+            "debug" to true
         )
         val bundle = mockBundleOf(mapOf(
             "google.message_id" to "abcd1234",
@@ -148,37 +139,17 @@ class NotificationDataTest {
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
             "pushMessageId" to 3333,
+            "pushMessageKey" to 4444,
+            "pushMessageExecutionId" to 5555,
+            "pushMessageDeliveryId" to 6666,
             "showForeground" to true,
             "colorFilter" to "#FFFFFF",
             "title" to "foo",
             "body" to "bar",
             "thumbnailImageUrl" to "https://foo.com",
             "largeImageUrl" to "https://bar.com",
-            "link" to "foo://bar"
-        )
-        val bundle = mockBundleOf(mapOf(
-            "google.message_id" to "abcd1234",
-            "google.sent_time" to 1234567890,
-            "hackle" to map.toJson()
-        ))
-        every { intent.extras } returns bundle
-
-        assertNull(NotificationData.from(intent))
-    }
-
-    @Test
-    fun `should return null if push message id is empty`() {
-        val intent = mockk<Intent>()
-        val map = mapOf<String, Any>(
-            "workspaceId" to 1111,
-            "environmentId" to 2222,
-            "showForeground" to true,
-            "colorFilter" to "#FFFFFF",
-            "title" to "foo",
-            "body" to "bar",
-            "thumbnailImageUrl" to "https://foo.com",
-            "largeImageUrl" to "https://bar.com",
-            "link" to "foo://bar"
+            "link" to "foo://bar",
+            "debug" to true
         )
         val bundle = mockBundleOf(mapOf(
             "google.message_id" to "abcd1234",

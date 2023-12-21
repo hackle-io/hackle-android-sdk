@@ -27,7 +27,7 @@ internal class NotificationManager(
 
     private val flushing = AtomicBoolean(false)
 
-    fun setPushToken(fcmToken: String) {
+    fun setPushToken(fcmToken: String, timestamp: Long = System.currentTimeMillis()) {
         try {
             val saved = preferences.getString(KEY_FCM_TOKEN)
             if (saved == fcmToken) {
@@ -35,7 +35,7 @@ internal class NotificationManager(
             }
 
             preferences.putString(KEY_FCM_TOKEN, fcmToken)
-            notifyPushTokenChanged(System.currentTimeMillis())
+            notifyPushTokenChanged(timestamp)
         } catch (e: Exception) {
             log.debug { "Failed to register FCM push token: $e" }
         }

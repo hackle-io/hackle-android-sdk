@@ -26,8 +26,10 @@ class NotificationEventTest {
             messageId = "abcd1234",
             workspaceId = 123L,
             environmentId = 456L,
-            pushMessageId = 789L,
-            fcmSentTimestamp = 1234567890L,
+            pushMessageId = 1111L,
+            pushMessageKey = 2222L,
+            pushMessageExecutionId = 3333L,
+            pushMessageDeliveryId = 4444L,
             showForeground = true,
             iconColorFilter = "#FF00FF",
             title = "foo",
@@ -36,15 +38,15 @@ class NotificationEventTest {
             largeImageUrl = "https://foo.foo",
             clickAction = NotificationClickAction.APP_OPEN,
             link = "foo://bar",
+            debug = true
         )
-        val to = from.toTrackEvent(987654321L)
+        val to = from.toTrackEvent()
         assertThat(to.key, `is`("\$push_click"))
-        assertThat(to.properties["message_id"], `is`("abcd1234"))
-        assertThat(to.properties["push_message_id"], `is`(789L))
-        assertThat(to.properties["fcm_sent_timestamp"], `is`(1234567890L))
-        assertThat(to.properties["click_action"], `is`("APP_OPEN"))
-        assertThat(to.properties["click_timestamp"], `is`(987654321L))
-        assertThat(to.properties["link"], `is`("foo://bar"))
+        assertThat(to.properties["push_message_id"], `is`(1111L))
+        assertThat(to.properties["push_message_key"], `is`(2222L))
+        assertThat(to.properties["push_message_execution_id"], `is`(3333L))
+        assertThat(to.properties["push_message_delivery_id"], `is`(4444L))
+        assertThat(to.properties["debug"], `is`(true))
     }
 
     @Test
@@ -53,19 +55,19 @@ class NotificationEventTest {
             messageId = "abcd1234",
             workspaceId = 123L,
             environmentId = 456L,
-            pushMessageId = 789L,
-            fcmSentTimestamp = 1234567890L,
-            clickAction = "APP_OPEN",
+            pushMessageId = 1111L,
+            pushMessageKey = 2222L,
+            pushMessageExecutionId = 3333L,
+            pushMessageDeliveryId = 4444L,
             clickTimestamp = 987654321L,
-            link = "foo://bar",
+            debug = true,
         )
         val to = from.toTrackEvent()
         assertThat(to.key, `is`("\$push_click"))
-        assertThat(to.properties["message_id"], `is`("abcd1234"))
-        assertThat(to.properties["push_message_id"], `is`(789L))
-        assertThat(to.properties["fcm_sent_timestamp"], `is`(1234567890L))
-        assertThat(to.properties["click_action"], `is`("APP_OPEN"))
-        assertThat(to.properties["click_timestamp"], `is`(987654321L))
-        assertThat(to.properties["link"], `is`("foo://bar"))
+        assertThat(to.properties["push_message_id"], `is`(1111L))
+        assertThat(to.properties["push_message_key"], `is`(2222L))
+        assertThat(to.properties["push_message_execution_id"], `is`(3333L))
+        assertThat(to.properties["push_message_delivery_id"], `is`(4444L))
+        assertThat(to.properties["debug"], `is`(true))
     }
 }

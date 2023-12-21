@@ -7,7 +7,6 @@ import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_DEBUG
 import io.hackle.android.ui.notification.Constants.KEY_ENVIRONMENT_ID
-import io.hackle.android.ui.notification.Constants.KEY_FCM_SENT_TIME
 import io.hackle.android.ui.notification.Constants.KEY_HACKLE
 import io.hackle.android.ui.notification.Constants.KEY_LARGE_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_LINK
@@ -29,7 +28,6 @@ internal data class NotificationData(
     val pushMessageKey: Long?,
     val pushMessageExecutionId: Long?,
     val pushMessageDeliveryId: Long?,
-    val fcmSentTimestamp: Long,
     val showForeground: Boolean,
     val iconColorFilter: String?,
     val title: String?,
@@ -59,7 +57,6 @@ internal data class NotificationData(
                     pushMessageKey = (hackle[KEY_PUSH_MESSAGE_KEY] as? Number)?.toLong(),
                     pushMessageExecutionId = (hackle[KEY_PUSH_MESSAGE_EXECUTION_ID] as? Number)?.toLong(),
                     pushMessageDeliveryId = (hackle[KEY_PUSH_MESSAGE_DELIVERY_ID] as? Number)?.toLong(),
-                    fcmSentTimestamp = data.getLong(KEY_FCM_SENT_TIME, 0L),
                     showForeground = hackle[KEY_SHOW_FOREGROUND] as? Boolean ?: false,
                     iconColorFilter = hackle[KEY_COLOR_FILTER] as? String,
                     title = hackle[KEY_TITLE] as? String,

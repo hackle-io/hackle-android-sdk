@@ -57,7 +57,8 @@ class NotificationManagerTest {
 
     @Test
     fun `fresh new push token`() {
-        manager.setPushToken("abcd1234")
+        val timestamp = System.currentTimeMillis()
+        manager.setPushToken("abcd1234", timestamp)
 
         verify(exactly = 1) {
             core.track(
@@ -66,7 +67,7 @@ class NotificationManagerTest {
                     assertThat(it.properties["provider_type"], `is`("FCM"))
                     assertThat(it.properties["token"], `is`("abcd1234"))
                 },
-                any(), any()
+                any(), timestamp
             )
         }
         assertThat(preferences.getString("fcm_token"), `is`("abcd1234"))
@@ -76,7 +77,8 @@ class NotificationManagerTest {
     fun `set another push token`() {
         preferences.putString("fcm_token", "foo")
 
-        manager.setPushToken("bar")
+        val timestamp = System.currentTimeMillis()
+        manager.setPushToken("bar", timestamp)
 
         verify(exactly = 1) {
             core.track(
@@ -85,7 +87,7 @@ class NotificationManagerTest {
                     assertThat(it.properties["provider_type"], `is`("FCM"))
                     assertThat(it.properties["token"], `is`("bar"))
                 },
-                any(), any()
+                any(), timestamp
             )
         }
         assertThat(preferences.getString("fcm_token"), `is`("bar"))
@@ -105,15 +107,15 @@ class NotificationManagerTest {
     fun `resend push token when user updated called`() {
         preferences.putString("fcm_token", "foo")
 
-        manager.onUserUpdated(User.of("foo"), User.of("bar"), System.currentTimeMillis())
+        val timestamp = System.currentTimeMillis()
+        manager.onUserUpdated(User.of("foo"), User.of("bar"), timestamp)
 
         verify(exactly = 1) {
             core.track(
                 withArg {
                     assertThat(it.key, `is`("\$push_token"))
                     assertThat(it.properties["token"], `is`("foo"))
-                },
-                any(), any()
+                }, any(), timestamp
             )
         }
         assertThat(preferences.getString("fcm_token"), `is`("foo"))
@@ -121,100 +123,147 @@ class NotificationManagerTest {
 
     @Test
     fun `track push click event when notification data received`() {
-        val data = NotificationData("abcd1234", 111L, 222L, 789L, 1234567890L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar")
-        manager.onNotificationDataReceived(data, 123456789L)
+        val data = NotificationData("abcd1234", 111L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", true)
+        val timestamp = System.currentTimeMillis()
+        manager.onNotificationDataReceived(data, timestamp)
 
         verify(exactly = 1) {
             core.track(
                 withArg {
                     assertThat(it.key, `is`("\$push_click"))
+                    assertThat(it.properties["push_message_id"], `is`(1111L))
+                    assertThat(it.properties["push_message_key"], `is`(2222L))
+                    assertThat(it.properties["push_message_execution_id"], `is`(3333L))
+                    assertThat(it.properties["push_message_delivery_id"], `is`(4444L))
+                    assertThat(it.properties["debug"], `is`(true))
                 },
-                any(), any()
+                any(), timestamp
             )
         }
     }
 
     @Test
     fun `save notification data if environment is not same`() {
-        val correctData = NotificationData("0", 111L, 222L, 789L, 1234567890L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar")
-        manager.onNotificationDataReceived(correctData, 1L)
+        val timestamp = System.currentTimeMillis()
+        val correctData = NotificationData("0", 111L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", true)
+        manager.onNotificationDataReceived(correctData, timestamp)
 
-        val diffWorkspaceData = NotificationData("1", 222L, 222L, 789L, 1234567890L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar")
+        val diffWorkspaceData = NotificationData("1", 333L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", true)
         manager.onNotificationDataReceived(diffWorkspaceData, 2L)
 
-        val diffEnvironmentData = NotificationData("2", 111L, 333L, 789L, 1234567890L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar")
+        val diffEnvironmentData = NotificationData("2", 111L, 333L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", true)
         manager.onNotificationDataReceived(diffEnvironmentData, 3L)
 
-        val bothDiffData = NotificationData("3", 333L, 333L, 789L, 1234567890L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar")
+        val bothDiffData = NotificationData("4", 333L, 333L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", true)
         manager.onNotificationDataReceived(bothDiffData, 4L)
 
-        verify(exactly = 1) { core.track(any(), any(), any()) }
-        assertThat(repository.count(), `is`(3))
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    assertThat(it.key, `is`("\$push_click"))
+                    assertThat(it.properties["push_message_id"], `is`(1111L))
+                    assertThat(it.properties["push_message_key"], `is`(2222L))
+                    assertThat(it.properties["push_message_execution_id"], `is`(3333L))
+                    assertThat(it.properties["push_message_delivery_id"], `is`(4444L))
+                    assertThat(it.properties["debug"], `is`(true))
+                }, any(), timestamp
+            )
+        }
+        assertThat(repository.count(111L, 222L), `is`(0))
+        assertThat(repository.count(333L, 222L), `is`(1))
+        assertThat(repository.count(111L, 333L), `is`(1))
+        assertThat(repository.count(333L, 333L), `is`(1))
     }
 
     @Test
     fun `save notification data if workspace fetcher returns null`() {
         every { workspaceFetcher.fetch() } returns null
 
-        val data = NotificationData("0", 111L, 222L, 789L, 1234567890L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar")
+        val data = NotificationData("abcd1234", 111L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", true)
         manager.onNotificationDataReceived(data, 1L)
 
         verify { core wasNot called }
-        assertThat(repository.count(), `is`(1))
+        assertThat(repository.count(111L, 222L), `is`(1))
     }
 
     @Test
     fun `flush data until empty`() {
         val notifications = listOf(
-            NotificationEntity("0", 111L, 222L, 111L, 1L, "APP_OPEN", 4L, null),
-            NotificationEntity("1", 111L, 222L, 222L, 2L, "DEEP_LINK", 5L, "foo://bar"),
-            NotificationEntity("2", 111L, 222L, 333L, 3L, "DEEP_LINK", 6L, "bar://foo")
+            NotificationEntity("0", 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, true),
+            NotificationEntity("1", 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, false),
+            NotificationEntity("2", 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, true),
         )
-        repository.replaceAll(notifications)
+        repository.putAll(notifications)
 
         manager.flush()
 
         verifySequence {
-            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), any())
-            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), any())
-            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), any())
+            core.track(withArg {
+                assertThat(it.key, `is`("\$push_click"))
+                assertThat(it.properties["push_message_id"], `is`(1111L))
+                assertThat(it.properties["push_message_key"], `is`(2222L))
+                assertThat(it.properties["push_message_execution_id"], `is`(3333L))
+                assertThat(it.properties["push_message_delivery_id"], `is`(4444L))
+                assertThat(it.properties["debug"], `is`(true))
+            }, any(), 1L)
+            core.track(withArg {
+                assertThat(it.key, `is`("\$push_click"))
+                assertThat(it.properties["push_message_id"], `is`(2222L))
+                assertThat(it.properties["push_message_key"], `is`(3333L))
+                assertThat(it.properties["push_message_execution_id"], `is`(4444L))
+                assertThat(it.properties["push_message_delivery_id"], `is`(5555L))
+                assertThat(it.properties["debug"], `is`(false))
+            }, any(), 2L)
+            core.track(withArg {
+                assertThat(it.key, `is`("\$push_click"))
+                assertThat(it.properties["push_message_id"], `is`(3333L))
+                assertThat(it.properties["push_message_key"], `is`(4444L))
+                assertThat(it.properties["push_message_execution_id"], `is`(5555L))
+                assertThat(it.properties["push_message_delivery_id"], `is`(6666L))
+                assertThat(it.properties["debug"], `is`(true))
+            }, any(), 3L)
         }
-        assertThat(repository.count(), `is`(0))
+        assertThat(repository.count(111L, 222L), `is`(0))
     }
 
     @Test
     fun `flush only same environment data`() {
         val notifications = listOf(
-            NotificationEntity("0", 111L, 222L, 111L, 1L, "APP_OPEN", 4L, null),
-            NotificationEntity("1", 111L, 111L, 222L, 2L, "DEEP_LINK", 5L, "foo://bar"),
-            NotificationEntity("2", 111L, 222L, 333L, 3L, "DEEP_LINK", 6L, "bar://foo"),
-            NotificationEntity("3", 222L, 111L, 444L, 4L, "APP_OPEN", 7L, null),
-            NotificationEntity("4", 222L, 222L, 555L, 5L, "APP_OPEN", 8L, null),
+            NotificationEntity("0", 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
+            NotificationEntity("1", 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
+            NotificationEntity("2", 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
+            NotificationEntity("3", 222L, 111L, 4L, 4L, 4L, 4L, 4L, false),
+            NotificationEntity("4", 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
         )
-        repository.replaceAll(notifications)
+        repository.putAll(notifications)
 
         manager.flush()
 
         verifySequence {
-            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), any())
-            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), any())
+            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), 1L)
+            core.track(withArg { assertThat(it.key, `is`("\$push_click")) }, any(), 3L)
         }
-        assertThat(repository.count(), `is`(3))
+        assertThat(repository.count(111L, 222L), `is`(0))
+        assertThat(repository.count(111L, 111L), `is`(1))
+        assertThat(repository.count(222L, 111L), `is`(1))
+        assertThat(repository.count(222L, 222L), `is`(1))
     }
 
     @Test
     fun `do not flush any data if workspace returns null`() {
         val notifications = listOf(
-            NotificationEntity("0", 111L, 222L, 111L, 1L, "APP_OPEN", 4L, null),
-            NotificationEntity("1", 111L, 111L, 222L, 2L, "DEEP_LINK", 5L, "foo://bar"),
-            NotificationEntity("2", 111L, 222L, 333L, 3L, "DEEP_LINK", 6L, "bar://foo"),
-            NotificationEntity("3", 222L, 111L, 444L, 4L, "APP_OPEN", 7L, null),
-            NotificationEntity("4", 222L, 222L, 555L, 5L, "APP_OPEN", 8L, null),
+            NotificationEntity("0", 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
+            NotificationEntity("1", 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
+            NotificationEntity("2", 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
+            NotificationEntity("3", 222L, 222L, 4L, 4L, 4L, 4L, 4L, false),
+            NotificationEntity("4", 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
         )
-        repository.replaceAll(notifications)
+        repository.putAll(notifications)
         every { workspaceFetcher.fetch() } returns null
 
         verify { core wasNot called }
-        assertThat(repository.count(), `is`(5))
+        assertThat(repository.count(111L, 111L), `is`(1))
+        assertThat(repository.count(111L, 222L), `is`(2))
+        assertThat(repository.count(222L, 222L), `is`(2))
     }
 }

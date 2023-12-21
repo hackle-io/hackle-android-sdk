@@ -6,7 +6,6 @@ internal object Constants {
     const val DEFAULT_NOTIFICATION_CHANNEL_NAME = "default"
 
     const val KEY_MESSAGE_ID = "google.message_id"
-    const val KEY_FCM_SENT_TIME = "google.sent_time"
 
     const val KEY_HACKLE = "hackle"
     const val KEY_WORKSPACE_ID = "workspaceId"
