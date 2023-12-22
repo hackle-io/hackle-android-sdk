@@ -2,10 +2,9 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.EventRepository
-import io.hackle.android.internal.database.repository.NotificationRepository
 import io.hackle.android.internal.database.repository.NotificationRepositoryImpl
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
@@ -132,8 +131,8 @@ internal object HackleApps {
 
         // EventProcessor
 
-        val databaseHelper = DatabaseHelper.getWorkspaceDatabase(context, sdkKey)
-        val eventRepository = EventRepository(databaseHelper)
+        val workspaceDatabase = DatabaseHelper.getWorkspaceDatabase(context, sdkKey)
+        val eventRepository = EventRepository(workspaceDatabase)
         val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
         val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")
 
