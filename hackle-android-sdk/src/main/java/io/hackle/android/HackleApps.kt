@@ -282,7 +282,8 @@ internal object HackleApps {
                 core = core,
                 userManager = userManager,
                 abTestOverrideStorage = abOverrideStorage,
-                featureFlagOverrideStorage = ffOverrideStorage
+                featureFlagOverrideStorage = ffOverrideStorage,
+                notificationManager = notificationManager
             ),
             activityProvider = LifecycleManager.getInstance()
         )
