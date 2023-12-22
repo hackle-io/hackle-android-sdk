@@ -8,6 +8,7 @@ import io.hackle.android.internal.database.shared.NotificationEntity.Companion.C
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_DEBUG
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_ENVIRONMENT_ID
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_MESSAGE_ID
+import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_NOTIFICATION_ID
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_DELIVERY_ID
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_EXECUTION_ID
 import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_ID
@@ -94,9 +95,9 @@ internal class NotificationRepositoryTest {
     @Test
     fun `get notification entities`() {
         val cursor = cursor(
-            listOf("0", 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, 1),
-            listOf("1", 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, 0),
-            listOf("2", 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, 0),
+            listOf(0L, "0", 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, 1),
+            listOf(1L, "1", 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, 0),
+            listOf(2L, "2", 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, 0),
         )
         every { db.rawQuery(any(), any()) } returns cursor
 
@@ -106,9 +107,9 @@ internal class NotificationRepositoryTest {
         verify(exactly = 1) { db.rawQuery("SELECT * FROM notifications WHERE workspace_id = 123 AND environment_id = 456", null) }
         expectThat(actual) {
             hasSize(3)
-            get { this[0] } isEqualTo NotificationEntity("0", 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, true)
-            get { this[1] } isEqualTo NotificationEntity("1", 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, false)
-            get { this[2] } isEqualTo NotificationEntity("2", 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, false)
+            get { this[0] } isEqualTo NotificationEntity(0, "0", 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, true)
+            get { this[1] } isEqualTo NotificationEntity(1, "1", 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, false)
+            get { this[2] } isEqualTo NotificationEntity(2, "2", 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, false)
         }
     }
 
@@ -118,9 +119,9 @@ internal class NotificationRepositoryTest {
         every { db.compileStatement(any()) } returns statement
 
         val entities = listOf(
-            NotificationEntity("0", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
-            NotificationEntity("1", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
-            NotificationEntity("2", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationEntity(0, "0", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationEntity(1, "1", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationEntity(2, "2", 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
         )
         sut.delete(entities)
 
@@ -140,15 +141,16 @@ internal class NotificationRepositoryTest {
             currentIndex < rows.size
         }
 
-        every { cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID) } answers { 0 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID) } answers { 1 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_ENVIRONMENT_ID) } answers { 2 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_ID) } answers { 3 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_KEY) } answers { 4 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID) } answers { 5 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID) } answers { 6 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP) } answers { 7 }
-        every { cursor.getColumnIndexOrThrow(COLUMN_DEBUG) } answers { 8 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_ID) } answers { 0 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID) } answers { 1 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID) } answers { 2 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_ENVIRONMENT_ID) } answers { 3 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_ID) } answers { 4 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_KEY) } answers { 5 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID) } answers { 6 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID) } answers { 7 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP) } answers { 8 }
+        every { cursor.getColumnIndexOrThrow(COLUMN_DEBUG) } answers { 9 }
 
         every { cursor.getLong(any()) } answers { rows[currentIndex][firstArg()] as Long }
         every { cursor.getInt(any()) } answers { rows[currentIndex][firstArg()] as Int }

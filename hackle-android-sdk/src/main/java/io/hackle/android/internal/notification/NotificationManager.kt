@@ -6,7 +6,7 @@ import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.android.ui.notification.NotificationDataReceiver
-import io.hackle.android.ui.notification.toDto
+import io.hackle.android.ui.notification.toEntity
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -36,7 +36,7 @@ internal class NotificationManager(
             }
 
             preferences.putString(KEY_FCM_TOKEN, fcmToken)
-            notifyPushTokenChanged(timestamp)
+            notifyPushTokenChanged(userManager.currentUser, timestamp)
         } catch (e: Exception) {
             log.debug { "Failed to register FCM push token: $e" }
         }
@@ -51,7 +51,7 @@ internal class NotificationManager(
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-        notifyPushTokenChanged(timestamp)
+        notifyPushTokenChanged(newUser, timestamp)
     }
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
@@ -69,13 +69,13 @@ internal class NotificationManager(
                 return
             }
 
-            track(data.toTrackEvent(), timestamp)
+            track(data.toTrackEvent(), userManager.currentUser, timestamp)
         } catch (e: Exception) {
             log.error { "Failed to handle notification data: ${data.messageId}" }
         }
     }
 
-    private fun notifyPushTokenChanged(timestamp: Long) {
+    private fun notifyPushTokenChanged(user: User, timestamp: Long) {
         val fcmToken = preferences.getString(KEY_FCM_TOKEN)
         if (fcmToken.isNullOrEmpty()) {
             log.debug { "Push token is empty." }
@@ -83,13 +83,13 @@ internal class NotificationManager(
         }
 
         val event = RegisterPushTokenEvent(fcmToken).toTrackEvent()
-        track(event, timestamp)
+        track(event, user, timestamp)
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
         executor.execute {
             try {
-                val entity = data.toDto(timestamp)
+                val entity = data.toEntity(timestamp)
                 repository.save(entity)
                 log.debug { "Saved notification data: ${entity.messageId}[${entity.clickTimestamp}]" }
             } catch (e: Exception) {
@@ -98,8 +98,8 @@ internal class NotificationManager(
         }
     }
 
-    private fun track(event: Event, timestamp: Long) {
-        val hackleUser = userManager.toHackleUser(userManager.currentUser)
+    private fun track(event: Event, user: User, timestamp: Long) {
+        val hackleUser = userManager.toHackleUser(user)
         core.track(event, hackleUser, timestamp)
         log.debug { "${event.key} event queued." }
     }
@@ -116,6 +116,7 @@ internal class NotificationManager(
                     return
                 }
 
+                val user = userManager.currentUser
                 val totalCount = repository.count(
                     workspaceId = workspace.id,
                     environmentId = workspace.environmentId
@@ -135,14 +136,16 @@ internal class NotificationManager(
                     }
 
                     for (notification in notifications) {
-                        track(notification.toTrackEvent(), notification.clickTimestamp ?: System.currentTimeMillis())
+                        track(
+                            event = notification.toTrackEvent(),
+                            user = user,
+                            timestamp = notification.clickTimestamp ?: System.currentTimeMillis()
+                        )
                         log.debug { "Notification data[${notification.messageId}] successfully processed." }
                     }
 
                     repository.delete(notifications)
                     log.debug { "Flushed notification data: ${notifications.size} items" }
-
-                    Thread.sleep(300L)
                 }
             } catch (e: Exception) {
                 log.debug { "Failed to flush notification data: $e" }

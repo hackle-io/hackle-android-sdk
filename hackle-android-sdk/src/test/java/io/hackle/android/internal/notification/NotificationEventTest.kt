@@ -52,6 +52,7 @@ class NotificationEventTest {
     @Test
     fun `notification entity to event`() {
         val from = NotificationEntity(
+            notificationId = 0,
             messageId = "abcd1234",
             workspaceId = 123L,
             environmentId = 456L,
