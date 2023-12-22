@@ -7,7 +7,7 @@ import io.hackle.sdk.common.Event
 internal data class RegisterPushTokenEvent(val token: String)
 
 internal fun RegisterPushTokenEvent.toTrackEvent(
-    providerType: NotificationProviderType = NotificationProviderType.FIREBASE_CLOUD_MESSAGING
+    providerType: NotificationProviderType = NotificationProviderType.FCM
 ) = Event.Builder("\$push_token")
         .property("provider_type", providerType.text)
         .property("token", token)

@@ -2,7 +2,6 @@ package io.hackle.android.internal.database.repository
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
-import android.text.TextUtils
 import io.hackle.android.internal.database.shared.NotificationEntity
 import io.hackle.android.internal.database.shared.SharedDatabase
 import io.hackle.sdk.core.internal.log.Logger
