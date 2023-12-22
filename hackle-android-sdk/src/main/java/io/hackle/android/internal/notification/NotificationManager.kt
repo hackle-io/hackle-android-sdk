@@ -31,6 +31,7 @@ internal class NotificationManager(
         try {
             val saved = preferences.getString(KEY_FCM_TOKEN)
             if (saved == fcmToken) {
+                log.debug { "Provided same push token." }
                 return
             }
 
