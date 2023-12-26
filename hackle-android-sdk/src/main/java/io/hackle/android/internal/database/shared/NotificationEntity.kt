@@ -6,7 +6,6 @@ import androidx.core.database.getLongOrNull
 
 internal data class NotificationEntity(
     val notificationId: Long,
-    val messageId: String,
     val workspaceId: Long,
     val environmentId: Long,
     val pushMessageId: Long?,
@@ -22,7 +21,6 @@ internal data class NotificationEntity(
         const val TABLE_NAME = "notifications"
 
         const val COLUMN_NOTIFICATION_ID = "notification_id"
-        const val COLUMN_MESSAGE_ID = "message_id"
         const val COLUMN_WORKSPACE_ID = "workspace_id"
         const val COLUMN_ENVIRONMENT_ID = "environment_id"
         const val COLUMN_PUSH_MESSAGE_ID = "push_message_id"
@@ -35,7 +33,6 @@ internal data class NotificationEntity(
         const val CREATE_TABLE =
             "CREATE TABLE IF NOT EXISTS $TABLE_NAME (" +
                 "$COLUMN_NOTIFICATION_ID INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "$COLUMN_MESSAGE_ID TEXT PRIMARY KEY," +
                 "$COLUMN_WORKSPACE_ID INTEGER NOT NULL," +
                 "$COLUMN_ENVIRONMENT_ID INTEGER NOT NULL," +
                 "$COLUMN_PUSH_MESSAGE_ID INTEGER," +
@@ -49,7 +46,6 @@ internal data class NotificationEntity(
         fun from(cursor: Cursor): NotificationEntity {
             return NotificationEntity(
                 notificationId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_ID)),
-                messageId =  cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)),
                 workspaceId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_WORKSPACE_ID)),
                 environmentId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ENVIRONMENT_ID)),
                 pushMessageId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_ID)),

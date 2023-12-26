@@ -48,7 +48,6 @@ internal class NotificationRepositoryImpl(
 
     private fun save(db: SQLiteDatabase, entity: NotificationEntity) {
         val values = ContentValues()
-        values.put(NotificationEntity.COLUMN_MESSAGE_ID, entity.messageId)
         values.put(NotificationEntity.COLUMN_WORKSPACE_ID, entity.workspaceId)
         values.put(NotificationEntity.COLUMN_ENVIRONMENT_ID, entity.environmentId)
         values.put(NotificationEntity.COLUMN_PUSH_MESSAGE_ID, entity.pushMessageId)
@@ -99,8 +98,8 @@ internal class NotificationRepositoryImpl(
 
     override fun delete(entities: List<NotificationEntity>) {
         try {
-            val messageIds = entities.map { it.messageId }
-            database.execute(transaction = true) { db -> delete(db, messageIds) }
+            val notificationIds = entities.map { it.notificationId }
+            database.execute(transaction = true) { db -> delete(db, notificationIds) }
         } catch (e: Exception) {
             log.error { "Failed to delete notification: $e" }
         }
@@ -108,13 +107,14 @@ internal class NotificationRepositoryImpl(
 
     private fun delete(
         db: SQLiteDatabase,
-        messageIds: List<String>
+        notificationIds: List<Long>
     ) {
-        val format = "?".repeat(messageIds.size)
+        val arguments = notificationIds.map { it.toString() }
+        val format = "?".repeat(arguments.size)
             .toCharArray()
             .joinToString(",")
-        val whereClause = "${NotificationEntity.COLUMN_MESSAGE_ID} IN ($format)"
-        db.delete(NotificationEntity.TABLE_NAME, whereClause, messageIds.toTypedArray())
+        val whereClause = "${NotificationEntity.COLUMN_NOTIFICATION_ID} IN ($format)"
+        db.delete(NotificationEntity.TABLE_NAME, whereClause, arguments.toTypedArray())
     }
 
     companion object {

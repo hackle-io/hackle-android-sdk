@@ -189,9 +189,9 @@ class NotificationManagerTest {
     @Test
     fun `flush data until empty`() {
         val notifications = listOf(
-            NotificationEntity(0, "0", 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, true),
-            NotificationEntity(1, "1", 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, false),
-            NotificationEntity(2, "2", 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, true),
+            NotificationEntity(0, 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, true),
+            NotificationEntity(1, 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, false),
+            NotificationEntity(2, 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, true),
         )
         repository.putAll(notifications)
 
@@ -229,11 +229,11 @@ class NotificationManagerTest {
     @Test
     fun `flush only same environment data`() {
         val notifications = listOf(
-            NotificationEntity(0, "0", 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
-            NotificationEntity(1, "1", 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
-            NotificationEntity(2, "2", 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
-            NotificationEntity(3, "3", 222L, 111L, 4L, 4L, 4L, 4L, 4L, false),
-            NotificationEntity(4, "4", 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
+            NotificationEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
+            NotificationEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
+            NotificationEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
+            NotificationEntity(3, 222L, 111L, 4L, 4L, 4L, 4L, 4L, false),
+            NotificationEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
         )
         repository.putAll(notifications)
 
@@ -252,11 +252,11 @@ class NotificationManagerTest {
     @Test
     fun `do not flush any data if workspace returns null`() {
         val notifications = listOf(
-            NotificationEntity(0, "0", 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
-            NotificationEntity(1, "1", 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
-            NotificationEntity(2, "2", 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
-            NotificationEntity(3, "3", 222L, 222L, 4L, 4L, 4L, 4L, 4L, false),
-            NotificationEntity(4, "4", 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
+            NotificationEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
+            NotificationEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
+            NotificationEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
+            NotificationEntity(3, 222L, 222L, 4L, 4L, 4L, 4L, 4L, false),
+            NotificationEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
         )
         repository.putAll(notifications)
         every { workspaceFetcher.fetch() } returns null

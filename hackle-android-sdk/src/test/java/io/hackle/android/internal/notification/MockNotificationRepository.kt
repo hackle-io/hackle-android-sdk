@@ -5,7 +5,7 @@ import io.hackle.android.internal.database.shared.NotificationEntity
 
 internal class MockNotificationRepository : NotificationRepository {
 
-    private val workspaceData: MutableMap<String, MutableMap<String, NotificationEntity>> = HashMap()
+    private val workspaceData: MutableMap<String, MutableMap<Long, NotificationEntity>> = HashMap()
 
     private fun getWorkspaceKey(workspaceId: Long, environmentId: Long) = "$workspaceId:$environmentId"
 
@@ -19,13 +19,13 @@ internal class MockNotificationRepository : NotificationRepository {
 
     override fun save(entity: NotificationEntity) {
         val data = getWorkspaceData(entity.workspaceId, entity.environmentId)
-        data[entity.messageId] = entity
+        data[entity.notificationId] = entity
     }
 
     fun putAll(entities: List<NotificationEntity>) {
         entities.forEach {
             val data = getWorkspaceData(it.workspaceId, it.environmentId)
-            data[it.messageId] = it
+            data[it.notificationId] = it
         }
     }
 
@@ -43,7 +43,7 @@ internal class MockNotificationRepository : NotificationRepository {
     override fun delete(entities: List<NotificationEntity>) {
         for (entity in entities) {
             val data = getWorkspaceData(entity.workspaceId, entity.environmentId)
-            data.remove(entity.messageId)
+            data.remove(entity.notificationId)
         }
     }
 }
