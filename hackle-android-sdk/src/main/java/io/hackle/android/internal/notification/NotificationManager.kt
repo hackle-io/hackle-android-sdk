@@ -27,15 +27,26 @@ internal class NotificationManager(
 
     private val flushing = AtomicBoolean(false)
 
+    private var _registeredPushToken: String?
+        get() = preferences.getString(KEY_FCM_TOKEN)
+        private set(value) {
+            if (value == null) {
+                preferences.remove(KEY_FCM_TOKEN)
+            } else {
+                preferences.putString(KEY_FCM_TOKEN, value)
+            }
+        }
+    val registeredPushToken: String?
+        get() = _registeredPushToken
+
     fun setPushToken(fcmToken: String, timestamp: Long = System.currentTimeMillis()) {
         try {
-            val saved = preferences.getString(KEY_FCM_TOKEN)
-            if (saved == fcmToken) {
+            if (_registeredPushToken == fcmToken) {
                 log.debug { "Provided same push token." }
                 return
             }
 
-            preferences.putString(KEY_FCM_TOKEN, fcmToken)
+            _registeredPushToken = fcmToken
             notifyPushTokenChanged(userManager.currentUser, timestamp)
         } catch (e: Exception) {
             log.debug { "Failed to register FCM push token: $e" }
