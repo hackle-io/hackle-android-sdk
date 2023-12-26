@@ -53,19 +53,20 @@ internal class NotificationTrampolineActivity : Activity() {
                         log.debug { "Redirected to: $uri" }
                     } catch (e: ActivityNotFoundException) {
                         log.debug { "Failed to land anywhere." }
-                        startLauncherActivity(extras)
+                        startLauncherActivity(extras, uri)
                     }
                 }
             }
         }
     }
 
-    private fun startLauncherActivity(bundle: Bundle) {
+    private fun startLauncherActivity(bundle: Bundle, data: Uri? = null) {
         val launcherIntent = packageManager.getLaunchIntentForPackage(packageName)
         if (launcherIntent == null) {
             log.debug { "Cannot find launcher activity." }
             return
         }
+        launcherIntent.setData(data)
         launcherIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         launcherIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         launcherIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
