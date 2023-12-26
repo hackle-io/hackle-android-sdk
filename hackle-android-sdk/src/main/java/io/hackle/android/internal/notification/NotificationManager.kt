@@ -121,8 +121,13 @@ internal class NotificationManager(
                     workspaceId = workspace.id,
                     environmentId = workspace.environmentId
                 )
+                if (totalCount <= 0) {
+                    log.debug { "Notification data is empty." }
+                    return
+                }
+
                 val loop = ceil(totalCount.toDouble() / batchSize.toDouble()).toInt()
-                log.debug { "Total notification data: $totalCount" }
+                log.debug { "Notification data: $totalCount" }
 
                 for (index in 0 until loop) {
                     val notifications = repository.getNotifications(
@@ -141,7 +146,7 @@ internal class NotificationManager(
                             user = user,
                             timestamp = notification.clickTimestamp ?: System.currentTimeMillis()
                         )
-                        log.debug { "Notification data[${notification.notificationId}] successfully processed." }
+                        log.debug { "Notification data[id=${notification.notificationId}] successfully processed." }
                     }
 
                     repository.delete(notifications)
