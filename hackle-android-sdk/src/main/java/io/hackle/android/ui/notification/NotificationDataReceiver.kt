@@ -1,6 +1,6 @@
 package io.hackle.android.ui.notification
 
-import io.hackle.android.internal.database.repository.NotificationRepository
+import io.hackle.android.internal.database.repository.NotificationHistoryRepository
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.Executor
 
@@ -11,7 +11,7 @@ internal interface NotificationDataReceiver {
 
 internal class DefaultNotificationDataReceiver(
     private val executor: Executor,
-    private val repository: NotificationRepository,
+    private val repository: NotificationHistoryRepository,
 ) : NotificationDataReceiver {
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
@@ -23,7 +23,7 @@ internal class DefaultNotificationDataReceiver(
             try {
                 val entity = data.toEntity(timestamp)
                 repository.save(entity)
-                log.debug { "Saved notification data: ${entity.notificationId}[${entity.clickTimestamp}]" }
+                log.debug { "Saved notification data: ${entity.historyId}[${entity.clickTimestamp}]" }
             } catch (e: Exception) {
                 log.debug { "Notification data save error: $e" }
             }

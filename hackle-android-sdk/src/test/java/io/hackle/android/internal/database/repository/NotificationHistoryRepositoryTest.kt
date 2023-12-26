@@ -3,17 +3,17 @@ package io.hackle.android.internal.database.repository
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
-import io.hackle.android.internal.database.shared.NotificationEntity
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_CLICK_TIMESTAMP
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_DEBUG
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_ENVIRONMENT_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_NOTIFICATION_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_DELIVERY_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_EXECUTION_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_PUSH_MESSAGE_KEY
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.COLUMN_WORKSPACE_ID
-import io.hackle.android.internal.database.shared.NotificationEntity.Companion.TABLE_NAME
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_CLICK_TIMESTAMP
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_DEBUG
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_ENVIRONMENT_ID
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_HISTORY_ID
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_DELIVERY_ID
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_EXECUTION_ID
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_ID
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_KEY
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_WORKSPACE_ID
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.TABLE_NAME
 import io.hackle.android.internal.database.shared.SharedDatabase
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -27,7 +27,7 @@ import strikt.api.expectThat
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 
-internal class NotificationRepositoryTest {
+internal class NotificationHistoryRepositoryTest {
 
     @RelaxedMockK
     private lateinit var database: SharedDatabase
@@ -35,7 +35,7 @@ internal class NotificationRepositoryTest {
     @MockK
     private lateinit var db: SQLiteDatabase
 
-    private lateinit var sut: NotificationRepositoryImpl
+    private lateinit var sut: NotificationHistoryRepositoryImpl
 
     @Before
     fun before() {
@@ -50,7 +50,7 @@ internal class NotificationRepositoryTest {
         } answers {
             thirdArg<(SQLiteDatabase) -> Any>().invoke(db)
         }
-        sut = NotificationRepositoryImpl(database)
+        sut = NotificationHistoryRepositoryImpl(database)
     }
 
     @Test
@@ -62,7 +62,7 @@ internal class NotificationRepositoryTest {
         val actual = sut.count(1, 2)
         expectThat(actual) isEqualTo 42
         verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
-        verify(exactly = 1) { db.compileStatement("SELECT COUNT(*) FROM notifications WHERE workspace_id = 1 AND environment_id = 2") }
+        verify(exactly = 1) { db.compileStatement("SELECT COUNT(*) FROM notification_histories WHERE workspace_id = 1 AND environment_id = 2") }
         verify(exactly = 1) { statement.close() }
     }
 
@@ -76,7 +76,7 @@ internal class NotificationRepositoryTest {
 
     @Test
     fun save() {
-        val notification = mockk<NotificationEntity>(relaxed = true)
+        val notification = mockk<NotificationHistoryEntity>(relaxed = true)
         sut.save(notification)
 
         verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
@@ -85,7 +85,7 @@ internal class NotificationRepositoryTest {
 
     @Test
     fun `do nothing when exception occurred while saving data`() {
-        val notification = mockk<NotificationEntity>(relaxed = true)
+        val notification = mockk<NotificationHistoryEntity>(relaxed = true)
         every { db.insert(any(), any(), any()) } throws IllegalArgumentException()
 
         sut.save(notification)
@@ -100,15 +100,15 @@ internal class NotificationRepositoryTest {
         )
         every { db.rawQuery(any(), any()) } returns cursor
 
-        val actual = sut.getNotifications(123, 456)
+        val actual = sut.getEntities(123, 456)
 
         verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
-        verify(exactly = 1) { db.rawQuery("SELECT * FROM notifications WHERE workspace_id = 123 AND environment_id = 456", null) }
+        verify(exactly = 1) { db.rawQuery("SELECT * FROM notification_histories WHERE workspace_id = 123 AND environment_id = 456", null) }
         expectThat(actual) {
             hasSize(3)
-            get { this[0] } isEqualTo NotificationEntity(0, 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, true)
-            get { this[1] } isEqualTo NotificationEntity(1, 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, false)
-            get { this[2] } isEqualTo NotificationEntity(2,  123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, false)
+            get { this[0] } isEqualTo NotificationHistoryEntity(0, 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, true)
+            get { this[1] } isEqualTo NotificationHistoryEntity(1, 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, false)
+            get { this[2] } isEqualTo NotificationHistoryEntity(2,  123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, false)
         }
     }
 
@@ -118,20 +118,20 @@ internal class NotificationRepositoryTest {
         every { db.compileStatement(any()) } returns statement
 
         val entities = listOf(
-            NotificationEntity(0, 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
-            NotificationEntity(1, 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
-            NotificationEntity(2, 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationHistoryEntity(0, 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationHistoryEntity(1, 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
+            NotificationHistoryEntity(2, 123L, 456L, 789L, 111L, 222L, 333L, 444L, true),
         )
         sut.delete(entities)
 
         verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
-        verify(exactly = 1) { db.delete("notifications", "notification_id IN (?,?,?)", arrayOf("0", "1", "2")) }
+        verify(exactly = 1) { db.delete("notification_histories", "history_id IN (?,?,?)", arrayOf("0", "1", "2")) }
     }
 
     private fun cursor(vararg rows: List<Any>): Cursor =
         cursor(
             listOf(
-                COLUMN_NOTIFICATION_ID,
+                COLUMN_HISTORY_ID,
                 COLUMN_WORKSPACE_ID,
                 COLUMN_ENVIRONMENT_ID,
                 COLUMN_PUSH_MESSAGE_ID,

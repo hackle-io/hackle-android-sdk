@@ -2,7 +2,7 @@ package io.hackle.android.internal.notification
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.database.shared.NotificationEntity
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.WorkspaceImpl
 import io.hackle.android.ui.notification.NotificationClickAction
@@ -29,7 +29,7 @@ class NotificationManagerTest {
     private lateinit var executor: Executor
     private lateinit var workspaceFetcher: WorkspaceFetcher
 
-    private val repository = MockNotificationRepository()
+    private val repository = MockNotificationHistoryRepository()
 
     private lateinit var manager: NotificationManager
 
@@ -189,9 +189,9 @@ class NotificationManagerTest {
     @Test
     fun `flush data until empty`() {
         val notifications = listOf(
-            NotificationEntity(0, 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, true),
-            NotificationEntity(1, 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, false),
-            NotificationEntity(2, 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, true),
+            NotificationHistoryEntity(0, 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, true),
+            NotificationHistoryEntity(1, 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, false),
+            NotificationHistoryEntity(2, 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, true),
         )
         repository.putAll(notifications)
 
@@ -229,11 +229,11 @@ class NotificationManagerTest {
     @Test
     fun `flush only same environment data`() {
         val notifications = listOf(
-            NotificationEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
-            NotificationEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
-            NotificationEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
-            NotificationEntity(3, 222L, 111L, 4L, 4L, 4L, 4L, 4L, false),
-            NotificationEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
+            NotificationHistoryEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
+            NotificationHistoryEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
+            NotificationHistoryEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
+            NotificationHistoryEntity(3, 222L, 111L, 4L, 4L, 4L, 4L, 4L, false),
+            NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
         )
         repository.putAll(notifications)
 
@@ -252,11 +252,11 @@ class NotificationManagerTest {
     @Test
     fun `do not flush any data if workspace returns null`() {
         val notifications = listOf(
-            NotificationEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
-            NotificationEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
-            NotificationEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
-            NotificationEntity(3, 222L, 222L, 4L, 4L, 4L, 4L, 4L, false),
-            NotificationEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
+            NotificationHistoryEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, true),
+            NotificationHistoryEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 2L, false),
+            NotificationHistoryEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 3L, true),
+            NotificationHistoryEntity(3, 222L, 222L, 4L, 4L, 4L, 4L, 4L, false),
+            NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 5L, true),
         )
         repository.putAll(notifications)
         every { workspaceFetcher.fetch() } returns null

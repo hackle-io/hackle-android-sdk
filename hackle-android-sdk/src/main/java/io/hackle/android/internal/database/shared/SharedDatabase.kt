@@ -13,7 +13,7 @@ internal class SharedDatabase(
 ) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(NotificationEntity.CREATE_TABLE)
+        db.execSQL(NotificationHistoryEntity.CREATE_TABLE)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

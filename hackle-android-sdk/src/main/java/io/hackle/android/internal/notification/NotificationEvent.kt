@@ -1,6 +1,6 @@
 package io.hackle.android.internal.notification
 
-import io.hackle.android.internal.database.shared.NotificationEntity
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.sdk.common.Event
 
@@ -22,7 +22,7 @@ internal fun NotificationData.toTrackEvent() =
         .property("debug", debug)
         .build()
 
-internal fun NotificationEntity.toTrackEvent() =
+internal fun NotificationHistoryEntity.toTrackEvent() =
     Event.Builder("\$push_click")
         .property("push_message_id", pushMessageId)
         .property("push_message_key", pushMessageKey)

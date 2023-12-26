@@ -1,6 +1,6 @@
 package io.hackle.android.internal.notification
 
-import io.hackle.android.internal.database.shared.NotificationEntity
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity
 import io.hackle.android.ui.notification.NotificationClickAction
 import io.hackle.android.ui.notification.NotificationData
 import org.hamcrest.CoreMatchers.`is`
@@ -51,8 +51,8 @@ class NotificationEventTest {
 
     @Test
     fun `notification entity to event`() {
-        val from = NotificationEntity(
-            notificationId = 0,
+        val from = NotificationHistoryEntity(
+            historyId = 0,
             workspaceId = 123L,
             environmentId = 456L,
             pushMessageId = 1111L,

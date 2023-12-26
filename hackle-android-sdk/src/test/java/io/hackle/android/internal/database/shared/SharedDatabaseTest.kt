@@ -24,7 +24,7 @@ class SharedDatabaseTest {
         val db = mockk<SQLiteDatabase>(relaxUnitFun = true)
         sut.onCreate(db)
         verify(exactly = 1) {
-            db.execSQL(NotificationEntity.CREATE_TABLE)
+            db.execSQL(NotificationHistoryEntity.CREATE_TABLE)
         }
     }
 

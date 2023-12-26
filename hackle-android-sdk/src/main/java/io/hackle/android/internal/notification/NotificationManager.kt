@@ -1,7 +1,7 @@
 package io.hackle.android.internal.notification
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.database.repository.NotificationRepository
+import io.hackle.android.internal.database.repository.NotificationHistoryRepository
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.notification.NotificationData
@@ -22,7 +22,7 @@ internal class NotificationManager(
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
     private val preferences: KeyValueRepository,
-    private val repository: NotificationRepository,
+    private val repository: NotificationHistoryRepository,
 ) : NotificationDataReceiver, UserListener {
 
     private val flushing = AtomicBoolean(false)
@@ -141,7 +141,7 @@ internal class NotificationManager(
                 log.debug { "Notification data: $totalCount" }
 
                 for (index in 0 until loop) {
-                    val notifications = repository.getNotifications(
+                    val notifications = repository.getEntities(
                         workspaceId = workspace.id,
                         environmentId = workspace.environmentId,
                         limit = batchSize
@@ -157,7 +157,7 @@ internal class NotificationManager(
                             user = user,
                             timestamp = notification.clickTimestamp ?: System.currentTimeMillis()
                         )
-                        log.debug { "Notification data[id=${notification.notificationId}] successfully processed." }
+                        log.debug { "Notification data[id=${notification.historyId}] successfully processed." }
                     }
 
                     repository.delete(notifications)
