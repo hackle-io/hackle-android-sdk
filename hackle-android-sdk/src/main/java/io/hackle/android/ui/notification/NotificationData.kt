@@ -65,7 +65,7 @@ internal data class NotificationData(
                     largeImageUrl = hackle[KEY_LARGE_IMAGE_URL] as? String,
                     clickAction = NotificationClickAction.from(
                         hackle[KEY_CLICK_ACTION] as? String
-                            ?: NotificationClickAction.APP_OPEN.text
+                            ?: NotificationClickAction.APP_OPEN.name
                     ),
                     link = hackle[KEY_LINK] as? String,
                     debug = hackle[KEY_DEBUG] as? Boolean ?: false

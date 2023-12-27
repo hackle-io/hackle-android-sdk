@@ -26,11 +26,11 @@ class NotificationClickActionTest {
     @Test
     fun `enum to text`() {
         assertThat(
-            NotificationClickAction.APP_OPEN.text,
+            NotificationClickAction.APP_OPEN.name,
             `is`("APP_OPEN")
         )
         assertThat(
-            NotificationClickAction.DEEP_LINK.text,
+            NotificationClickAction.DEEP_LINK.name,
             `is`("DEEP_LINK")
         )
     }

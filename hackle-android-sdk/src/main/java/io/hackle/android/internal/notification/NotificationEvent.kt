@@ -9,7 +9,7 @@ internal data class RegisterPushTokenEvent(val token: String)
 internal fun RegisterPushTokenEvent.toTrackEvent(
     providerType: NotificationProviderType = NotificationProviderType.FCM
 ) = Event.Builder("\$push_token")
-        .property("provider_type", providerType.text)
+        .property("provider_type", providerType.name)
         .property("token", token)
         .build()
 

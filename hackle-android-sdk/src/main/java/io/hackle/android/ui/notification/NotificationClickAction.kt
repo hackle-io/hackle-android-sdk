@@ -1,12 +1,12 @@
 package io.hackle.android.ui.notification
 
-internal enum class NotificationClickAction(val text: String) {
+internal enum class NotificationClickAction {
 
-    APP_OPEN("APP_OPEN"),
-    DEEP_LINK("DEEP_LINK");
+    APP_OPEN,
+    DEEP_LINK;
 
     companion object {
-        private val ALL = NotificationClickAction.values().associateBy { it.text }
+        private val ALL = NotificationClickAction.values().associateBy { it.name }
         fun from(name: String): NotificationClickAction {
             return requireNotNull(ALL[name]) { "name[$name]" }
         }
