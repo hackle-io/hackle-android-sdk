@@ -1,6 +1,7 @@
 package io.hackle.android
 
 import android.content.Context
+import android.content.Intent
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 
@@ -11,6 +12,8 @@ val Hackle.app: HackleApp get() = HackleApp.getInstance()
 fun Hackle.registerActivityLifecycleCallbacks(context: Context) {
     HackleApp.registerActivityLifecycleCallbacks(context)
 }
+
+fun Hackle.isHacklePushMessage(intent: Intent) = HackleApp.isHacklePushMessage(intent)
 
 fun Hackle.initialize(
     context: Context,

@@ -3,6 +3,7 @@ package io.hackle.android
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
@@ -19,6 +20,7 @@ import io.hackle.android.internal.sync.SynchronizerType
 import io.hackle.android.internal.sync.SynchronizerType.COHORT
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
@@ -442,6 +444,11 @@ class HackleApp internal constructor(
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
             LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
+        }
+
+        @JvmStatic
+        fun isHacklePushMessage(intent: Intent): Boolean {
+            return NotificationHandler.isHackleIntent(intent)
         }
 
         /**
