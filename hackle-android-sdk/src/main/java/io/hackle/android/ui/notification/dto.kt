@@ -4,7 +4,6 @@ import io.hackle.android.internal.database.shared.NotificationHistoryEntity
 
 internal fun NotificationData.toEntity(timestamp: Long) =
     NotificationHistoryEntity(
-        historyId = 0,
         workspaceId = workspaceId,
         environmentId = environmentId,
         pushMessageId = pushMessageId,

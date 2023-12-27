@@ -4,7 +4,6 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
-import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_TIMESTAMP
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_DEBUG
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_ENVIRONMENT_ID
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_HISTORY_ID
@@ -12,6 +11,7 @@ import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Comp
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_EXECUTION_ID
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_ID
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_PUSH_MESSAGE_KEY
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_TIMESTAMP
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_WORKSPACE_ID
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.TABLE_NAME
 import io.hackle.android.internal.database.shared.SharedDatabase
@@ -23,6 +23,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
+import strikt.api.Assertion
 import strikt.api.expectThat
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
@@ -94,9 +95,9 @@ internal class NotificationHistoryRepositoryTest {
     @Test
     fun `get notification entities`() {
         val cursor = cursor(
-            listOf(0L, 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, 1),
-            listOf(1L, 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, 0),
-            listOf(2L, 123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, 0),
+            listOf(0L, 1L, 2L, 3L, 4L, 5L, 6L, 1234567890L, 1),
+            listOf(1L, 2L, 3L, 4L, 5L, 6L, 7L, 3333333333L, 0),
+            listOf(2L, 3L, 4L, 5L, 6L, 7L, 8L, 4444444444L, 11),
         )
         every { db.rawQuery(any(), any()) } returns cursor
 
@@ -106,9 +107,9 @@ internal class NotificationHistoryRepositoryTest {
         verify(exactly = 1) { db.rawQuery("SELECT * FROM notification_histories WHERE workspace_id = 123 AND environment_id = 456", null) }
         expectThat(actual) {
             hasSize(3)
-            get { this[0] } isEqualTo NotificationHistoryEntity(0, 123L, 456L, 111L, 222L, 333L, 444L, 1234567890L, true)
-            get { this[1] } isEqualTo NotificationHistoryEntity(1, 123L, 456L, 222L, 333L, 444L, 555L, 3333333333L, false)
-            get { this[2] } isEqualTo NotificationHistoryEntity(2,  123L, 456L, 333L, 444L, 555L, 666L, 4444444444L, false)
+            get { this[0] } isEqualTo NotificationHistoryEntity(0L, 1L, 2L, 3L, 4L, 5L, 6L, 1234567890L, true)
+            get { this[1] } isEqualTo NotificationHistoryEntity(1L, 2L, 3L, 4L, 5L, 6L, 7L, 3333333333L, false)
+            get { this[2] } isEqualTo NotificationHistoryEntity(2L, 3L, 4L, 5L, 6L, 7L, 8L, 4444444444L, true)
         }
     }
 
@@ -167,4 +168,21 @@ internal class NotificationHistoryRepositoryTest {
 
         return cursor
     }
+
+    infix fun Assertion.Builder<NotificationHistoryEntity>.isEqualTo(expected: NotificationHistoryEntity): Assertion.Builder<NotificationHistoryEntity> =
+        assert("is equal to %s", expected) {
+            if (it.historyId == expected.historyId &&
+                it.workspaceId == expected.workspaceId &&
+                it.environmentId == expected.environmentId &&
+                it.pushMessageId == expected.pushMessageId &&
+                it.pushMessageKey == expected.pushMessageKey &&
+                it.pushMessageExecutionId == expected.pushMessageExecutionId &&
+                it.pushMessageDeliveryId == expected.pushMessageDeliveryId &&
+                it.timestamp == expected.timestamp &&
+                it.debug == expected.debug) {
+                pass(actual = it)
+            } else {
+                fail(actual = it)
+            }
+        }
 }
