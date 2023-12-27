@@ -44,7 +44,7 @@ internal class HackleUserExplorerActivity : FragmentActivity(), HackleActivity {
         userId.bind(IdentifierItem(getString(R.string.hackle_label_user_id), user.userId))
 
         pushToken = findViewById(R.id.push_token)
-        pushToken.bind(IdentifierItem(getString(R.string.hackle_label_push_token), explorerService.registerPushToken()))
+        pushToken.bind(IdentifierItem(getString(R.string.hackle_label_push_token), explorerService.registeredPushToken()))
 
         viewPager = findViewById(R.id.hackle_user_explorer_view_pager)
         adapter = HackleUserExplorerAdapter(supportFragmentManager)

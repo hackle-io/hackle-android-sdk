@@ -24,7 +24,7 @@ internal class HackleUserExplorerService(
         return userManager.resolve(null)
     }
 
-    fun registerPushToken(): String? {
+    fun registeredPushToken(): String? {
         return notificationManager.registeredPushToken
     }
 
