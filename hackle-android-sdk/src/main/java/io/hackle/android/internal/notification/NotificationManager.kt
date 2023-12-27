@@ -6,7 +6,6 @@ import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.android.ui.notification.NotificationDataReceiver
-import io.hackle.android.ui.notification.toEntity
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -100,9 +99,8 @@ internal class NotificationManager(
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
         executor.execute {
             try {
-                val entity = data.toEntity(timestamp)
-                repository.save(entity)
-                log.debug { "Saved notification data: ${entity.pushMessageId}[${entity.timestamp}]" }
+                repository.save(data, timestamp)
+                log.debug { "Saved notification data: ${data.pushMessageId}[${timestamp}]" }
             } catch (e: Exception) {
                 log.debug { "Notification data save error: $e" }
             }
