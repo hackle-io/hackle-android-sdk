@@ -12,7 +12,7 @@ internal data class NotificationHistoryEntity(
     val pushMessageKey: Long?,
     val pushMessageExecutionId: Long?,
     val pushMessageDeliveryId: Long?,
-    val clickTimestamp: Long?,
+    val timestamp: Long?,
     val debug: Boolean
 ) {
 
@@ -27,7 +27,7 @@ internal data class NotificationHistoryEntity(
         const val COLUMN_PUSH_MESSAGE_KEY = "push_message_key"
         const val COLUMN_PUSH_MESSAGE_EXECUTION_ID = "push_message_execution_id"
         const val COLUMN_PUSH_MESSAGE_DELIVERY_ID = "push_message_delivery_id"
-        const val COLUMN_CLICK_TIMESTAMP = "click_timestamp"
+        const val COLUMN_TIMESTAMP = "timestamp"
         const val COLUMN_DEBUG = "debug"
 
         const val CREATE_TABLE =
@@ -39,7 +39,7 @@ internal data class NotificationHistoryEntity(
                 "$COLUMN_PUSH_MESSAGE_KEY INTEGER," +
                 "$COLUMN_PUSH_MESSAGE_EXECUTION_ID INTEGER," +
                 "$COLUMN_PUSH_MESSAGE_DELIVERY_ID INTEGER," +
-                "$COLUMN_CLICK_TIMESTAMP INTEGER," +
+                "$COLUMN_TIMESTAMP INTEGER," +
                 "$COLUMN_DEBUG INTEGER" +
             ")"
 
@@ -52,7 +52,7 @@ internal data class NotificationHistoryEntity(
                 pushMessageKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_KEY)),
                 pushMessageExecutionId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID)),
                 pushMessageDeliveryId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID)),
-                clickTimestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_TIMESTAMP)),
+                timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
                 debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG))
             )
         }

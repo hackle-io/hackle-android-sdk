@@ -59,7 +59,7 @@ class NotificationEventTest {
             pushMessageKey = 2222L,
             pushMessageExecutionId = 3333L,
             pushMessageDeliveryId = 4444L,
-            clickTimestamp = 987654321L,
+            timestamp = 987654321L,
             debug = true,
         )
         val to = from.toTrackEvent()

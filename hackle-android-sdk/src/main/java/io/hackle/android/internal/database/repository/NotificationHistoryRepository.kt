@@ -54,7 +54,7 @@ internal class NotificationHistoryRepositoryImpl(
         values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_KEY, entity.pushMessageKey)
         values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_EXECUTION_ID, entity.pushMessageExecutionId)
         values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_DELIVERY_ID, entity.pushMessageDeliveryId)
-        values.put(NotificationHistoryEntity.COLUMN_CLICK_TIMESTAMP, entity.clickTimestamp)
+        values.put(NotificationHistoryEntity.COLUMN_TIMESTAMP, entity.timestamp)
         values.put(NotificationHistoryEntity.COLUMN_DEBUG, entity.debug)
         db.insert(NotificationHistoryEntity.TABLE_NAME, null, values)
     }
@@ -81,7 +81,7 @@ internal class NotificationHistoryRepositoryImpl(
                 "WHERE ${NotificationHistoryEntity.COLUMN_WORKSPACE_ID} = $workspaceId AND " +
                     "${NotificationHistoryEntity.COLUMN_ENVIRONMENT_ID} = $environmentId"
         if (limit != null) {
-            query += " ORDER BY ${NotificationHistoryEntity.COLUMN_CLICK_TIMESTAMP} ASC LIMIT $limit"
+            query += " ORDER BY ${NotificationHistoryEntity.COLUMN_TIMESTAMP} ASC LIMIT $limit"
         }
         return db.rawQuery(query, null).use { cursor ->
             val toReturn = mutableListOf<NotificationHistoryEntity>()

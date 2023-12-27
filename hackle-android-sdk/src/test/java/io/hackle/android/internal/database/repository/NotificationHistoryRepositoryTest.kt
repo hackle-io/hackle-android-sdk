@@ -4,7 +4,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
-import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_CLICK_TIMESTAMP
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_TIMESTAMP
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_DEBUG
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_ENVIRONMENT_ID
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_HISTORY_ID
@@ -138,7 +138,7 @@ internal class NotificationHistoryRepositoryTest {
                 COLUMN_PUSH_MESSAGE_KEY,
                 COLUMN_PUSH_MESSAGE_EXECUTION_ID,
                 COLUMN_PUSH_MESSAGE_DELIVERY_ID,
-                COLUMN_CLICK_TIMESTAMP,
+                COLUMN_TIMESTAMP,
                 COLUMN_DEBUG
             ),
             *rows

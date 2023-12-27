@@ -23,7 +23,7 @@ internal class DefaultNotificationDataReceiver(
             try {
                 val entity = data.toEntity(timestamp)
                 repository.save(entity)
-                log.debug { "Saved notification data: ${entity.historyId}[${entity.clickTimestamp}]" }
+                log.debug { "Saved notification data: ${entity.historyId}[${entity.timestamp}]" }
             } catch (e: Exception) {
                 log.debug { "Notification data save error: $e" }
             }

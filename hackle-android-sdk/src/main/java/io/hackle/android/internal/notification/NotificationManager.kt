@@ -102,7 +102,7 @@ internal class NotificationManager(
             try {
                 val entity = data.toEntity(timestamp)
                 repository.save(entity)
-                log.debug { "Saved notification data: ${entity.pushMessageId}[${entity.clickTimestamp}]" }
+                log.debug { "Saved notification data: ${entity.pushMessageId}[${entity.timestamp}]" }
             } catch (e: Exception) {
                 log.debug { "Notification data save error: $e" }
             }
@@ -155,7 +155,7 @@ internal class NotificationManager(
                         track(
                             event = notification.toTrackEvent(),
                             user = user,
-                            timestamp = notification.clickTimestamp ?: System.currentTimeMillis()
+                            timestamp = notification.timestamp ?: System.currentTimeMillis()
                         )
                         log.debug { "Notification data[id=${notification.historyId}] successfully processed." }
                     }
