@@ -4,60 +4,17 @@ import android.database.Cursor
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 
-internal class NotificationHistoryEntity {
-
-    val historyId: Long
-    val workspaceId: Long
-    val environmentId: Long
-    val pushMessageId: Long?
-    val pushMessageKey: Long?
-    val pushMessageExecutionId: Long?
-    val pushMessageDeliveryId: Long?
-    val timestamp: Long
+internal class NotificationHistoryEntity(
+    val historyId: Long,
+    val workspaceId: Long,
+    val environmentId: Long,
+    val pushMessageId: Long?,
+    val pushMessageKey: Long?,
+    val pushMessageExecutionId: Long?,
+    val pushMessageDeliveryId: Long?,
+    val timestamp: Long,
     val debug: Boolean
-
-    constructor(
-        workspaceId: Long,
-        environmentId: Long,
-        pushMessageId: Long?,
-        pushMessageKey: Long?,
-        pushMessageExecutionId: Long?,
-        pushMessageDeliveryId: Long?,
-        timestamp: Long,
-        debug: Boolean
-    ) : this(
-        0L,
-        workspaceId,
-        environmentId,
-        pushMessageId,
-        pushMessageKey,
-        pushMessageExecutionId,
-        pushMessageDeliveryId,
-        timestamp,
-        debug
-    )
-
-    constructor(
-        historyId: Long,
-        workspaceId: Long,
-        environmentId: Long,
-        pushMessageId: Long?,
-        pushMessageKey: Long?,
-        pushMessageExecutionId: Long?,
-        pushMessageDeliveryId: Long?,
-        timestamp: Long,
-        debug: Boolean
-    ) {
-        this.historyId = historyId
-        this.workspaceId = workspaceId
-        this.environmentId = environmentId
-        this.pushMessageId = pushMessageId
-        this.pushMessageKey = pushMessageKey
-        this.pushMessageExecutionId = pushMessageExecutionId
-        this.pushMessageDeliveryId = pushMessageDeliveryId
-        this.timestamp = timestamp
-        this.debug = debug
-    }
+) {
 
     companion object {
 

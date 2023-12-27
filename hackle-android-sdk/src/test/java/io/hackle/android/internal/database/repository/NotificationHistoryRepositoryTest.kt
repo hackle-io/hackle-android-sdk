@@ -15,6 +15,7 @@ import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Comp
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_WORKSPACE_ID
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.TABLE_NAME
 import io.hackle.android.internal.database.shared.SharedDatabase
+import io.hackle.android.ui.notification.NotificationData
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -77,8 +78,9 @@ internal class NotificationHistoryRepositoryTest {
 
     @Test
     fun save() {
-        val notification = mockk<NotificationHistoryEntity>(relaxed = true)
-        sut.save(notification)
+        val data = mockk<NotificationData>(relaxed = true)
+        val timestamp = System.currentTimeMillis()
+        sut.save(data, timestamp)
 
         verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
         verify(exactly = 1) { db.insert(TABLE_NAME, any(), any()) }
@@ -86,10 +88,11 @@ internal class NotificationHistoryRepositoryTest {
 
     @Test
     fun `do nothing when exception occurred while saving data`() {
-        val notification = mockk<NotificationHistoryEntity>(relaxed = true)
+        val data = mockk<NotificationData>(relaxed = true)
+        val timestamp = System.currentTimeMillis()
         every { db.insert(any(), any(), any()) } throws IllegalArgumentException()
 
-        sut.save(notification)
+        sut.save(data, timestamp)
     }
 
     @Test

@@ -2,9 +2,11 @@ package io.hackle.android.internal.notification
 
 import io.hackle.android.internal.database.repository.NotificationHistoryRepository
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
+import io.hackle.android.ui.notification.NotificationData
 
 internal class MockNotificationHistoryRepository : NotificationHistoryRepository {
 
+    private var incrementKey: Long = 0L
     private val workspaceData: MutableMap<String, MutableMap<Long, NotificationHistoryEntity>> = HashMap()
 
     private fun getWorkspaceKey(workspaceId: Long, environmentId: Long) = "$workspaceId:$environmentId"
@@ -17,9 +19,20 @@ internal class MockNotificationHistoryRepository : NotificationHistoryRepository
         return data.count()
     }
 
-    override fun save(entity: NotificationHistoryEntity) {
-        val data = getWorkspaceData(entity.workspaceId, entity.environmentId)
-        data[entity.historyId] = entity
+    override fun save(data: NotificationData, timestamp: Long) {
+        val map = getWorkspaceData(data.workspaceId, data.environmentId)
+        val entity = NotificationHistoryEntity(
+            historyId = incrementKey ++,
+            workspaceId = data.workspaceId,
+            environmentId = data.environmentId,
+            pushMessageId = data.pushMessageId,
+            pushMessageKey = data.pushMessageKey,
+            pushMessageExecutionId = data.pushMessageExecutionId,
+            pushMessageDeliveryId = data.pushMessageDeliveryId,
+            timestamp = timestamp,
+            debug = data.debug
+        )
+        map[entity.historyId] = entity
     }
 
     fun putAll(entities: List<NotificationHistoryEntity>) {

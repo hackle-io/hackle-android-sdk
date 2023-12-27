@@ -4,12 +4,13 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
 import io.hackle.android.internal.database.shared.SharedDatabase
+import io.hackle.android.ui.notification.NotificationData
 import io.hackle.sdk.core.internal.log.Logger
 
 internal interface NotificationHistoryRepository {
     fun count(workspaceId: Long, environmentId: Long): Int
 
-    fun save(entity: NotificationHistoryEntity)
+    fun save(data: NotificationData, timestamp: Long)
 
     fun getEntities(workspaceId: Long, environmentId: Long, limit: Int? = null): List<NotificationHistoryEntity>
 
@@ -38,24 +39,24 @@ internal class NotificationHistoryRepositoryImpl(
             .use { statement -> statement.simpleQueryForLong() }
     }
 
-    override fun save(entity: NotificationHistoryEntity) {
+    override fun save(data: NotificationData, timestamp: Long) {
         try {
-            database.execute(transaction = true) { db -> save(db, entity) }
+            database.execute(transaction = true) { db -> save(db, data, timestamp) }
         } catch (e: Exception) {
             log.error { "Failed to save notification: $e" }
         }
     }
 
-    private fun save(db: SQLiteDatabase, entity: NotificationHistoryEntity) {
+    private fun save(db: SQLiteDatabase, data: NotificationData, timestamp: Long) {
         val values = ContentValues()
-        values.put(NotificationHistoryEntity.COLUMN_WORKSPACE_ID, entity.workspaceId)
-        values.put(NotificationHistoryEntity.COLUMN_ENVIRONMENT_ID, entity.environmentId)
-        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_ID, entity.pushMessageId)
-        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_KEY, entity.pushMessageKey)
-        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_EXECUTION_ID, entity.pushMessageExecutionId)
-        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_DELIVERY_ID, entity.pushMessageDeliveryId)
-        values.put(NotificationHistoryEntity.COLUMN_TIMESTAMP, entity.timestamp)
-        values.put(NotificationHistoryEntity.COLUMN_DEBUG, entity.debug)
+        values.put(NotificationHistoryEntity.COLUMN_WORKSPACE_ID, data.workspaceId)
+        values.put(NotificationHistoryEntity.COLUMN_ENVIRONMENT_ID, data.environmentId)
+        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_ID, data.pushMessageId)
+        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_KEY, data.pushMessageKey)
+        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_EXECUTION_ID, data.pushMessageExecutionId)
+        values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_DELIVERY_ID, data.pushMessageDeliveryId)
+        values.put(NotificationHistoryEntity.COLUMN_TIMESTAMP, timestamp)
+        values.put(NotificationHistoryEntity.COLUMN_DEBUG, data.debug)
         db.insert(NotificationHistoryEntity.TABLE_NAME, null, values)
     }
 

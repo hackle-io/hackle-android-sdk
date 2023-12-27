@@ -21,9 +21,8 @@ internal class DefaultNotificationDataReceiver(
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
         executor.execute {
             try {
-                val entity = data.toEntity(timestamp)
-                repository.save(entity)
-                log.debug { "Saved notification data: ${entity.historyId}[${entity.timestamp}]" }
+                repository.save(data, timestamp)
+                log.debug { "Saved notification data: ${data.pushMessageId}[${timestamp}]" }
             } catch (e: Exception) {
                 log.debug { "Notification data save error: $e" }
             }
