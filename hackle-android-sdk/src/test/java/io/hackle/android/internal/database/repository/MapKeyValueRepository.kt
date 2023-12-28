@@ -1,4 +1,6 @@
-package io.hackle.android.internal.database
+package io.hackle.android.internal.database.repository
+
+import io.hackle.android.internal.database.repository.KeyValueRepository
 
 internal class MapKeyValueRepository(
     private val map: MutableMap<String, Any> = mutableMapOf(),

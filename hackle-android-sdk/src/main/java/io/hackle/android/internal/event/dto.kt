@@ -1,6 +1,6 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.database.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.user.IdentifierType

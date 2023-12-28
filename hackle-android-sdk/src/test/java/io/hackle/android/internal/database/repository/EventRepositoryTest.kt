@@ -1,13 +1,16 @@
-package io.hackle.android.internal.database
+package io.hackle.android.internal.database.repository
 
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
-import io.hackle.android.internal.database.EventEntity.Companion.TABLE_NAME
-import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
-import io.hackle.android.internal.database.EventEntity.Status.PENDING
-import io.hackle.android.internal.database.EventEntity.Type.EXPOSURE
-import io.hackle.android.internal.database.EventEntity.Type.TRACK
+import io.hackle.android.internal.database.repository.EventRepository
+import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.TABLE_NAME
+import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
+import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.workspace.EventEntity.Type.EXPOSURE
+import io.hackle.android.internal.database.workspace.EventEntity.Type.TRACK
+import io.hackle.android.internal.database.workspace.WorkspaceDatabase
 import io.hackle.sdk.core.event.UserEvent
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -25,7 +28,7 @@ import strikt.assertions.isEqualTo
 internal class EventRepositoryTest {
 
     @RelaxedMockK
-    private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var database: WorkspaceDatabase
 
     @MockK
     private lateinit var db: SQLiteDatabase
@@ -37,14 +40,14 @@ internal class EventRepositoryTest {
         MockKAnnotations.init(this)
 
         every {
-            databaseHelper.execute(
+            database.execute(
                 readOnly = any(),
                 transaction = any(),
                 command = any<(SQLiteDatabase) -> Any>())
         } answers {
             thirdArg<(SQLiteDatabase) -> Any>().invoke(db)
         }
-        sut = EventRepository(databaseHelper)
+        sut = EventRepository(database)
     }
 
     @Test
@@ -59,7 +62,7 @@ internal class EventRepositoryTest {
 
         // then
         expectThat(actual) isEqualTo 42
-        verify(exactly = 1) { databaseHelper.execute(readOnly = true, transaction = false, any()) }
+        verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
         verify(exactly = 1) { db.compileStatement("SELECT COUNT(*) FROM events") }
         verify(exactly = 1) { statement.close() }
     }
@@ -76,7 +79,7 @@ internal class EventRepositoryTest {
 
         // then
         expectThat(actual) isEqualTo 42
-        verify(exactly = 1) { databaseHelper.execute(readOnly = true, transaction = false, any()) }
+        verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
         verify(exactly = 1) { db.compileStatement("SELECT COUNT(*) FROM events WHERE status = 0") }
         verify(exactly = 1) { statement.close() }
     }
@@ -102,7 +105,7 @@ internal class EventRepositoryTest {
         sut.save(event)
 
         // then
-        verify(exactly = 1) { databaseHelper.execute(readOnly = false, transaction = false, any()) }
+        verify(exactly = 1) { database.execute(readOnly = false, transaction = false, any()) }
         verify(exactly = 1) { db.insert(TABLE_NAME, any(), any()) }
     }
 
@@ -145,7 +148,7 @@ internal class EventRepositoryTest {
             get { this[3] } isEqualTo EventEntity(4L, PENDING, TRACK, "body4")
         }
 
-        verify(exactly = 1) { databaseHelper.execute(readOnly = false, transaction = true, any()) }
+        verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
         verify(exactly = 4) { statement.executeUpdateDelete() }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 1") }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 2") }
@@ -197,7 +200,7 @@ internal class EventRepositoryTest {
         val actual = sut.findAllBy(FLUSHING)
 
         // then
-        verify(exactly = 1) { databaseHelper.execute(readOnly = true, transaction = false, any()) }
+        verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
         verify(exactly = 1) { db.rawQuery("SELECT * FROM events WHERE status = 1", null) }
         expectThat(actual) {
             hasSize(4)
@@ -236,7 +239,7 @@ internal class EventRepositoryTest {
         sut.update(events, FLUSHING)
 
         // then
-        verify(exactly = 1) { databaseHelper.execute(readOnly = false, transaction = true, any()) }
+        verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
         verify(exactly = 4) { statement.executeUpdateDelete() }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 1") }
         verify(exactly = 1) { db.compileStatement("UPDATE events SET status = 1 WHERE id = 2") }
@@ -274,7 +277,7 @@ internal class EventRepositoryTest {
         sut.deleteOldEvents(12)
 
         // then
-        verify(exactly = 1) { databaseHelper.execute(readOnly = false, transaction = true, any()) }
+        verify(exactly = 1) { database.execute(readOnly = false, transaction = true, any()) }
         verify(exactly = 1) { db.compileStatement("SELECT id FROM events LIMIT 1 OFFSET 11") }
         verify(exactly = 1) { db.delete("events", "id <= 42", null) }
     }

@@ -1,6 +1,6 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.database.MapKeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.Event

@@ -1,9 +1,8 @@
 package io.hackle.android.internal.inappmessage.storage
 
-import io.hackle.android.internal.database.KeyValueRepository
-import io.hackle.android.internal.database.MapKeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.support.InAppMessages
-import io.hackle.sdk.core.model.InAppMessage
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat

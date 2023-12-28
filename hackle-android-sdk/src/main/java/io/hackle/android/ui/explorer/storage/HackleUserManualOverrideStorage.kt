@@ -1,8 +1,8 @@
 package io.hackle.android.ui.explorer.storage
 
 import android.content.Context
-import io.hackle.android.internal.database.AndroidKeyValueRepository
-import io.hackle.android.internal.database.KeyValueRepository
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.sdk.core.evaluation.target.ManualOverrideStorage
 import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.model.Variation

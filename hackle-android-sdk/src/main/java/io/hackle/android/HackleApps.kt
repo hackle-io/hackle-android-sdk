@@ -2,9 +2,10 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.database.AndroidKeyValueRepository
 import io.hackle.android.internal.database.DatabaseHelper
-import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.EventRepository
+import io.hackle.android.internal.database.repository.NotificationHistoryRepositoryImpl
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
@@ -25,6 +26,7 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
+import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.CompositeSynchronizer
@@ -53,6 +55,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageLinkActionHandler
 import io.hackle.android.ui.inappmessage.event.InAppMessageLinkAndCloseActionHandler
 import io.hackle.android.ui.inappmessage.event.UriHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
+import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext
 import io.hackle.sdk.core.evaluation.get
@@ -78,6 +81,7 @@ internal object HackleApps {
         loggerConfiguration(config)
 
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
+        val keyValueRepositoryBySdkKey = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         val device = Device.create(context, globalKeyValueRepository)
 
         val httpClient = createHttpClient(context, sdk)
@@ -111,7 +115,7 @@ internal object HackleApps {
         val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
         val userManager = UserManager(
             device = device,
-            repository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey"),
+            repository = keyValueRepositoryBySdkKey,
             cohortFetcher = cohortFetcher
         )
         compositeSynchronizer.add(COHORT, userManager)
@@ -127,8 +131,8 @@ internal object HackleApps {
 
         // EventProcessor
 
-        val databaseHelper = DatabaseHelper[context, sdkKey]
-        val eventRepository = EventRepository(databaseHelper)
+        val workspaceDatabase = DatabaseHelper.getWorkspaceDatabase(context, sdkKey)
+        val eventRepository = EventRepository(workspaceDatabase)
         val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
         val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")
 
@@ -254,6 +258,22 @@ internal object HackleApps {
         )
         eventPublisher.add(inAppMessageManager)
 
+        // Notification
+
+        val notificationManager = NotificationManager(
+            core = core,
+            executor = eventExecutor,
+            workspaceFetcher = workspaceManager,
+            userManager = userManager,
+            preferences = keyValueRepositoryBySdkKey,
+            repository = NotificationHistoryRepositoryImpl(
+                DatabaseHelper.getSharedDatabase(context)
+            )
+        )
+        NotificationHandler.getInstance(context)
+            .setNotificationDataReceiver(notificationManager)
+        userManager.addListener(notificationManager)
+
         // UserExplorer
 
         val userExplorer = HackleUserExplorer(
@@ -261,7 +281,8 @@ internal object HackleApps {
                 core = core,
                 userManager = userManager,
                 abTestOverrideStorage = abOverrideStorage,
-                featureFlagOverrideStorage = ffOverrideStorage
+                featureFlagOverrideStorage = ffOverrideStorage,
+                notificationManager = notificationManager
             ),
             activityProvider = LifecycleManager.getInstance()
         )
@@ -287,6 +308,7 @@ internal object HackleApps {
             userManager = userManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
+            notificationManager = notificationManager,
             device = device,
             userExplorer = userExplorer,
             sdk = sdk

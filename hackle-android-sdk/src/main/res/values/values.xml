@@ -6,10 +6,10 @@
     <string name="hackle_logo">hackle_logo</string>
     <string name="hackle_label_copy">COPY</string>
     <string name="hackle_label_copied">Copied</string>
-    <string name="hackle_label_user">USER</string>
     <string name="hackle_label_id">ID</string>
     <string name="hackle_label_device_id">DEVICE ID</string>
     <string name="hackle_label_user_id">USER ID</string>
+    <string name="hackle_label_push_token">PUSH TOKEN</string>
     <string name="hackle_label_not_avail">N/A</string>
     <string name="hackle_label_experiment_key">EXPERIMENT KEY</string>
     <string name="hackle_label_experiment_desc">EXPERIMENT DESC</string>

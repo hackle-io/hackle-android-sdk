@@ -13,6 +13,8 @@ import io.hackle.sdk.core.model.Segment
 import io.hackle.sdk.core.workspace.Workspace
 
 internal class WorkspaceImpl(
+    override val id: Long,
+    override val environmentId: Long,
     override val experiments: List<Experiment>,
     override val featureFlags: List<Experiment>,
     private val eventTypes: Map<String, EventType>,
@@ -66,7 +68,10 @@ internal class WorkspaceImpl(
 
 
     companion object {
-        fun from(dto: WorkspaceDto): Workspace {
+        fun from(dto: WorkspaceConfigDto): Workspace {
+            val id = dto.workspace.id
+
+            val environmentId = dto.workspace.environment.id
 
             val experiments: List<Experiment> =
                 dto.experiments.mapNotNull { it.toExperimentOrNull(AB_TEST) }
@@ -100,6 +105,8 @@ internal class WorkspaceImpl(
             val inAppMessages = dto.inAppMessages.mapNotNull { it.toInAppMessageOrNull() }
 
             return WorkspaceImpl(
+                id = id,
+                environmentId = environmentId,
                 experiments = experiments,
                 featureFlags = featureFlags,
                 eventTypes = eventTypes,

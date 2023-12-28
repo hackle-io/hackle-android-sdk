@@ -1,8 +1,8 @@
 package io.hackle.android.internal.inappmessage.storage
 
 import android.content.Context
-import io.hackle.android.internal.database.AndroidKeyValueRepository
-import io.hackle.android.internal.database.KeyValueRepository
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
 import io.hackle.sdk.core.model.InAppMessage
 

@@ -39,28 +39,27 @@
         android:paddingRight="16dp"
         android:paddingBottom="12dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/hackle_label_user"
-            android:textColor="@color/hackle_black"
-            android:textSize="16dp" />
-
         <io.hackle.android.ui.explorer.activity.user.IdentifierView
             android:id="@+id/hackle_identifier_default_id"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
         <io.hackle.android.ui.explorer.activity.user.IdentifierView
             android:id="@+id/hackle_identifier_device_id"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
         <io.hackle.android.ui.explorer.activity.user.IdentifierView
             android:id="@+id/hackle_identifier_user_id"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <io.hackle.android.ui.explorer.activity.user.IdentifierView
+            android:id="@+id/push_token"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
 
