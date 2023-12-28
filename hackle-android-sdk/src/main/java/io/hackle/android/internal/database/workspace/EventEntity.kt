@@ -1,4 +1,4 @@
-package io.hackle.android.internal.database
+package io.hackle.android.internal.database.workspace
 
 import io.hackle.android.internal.event.toDto
 import io.hackle.android.internal.utils.toJson

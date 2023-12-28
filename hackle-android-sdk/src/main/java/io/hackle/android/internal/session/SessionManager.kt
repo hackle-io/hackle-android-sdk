@@ -1,6 +1,6 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.database.KeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND

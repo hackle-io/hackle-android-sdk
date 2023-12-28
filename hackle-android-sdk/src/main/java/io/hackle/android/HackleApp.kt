@@ -3,6 +3,7 @@ package io.hackle.android
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
@@ -11,6 +12,7 @@ import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
+import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -18,6 +20,7 @@ import io.hackle.android.internal.sync.SynchronizerType
 import io.hackle.android.internal.sync.SynchronizerType.COHORT
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
@@ -46,6 +49,7 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
+    private val notificationManager: NotificationManager,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
     internal val sdk: Sdk
@@ -304,6 +308,14 @@ class HackleApp internal constructor(
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
+    fun setPushToken(token: String) {
+        try {
+            notificationManager.setPushToken(token)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while set registered push token: $t" }
+        }
+    }
+
     override fun close() {
         core.tryClose()
     }
@@ -315,6 +327,7 @@ class HackleApp internal constructor(
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 synchronizer.sync()
+                notificationManager.flush()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }
@@ -431,6 +444,11 @@ class HackleApp internal constructor(
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
             LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
+        }
+
+        @JvmStatic
+        fun isHacklePushMessage(intent: Intent): Boolean {
+            return NotificationHandler.isHackleIntent(intent)
         }
 
         /**

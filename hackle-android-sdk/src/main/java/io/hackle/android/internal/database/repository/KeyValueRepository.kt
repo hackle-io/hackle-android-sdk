@@ -1,4 +1,4 @@
-package io.hackle.android.internal.database
+package io.hackle.android.internal.database.repository
 
 import android.content.Context
 import android.content.SharedPreferences

@@ -1,8 +1,8 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.database.EventEntity
-import io.hackle.android.internal.database.EventEntity.Status.PENDING
-import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.core.internal.log.Logger
 import okhttp3.HttpUrl

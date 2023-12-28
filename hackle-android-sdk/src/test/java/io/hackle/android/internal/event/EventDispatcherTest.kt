@@ -1,10 +1,10 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.database.EventEntity
-import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
-import io.hackle.android.internal.database.EventEntity.Status.PENDING
-import io.hackle.android.internal.database.EventEntity.Type.TRACK
-import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
+import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.workspace.EventEntity.Type.TRACK
+import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.cumulative.CumulativeMetricRegistry
 import io.mockk.MockKAnnotations
@@ -16,7 +16,6 @@ import io.mockk.verify
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Response
-import okhttp3.ResponseBody
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test

@@ -1,25 +1,29 @@
-package io.hackle.android.internal.database
+package io.hackle.android.internal.database.repository
 
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import io.hackle.android.internal.database.EventEntity.Companion.BODY_COLUMN_NAME
-import io.hackle.android.internal.database.EventEntity.Companion.ID_COLUMN_NAME
-import io.hackle.android.internal.database.EventEntity.Companion.STATUS_COLUMN_NAME
-import io.hackle.android.internal.database.EventEntity.Companion.TABLE_NAME
-import io.hackle.android.internal.database.EventEntity.Companion.TYPE_COLUMN_NAME
-import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
-import io.hackle.android.internal.database.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.BODY_COLUMN_NAME
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.ID_COLUMN_NAME
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.STATUS_COLUMN_NAME
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.TABLE_NAME
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.TYPE_COLUMN_NAME
+import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
+import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.workspace.WorkspaceDatabase
+import io.hackle.android.internal.database.workspace.toBody
+import io.hackle.android.internal.database.workspace.type
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class EventRepository(
-    private val databaseHelper: DatabaseHelper,
+    private val database: WorkspaceDatabase,
 ) {
 
     fun count(status: EventEntity.Status? = null): Long {
         return try {
-            databaseHelper.execute(readOnly = true) { db -> count(db, status) }
+            database.execute(readOnly = true) { db -> count(db, status) }
         } catch (e: Exception) {
             log.error { "Failed to count events: $e" }
             0
@@ -38,7 +42,7 @@ internal class EventRepository(
 
     fun save(userEvent: UserEvent) {
         try {
-            databaseHelper.execute { db -> save(db, userEvent) }
+            database.execute { db -> save(db, userEvent) }
         } catch (e: Exception) {
             log.error { "Failed to save event: $e" }
         }
@@ -54,7 +58,7 @@ internal class EventRepository(
 
     fun getEventsToFlush(limit: Int): List<EventEntity> {
         return try {
-            databaseHelper.execute(transaction = true) { db -> getEventsToFlush(db, limit) }
+            database.execute(transaction = true) { db -> getEventsToFlush(db, limit) }
         } catch (e: Exception) {
             log.error { "Failed to get events: $e" }
             emptyList()
@@ -98,7 +102,7 @@ internal class EventRepository(
 
     fun findAllBy(status: EventEntity.Status): List<EventEntity> {
         return try {
-            databaseHelper.execute(readOnly = true) { db -> getEvents(db, status) }
+            database.execute(readOnly = true) { db -> getEvents(db, status) }
         } catch (e: Exception) {
             log.error { "Failed to get events: $e" }
             emptyList()
@@ -107,7 +111,7 @@ internal class EventRepository(
 
     fun update(events: List<EventEntity>, status: EventEntity.Status) {
         try {
-            databaseHelper.execute(transaction = true) { db -> update(db, events, status) }
+            database.execute(transaction = true) { db -> update(db, events, status) }
         } catch (e: Exception) {
             log.error { "Failed to update events: $e" }
         }
@@ -126,7 +130,7 @@ internal class EventRepository(
         val ids = events.joinToString(separator = ",") { it.id.toString() }
         val whereClause = "$ID_COLUMN_NAME IN ($ids)"
         try {
-            databaseHelper.execute { db -> db.delete(TABLE_NAME, whereClause, null) }
+            database.execute { db -> db.delete(TABLE_NAME, whereClause, null) }
         } catch (e: Exception) {
             log.error { "Failed to delete events: $e" }
         }
@@ -134,7 +138,7 @@ internal class EventRepository(
 
     fun deleteOldEvents(count: Int) {
         return try {
-            databaseHelper.execute(transaction = true) { db -> deleteOldEvents(db, count) }
+            database.execute(transaction = true) { db -> deleteOldEvents(db, count) }
         } catch (e: Exception) {
             log.error { "Failed to delete events: $e" }
         }

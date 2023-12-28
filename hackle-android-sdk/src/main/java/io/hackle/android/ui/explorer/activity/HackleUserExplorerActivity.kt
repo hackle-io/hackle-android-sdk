@@ -20,6 +20,8 @@ internal class HackleUserExplorerActivity : FragmentActivity(), HackleActivity {
     private lateinit var deviceId: IdentifierView
     private lateinit var userId: IdentifierView
 
+    private lateinit var pushToken: IdentifierView
+
     private lateinit var tab: ExperimentTabLayout
     private lateinit var viewPager: ViewPager
     private lateinit var adapter: HackleUserExplorerAdapter
@@ -40,6 +42,9 @@ internal class HackleUserExplorerActivity : FragmentActivity(), HackleActivity {
         deviceId.bind(IdentifierItem(getString(R.string.hackle_label_device_id), user.deviceId))
         userId = findViewById(R.id.hackle_identifier_user_id)
         userId.bind(IdentifierItem(getString(R.string.hackle_label_user_id), user.userId))
+
+        pushToken = findViewById(R.id.push_token)
+        pushToken.bind(IdentifierItem(getString(R.string.hackle_label_push_token), explorerService.registeredPushToken()))
 
         viewPager = findViewById(R.id.hackle_user_explorer_view_pager)
         adapter = HackleUserExplorerAdapter(supportFragmentManager)

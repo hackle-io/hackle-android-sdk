@@ -1,6 +1,7 @@
 package io.hackle.android
 
 import android.content.Context
+import android.content.Intent
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 
@@ -11,6 +12,8 @@ val Hackle.app: HackleApp get() = HackleApp.getInstance()
 fun Hackle.registerActivityLifecycleCallbacks(context: Context) {
     HackleApp.registerActivityLifecycleCallbacks(context)
 }
+
+fun Hackle.isHacklePushMessage(intent: Intent) = HackleApp.isHacklePushMessage(intent)
 
 fun Hackle.initialize(
     context: Context,
@@ -48,6 +51,8 @@ fun Hackle.setUserId(userId: String?) = app.setUserId(userId)
 fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
 fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
 fun Hackle.resetUser() = app.resetUser()
+
+fun Hackle.setPushToken(token: String) = app.setPushToken(token)
 
 @Deprecated(
     "Use remoteConfig() with setUser(user) instead",

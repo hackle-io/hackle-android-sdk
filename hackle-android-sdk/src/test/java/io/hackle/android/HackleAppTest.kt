@@ -2,6 +2,7 @@ package io.hackle.android
 
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Sdk
+import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
@@ -62,6 +63,9 @@ class HackleAppTest {
     private lateinit var eventProcessor: DefaultEventProcessor
 
     @RelaxedMockK
+    private lateinit var notificationManager: NotificationManager
+
+    @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
 
     private lateinit var sut: HackleApp
@@ -85,6 +89,7 @@ class HackleAppTest {
             userManager,
             sessionManager,
             eventProcessor,
+            notificationManager,
             MockDevice("hackle_device_id", emptyMap()),
             userExplorer,
             Sdk.of("", HackleConfig.DEFAULT)

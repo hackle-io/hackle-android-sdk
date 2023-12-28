@@ -1,10 +1,9 @@
 package io.hackle.android.ui.inappmessage.event
 
-import io.hackle.android.internal.database.MapKeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.mockk
@@ -15,7 +14,6 @@ import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
-import strikt.assertions.last
 
 internal class InAppMessageImpressionEventProcessorTest {
 

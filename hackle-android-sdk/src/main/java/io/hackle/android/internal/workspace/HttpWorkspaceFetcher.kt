@@ -46,7 +46,7 @@ internal class HttpWorkspaceFetcher(
         check(response.isSuccessful) { "Http status code: ${response.code()}" }
         lastModified = response.header(HEADER_LAST_MODIFIED)
         val responseBody = checkNotNull(response.body()) { "Response body is null" }
-        val dto = responseBody.parse<WorkspaceDto>()
+        val dto = responseBody.parse<WorkspaceConfigDto>()
         return WorkspaceImpl.from(dto)
     }
 

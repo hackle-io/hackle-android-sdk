@@ -1,9 +1,9 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.database.EventEntity
-import io.hackle.android.internal.database.EventEntity.Status.FLUSHING
-import io.hackle.android.internal.database.EventEntity.Status.PENDING
-import io.hackle.android.internal.database.EventRepository
+import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
+import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
