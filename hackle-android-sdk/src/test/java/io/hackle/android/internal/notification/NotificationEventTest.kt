@@ -50,7 +50,7 @@ class NotificationEventTest {
     }
 
     @Test
-    fun `notification entity to event`() {
+    fun `notification history entity to event`() {
         val from = NotificationHistoryEntity(
             historyId = 0,
             workspaceId = 123L,
