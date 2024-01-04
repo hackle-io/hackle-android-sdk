@@ -47,10 +47,12 @@ internal class MockNotificationHistoryRepository : NotificationHistoryRepository
         environmentId: Long,
         limit: Int?
     ): List<NotificationHistoryEntity> {
-        return getWorkspaceData(workspaceId, environmentId)
-            .filterValues { it.workspaceId == workspaceId && it.environmentId == environmentId }
-            .values
-            .toList()
+        val map = getWorkspaceData(workspaceId, environmentId)
+        val list = map.values.toList()
+        if (limit != null && list.size > limit) {
+            return list.subList(0, limit - 1)
+        }
+        return list
     }
 
     override fun delete(entities: List<NotificationHistoryEntity>) {
