@@ -31,9 +31,16 @@ internal class DefaultFileStorage(
         createFile(filename)
             .exists()
 
-    override fun writer(filename: String): Writer =
-        createFile(filename)
+    override fun writer(filename: String): Writer {
+        val targetFile = createFile(filename)
+        val parentFile = targetFile.parentFile
+        if (parentFile != null && !parentFile.exists()) {
+            parentFile.mkdirs()
+        }
+
+        return createFile(filename)
             .bufferedWriter()
+    }
 
     override fun reader(filename: String): Reader =
         createFile(filename)
