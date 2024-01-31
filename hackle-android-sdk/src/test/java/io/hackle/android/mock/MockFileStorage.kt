@@ -8,7 +8,7 @@ import java.nio.file.Files
 
 class MockFileStorage : FileStorage {
 
-    val dirFile: File = Files.createTempDirectory("hackle")
+    private val dirFile: File = Files.createTempDirectory("hackle")
         .toFile()
 
     fun createMockFile(resFilePath: String, dstFilePath: String) {
@@ -17,7 +17,7 @@ class MockFileStorage : FileStorage {
             .copyTo(createFile(dstFilePath))
     }
 
-    fun createFile(filename: String): File =
+    private fun createFile(filename: String): File =
         File(dirFile, filename)
 
     override fun exists(filename: String): Boolean =

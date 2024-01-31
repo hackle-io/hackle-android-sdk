@@ -7,7 +7,6 @@ import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.workspace.Workspace
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
