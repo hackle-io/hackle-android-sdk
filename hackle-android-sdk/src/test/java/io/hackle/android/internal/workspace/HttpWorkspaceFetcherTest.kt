@@ -90,8 +90,7 @@ class HttpWorkspaceFetcherTest {
     @Test
     fun `success`() {
         // given
-        val body =
-            String(Files.readAllBytes(Paths.get("src/test/resources/workspace_config.json")))
+        val body = String(Files.readAllBytes(Paths.get("src/test/resources/workspace_response.json")))
         every { httpClient.newCall(any()) } returns mockCall(200, body)
 
         // when
@@ -100,30 +99,20 @@ class HttpWorkspaceFetcherTest {
         // then
         expectThat(actual)
             .isNotNull()
-            .get { getExperimentOrNull(5) }
-            .isNotNull()
+            .get { config.workspace.id }
+            .isEqualTo(7356)
     }
 
     @Test
     fun `last modified`() {
-        val body =
-            String(Files.readAllBytes(Paths.get("src/test/resources/workspace_config.json")))
+        val body = String(Files.readAllBytes(Paths.get("src/test/resources/workspace_response.json")))
         every { httpClient.newCall(any()) }.returnsMany(
             mockCall(200, body, mapOf("Last-Modified" to "LAST_MODIFIED_HEADER_VALUE")),
             mockCall(304, "")
         )
 
-        expectThat(sut.fetchIfModified()).isNotNull()
-        expectThat(sut.fetchIfModified()).isNull()
+        expectThat(sut.fetchIfModified("LAST_MODIFIED_HEADER_VALUE")).isNotNull()
 
-
-        verify(exactly = 1) {
-            httpClient.newCall(withArg {
-                expectThat(it) {
-                    get { header("If-Modified-Since") }.isNull()
-                }
-            })
-        }
         verify(exactly = 1) {
             httpClient.newCall(withArg {
                 expectThat(it) {

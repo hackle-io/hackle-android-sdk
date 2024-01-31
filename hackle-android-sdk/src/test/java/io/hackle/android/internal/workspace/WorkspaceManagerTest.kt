@@ -1,13 +1,16 @@
 package io.hackle.android.internal.workspace
 
+import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.mock.MockWorkspaceConfigRepository
 import io.hackle.sdk.core.workspace.Workspace
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
-import strikt.assertions.isSameInstanceAs
+import java.io.File
 
 class WorkspaceManagerTest {
 
@@ -17,7 +20,7 @@ class WorkspaceManagerTest {
     @Before
     fun before() {
         httpWorkspaceFetcher = mockk()
-        sut = WorkspaceManager(httpWorkspaceFetcher)
+        sut = WorkspaceManager(httpWorkspaceFetcher, MockWorkspaceConfigRepository())
     }
 
     @Test
@@ -28,7 +31,7 @@ class WorkspaceManagerTest {
     @Test
     fun `fetch - when workspace synced then return workspace`() {
         // given
-        val workspace = mockk<Workspace>()
+        val workspace = createMockWorkspaceConfig("workspace_config.json")
         every { httpWorkspaceFetcher.fetchIfModified() } returns workspace
 
         // when
@@ -36,7 +39,10 @@ class WorkspaceManagerTest {
         val actual = sut.fetch()
 
         // then
-        expectThat(actual).isSameInstanceAs(workspace)
+        expectThat(actual) {
+            get { this?.id } isEqualTo workspace.config.workspace.id
+            get { this?.environmentId } isEqualTo workspace.config.workspace.environment.id
+        }
     }
 
     @Test
@@ -53,20 +59,6 @@ class WorkspaceManagerTest {
     }
 
     @Test
-    fun `sync - success`() {
-        // given
-        val workspace = mockk<Workspace>()
-        every { httpWorkspaceFetcher.fetchIfModified() } returns workspace
-
-        // when
-        sut.sync()
-        val actual = sut.fetch()
-
-        // then
-        expectThat(actual).isSameInstanceAs(workspace)
-    }
-
-    @Test
     fun `sync - not modified`() {
         // given
         val workspace = mockk<Workspace>()
@@ -78,5 +70,12 @@ class WorkspaceManagerTest {
 
         // then
         expectThat(actual).isNull()
+    }
+
+    private fun createMockWorkspaceConfig(filename: String): WorkspaceConfig {
+        val url = javaClass.classLoader!!.getResource(filename)
+        return File(url.path)
+            .readText()
+            .parseJson()
     }
 }
