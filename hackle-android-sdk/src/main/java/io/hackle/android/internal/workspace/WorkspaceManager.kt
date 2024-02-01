@@ -23,7 +23,7 @@ internal class WorkspaceManager(
         return workspace.get()
     }
 
-    override fun sync() {
+    override fun sync(callback: Runnable?) {
         try {
             val config = httpWorkspaceFetcher.fetchIfModified(lastModified.get())
             if (config != null) {
@@ -32,6 +32,8 @@ internal class WorkspaceManager(
             }
         } catch (e: Exception) {
             log.error { "Failed to fetch workspace config: $e" }
+        } finally {
+            callback?.run()
         }
     }
 

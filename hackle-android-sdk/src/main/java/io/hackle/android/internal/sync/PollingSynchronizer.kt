@@ -16,19 +16,23 @@ internal class PollingSynchronizer(
 
     private var pollingJob: ScheduledJob? = null
 
-    override fun sync() {
+    override fun sync(callback: Runnable?) {
         try {
             delegate.sync()
         } catch (e: Exception) {
             log.error { "Failed to sync $delegate: $e" }
+        } finally {
+            callback?.run()
         }
     }
 
-    fun sync(type: SynchronizerType) {
+    fun sync(type: SynchronizerType, callback: Runnable? = null) {
         try {
             delegate.sync(type)
         } catch (e: Exception) {
             log.error { "Failed to sync $delegate: $e" }
+        } finally {
+            callback?.run()
         }
     }
 
