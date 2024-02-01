@@ -54,6 +54,8 @@ fun Hackle.resetUser() = app.resetUser()
 
 fun Hackle.setPushToken(token: String) = app.setPushToken(token)
 
+fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
+
 @Deprecated(
     "Use remoteConfig() with setUser(user) instead",
     ReplaceWith("app.remoteConfig()")
