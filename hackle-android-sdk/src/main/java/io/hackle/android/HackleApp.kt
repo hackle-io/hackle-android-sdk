@@ -72,7 +72,7 @@ class HackleApp internal constructor(
     val user: User get() = userManager.currentUser
 
     private val fetchThrottler = Throttler(
-        intervalInSeconds = 10,
+        intervalInSeconds = 60,
         executor = TaskExecutors.handler("io.hackle.FetchThrottler")
     )
 
