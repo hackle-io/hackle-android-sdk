@@ -41,10 +41,14 @@ internal class WorkspaceManager(
     }
 
     private fun readWorkspaceConfigFromLocal() {
-        val config = repository.get()
-        if (config != null) {
-            setWorkspaceConfig(config)
-            log.debug { "Workspace config loaded: [last modified: ${config.lastModified}]" }
+        try {
+            val config = repository.get()
+            if (config != null) {
+                setWorkspaceConfig(config)
+                log.debug { "Workspace config loaded: [last modified: ${config.lastModified}]" }
+            }
+        } catch (e: Exception) {
+            log.error { "Failed to read workspace config from local: $e" }
         }
     }
 
