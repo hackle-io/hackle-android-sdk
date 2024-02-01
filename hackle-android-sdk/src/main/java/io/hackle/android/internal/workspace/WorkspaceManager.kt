@@ -36,8 +36,12 @@ internal class WorkspaceManager(
     }
 
     private fun setWorkspaceConfig(config: WorkspaceConfig) {
-        lastModified.set(config.lastModified)
-        workspace.set(WorkspaceImpl.from(config.config))
+        try {
+            lastModified.set(config.lastModified)
+            workspace.set(WorkspaceImpl.from(config.config))
+        } catch (e: Exception) {
+            log.error { "Failed to read workspace config from local: $e" }
+        }
     }
 
     private fun readWorkspaceConfigFromLocal() {
