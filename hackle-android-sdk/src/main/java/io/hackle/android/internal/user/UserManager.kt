@@ -74,15 +74,16 @@ internal class UserManager(
             .build()
     }
 
-    override fun sync() {
-        val cohorts = try {
-            cohortFetcher.fetch(currentUser)
+    override fun sync(callback: Runnable?) {
+        try {
+            val cohorts = cohortFetcher.fetch(currentUser)
+            synchronized(LOCK) {
+                context = context.update(cohorts)
+            }
         } catch (e: Exception) {
             log.error { "Failed to fetch cohorts: $e" }
-            return
-        }
-        synchronized(LOCK) {
-            context = context.update(cohorts)
+        } finally {
+            callback?.run()
         }
     }
 

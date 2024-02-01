@@ -24,7 +24,7 @@ internal class CompositeSynchronizer(private val executor: ExecutorService) : Sy
         log.debug { "Synchronizer added [${synchronizer::class.java.simpleName}]" }
     }
 
-    override fun sync() {
+    override fun sync(callback: Runnable?) {
         val jobs = mutableListOf<SyncJob>()
         for (synchronization in synchronizations) {
             try {
@@ -35,12 +35,13 @@ internal class CompositeSynchronizer(private val executor: ExecutorService) : Sy
             }
         }
         jobs.forEach { it.await() }
+        callback?.run()
     }
 
-    fun sync(type: SynchronizerType) {
+    fun sync(type: SynchronizerType, callback: Runnable? = null) {
         val synchronization = synchronizations.find { it.type == type }
         requireNotNull(synchronization) { "Unsupported SynchronizerType [$type]" }
-        synchronization.synchronizer.sync()
+        synchronization.synchronizer.sync(callback)
     }
 
     class SyncJob(
