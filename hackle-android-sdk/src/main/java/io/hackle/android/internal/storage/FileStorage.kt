@@ -13,16 +13,16 @@ internal interface FileStorage {
 }
 
 internal class DefaultFileStorage(
-    context: Context,
-    sdkKey: String
+    private val context: Context,
+    private val sdkKey: String
 ): FileStorage {
-
-    private val dirFile: File = File(context.filesDir, "$ROOT_DIR_NAME/$sdkKey")
-        .apply {
-            if (!exists()) {
-                mkdirs()
+    private val dirFile: File
+        get() = File(context.filesDir, "$ROOT_DIR_NAME/$sdkKey")
+            .apply {
+                if (!exists()) {
+                    mkdirs()
+                }
             }
-        }
 
     private fun createFile(filename: String): File =
         File(dirFile, filename)
