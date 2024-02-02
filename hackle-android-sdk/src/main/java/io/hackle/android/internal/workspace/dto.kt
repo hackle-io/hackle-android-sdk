@@ -1,8 +1,8 @@
 package io.hackle.android.internal.workspace
 
 internal data class WorkspaceConfig(
-    var lastModified: String?,
-    var config: WorkspaceConfigDto
+    val lastModified: String?,
+    val config: WorkspaceConfigDto
 )
 
 internal data class WorkspaceConfigDto(

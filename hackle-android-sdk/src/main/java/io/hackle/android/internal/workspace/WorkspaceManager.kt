@@ -12,8 +12,8 @@ internal class WorkspaceManager(
     private val repository: WorkspaceConfigRepository
 ) : WorkspaceFetcher, Synchronizer {
 
-    private var lastModified: AtomicReference<String?> = AtomicReference()
-    private val workspace: AtomicReference<Workspace> = AtomicReference()
+    private val lastModified: AtomicReference<String?> = AtomicReference()
+    private val workspace: AtomicReference<Workspace?> = AtomicReference()
 
     fun initialize() {
         readWorkspaceConfigFromLocal()
