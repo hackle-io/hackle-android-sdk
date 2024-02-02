@@ -325,6 +325,7 @@ class HackleApp internal constructor(
         }
     }
 
+    @JvmOverloads
     fun fetch(callback: Runnable? = null) {
         fetchThrottler.execute(
             action = {
