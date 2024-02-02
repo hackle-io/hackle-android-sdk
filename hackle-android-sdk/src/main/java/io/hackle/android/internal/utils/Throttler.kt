@@ -11,22 +11,31 @@ class Throttler(
     private val limitInScope: Int = 1
 ) {
 
-    private val executeLock = Unit
+    private val throttleLock = Unit
     private val executedCountInScope = AtomicInteger(0)
 
     private var firstExecutedTimestampInScope = AtomicLong(0)
 
     fun execute(action: () -> Unit, throttled: (() -> Unit)? = null) {
-        synchronized(executeLock) {
-            val executeTimestamp = System.currentTimeMillis()
-            expireCurrentScopeIfNeeded(executeTimestamp)
-            if (isThrottledInCurrentScope() && throttled != null) {
-                executor.execute(throttled)
+        val isThrottled = throttle(
+            executeTimestamp = System.currentTimeMillis()
+        )
+        executor.execute {
+            if (isThrottled && throttled != null) {
+                throttled()
             } else {
-                executedCountInScope.incrementAndGet()
-                executor.execute(action)
+                action()
             }
         }
+    }
+
+    private fun throttle(executeTimestamp: Long): Boolean = synchronized(throttleLock) {
+        expireCurrentScopeIfNeeded(executeTimestamp)
+        val isThrottled = calculateQuotesInCurrentScope() <= 0
+        if (!isThrottled) {
+            executedCountInScope.incrementAndGet()
+        }
+        return@synchronized isThrottled
     }
 
     private fun expireCurrentScopeIfNeeded(executeTimestamp: Long) {
