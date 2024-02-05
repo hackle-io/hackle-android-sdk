@@ -1,42 +1,85 @@
 package io.hackle.android.internal.utils
 
-import io.mockk.every
-import io.mockk.mockk
+import io.hackle.sdk.core.internal.threads.NamedThreadFactory
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.startsWith
+import java.util.UUID
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
+import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 class ThrottlerTest {
 
+    private lateinit var threadNamePrefix: String
     private lateinit var executor: Executor
 
     @Before
     fun setup() {
-        executor = mockk<Executor>()
-        every { executor.execute(any()) } answers { firstArg<Runnable>().run() }
+        threadNamePrefix = UUID.randomUUID()
+            .toString()
+            .slice(0 until 8)
+        executor = ThreadPoolExecutor(
+            2, Int.MAX_VALUE,
+            60, TimeUnit.SECONDS,
+            SynchronousQueue(),
+            NamedThreadFactory("$threadNamePrefix-", true)
+        )
+    }
+
+    @Test(timeout = 1_000L)
+    fun `action callback must run on executor thread`() {
+        val countDownLatch = CountDownLatch(1)
+        val throttler = Throttler(
+            intervalInSeconds = 1,
+            executor = executor,
+            limitInScope = 1
+        )
+        throttler.execute({
+            expectThat(Thread.currentThread().name)
+                .startsWith(threadNamePrefix)
+            countDownLatch.countDown()
+        })
+        countDownLatch.await()
+    }
+
+    @Test(timeout = 1_000L)
+    fun `throttled callback must run on executor thread`() {
+        val countDownLatch = CountDownLatch(1)
+        val throttler = Throttler(
+            intervalInSeconds = 1,
+            executor = executor,
+            limitInScope = 1
+        )
+        throttler.execute(action = {})
+        throttler.execute(
+            action = {},
+            throttled = {
+                expectThat(Thread.currentThread().name)
+                    .startsWith(threadNamePrefix)
+                countDownLatch.countDown()
+            }
+        )
+        countDownLatch.await()
     }
 
     @Test
-    fun `should call action callback even throttled callback is null`() {
+    fun `action callback must call even throttled callback is provided`() {
         val throttler = Throttler(
             intervalInSeconds = 1,
             executor = executor,
             limitInScope = 1
         )
         val throttleHistories: MutableList<Boolean> = ArrayList()
-        throttler.execute(
-            action = { throttleHistories.add(true) }
-        )
-        throttler.execute(
-            action = { throttleHistories.add(true) }
-        )
+        throttler.execute({ throttleHistories.add(true) })
+        throttler.execute({ throttleHistories.add(true) })
         Thread.sleep(1_000L)
-        throttler.execute(
-            action = { throttleHistories.add(true) }
-        )
-
+        throttler.execute({ throttleHistories.add(true) })
+        Thread.sleep(1_000L)
         expectThat(throttleHistories) isEqualTo mutableListOf(true, true)
     }
 
@@ -62,6 +105,7 @@ class ThrottlerTest {
             throttled = { throttleHistories.add(false) }
         )
 
+        Thread.sleep(1_000L)
         expectThat(throttleHistories) isEqualTo mutableListOf(true, false, true)
     }
 
@@ -91,6 +135,7 @@ class ThrottlerTest {
             throttled = { throttleHistories.add(false) }
         )
 
+        Thread.sleep(1_000L)
         expectThat(throttleHistories) isEqualTo mutableListOf(true, true, false, true)
     }
 }
