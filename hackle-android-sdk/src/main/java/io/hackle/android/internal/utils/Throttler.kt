@@ -56,8 +56,4 @@ class Throttler(
     private fun calculateQuotesInCurrentScope(): Int {
         return max(limitInScope - executedCountInScope.get(), 0)
     }
-
-    private fun isThrottledInCurrentScope(): Boolean {
-        return calculateQuotesInCurrentScope() <= 0
-    }
 }
