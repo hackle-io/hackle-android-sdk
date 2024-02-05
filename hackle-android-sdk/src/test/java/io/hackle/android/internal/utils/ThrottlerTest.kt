@@ -74,13 +74,13 @@ class ThrottlerTest {
             executor = executor,
             limitInScope = 1
         )
-        val throttleHistories: MutableList<Boolean> = ArrayList()
-        throttler.execute({ throttleHistories.add(true) })
-        throttler.execute({ throttleHistories.add(true) })
+        val executeHistories: MutableList<Boolean> = ArrayList()
+        throttler.execute({ executeHistories.add(true) })
+        throttler.execute({ executeHistories.add(true) })
         Thread.sleep(1_000L)
-        throttler.execute({ throttleHistories.add(true) })
+        throttler.execute({ executeHistories.add(true) })
         Thread.sleep(1_000L)
-        expectThat(throttleHistories) isEqualTo mutableListOf(true, true)
+        expectThat(executeHistories) isEqualTo mutableListOf(true, true)
     }
 
     @Test
@@ -90,23 +90,23 @@ class ThrottlerTest {
             executor = executor,
             limitInScope = 1
         )
-        val throttleHistories: MutableList<Boolean> = ArrayList()
+        val executeHistories: MutableList<Boolean> = ArrayList()
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
         Thread.sleep(1_000L)
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
 
         Thread.sleep(1_000L)
-        expectThat(throttleHistories) isEqualTo mutableListOf(true, false, true)
+        expectThat(executeHistories) isEqualTo mutableListOf(true, false, true)
     }
 
     @Test
@@ -116,26 +116,26 @@ class ThrottlerTest {
             executor = executor,
             limitInScope = 2
         )
-        val throttleHistories: MutableList<Boolean> = ArrayList()
+        val executeHistories: MutableList<Boolean> = ArrayList()
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
         Thread.sleep(1_000L)
         throttler.execute(
-            action = { throttleHistories.add(true) },
-            throttled = { throttleHistories.add(false) }
+            action = { executeHistories.add(true) },
+            throttled = { executeHistories.add(false) }
         )
 
         Thread.sleep(1_000L)
-        expectThat(throttleHistories) isEqualTo mutableListOf(true, true, false, true)
+        expectThat(executeHistories) isEqualTo mutableListOf(true, true, false, true)
     }
 }
