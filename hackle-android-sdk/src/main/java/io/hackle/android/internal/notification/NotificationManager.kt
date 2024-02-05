@@ -153,7 +153,7 @@ internal class NotificationManager(
                         track(
                             event = notification.toTrackEvent(),
                             user = user,
-                            timestamp = notification.timestamp ?: System.currentTimeMillis()
+                            timestamp = notification.timestamp
                         )
                         log.debug { "Notification data[id=${notification.historyId}] successfully processed." }
                     }

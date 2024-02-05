@@ -2,7 +2,6 @@ package io.hackle.android.internal.workspace
 
 import io.hackle.android.internal.utils.parseJson
 import io.hackle.android.mock.MockWorkspaceConfigRepository
-import io.hackle.sdk.core.workspace.Workspace
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Before
@@ -61,7 +60,6 @@ class WorkspaceManagerTest {
     @Test
     fun `sync - not modified`() {
         // given
-        val workspace = mockk<Workspace>()
         every { httpWorkspaceFetcher.fetchIfModified() } returns null
 
         // when
