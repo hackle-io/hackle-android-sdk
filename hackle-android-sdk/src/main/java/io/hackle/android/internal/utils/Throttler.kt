@@ -11,7 +11,7 @@ class Throttler(
     private val limitInScope: Int = 1
 ) {
 
-    private val throttleLock = Unit
+    private val throttleLock = Any()
     private val executedCountInScope = AtomicInteger(0)
 
     private var firstExecutedTimestampInScope = AtomicLong(0)
