@@ -12,6 +12,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 class ThrottlerTest {
 
@@ -74,13 +75,13 @@ class ThrottlerTest {
             executor = executor,
             limitInScope = 1
         )
-        val executeHistories: MutableList<Boolean> = ArrayList()
-        throttler.execute({ executeHistories.add(true) })
-        throttler.execute({ executeHistories.add(true) })
+        val executedCount = AtomicInteger(0)
+        throttler.execute({ executedCount.incrementAndGet() })
+        throttler.execute({ executedCount.incrementAndGet() })
         Thread.sleep(1_000L)
-        throttler.execute({ executeHistories.add(true) })
+        throttler.execute({ executedCount.incrementAndGet() })
         Thread.sleep(1_000L)
-        expectThat(executeHistories) isEqualTo mutableListOf(true, true)
+        expectThat(executedCount.get()) isEqualTo 2
     }
 
     @Test
@@ -90,23 +91,25 @@ class ThrottlerTest {
             executor = executor,
             limitInScope = 1
         )
-        val executeHistories: MutableList<Boolean> = ArrayList()
+        val executedCount = AtomicInteger(0)
+        val throttledCount = AtomicInteger(0)
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
         Thread.sleep(1_000L)
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
 
         Thread.sleep(1_000L)
-        expectThat(executeHistories) isEqualTo mutableListOf(true, false, true)
+        expectThat(executedCount.get()) isEqualTo 2
+        expectThat(throttledCount.get()) isEqualTo 1
     }
 
     @Test
@@ -116,26 +119,28 @@ class ThrottlerTest {
             executor = executor,
             limitInScope = 2
         )
-        val executeHistories: MutableList<Boolean> = ArrayList()
+        val executedCount = AtomicInteger(0)
+        val throttledCount = AtomicInteger(0)
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
         Thread.sleep(1_000L)
         throttler.execute(
-            action = { executeHistories.add(true) },
-            throttled = { executeHistories.add(false) }
+            action = { executedCount.incrementAndGet() },
+            throttled = { throttledCount.incrementAndGet() }
         )
 
         Thread.sleep(1_000L)
-        expectThat(executeHistories) isEqualTo mutableListOf(true, true, false, true)
+        expectThat(executedCount.get()) isEqualTo 3
+        expectThat(throttledCount.get()) isEqualTo 1
     }
 }
