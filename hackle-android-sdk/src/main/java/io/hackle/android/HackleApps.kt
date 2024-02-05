@@ -29,6 +29,7 @@ import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.sync.SynchronizerType.COHORT
@@ -38,6 +39,7 @@ import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceManager
+import io.hackle.android.internal.workspace.repository.DefaultWorkspaceConfigRepository
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
@@ -76,7 +78,6 @@ internal object HackleApps {
     private const val PREFERENCES_NAME = "io.hackle.android"
 
     fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
-
         val sdk = Sdk.of(sdkKey, config)
         loggerConfiguration(config)
 
@@ -105,8 +106,14 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
+        val fileStorage = DefaultFileStorage(
+            context = context,
+            sdkKey = sdkKey
+        )
+        val workspaceConfigRepository = DefaultWorkspaceConfigRepository(fileStorage)
         val workspaceManager = WorkspaceManager(
             httpWorkspaceFetcher = httpWorkspaceFetcher,
+            repository = workspaceConfigRepository
         )
         compositeSynchronizer.add(WORKSPACE, workspaceManager)
 
@@ -306,6 +313,7 @@ internal object HackleApps {
             backgroundExecutor = TaskExecutors.default(),
             synchronizer = pollingSynchronizer,
             userManager = userManager,
+            workspaceManager = workspaceManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
             notificationManager = notificationManager,

@@ -8,6 +8,7 @@ import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.Event
@@ -57,6 +58,9 @@ class HackleAppTest {
     private lateinit var userManager: UserManager
 
     @RelaxedMockK
+    private lateinit var workspaceManager: WorkspaceManager
+
+    @RelaxedMockK
     private lateinit var sessionManager: SessionManager
 
     @RelaxedMockK
@@ -87,6 +91,7 @@ class HackleAppTest {
             backgroundExecutor,
             synchronizer,
             userManager,
+            workspaceManager,
             sessionManager,
             eventProcessor,
             notificationManager,

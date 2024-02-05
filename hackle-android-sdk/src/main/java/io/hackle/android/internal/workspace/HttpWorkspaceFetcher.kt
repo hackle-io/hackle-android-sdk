@@ -6,7 +6,7 @@ import io.hackle.android.internal.http.isNotModified
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.sdk.core.workspace.Workspace
+import io.hackle.sdk.core.internal.log.Logger
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -18,15 +18,14 @@ internal class HttpWorkspaceFetcher(
     private val httpClient: OkHttpClient,
 ) {
     private val url = HttpUrl.get(url(sdk, sdkUri))
-    private var lastModified: String? = null
 
-    fun fetchIfModified(): Workspace? {
-        val request = createRequest()
+    fun fetchIfModified(lastModified: String? = null): WorkspaceConfig? {
+        val request = createRequest(lastModified)
         val response = execute(request)
         return response.use { handleResponse(it) }
     }
 
-    private fun createRequest(): Request {
+    private fun createRequest(lastModified: String?): Request {
         return Request.Builder()
             .url(url)
             .apply { lastModified?.let { header(HEADER_IF_MODIFIED_SINCE, it) } }
@@ -39,18 +38,26 @@ internal class HttpWorkspaceFetcher(
         }
     }
 
-    private fun handleResponse(response: Response): Workspace? {
+    private fun handleResponse(response: Response): WorkspaceConfig? {
         if (response.isNotModified) {
+            log.debug { "Workspace is not modified." }
             return null
         }
         check(response.isSuccessful) { "Http status code: ${response.code()}" }
-        lastModified = response.header(HEADER_LAST_MODIFIED)
+        val lastModified = response.header(HEADER_LAST_MODIFIED)
         val responseBody = checkNotNull(response.body()) { "Response body is null" }
         val dto = responseBody.parse<WorkspaceConfigDto>()
-        return WorkspaceImpl.from(dto)
+
+        log.debug { "Workspace fetched." }
+        return WorkspaceConfig(
+            lastModified = lastModified,
+            config = dto,
+        )
     }
 
     companion object {
+        private val log = Logger<HttpWorkspaceFetcher>()
+
         private fun url(sdk: Sdk, sdkUri: String): String {
             return "$sdkUri/api/v2/workspaces/${sdk.key}/config"
         }
