@@ -19,6 +19,28 @@ class ThrottlerTest {
     }
 
     @Test
+    fun `should call action callback even throttled callback is null`() {
+        val throttler = Throttler(
+            intervalInSeconds = 1,
+            executor = executor,
+            limitInScope = 1
+        )
+        val throttleHistories: MutableList<Boolean> = ArrayList()
+        throttler.execute(
+            action = { throttleHistories.add(true) }
+        )
+        throttler.execute(
+            action = { throttleHistories.add(true) }
+        )
+        Thread.sleep(1_000L)
+        throttler.execute(
+            action = { throttleHistories.add(true) }
+        )
+
+        expectThat(throttleHistories) isEqualTo mutableListOf(true, true)
+    }
+
+    @Test
     fun `not throttle after interval seconds later`() {
         val throttler = Throttler(
             intervalInSeconds = 1,

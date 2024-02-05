@@ -21,8 +21,8 @@ class Throttler(
             executeTimestamp = System.currentTimeMillis()
         )
         executor.execute {
-            if (isThrottled && throttled != null) {
-                throttled()
+            if (isThrottled) {
+                throttled?.invoke()
             } else {
                 action()
             }
