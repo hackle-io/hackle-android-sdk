@@ -18,7 +18,10 @@ import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.sync.SynchronizerType
 import io.hackle.android.internal.sync.SynchronizerType.COHORT
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.utils.Throttler
+import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
@@ -47,6 +50,7 @@ class HackleApp internal constructor(
     private val backgroundExecutor: ExecutorService,
     private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
+    private val workspaceManager: WorkspaceManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
     private val notificationManager: NotificationManager,
@@ -66,6 +70,11 @@ class HackleApp internal constructor(
     val sessionId: String get() = sessionManager.requiredSession.id
 
     val user: User get() = userManager.currentUser
+
+    private val fetchThrottler = Throttler(
+        intervalInSeconds = 60,
+        executor = TaskExecutors.handler("io.hackle.FetchThrottler")
+    )
 
     fun showUserExplorer() {
         userExplorer.show()
@@ -316,6 +325,20 @@ class HackleApp internal constructor(
         }
     }
 
+    @JvmOverloads
+    fun fetch(callback: Runnable? = null) {
+        fetchThrottler.execute(
+            action = {
+                synchronizer.sync()
+                callback?.run()
+            },
+            throttled = {
+                log.debug { "Too many quick fetch requests." }
+                callback?.run()
+            }
+        )
+    }
+
     override fun close() {
         core.tryClose()
     }
@@ -324,6 +347,7 @@ class HackleApp internal constructor(
         userManager.initialize(user)
         eventExecutor.execute {
             try {
+                workspaceManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 synchronizer.sync()
