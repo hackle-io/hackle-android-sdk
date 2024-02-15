@@ -214,12 +214,13 @@ internal data class InAppMessageDto(
 
     data class MessageContextDto(
         val defaultLang: String,
+        val exposure: MessageDto.ExposureDto,
         val platformTypes: List<String>,
         val orientations: List<String>,
-        val exposure: MessageDto.ExposureDto,
         val messages: List<MessageDto>
     ) {
         data class MessageDto(
+            val variationKey: String?,
             val lang: String,
             val layout: LayoutDto,
             val images: List<ImageDto>,

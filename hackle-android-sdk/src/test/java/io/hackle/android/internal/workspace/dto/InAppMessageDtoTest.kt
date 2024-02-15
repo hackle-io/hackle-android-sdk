@@ -25,6 +25,7 @@ internal class InAppMessageDtoTest {
                 get { messageContext }
                     .and {
                         get { defaultLang } isEqualTo "ko"
+                        get { experimentContext }.isNull()
                         get { platformTypes } isEqualTo listOf(
                             InAppMessage.PlatformType.ANDROID,
                             InAppMessage.PlatformType.IOS
@@ -37,6 +38,12 @@ internal class InAppMessageDtoTest {
             }
             .and {
                 get { period } isEqualTo InAppMessage.Period.Always
+            }
+
+        expectThat(workspace.getInAppMessageOrNull(2))
+            .isNotNull()
+            .and {
+                get { this.messageContext.experimentContext } isEqualTo InAppMessage.ExperimentContext(42)
             }
 
     }
