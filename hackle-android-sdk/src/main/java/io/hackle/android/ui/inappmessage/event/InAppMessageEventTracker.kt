@@ -16,21 +16,23 @@ internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationCon
     return when (this) {
         is InAppMessageEvent.Impression ->
             Event.builder("\$in_app_impression")
+                .properties(context.properties)
                 .property("in_app_message_id", context.inAppMessage.id)
                 .property("in_app_message_key", context.inAppMessage.key)
                 .property("title_text", context.message.text?.title?.text)
                 .property("body_text", context.message.text?.body?.text)
                 .property("button_text", context.message.buttons.map { it.text })
                 .property("image_url", context.message.images.map { it.imagePath })
-                .properties(context.properties)
                 .build()
 
         is InAppMessageEvent.Close -> Event.builder("\$in_app_close")
+            .properties(context.properties)
             .property("in_app_message_id", context.inAppMessage.id)
             .property("in_app_message_key", context.inAppMessage.key)
             .build()
 
         is InAppMessageEvent.Action -> Event.builder("\$in_app_action")
+            .properties(context.properties)
             .property("in_app_message_id", context.inAppMessage.id)
             .property("in_app_message_key", context.inAppMessage.key)
             .property("action_type", action.type.name)

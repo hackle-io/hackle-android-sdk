@@ -33,11 +33,15 @@ internal class InAppMessageDeterminer(
         event: UserEvent
     ): InAppMessagePresentationContext? {
         val decision = core.tryInAppMessage(inAppMessage.key, event.user)
+        val properties = PropertiesBuilder()
+            .add(decision.properties)
+            .add("decision_reason", decision.reason.name)
+            .build()
         return InAppMessagePresentationContext(
             inAppMessage = decision.inAppMessage ?: return null,
             message = decision.message ?: return null,
             user = event.user,
-            properties = PropertiesBuilder().add("decision_reason", decision.reason.name).build()
+            properties = properties
         )
     }
 
