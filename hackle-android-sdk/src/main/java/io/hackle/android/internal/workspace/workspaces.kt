@@ -274,8 +274,14 @@ internal fun InAppMessageDto.TargetContextDto.UserOverrideDto.toUserOverride(): 
 }
 
 internal fun InAppMessageDto.MessageContextDto.toMessageContextOrNull(): InAppMessage.MessageContext? {
+    val experimentContext = if (exposure.type == "AB_TEST" && exposure.key != null) {
+        InAppMessage.ExperimentContext(exposure.key)
+    } else {
+        null
+    }
     return InAppMessage.MessageContext(
         defaultLang = defaultLang,
+        experimentContext = experimentContext,
         platformTypes = parseEnumAllOrNull(platformTypes) ?: return null,
         orientations = parseEnumAllOrNull(orientations) ?: return null,
         messages = messages.map { it.toMessageOrNull() ?: return null }
@@ -284,6 +290,7 @@ internal fun InAppMessageDto.MessageContextDto.toMessageContextOrNull(): InAppMe
 
 internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InAppMessage.Message? {
     return InAppMessage.Message(
+        variationKey = variationKey,
         lang = lang,
         layout = layout.toLayoutOrNull() ?: return null,
         images = images.map { it.toImageOrNull() ?: return null },
