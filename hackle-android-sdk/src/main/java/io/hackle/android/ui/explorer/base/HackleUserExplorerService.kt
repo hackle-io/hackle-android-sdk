@@ -1,6 +1,6 @@
 package io.hackle.android.ui.explorer.base
 
-import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage
 import io.hackle.sdk.common.decision.Decision
@@ -17,7 +17,7 @@ internal class HackleUserExplorerService(
     private val userManager: UserManager,
     private val abTestOverrideStorage: HackleUserManualOverrideStorage,
     private val featureFlagOverrideStorage: HackleUserManualOverrideStorage,
-    private val notificationManager: NotificationManager
+    private val pushTokenManager: PushTokenManager
 ) {
 
     fun currentUser(): HackleUser {
@@ -25,7 +25,7 @@ internal class HackleUserExplorerService(
     }
 
     fun registeredPushToken(): String? {
-        return notificationManager.registeredPushToken
+        return pushTokenManager.registeredPushToken
     }
 
     fun getAbTestDecisions(): List<Pair<Experiment, Decision>> {

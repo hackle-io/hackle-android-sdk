@@ -1,13 +1,10 @@
 package io.hackle.android.internal.notification
 
-import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.workspace.WorkspaceImpl
 import io.hackle.android.ui.notification.NotificationClickAction
 import io.hackle.android.ui.notification.NotificationData
-import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
 import io.mockk.called
@@ -24,7 +21,6 @@ import java.util.concurrent.Executor
 class NotificationManagerTest {
 
     private lateinit var core: HackleCore
-    private lateinit var preferences: KeyValueRepository
     private lateinit var userManager: UserManager
     private lateinit var executor: Executor
     private lateinit var workspaceFetcher: WorkspaceFetcher
@@ -36,7 +32,6 @@ class NotificationManagerTest {
     @Before
     fun setup() {
         core = mockk(relaxed = true)
-        preferences = MapKeyValueRepository()
         userManager = mockk()
         every { userManager.currentUser } returns mockk()
         every { userManager.toHackleUser(any()) } returns mockk()
@@ -50,75 +45,8 @@ class NotificationManagerTest {
             executor = executor,
             workspaceFetcher = workspaceFetcher,
             userManager = userManager,
-            preferences = preferences,
             repository = repository,
         )
-    }
-
-    @Test
-    fun `fresh new push token`() {
-        val timestamp = System.currentTimeMillis()
-        manager.setPushToken("abcd1234", timestamp)
-
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    assertThat(it.key, `is`("\$push_token"))
-                    assertThat(it.properties["provider_type"], `is`("FCM"))
-                    assertThat(it.properties["token"], `is`("abcd1234"))
-                },
-                any(), timestamp
-            )
-        }
-        assertThat(preferences.getString("fcm_token"), `is`("abcd1234"))
-    }
-
-    @Test
-    fun `set another push token`() {
-        preferences.putString("fcm_token", "foo")
-
-        val timestamp = System.currentTimeMillis()
-        manager.setPushToken("bar", timestamp)
-
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    assertThat(it.key, `is`("\$push_token"))
-                    assertThat(it.properties["provider_type"], `is`("FCM"))
-                    assertThat(it.properties["token"], `is`("bar"))
-                },
-                any(), timestamp
-            )
-        }
-        assertThat(preferences.getString("fcm_token"), `is`("bar"))
-    }
-
-    @Test
-    fun `set same push token`() {
-        preferences.putString("fcm_token", "foo")
-
-        manager.setPushToken("foo")
-
-        verify { core wasNot called }
-        assertThat(preferences.getString("fcm_token"), `is`("foo"))
-    }
-
-    @Test
-    fun `resend push token when user updated called`() {
-        preferences.putString("fcm_token", "foo")
-
-        val timestamp = System.currentTimeMillis()
-        manager.onUserUpdated(User.of("foo"), User.of("bar"), timestamp)
-
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    assertThat(it.key, `is`("\$push_token"))
-                    assertThat(it.properties["token"], `is`("foo"))
-                }, any(), timestamp
-            )
-        }
-        assertThat(preferences.getString("fcm_token"), `is`("foo"))
     }
 
     @Test
