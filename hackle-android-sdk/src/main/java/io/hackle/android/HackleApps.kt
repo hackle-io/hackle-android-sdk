@@ -28,7 +28,8 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pushtoken.PushTokenManager
-import io.hackle.android.internal.pushtoken.registration.fcm.FCMPushTokenRegistration
+import io.hackle.android.internal.pushtoken.datasource.ProviderType
+import io.hackle.android.internal.pushtoken.PushTokenRegistration
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.storage.DefaultFileStorage
@@ -269,12 +270,15 @@ internal object HackleApps {
 
         // PushToken
 
-        val pushTokenRegistration = FCMPushTokenRegistration(context)
+        val pushTokenDataSource = PushTokenRegistration.create(
+            context = context,
+            providerType = ProviderType.FCM
+        )
         val pushTokenManager = PushTokenManager(
             core = core,
             preferences = keyValueRepositoryBySdkKey,
             userManager = userManager,
-            registration = pushTokenRegistration
+            dataSource = pushTokenDataSource
         )
         userManager.addListener(pushTokenManager)
 

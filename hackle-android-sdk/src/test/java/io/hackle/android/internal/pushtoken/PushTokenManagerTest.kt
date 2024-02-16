@@ -2,7 +2,7 @@ package io.hackle.android.internal.pushtoken
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.pushtoken.registration.PushTokenRegistration
+import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -20,7 +20,7 @@ class PushTokenManagerTest {
     private lateinit var core: HackleCore
     private lateinit var preferences: KeyValueRepository
     private lateinit var userManager: UserManager
-    private lateinit var registration: PushTokenRegistration
+    private lateinit var dataSource: PushTokenDataSource
 
     private lateinit var manager: PushTokenManager
 
@@ -31,20 +31,20 @@ class PushTokenManagerTest {
         userManager = mockk()
         every { userManager.currentUser } returns mockk()
         every { userManager.toHackleUser(any()) } returns mockk()
-        registration = mockk()
+        dataSource = mockk()
 
         manager = PushTokenManager(
             core = core,
             preferences = preferences,
             userManager = userManager,
-            registration = registration
+            dataSource = dataSource
         )
     }
 
     @Test
     fun initialize() {
         val pushToken = "foobar1234"
-        every { registration.getPushToken() } returns pushToken
+        every { dataSource.getPushToken() } returns pushToken
         manager.initialize()
 
         verify(exactly = 1) {
@@ -65,7 +65,7 @@ class PushTokenManagerTest {
     fun `initialize with same push token`() {
         val pushToken = "foobar1234"
         preferences.putString("fcm_token", pushToken)
-        every { registration.getPushToken() } returns pushToken
+        every { dataSource.getPushToken() } returns pushToken
 
         manager.initialize()
 
@@ -80,7 +80,7 @@ class PushTokenManagerTest {
         val pushToken = "foobar1234"
         val newPushToken = "newfoobar123"
         preferences.putString("fcm_token", pushToken)
-        every { registration.getPushToken() } returns newPushToken
+        every { dataSource.getPushToken() } returns newPushToken
 
         expectThat(manager.registeredPushToken).isEqualTo(pushToken)
 

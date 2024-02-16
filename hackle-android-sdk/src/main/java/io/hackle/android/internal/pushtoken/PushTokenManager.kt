@@ -1,7 +1,7 @@
 package io.hackle.android.internal.pushtoken
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.pushtoken.registration.PushTokenRegistration
+import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
@@ -13,7 +13,7 @@ internal class PushTokenManager(
     private val core: HackleCore,
     private val preferences: KeyValueRepository,
     private val userManager: UserManager,
-    private val registration: PushTokenRegistration
+    private val dataSource: PushTokenDataSource
 ) : UserListener {
 
     private var _registeredPushToken: String?
@@ -41,7 +41,7 @@ internal class PushTokenManager(
         try {
             val timestamp = System.currentTimeMillis()
             val currentUser = userManager.currentUser
-            val pushToken = registration.getPushToken()
+            val pushToken = dataSource.getPushToken()
             if (pushToken.isNullOrEmpty() || _registeredPushToken == pushToken) {
                 return
             }
