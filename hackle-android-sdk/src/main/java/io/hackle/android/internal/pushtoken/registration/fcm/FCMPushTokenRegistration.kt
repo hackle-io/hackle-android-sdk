@@ -1,16 +1,18 @@
-package io.hackle.android.internal.pushtoken.registration
+package io.hackle.android.internal.pushtoken.registration.fcm
 
 import android.content.Context
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
+import io.hackle.android.internal.pushtoken.registration.PushTokenRegistration
+
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class FCMPushTokenRegistration(context: Context) : PushTokenRegistration {
 
     private val firebaseApp: FirebaseApp?
-    
+
     init {
         firebaseApp = createFirebaseInstance(context)
     }

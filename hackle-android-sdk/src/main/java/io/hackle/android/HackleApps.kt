@@ -28,7 +28,7 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pushtoken.PushTokenManager
-import io.hackle.android.internal.pushtoken.registration.FCMPushTokenRegistration
+import io.hackle.android.internal.pushtoken.registration.fcm.FCMPushTokenRegistration
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.storage.DefaultFileStorage
