@@ -14,14 +14,21 @@ internal object PushTokenRegistration {
     fun create(context: Context, providerType: ProviderType): PushTokenDataSource {
         when (providerType) {
             ProviderType.FCM -> {
-                try {
-                    Class.forName("com.google.firebase.messaging.FirebaseMessaging")
+                if (isAvailableFirebaseMessagingLibrary()) {
                     return FCMPushTokenDataSource(context)
-                } catch (_: ClassNotFoundException) {
-                    log.debug { "Cannot find firebase messaging library." }
+                } else {
+                    log.debug { "Not available firebase messaging library." }
                 }
-                return EmptyPushTokenDataSource()
             }
         }
+        return EmptyPushTokenDataSource()
+    }
+
+    private fun isAvailableFirebaseMessagingLibrary(): Boolean {
+        try {
+            Class.forName("com.google.firebase.messaging.FirebaseMessaging")
+            return true
+        } catch (_: ClassNotFoundException) { }
+        return false
     }
 }
