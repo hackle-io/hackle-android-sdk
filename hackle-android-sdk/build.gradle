@@ -48,7 +48,12 @@ dependencies {
     implementation "com.google.android.gms:play-services-base:17.3.0"
     implementation "com.google.code.gson:gson:2.8.6"
 
-    implementation "com.google.firebase:firebase-messaging:23.0.8"
+    api("com.google.firebase:firebase-messaging") {
+        version {
+            require "[19.0.0, 23.4.99]"
+            prefer "23.4.0"
+        }
+    }
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
 
