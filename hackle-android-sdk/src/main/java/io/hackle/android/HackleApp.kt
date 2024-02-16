@@ -453,9 +453,9 @@ class HackleApp internal constructor(
         showUserExplorer()
     }
 
-    @Deprecated("Do not use the method because Hackle SDK will register push token by self.")
+    @Deprecated("Do not use the method because Hackle SDK will register push token by self. (Will remove v2.38.0)")
     fun setPushToken(token: String) {
-        log.debug { "setPushToken(token) will do nothing, please remove usages." }
+        log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
     companion object {
