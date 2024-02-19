@@ -97,7 +97,7 @@ class InAppMessageDeterminerTest {
             decision(true),
             decision(true, null),
             decision(true, InAppMessages.create(), null),
-            decision(true, inAppMessage, message, DecisionReason.IN_APP_MESSAGE_TARGET),
+            decision(true, inAppMessage, message, DecisionReason.IN_APP_MESSAGE_TARGET, mapOf("a" to 42)),
             decision(false),
         )
         val event = UserEvents.track("test")
@@ -109,7 +109,10 @@ class InAppMessageDeterminerTest {
         expectThat(actual).isNotNull().and {
             get { this.inAppMessage } isSameInstanceAs inAppMessage
             get { this.message } isSameInstanceAs message
-            get { this.properties["decision_reason"] } isEqualTo "IN_APP_MESSAGE_TARGET"
+            get { this.properties } isEqualTo mapOf(
+                "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                "a" to 42
+            )
         }
         verify(exactly = 4) {
             inAppMessageEventMatcher.matches(any(), any(), any())
@@ -134,9 +137,10 @@ class InAppMessageDeterminerTest {
         isMatch: Boolean,
         inAppMessage: InAppMessage? = null,
         message: InAppMessage.Message? = null,
-        reason: DecisionReason = DecisionReason.NOT_IN_IN_APP_MESSAGE_TARGET
+        reason: DecisionReason = DecisionReason.NOT_IN_IN_APP_MESSAGE_TARGET,
+        properties: Map<String, Any> = emptyMap()
     ): Decision {
-        return Decision(isMatch, InAppMessageDecision.of(reason, inAppMessage, message))
+        return Decision(isMatch, InAppMessageDecision.of(reason, inAppMessage, message, properties))
     }
 
     private class Decision(
