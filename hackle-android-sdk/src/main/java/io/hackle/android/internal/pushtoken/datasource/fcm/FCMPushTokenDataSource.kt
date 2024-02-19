@@ -39,8 +39,13 @@ internal class FCMPushTokenDataSource(context: Context) : PushTokenDataSource {
     }
 
     private fun createFirebaseInstance(context: Context): FirebaseApp? {
-        val options = FirebaseOptions.fromResource(context) ?: return null
-        return FirebaseApp.initializeApp(context, options, FCM_APP_NAME)
+        try {
+            val options = FirebaseOptions.fromResource(context) ?: return null
+            return FirebaseApp.initializeApp(context, options, FCM_APP_NAME)
+        } catch (e: Exception) {
+            log.debug { "Cannot create Firebase App instance: $e" }
+        }
+        return null
     }
 
     // FirebaseMessaging.getToken API was introduced since firebase-messaging:21.0.0
