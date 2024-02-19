@@ -57,7 +57,12 @@ internal object InAppMessages {
     }
 
     fun eventTrigger(
-        rules: List<InAppMessage.EventTrigger.Rule> = listOf(InAppMessage.EventTrigger.Rule("test", emptyList())),
+        rules: List<InAppMessage.EventTrigger.Rule> = listOf(
+            InAppMessage.EventTrigger.Rule(
+                "test",
+                emptyList()
+            )
+        ),
         frequencyCap: InAppMessage.EventTrigger.FrequencyCap? = null
     ): InAppMessage.EventTrigger {
         return InAppMessage.EventTrigger(rules = rules, frequencyCap = frequencyCap)
@@ -93,12 +98,14 @@ internal object InAppMessages {
 
     fun messageContext(
         defaultLang: String = "ko",
+        experimentContext: InAppMessage.ExperimentContext? = null,
         platformTypes: List<InAppMessage.PlatformType> = listOf(InAppMessage.PlatformType.ANDROID),
         orientations: List<InAppMessage.Orientation> = listOf(InAppMessage.Orientation.VERTICAL),
         messages: List<InAppMessage.Message> = listOf(message())
     ): InAppMessage.MessageContext {
         return InAppMessage.MessageContext(
             defaultLang,
+            experimentContext,
             platformTypes,
             orientations,
             messages
@@ -106,6 +113,7 @@ internal object InAppMessages {
     }
 
     fun message(
+        variationKey: String? = null,
         lang: String = "ko",
         images: List<InAppMessage.Message.Image> = listOf(image()),
         text: InAppMessage.Message.Text? = text(),
@@ -113,6 +121,7 @@ internal object InAppMessages {
         closeButton: InAppMessage.Message.Button? = null
     ): InAppMessage.Message {
         return InAppMessage.Message(
+            variationKey = variationKey,
             lang = lang,
             layout = InAppMessage.Message.Layout(
                 displayType = InAppMessage.DisplayType.MODAL,
@@ -175,8 +184,14 @@ internal object InAppMessages {
         bodyColor: String = "#FFFFFF"
     ): InAppMessage.Message.Text {
         return InAppMessage.Message.Text(
-            title = InAppMessage.Message.Text.Attribute(title, InAppMessage.Message.Text.Style(titleColor)),
-            body = InAppMessage.Message.Text.Attribute(body, InAppMessage.Message.Text.Style(bodyColor))
+            title = InAppMessage.Message.Text.Attribute(
+                title,
+                InAppMessage.Message.Text.Style(titleColor)
+            ),
+            body = InAppMessage.Message.Text.Attribute(
+                body,
+                InAppMessage.Message.Text.Style(bodyColor)
+            )
         )
     }
 

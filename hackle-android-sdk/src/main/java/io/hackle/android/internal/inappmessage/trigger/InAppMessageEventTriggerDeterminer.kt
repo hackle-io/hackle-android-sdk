@@ -59,7 +59,7 @@ internal class InAppMessageEventTriggerRuleDeterminer(
                 inAppMessage: InAppMessage,
             ): EvaluatorRequest {
                 return EvaluatorRequest(
-                    key = Evaluator.Key(Evaluator.Type.IN_APP_MESSAGE, inAppMessage.key),
+                    key = Evaluator.Key(Evaluator.Type.IN_APP_MESSAGE, inAppMessage.id),
                     workspace = workspace,
                     user = event.user,
                     event = event

@@ -53,13 +53,15 @@ class InAppMessageEventTrackerTest {
                 withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$in_app_impression"
-                        get { properties["in_app_message_id"] } isEqualTo 42L
-                        get { properties["in_app_message_key"] } isEqualTo 320L
-                        get { properties["title_text"] } isEqualTo "text_title"
-                        get { properties["body_text"] } isEqualTo "text_body"
-                        get { properties["image_url"] } isEqualTo listOf("image_path")
-                        get { properties["button_text"] } isEqualTo listOf("button_1", "button_2")
-                        get { properties["decision_reason"] } isEqualTo "IN_APP_MESSAGE_TARGET"
+                        get { properties } isEqualTo mapOf(
+                            "in_app_message_id" to 42L,
+                            "in_app_message_key" to 320L,
+                            "title_text" to "text_title",
+                            "body_text" to "text_body",
+                            "image_url" to listOf("image_path"),
+                            "button_text" to listOf("button_1", "button_2"),
+                            "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                        )
                     }
                 },
                 any(),
@@ -96,8 +98,11 @@ class InAppMessageEventTrackerTest {
                 withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$in_app_close"
-                        get { properties["in_app_message_id"] } isEqualTo 42L
-                        get { properties["in_app_message_key"] } isEqualTo 320L
+                        get { properties } isEqualTo mapOf(
+                            "in_app_message_id" to 42L,
+                            "in_app_message_key" to 320L,
+                            "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                        )
                     }
                 },
                 any(),
@@ -135,12 +140,15 @@ class InAppMessageEventTrackerTest {
                 withArg {
                     expectThat(it) {
                         get { key } isEqualTo "\$in_app_action"
-                        get { properties["in_app_message_id"] } isEqualTo 42L
-                        get { properties["in_app_message_key"] } isEqualTo 320L
-                        get { properties["action_area"] } isEqualTo "BUTTON"
-                        get { properties["action_type"] } isEqualTo "WEB_LINK"
-                        get { properties["button_text"] } isEqualTo "button_text_"
-                        get { properties["action_value"] } isEqualTo "button_link_click"
+                        get { properties } isEqualTo mapOf(
+                            "in_app_message_id" to 42L,
+                            "in_app_message_key" to 320L,
+                            "action_area" to "BUTTON",
+                            "action_type" to "WEB_LINK",
+                            "button_text" to "button_text_",
+                            "action_value" to "button_link_click",
+                            "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                        )
                     }
                 },
                 any(),
