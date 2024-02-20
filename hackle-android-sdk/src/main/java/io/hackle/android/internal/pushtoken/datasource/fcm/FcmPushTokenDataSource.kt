@@ -22,7 +22,7 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
             val token = getPushTokenFromFirebaseMessaging()
             log.debug { "Successfully receive push token." }
             return token
-        } catch (e: Exception) {
+        } catch (throwable: Throwable) {
             log.debug { "Not succeeded FirebaseMessaging.getToken." }
         }
 
@@ -31,8 +31,8 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
             val token = getPushTokenFromFirebaseInstanceId()
             log.debug { "Successfully receive push token." }
             return token
-        } catch (e: Exception) {
-            log.debug { "Not succeeded FirebaseInstanceId.getToken: $e" }
+        } catch (throwable: Throwable) {
+            log.debug { "Not succeeded FirebaseInstanceId.getToken: $throwable" }
         }
 
         return null
