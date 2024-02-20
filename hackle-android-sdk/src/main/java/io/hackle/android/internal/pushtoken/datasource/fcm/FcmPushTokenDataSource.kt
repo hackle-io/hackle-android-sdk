@@ -8,7 +8,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
 import io.hackle.sdk.core.internal.log.Logger
 
-internal class FCMPushTokenDataSource(context: Context) : PushTokenDataSource {
+internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
 
     private val firebaseApp: FirebaseApp?
 
@@ -70,6 +70,6 @@ internal class FCMPushTokenDataSource(context: Context) : PushTokenDataSource {
     companion object {
 
         private const val FCM_APP_NAME = "HACKLE_SDK_APP"
-        private val log = Logger<FCMPushTokenDataSource>()
+        private val log = Logger<FcmPushTokenDataSource>()
     }
 }

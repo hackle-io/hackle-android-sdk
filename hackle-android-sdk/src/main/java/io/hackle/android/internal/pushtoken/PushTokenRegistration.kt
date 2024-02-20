@@ -4,7 +4,7 @@ import android.content.Context
 import io.hackle.android.internal.pushtoken.datasource.EmptyPushTokenDataSource
 import io.hackle.android.internal.pushtoken.datasource.ProviderType
 import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
-import io.hackle.android.internal.pushtoken.datasource.fcm.FCMPushTokenDataSource
+import io.hackle.android.internal.pushtoken.datasource.fcm.FcmPushTokenDataSource
 import io.hackle.sdk.core.internal.log.Logger
 
 internal object PushTokenRegistration {
@@ -15,7 +15,7 @@ internal object PushTokenRegistration {
         when (providerType) {
             ProviderType.FCM -> {
                 if (isAvailableFirebaseMessagingLibrary()) {
-                    return FCMPushTokenDataSource(context)
+                    return FcmPushTokenDataSource(context)
                 } else {
                     log.debug { "Not available firebase messaging library." }
                 }
