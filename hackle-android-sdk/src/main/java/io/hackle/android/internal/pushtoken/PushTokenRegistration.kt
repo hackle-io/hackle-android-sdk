@@ -28,7 +28,7 @@ internal object PushTokenRegistration {
         try {
             Class.forName("com.google.firebase.messaging.FirebaseMessaging")
             return true
-        } catch (_: ClassNotFoundException) { }
+        } catch (_: Throwable) { }
         return false
     }
 }
