@@ -27,6 +27,9 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pushtoken.PushTokenManager
+import io.hackle.android.internal.pushtoken.datasource.ProviderType
+import io.hackle.android.internal.pushtoken.PushTokenRegistration
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.storage.DefaultFileStorage
@@ -265,6 +268,20 @@ internal object HackleApps {
         )
         eventPublisher.add(inAppMessageManager)
 
+        // PushToken
+
+        val pushTokenDataSource = PushTokenRegistration.create(
+            context = context,
+            providerType = ProviderType.FCM
+        )
+        val pushTokenManager = PushTokenManager(
+            core = core,
+            preferences = keyValueRepositoryBySdkKey,
+            userManager = userManager,
+            dataSource = pushTokenDataSource
+        )
+        userManager.addListener(pushTokenManager)
+
         // Notification
 
         val notificationManager = NotificationManager(
@@ -272,14 +289,12 @@ internal object HackleApps {
             executor = eventExecutor,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
-            preferences = keyValueRepositoryBySdkKey,
             repository = NotificationHistoryRepositoryImpl(
                 DatabaseHelper.getSharedDatabase(context)
             )
         )
         NotificationHandler.getInstance(context)
             .setNotificationDataReceiver(notificationManager)
-        userManager.addListener(notificationManager)
 
         // UserExplorer
 
@@ -289,7 +304,7 @@ internal object HackleApps {
                 userManager = userManager,
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage,
-                notificationManager = notificationManager
+                pushTokenManager = pushTokenManager
             ),
             activityProvider = LifecycleManager.getInstance()
         )
@@ -316,6 +331,7 @@ internal object HackleApps {
             workspaceManager = workspaceManager,
             sessionManager = sessionManager,
             eventProcessor = eventProcessor,
+            pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,
             device = device,
             userExplorer = userExplorer,
