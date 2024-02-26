@@ -22,8 +22,8 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
             val token = getPushTokenFromFirebaseMessaging()
             log.debug { "Successfully receive push token." }
             return token
-        } catch (throwable: Throwable) {
-            log.debug { "Not succeeded FirebaseMessaging.getToken." }
+        } catch (e: Throwable) {
+            log.debug { "Not succeeded FirebaseMessaging.getToken: $e" }
         }
 
         try {
@@ -31,8 +31,8 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
             val token = getPushTokenFromFirebaseInstanceId()
             log.debug { "Successfully receive push token." }
             return token
-        } catch (throwable: Throwable) {
-            log.debug { "Not succeeded FirebaseInstanceId.getToken: $throwable" }
+        } catch (e: Throwable) {
+            log.debug { "Not succeeded FirebaseInstanceId.getToken: $e" }
         }
 
         return null
@@ -42,7 +42,7 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
         try {
             val options = FirebaseOptions.fromResource(context) ?: return null
             return FirebaseApp.initializeApp(context, options, FCM_APP_NAME)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             log.debug { "Cannot create Firebase App instance: $e" }
         }
         return null
@@ -57,7 +57,6 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
     }
 
     // This method for less than firebase-messaging:21.0.0
-    @Deprecated("")
     private fun getPushTokenFromFirebaseInstanceId(): String? {
         val firebaseApp = firebaseApp ?: return null
         val firebaseInstanceIdClass = Class.forName("com.google.firebase.iid.FirebaseInstanceId")
@@ -66,7 +65,7 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
         val getTokenMethod = instanceId.javaClass.getMethod("getToken")
         return getTokenMethod.invoke(instanceId) as? String
     }
-    
+
     companion object {
 
         private const val FCM_APP_NAME = "HACKLE_SDK_APP"
