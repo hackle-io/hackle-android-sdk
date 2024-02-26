@@ -52,8 +52,6 @@ fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
 fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
 fun Hackle.resetUser() = app.resetUser()
 
-fun Hackle.setPushToken(token: String) = app.setPushToken(token)
-
 fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
 
 @Deprecated(
@@ -61,3 +59,6 @@ fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
     ReplaceWith("app.remoteConfig()")
 )
 fun Hackle.remoteConfig(user: User) = app.remoteConfig(user)
+
+@Deprecated("Do not use the method because Hackle SDK will register push token by self. (Will remove v2.38.0)")
+fun Hackle.setPushToken(token: String) = app.setPushToken(token)
