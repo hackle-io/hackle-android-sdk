@@ -10,17 +10,6 @@ import org.junit.Test
 class NotificationEventTest {
 
     @Test
-    fun `register push token event`() {
-        val from = RegisterPushTokenEvent(
-            token = "abcd1234"
-        )
-        val to = from.toTrackEvent()
-        assertThat(to.key, `is`("\$push_token"))
-        assertThat(to.properties["provider_type"], `is`("FCM"))
-        assertThat(to.properties["token"], `is`("abcd1234"))
-    }
-
-    @Test
     fun `notification data to event`() {
         val from = NotificationData(
             messageId = "abcd1234",

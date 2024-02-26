@@ -13,6 +13,7 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -53,6 +54,7 @@ class HackleApp internal constructor(
     private val workspaceManager: WorkspaceManager,
     private val sessionManager: SessionManager,
     private val eventProcessor: DefaultEventProcessor,
+    private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
@@ -317,14 +319,6 @@ class HackleApp internal constructor(
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
-    fun setPushToken(token: String) {
-        try {
-            notificationManager.setPushToken(token)
-        } catch (t: Throwable) {
-            log.error { "Unexpected exception while set registered push token: $t" }
-        }
-    }
-
     @JvmOverloads
     fun fetch(callback: Runnable? = null) {
         fetchThrottler.execute(
@@ -351,6 +345,7 @@ class HackleApp internal constructor(
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 synchronizer.sync()
+                pushTokenManager.initialize()
                 notificationManager.flush()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
@@ -456,6 +451,11 @@ class HackleApp internal constructor(
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))
     fun showUserExplorer(activity: Activity) {
         showUserExplorer()
+    }
+
+    @Deprecated("Do not use the method because Hackle SDK will register push token by self. (Will remove v2.38.0)")
+    fun setPushToken(token: String) {
+        log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
     companion object {

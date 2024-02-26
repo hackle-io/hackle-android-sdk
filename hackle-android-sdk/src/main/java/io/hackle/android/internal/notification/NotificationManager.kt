@@ -1,8 +1,6 @@
 package io.hackle.android.internal.notification
 
-import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.NotificationHistoryRepository
-import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.android.ui.notification.NotificationDataReceiver
@@ -20,37 +18,10 @@ internal class NotificationManager(
     private val executor: Executor,
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
-    private val preferences: KeyValueRepository,
     private val repository: NotificationHistoryRepository,
-) : NotificationDataReceiver, UserListener {
+) : NotificationDataReceiver {
 
     private val flushing = AtomicBoolean(false)
-
-    private var _registeredPushToken: String?
-        get() = preferences.getString(KEY_FCM_TOKEN)
-        private set(value) {
-            if (value == null) {
-                preferences.remove(KEY_FCM_TOKEN)
-            } else {
-                preferences.putString(KEY_FCM_TOKEN, value)
-            }
-        }
-    val registeredPushToken: String?
-        get() = _registeredPushToken
-
-    fun setPushToken(fcmToken: String, timestamp: Long = System.currentTimeMillis()) {
-        try {
-            if (_registeredPushToken == fcmToken) {
-                log.debug { "Provided same push token." }
-                return
-            }
-
-            _registeredPushToken = fcmToken
-            notifyPushTokenChanged(userManager.currentUser, timestamp)
-        } catch (e: Exception) {
-            log.debug { "Failed to register FCM push token: $e" }
-        }
-    }
 
     fun flush() {
         if (flushing.getAndSet(true)) {
@@ -58,10 +29,6 @@ internal class NotificationManager(
         }
 
         executor.execute(FlushTask())
-    }
-
-    override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-        notifyPushTokenChanged(newUser, timestamp)
     }
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
@@ -83,17 +50,6 @@ internal class NotificationManager(
         } catch (e: Exception) {
             log.error { "Failed to handle notification data: ${data.messageId}" }
         }
-    }
-
-    private fun notifyPushTokenChanged(user: User, timestamp: Long) {
-        val fcmToken = preferences.getString(KEY_FCM_TOKEN)
-        if (fcmToken.isNullOrEmpty()) {
-            log.debug { "Push token is empty." }
-            return
-        }
-
-        val event = RegisterPushTokenEvent(fcmToken).toTrackEvent()
-        track(event, user, timestamp)
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
@@ -172,9 +128,7 @@ internal class NotificationManager(
 
     companion object {
 
-        private const val KEY_FCM_TOKEN = "fcm_token"
         private const val DEFAULT_FLUSH_BATCH_SIZE = 5
-
         private val log = Logger<NotificationManager>()
 
     }
