@@ -1,14 +1,15 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
-import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
 import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -139,7 +140,7 @@ internal class DefaultEventProcessor(
         }
 
         private fun update(event: UserEvent) {
-            if (SessionEventTracker.isSessionEvent(event)) {
+            if (SessionEventTracker.isSessionEvent(event) || PushEventTracker.isPushTokenEvent(event)) {
                 return
             }
 
