@@ -1,19 +1,18 @@
 package io.hackle.android.internal.pushtoken
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
-import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class PushTokenManager(
-    private val core: HackleCore,
     private val preferences: KeyValueRepository,
     private val userManager: UserManager,
-    private val dataSource: PushTokenDataSource
+    private val dataSource: PushTokenDataSource,
+    private val eventTracker: PushEventTracker,
 ) : UserListener {
 
     private var _registeredPushToken: String?
@@ -60,18 +59,10 @@ internal class PushTokenManager(
             return
         }
 
-        val event = RegisterPushTokenEvent(pushToken).toTrackEvent()
-        track(event, user, timestamp)
-    }
-
-    private fun track(event: Event, user: User, timestamp: Long) {
-        val hackleUser = userManager.toHackleUser(user)
-        core.track(event, hackleUser, timestamp)
-        log.debug { "${event.key} event queued." }
+        eventTracker.trackToken(pushToken, user, timestamp)
     }
 
     companion object {
-
         private const val KEY_PUSH_TOKEN = "fcm_token"
         private val log = Logger<PushTokenManager>()
     }

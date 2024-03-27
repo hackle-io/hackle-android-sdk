@@ -1,9 +1,9 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
-import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
@@ -139,6 +139,21 @@ class DefaultEventProcessorTest {
             every { event } returns Event.of("\$session_start")
             every { this@mockk.user } returns user
         }
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
+    }
+
+
+    @Test
+    fun `process - PushTokenEvent 인 경우 last event time 을 업데이트 하지 않는다`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
+        val event = UserEvents.track("\$push_token", user)
 
         // when
         sut.process(event)
