@@ -41,6 +41,8 @@ import io.hackle.android.internal.sync.SynchronizerType.WORKSPACE
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.utils.concurrent.ThrottleLimiter
+import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.internal.workspace.repository.DefaultWorkspaceConfigRepository
@@ -324,6 +326,13 @@ internal object HackleApps {
         LifecycleManager.getInstance().addStateListener(userExplorer)
         LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
 
+        val throttleLimiter = ThrottleLimiter(
+            intervalMillis = 60 * 1000,
+            limit = 1,
+            clock = Clock.SYSTEM
+        )
+        val fetchThrottler = Throttler(throttleLimiter)
+
         // Instantiate
 
         return HackleApp(
@@ -338,6 +347,7 @@ internal object HackleApps {
             eventProcessor = eventProcessor,
             pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,
+            fetchThrottler = fetchThrottler,
             device = device,
             userExplorer = userExplorer,
             sdk = sdk

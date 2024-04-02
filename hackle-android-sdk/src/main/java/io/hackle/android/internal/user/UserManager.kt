@@ -8,8 +8,8 @@ import io.hackle.android.internal.lifecycle.AppStateChangeListener
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.sync.Synchronizer
-import io.hackle.android.internal.utils.parseJson
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger

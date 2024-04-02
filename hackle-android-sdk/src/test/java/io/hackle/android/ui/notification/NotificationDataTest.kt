@@ -2,7 +2,7 @@ package io.hackle.android.ui.notification
 
 import android.content.Intent
 import android.os.Bundle
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.toJson
 import io.mockk.every
 import io.mockk.mockk
 import org.hamcrest.CoreMatchers.`is`

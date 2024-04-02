@@ -2,8 +2,8 @@ package io.hackle.android.internal.bridge
 
 import io.hackle.android.HackleApp
 import io.hackle.android.internal.bridge.model.BridgeResponse
-import io.hackle.android.internal.utils.parseJson
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.ParameterConfig

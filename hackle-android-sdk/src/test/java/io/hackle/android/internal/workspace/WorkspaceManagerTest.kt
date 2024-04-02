@@ -1,6 +1,6 @@
 package io.hackle.android.internal.workspace
 
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.mock.MockWorkspaceConfigRepository
 import io.mockk.every
 import io.mockk.mockk

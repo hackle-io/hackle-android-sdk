@@ -2,7 +2,7 @@ package io.hackle.android.internal.monitoring.metric
 
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateChangeListener
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Counter
 import io.hackle.sdk.core.internal.metrics.Metric
@@ -12,7 +12,11 @@ import io.hackle.sdk.core.internal.metrics.flush.FlushCounter
 import io.hackle.sdk.core.internal.metrics.flush.FlushMetric
 import io.hackle.sdk.core.internal.metrics.flush.FlushTimer
 import io.hackle.sdk.core.internal.time.Clock
-import okhttp3.*
+import okhttp3.HttpUrl
+import okhttp3.MediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import java.util.concurrent.Executor
 
 internal class MonitoringMetricRegistry(
