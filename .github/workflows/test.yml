@@ -17,4 +17,11 @@ jobs:
         with:
           gradle-version: 7.2
       - name: Test
-        run: gradle :hackle-android-sdk:test
+        run: gradle :hackle-android-sdk:test :hackle-android-sdk:coverageReport
+      - name: Coverage
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/hackle-android-sdk/build/reports/jacoco/coverageReport/coverageReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Coverage
