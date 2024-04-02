@@ -4,6 +4,7 @@ import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 class DefaultEventProcessorTest {
 
     @RelaxedMockK
-    private lateinit var deduplicationDeterminer: ExposureEventDeduplicationDeterminer
+    private lateinit var eventDedupDeterminer: UserEventDedupDeterminer
 
     @RelaxedMockK
     private lateinit var eventPublisher: UserEventPublisher
@@ -72,7 +73,7 @@ class DefaultEventProcessorTest {
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
-        every { deduplicationDeterminer.isDeduplicationTarget(any()) } returns false
+        every { eventDedupDeterminer.isDedupTarget(any()) } returns false
         every { sessionManager.currentSession } returns null
         every { appStateManager.currentState } returns AppState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
@@ -81,7 +82,7 @@ class DefaultEventProcessorTest {
 
 
     private fun processor(
-        deduplicationDeterminer: ExposureEventDeduplicationDeterminer = this.deduplicationDeterminer,
+        eventDedupDeterminer: UserEventDedupDeterminer = this.eventDedupDeterminer,
         eventPublisher: UserEventPublisher = this.eventPublisher,
         eventExecutor: Executor = this.eventExecutor,
         eventRepository: EventRepository = this.eventRepository,
@@ -97,7 +98,7 @@ class DefaultEventProcessorTest {
         activityProvider: ActivityProvider = this.activityProvider
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
-            deduplicationDeterminer = deduplicationDeterminer,
+            eventDedupDeterminer = eventDedupDeterminer,
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
@@ -196,7 +197,7 @@ class DefaultEventProcessorTest {
     fun `process - 중복제거 대상이면 이벤트를 추가하지 않는다`() {
         // given
         val sut = processor()
-        every { deduplicationDeterminer.isDeduplicationTarget(any()) } returns true
+        every { eventDedupDeterminer.isDedupTarget(any()) } returns true
         val event = event()
 
         // when

@@ -8,8 +8,10 @@ import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.repository.NotificationHistoryRepositoryImpl
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
-import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.event.UserEventPublisher
+import io.hackle.android.internal.event.dedup.DelegatingUserEventDedupDeterminer
+import io.hackle.android.internal.event.dedup.ExposureEventDedupDeterminer
+import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
@@ -158,15 +160,17 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
-
-        val dedupDeterminer = ExposureEventDeduplicationDeterminer(
-            exposureEventDedupIntervalMillis = config.exposureEventDedupIntervalMillis
+        val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
+            listOf(
+                RemoteConfigEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
+                ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+            )
         )
 
         val appStateManager = AppStateManager()
 
         val eventProcessor = DefaultEventProcessor(
-            deduplicationDeterminer = dedupDeterminer,
+            eventDedupDeterminer = eventDedupDeterminer,
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
