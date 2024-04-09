@@ -3,8 +3,8 @@ package io.hackle.android.internal.inappmessage.storage
 import android.content.Context
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.utils.parseJson
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.model.InAppMessage
 
 /**

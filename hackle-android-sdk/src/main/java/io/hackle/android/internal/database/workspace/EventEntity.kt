@@ -1,7 +1,7 @@
 package io.hackle.android.internal.database.workspace
 
 import io.hackle.android.internal.event.toDto
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.event.UserEvent
 
 internal data class EventEntity(

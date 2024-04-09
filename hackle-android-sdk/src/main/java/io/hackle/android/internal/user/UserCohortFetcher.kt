@@ -5,7 +5,7 @@ import android.util.Base64.NO_WRAP
 import android.util.Base64.URL_SAFE
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.User
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient

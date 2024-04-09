@@ -1,6 +1,6 @@
 package io.hackle.android.internal.workspace.repository
 
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.internal.workspace.WorkspaceConfig
 import io.hackle.android.mock.MockFileStorage
 import org.junit.Assert.assertNull
