@@ -3,7 +3,7 @@ package io.hackle.android.internal.user
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.mock.MockDevice
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User

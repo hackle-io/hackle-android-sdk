@@ -1,4 +1,4 @@
-package io.hackle.android.internal.utils
+package io.hackle.android.internal.utils.json
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

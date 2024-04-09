@@ -1,6 +1,6 @@
 package io.hackle.android.internal.bridge.model
 
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.json.parseJson
 
 internal class BridgeInvocation(string: String) {
 
@@ -34,6 +34,7 @@ internal class BridgeInvocation(string: String) {
 
     init {
         val data = string.parseJson<Map<String, Any>>()
+
         @Suppress("UNCHECKED_CAST")
         val invocation = data[KEY_HACKLE] as? Map<String, Any>
             ?: throw IllegalArgumentException("'$KEY_HACKLE' key must be provided.")
