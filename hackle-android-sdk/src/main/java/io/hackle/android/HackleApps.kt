@@ -8,8 +8,10 @@ import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.repository.NotificationHistoryRepositoryImpl
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
-import io.hackle.android.internal.event.ExposureEventDeduplicationDeterminer
 import io.hackle.android.internal.event.UserEventPublisher
+import io.hackle.android.internal.event.dedup.DelegatingUserEventDedupDeterminer
+import io.hackle.android.internal.event.dedup.ExposureEventDedupDeterminer
+import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
@@ -41,6 +43,8 @@ import io.hackle.android.internal.sync.SynchronizerType.WORKSPACE
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.utils.concurrent.ThrottleLimiter
+import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.internal.workspace.repository.DefaultWorkspaceConfigRepository
@@ -156,15 +160,17 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
-
-        val dedupDeterminer = ExposureEventDeduplicationDeterminer(
-            exposureEventDedupIntervalMillis = config.exposureEventDedupIntervalMillis
+        val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
+            listOf(
+                RemoteConfigEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
+                ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+            )
         )
 
         val appStateManager = AppStateManager()
 
         val eventProcessor = DefaultEventProcessor(
-            deduplicationDeterminer = dedupDeterminer,
+            eventDedupDeterminer = eventDedupDeterminer,
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
@@ -324,6 +330,13 @@ internal object HackleApps {
         LifecycleManager.getInstance().addStateListener(userExplorer)
         LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
 
+        val throttleLimiter = ThrottleLimiter(
+            intervalMillis = 60 * 1000,
+            limit = 1,
+            clock = Clock.SYSTEM
+        )
+        val fetchThrottler = Throttler(throttleLimiter)
+
         // Instantiate
 
         return HackleApp(
@@ -338,6 +351,7 @@ internal object HackleApps {
             eventProcessor = eventProcessor,
             pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,
+            fetchThrottler = fetchThrottler,
             device = device,
             userExplorer = userExplorer,
             sdk = sdk

@@ -3,6 +3,7 @@ package io.hackle.android.internal.event
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
@@ -26,7 +27,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class DefaultEventProcessor(
-    private val deduplicationDeterminer: ExposureEventDeduplicationDeterminer,
+    private val eventDedupDeterminer: UserEventDedupDeterminer,
     private val eventPublisher: UserEventPublisher,
     private val eventExecutor: Executor,
     private val eventRepository: EventRepository,
@@ -126,7 +127,7 @@ internal class DefaultEventProcessor(
         override fun run() {
             try {
                 update(event)
-                if (deduplicationDeterminer.isDeduplicationTarget(event)) {
+                if (eventDedupDeterminer.isDedupTarget(event)) {
                     return
                 }
 

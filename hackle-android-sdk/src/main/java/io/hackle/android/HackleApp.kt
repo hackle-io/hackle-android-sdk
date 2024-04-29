@@ -19,9 +19,8 @@ import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.sync.SynchronizerType
 import io.hackle.android.internal.sync.SynchronizerType.COHORT
-import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.utils.Throttler
+import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.notification.NotificationHandler
@@ -56,6 +55,7 @@ class HackleApp internal constructor(
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
+    private val fetchThrottler: Throttler,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
     internal val sdk: Sdk
@@ -72,11 +72,6 @@ class HackleApp internal constructor(
     val sessionId: String get() = sessionManager.requiredSession.id
 
     val user: User get() = userManager.currentUser
-
-    private val fetchThrottler = Throttler(
-        intervalInSeconds = 60,
-        executor = TaskExecutors.handler("io.hackle.FetchThrottler")
-    )
 
     fun showUserExplorer() {
         userExplorer.show()
@@ -310,10 +305,9 @@ class HackleApp internal constructor(
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setWebViewBridge(webView: WebView) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            throw IllegalStateException(
-                "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                        "JavaScript can use reflection to manipulate application")
+        check(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
+                    "JavaScript can use reflection to manipulate application"
         }
         val jsInterface = HackleJavascriptInterface(this)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
@@ -322,11 +316,13 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun fetch(callback: Runnable? = null) {
         fetchThrottler.execute(
-            action = {
-                synchronizer.sync()
-                callback?.run()
+            accept = {
+                backgroundExecutor.execute {
+                    synchronizer.sync()
+                    callback?.run()
+                }
             },
-            throttled = {
+            reject = {
                 log.debug { "Too many quick fetch requests." }
                 callback?.run()
             }

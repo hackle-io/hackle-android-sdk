@@ -9,6 +9,7 @@ import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.ui.explorer.HackleUserExplorer
@@ -76,6 +77,9 @@ class HackleAppTest {
     @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
 
+    @RelaxedMockK
+    private lateinit var fetchThrottler: Throttler
+
     private lateinit var sut: HackleApp
 
     @Before
@@ -100,6 +104,7 @@ class HackleAppTest {
             eventProcessor,
             pushTokenManager,
             notificationManager,
+            fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
             userExplorer,
             Sdk.of("", HackleConfig.DEFAULT)

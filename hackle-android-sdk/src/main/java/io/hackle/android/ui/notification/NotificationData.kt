@@ -1,7 +1,7 @@
 package io.hackle.android.ui.notification
 
 import android.content.Intent
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.ui.notification.Constants.KEY_BODY
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
@@ -51,7 +51,7 @@ internal data class NotificationData(
                     .parseJson<Map<String, Any>>()
                 return NotificationData(
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
-                    workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong() ,
+                    workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong(),
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
                     pushMessageId = (hackle[KEY_PUSH_MESSAGE_ID] as? Number)?.toLong(),
                     pushMessageKey = (hackle[KEY_PUSH_MESSAGE_KEY] as? Number)?.toLong(),
@@ -70,7 +70,8 @@ internal data class NotificationData(
                     link = hackle[KEY_LINK] as? String,
                     debug = hackle[KEY_DEBUG] as? Boolean ?: false
                 )
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            }
             return null
         }
     }

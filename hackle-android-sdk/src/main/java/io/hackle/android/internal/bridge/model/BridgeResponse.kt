@@ -1,6 +1,6 @@
 package io.hackle.android.internal.bridge.model
 
-import io.hackle.android.internal.utils.toJson
+import io.hackle.android.internal.utils.json.toJson
 
 internal class BridgeResponse private constructor(
     val success: Boolean,

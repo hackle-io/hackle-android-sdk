@@ -1,6 +1,6 @@
 package io.hackle.android.internal.workspace.dto
 
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.internal.workspace.WorkspaceConfigDto
 import io.hackle.android.internal.workspace.WorkspaceImpl
 import io.hackle.sdk.core.workspace.Workspace

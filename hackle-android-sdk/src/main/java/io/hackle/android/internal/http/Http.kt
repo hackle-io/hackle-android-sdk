@@ -1,6 +1,6 @@
 package io.hackle.android.internal.http
 
-import io.hackle.android.internal.utils.parseJson
+import io.hackle.android.internal.utils.json.parseJson
 import okhttp3.Response
 import okhttp3.ResponseBody
 import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
