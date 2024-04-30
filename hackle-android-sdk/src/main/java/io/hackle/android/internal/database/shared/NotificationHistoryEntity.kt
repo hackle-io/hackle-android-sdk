@@ -1,8 +1,6 @@
 package io.hackle.android.internal.database.shared
 
 import android.database.Cursor
-import androidx.core.database.getIntOrNull
-import androidx.core.database.getLongOrNull
 
 internal class NotificationHistoryEntity(
     val historyId: Long,
@@ -63,3 +61,6 @@ internal class NotificationHistoryEntity(
         }
     }
 }
+
+private fun Cursor.getIntOrNull(index: Int) = if (isNull(index)) null else getInt(index)
+private fun Cursor.getLongOrNull(index: Int) = if (isNull(index)) null else getLong(index)

@@ -1,7 +1,6 @@
 package io.hackle.android
 
 import android.content.Context
-import android.os.Build
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.EventRepository
@@ -13,7 +12,6 @@ import io.hackle.android.internal.event.dedup.DelegatingUserEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.ExposureEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
-import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageDeterminer
@@ -388,16 +386,6 @@ internal object HackleApps {
             .readTimeout(5, TimeUnit.SECONDS)
             .writeTimeout(5, TimeUnit.SECONDS)
             .addInterceptor(SdkHeaderInterceptor(sdk.key, sdk.name, sdk.version))
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
-
-            try {
-                Tls.update(context)
-                builder.sslSocketFactory(Tls.tls12SocketFactory(), Tls.defaultTrustManager())
-            } catch (e: Exception) {
-                log.error { "TLS is not available: $e" }
-            }
-        }
 
         return builder.build()
     }
