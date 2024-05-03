@@ -305,9 +305,11 @@ class HackleApp internal constructor(
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setWebViewBridge(webView: WebView) {
-        check(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                    "JavaScript can use reflection to manipulate application"
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            throw IllegalStateException(
+                "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
+                        "JavaScript can use reflection to manipulate application"
+            )
         }
         val jsInterface = HackleJavascriptInterface(this)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
