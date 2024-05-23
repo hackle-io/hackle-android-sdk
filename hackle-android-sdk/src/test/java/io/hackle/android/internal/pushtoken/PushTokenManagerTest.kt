@@ -1,6 +1,5 @@
 package io.hackle.android.internal.pushtoken
 
-import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.push.PushEventTracker
@@ -35,7 +34,6 @@ class PushTokenManagerTest {
         eventTracker = mockk(relaxed = true)
 
         manager = PushTokenManager(
-            mode = HackleAppMode.NATIVE,
             preferences = preferences,
             userManager = userManager,
             dataSource = dataSource,
@@ -82,30 +80,6 @@ class PushTokenManagerTest {
 
         verify(exactly = 1) {
             eventTracker.trackToken(newPushToken, any(), any())
-        }
-        expectThat(manager.registeredPushToken).isEqualTo(newPushToken)
-    }
-
-    @Test
-    fun `when webwiew wrapper mode then do not notify push token`() {
-        val pushToken = "foobar1234"
-        val newPushToken = "newfoobar123"
-        preferences.putString("fcm_token", pushToken)
-        every { dataSource.getPushToken() } returns newPushToken
-
-        val sut = PushTokenManager(
-            mode = HackleAppMode.WEB_VIEW_WRAPPER,
-            preferences = preferences,
-            userManager = userManager,
-            dataSource = dataSource,
-            eventTracker = eventTracker
-        )
-        expectThat(sut.registeredPushToken).isEqualTo(pushToken)
-
-        sut.initialize()
-
-        verify(exactly = 0) {
-            eventTracker.trackToken(any(), any(), any())
         }
         expectThat(manager.registeredPushToken).isEqualTo(newPushToken)
     }

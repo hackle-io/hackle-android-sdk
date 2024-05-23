@@ -4,6 +4,7 @@ import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
@@ -17,23 +18,13 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import io.mockk.Called
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.hasSize
-import strikt.assertions.isA
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
-import strikt.assertions.isSameInstanceAs
+import strikt.assertions.*
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
@@ -82,7 +73,6 @@ class DefaultEventProcessorTest {
 
 
     private fun processor(
-        eventDedupDeterminer: UserEventDedupDeterminer = this.eventDedupDeterminer,
         eventPublisher: UserEventPublisher = this.eventPublisher,
         eventExecutor: Executor = this.eventExecutor,
         eventRepository: EventRepository = this.eventRepository,
@@ -98,7 +88,6 @@ class DefaultEventProcessorTest {
         activityProvider: ActivityProvider = this.activityProvider
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
-            eventDedupDeterminer = eventDedupDeterminer,
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
@@ -197,6 +186,7 @@ class DefaultEventProcessorTest {
     fun `process - 중복제거 대상이면 이벤트를 추가하지 않는다`() {
         // given
         val sut = processor()
+        sut.addFilter(DedupUserEventFilter(eventDedupDeterminer))
         every { eventDedupDeterminer.isDedupTarget(any()) } returns true
         val event = event()
 

@@ -9,6 +9,7 @@ import io.hackle.android.internal.database.repository.NotificationHistoryReposit
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.UserEventPublisher
+import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.DelegatingUserEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.ExposureEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
@@ -16,15 +17,12 @@ import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageDeterminer
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventMatcher
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventTriggerFrequencyCapDeterminer
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageEventTriggerRuleDeterminer
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageManager
+import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
+import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
@@ -52,18 +50,7 @@ import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.hackle.android.ui.inappmessage.event.InAppMessageActionEventProcessor
-import io.hackle.android.ui.inappmessage.event.InAppMessageActionHandlerFactory
-import io.hackle.android.ui.inappmessage.event.InAppMessageCloseActionHandler
-import io.hackle.android.ui.inappmessage.event.InAppMessageCloseEventProcessor
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventProcessorFactory
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventTracker
-import io.hackle.android.ui.inappmessage.event.InAppMessageHideActionHandler
-import io.hackle.android.ui.inappmessage.event.InAppMessageImpressionEventProcessor
-import io.hackle.android.ui.inappmessage.event.InAppMessageLinkActionHandler
-import io.hackle.android.ui.inappmessage.event.InAppMessageLinkAndCloseActionHandler
-import io.hackle.android.ui.inappmessage.event.UriHandler
+import io.hackle.android.ui.inappmessage.event.*
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
@@ -160,17 +147,10 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
-        val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
-            listOf(
-                RemoteConfigEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
-                ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
-            )
-        )
 
         val appStateManager = AppStateManager()
 
         val eventProcessor = DefaultEventProcessor(
-            eventDedupDeterminer = eventDedupDeterminer,
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
@@ -185,6 +165,19 @@ internal object HackleApps {
             appStateManager = appStateManager,
             activityProvider = LifecycleManager.getInstance()
         )
+
+        val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
+            listOf(
+                RemoteConfigEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
+                ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+            )
+        )
+        val userEventFilter = DedupUserEventFilter(eventDedupDeterminer)
+        eventProcessor.addFilter(userEventFilter)
+
+        if (config.mode == HackleAppMode.WEB_VIEW_WRAPPER) {
+            eventProcessor.addFilter(WebViewWrapperUserEventFilter())
+        }
 
         // Core
 
@@ -288,7 +281,6 @@ internal object HackleApps {
             core = core
         )
         val pushTokenManager = PushTokenManager(
-            mode = config.mode,
             preferences = keyValueRepositoryBySdkKey,
             userManager = userManager,
             dataSource = pushTokenDataSource,
