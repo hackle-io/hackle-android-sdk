@@ -1,5 +1,6 @@
 package io.hackle.android.internal.pushtoken
 
+import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
@@ -7,8 +8,10 @@ import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.utils.safe
 
 internal class PushTokenManager(
+    private val mode: HackleAppMode,
     private val preferences: KeyValueRepository,
     private val userManager: UserManager,
     private val dataSource: PushTokenDataSource,
@@ -46,7 +49,10 @@ internal class PushTokenManager(
             }
 
             _registeredPushToken = pushToken
-            notifyPushTokenChanged(currentUser, timestamp)
+            when (mode) {
+                HackleAppMode.NATIVE -> notifyPushTokenChanged(currentUser, timestamp)
+                HackleAppMode.WEB_VIEW_WRAPPER -> Unit
+            }.safe
         } catch (e: Exception) {
             log.debug { "Failed to register push token: $e" }
         }

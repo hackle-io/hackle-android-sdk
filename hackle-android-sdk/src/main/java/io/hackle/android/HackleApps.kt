@@ -225,7 +225,9 @@ internal object HackleApps {
             userManager = userManager,
             core = core
         )
-        sessionManager.addListener(sessionEventTracker)
+        if (config.sessionTracking) {
+            sessionManager.addListener(sessionEventTracker)
+        }
 
         // InAppMessage
         val inAppMessageEventTracker = InAppMessageEventTracker(
@@ -286,6 +288,7 @@ internal object HackleApps {
             core = core
         )
         val pushTokenManager = PushTokenManager(
+            mode = config.mode,
             preferences = keyValueRepositoryBySdkKey,
             userManager = userManager,
             dataSource = pushTokenDataSource,
@@ -354,7 +357,8 @@ internal object HackleApps {
             fetchThrottler = fetchThrottler,
             device = device,
             userExplorer = userExplorer,
-            sdk = sdk
+            sdk = sdk,
+            mode = config.mode
         )
     }
 

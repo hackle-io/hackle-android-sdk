@@ -1,6 +1,9 @@
 package io.hackle.android
 
+import android.webkit.WebView
+import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pushtoken.PushTokenManager
@@ -30,6 +33,8 @@ import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
@@ -107,7 +112,8 @@ class HackleAppTest {
             fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
             userExplorer,
-            Sdk.of("", HackleConfig.DEFAULT)
+            Sdk.of("", HackleConfig.DEFAULT),
+            HackleAppMode.NATIVE
         )
     }
 
@@ -627,5 +633,20 @@ class HackleAppTest {
         sut.initialize(null, onReady)
 
         verify(exactly = 1) { onReady.run() }
+    }
+
+    @Test
+    fun `setWebViewBridge`() {
+        mockkObject(AndroidBuild)
+        every { AndroidBuild.sdkVersion() } returns 28
+
+        val webView = mockk<WebView>(relaxed = true)
+        sut.setWebViewBridge(webView)
+
+        verify(exactly = 1) {
+            webView.addJavascriptInterface(any<HackleJavascriptInterface>(), "_hackleApp")
+        }
+
+        unmockkObject(AndroidBuild)
     }
 }
