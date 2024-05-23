@@ -33,7 +33,7 @@ class HackleJavascriptInterfaceTest {
     @Test
     fun `getAppMode`() {
         val sut = HackleJavascriptInterface(HackleBridge(app("SDK_KEY", HackleAppMode.WEB_VIEW_WRAPPER)))
-        expectThat(sut.getAppMode()).isEqualTo("WEBVIEW_WRAPPER")
+        expectThat(sut.getAppMode()).isEqualTo("WEB_VIEW_WRAPPER")
     }
 
     @Test
