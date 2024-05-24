@@ -1,5 +1,6 @@
 package io.hackle.android.internal.event
 
+import android.app.Activity
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
@@ -15,6 +16,7 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.event.UserEvent
+import io.hackle.sdk.core.event.properties
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
@@ -26,6 +28,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.*
 import java.util.concurrent.Executor
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class DefaultEventProcessorTest {
@@ -109,6 +112,21 @@ class DefaultEventProcessorTest {
         // given
         val sut = processor()
         every { eventExecutor.execute(any()) } returns Unit
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) {
+            eventExecutor.execute(any())
+        }
+    }
+
+    @Test
+    fun `process - fail to execute`() {
+        val sut = processor()
+        every { eventExecutor.execute(any()) } throws RejectedExecutionException()
         val event = event()
 
         // when
@@ -232,6 +250,25 @@ class DefaultEventProcessorTest {
                 get { identifiers }.hasSize(2)
                 get { identifiers[IdentifierType.SESSION.key] } isEqualTo "42.session"
             }
+    }
+
+    @Test
+    fun `process - decorate screen`() {
+        // given
+        val sut = processor()
+        var savedEvent: UserEvent? = null
+        every { eventRepository.save(any()) } answers { savedEvent = firstArg() }
+        every { activityProvider.currentActivity } returns TestActivity()
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { eventRepository.save(any()) }
+        expectThat(savedEvent).isNotNull().and {
+            get { user.hackleProperties["screenClass"] } isEqualTo "TestActivity"
+        }
     }
 
     @Test
@@ -544,4 +581,6 @@ class DefaultEventProcessorTest {
 
         return event
     }
+
+    private class TestActivity : Activity()
 }

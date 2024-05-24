@@ -172,8 +172,8 @@ internal object HackleApps {
                 ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
             )
         )
-        val userEventFilter = DedupUserEventFilter(eventDedupDeterminer)
-        eventProcessor.addFilter(userEventFilter)
+        val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
+        eventProcessor.addFilter(dedupUserEventFilter)
 
         if (config.mode == HackleAppMode.WEB_VIEW_WRAPPER) {
             eventProcessor.addFilter(WebViewWrapperUserEventFilter())
