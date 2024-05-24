@@ -62,15 +62,15 @@ class PushEventTrackerTest {
 
     @Test
     fun `isPushClickEvent`() {
-        expectThat(PushEventTracker.isPushTokenEvent(UserEvents.track("\$push_token"))).isFalse()
-        expectThat(PushEventTracker.isPushTokenEvent(UserEvents.track("\$push_click"))).isTrue()
-        expectThat(PushEventTracker.isPushTokenEvent(UserEvents.track("custom"))).isFalse()
+        expectThat(PushEventTracker.isPushClickEvent(UserEvents.track("\$push_token"))).isFalse()
+        expectThat(PushEventTracker.isPushClickEvent(UserEvents.track("\$push_click"))).isTrue()
+        expectThat(PushEventTracker.isPushClickEvent(UserEvents.track("custom"))).isFalse()
     }
 
     @Test
     fun `isPushEvent`() {
-        expectThat(PushEventTracker.isPushTokenEvent(UserEvents.track("\$push_token"))).isTrue()
-        expectThat(PushEventTracker.isPushTokenEvent(UserEvents.track("\$push_click"))).isTrue()
-        expectThat(PushEventTracker.isPushTokenEvent(UserEvents.track("custom"))).isFalse()
+        expectThat(PushEventTracker.isPushEvent(UserEvents.track("\$push_token"))).isTrue()
+        expectThat(PushEventTracker.isPushEvent(UserEvents.track("\$push_click"))).isTrue()
+        expectThat(PushEventTracker.isPushEvent(UserEvents.track("custom"))).isFalse()
     }
 }
