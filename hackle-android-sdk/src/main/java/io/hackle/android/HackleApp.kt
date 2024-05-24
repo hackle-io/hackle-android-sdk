@@ -148,7 +148,7 @@ class HackleApp internal constructor(
 
     private fun sync(type: SynchronizerType, callback: Runnable?) {
         try {
-            backgroundExecutor.submit {
+            backgroundExecutor.execute {
                 try {
                     synchronizer.sync(type)
                 } catch (e: Exception) {

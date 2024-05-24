@@ -15,12 +15,9 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.mock.MockDevice
+import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.ParameterConfig
-import io.hackle.sdk.common.PropertyOperations
-import io.hackle.sdk.common.User
-import io.hackle.sdk.common.Variation
+import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
@@ -29,13 +26,8 @@ import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -92,7 +84,7 @@ class HackleAppTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
 
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
-        every { backgroundExecutor.submit(any()) } answers {
+        every { backgroundExecutor.execute(any()) } answers {
             firstArg<Runnable>().run()
             CompletableFuture.completedFuture(null)
         }
@@ -636,9 +628,9 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setWebViewBridge`() {
+    fun `setWebViewBridge success`() {
         mockkObject(AndroidBuild)
-        every { AndroidBuild.sdkVersion() } returns 28
+        every { AndroidBuild.sdkVersion() } returns 17
 
         val webView = mockk<WebView>(relaxed = true)
         sut.setWebViewBridge(webView)
@@ -648,5 +640,79 @@ class HackleAppTest {
         }
 
         unmockkObject(AndroidBuild)
+    }
+
+    @Test
+    fun `setWebViewBridge fail`() {
+        mockkObject(AndroidBuild)
+        every { AndroidBuild.sdkVersion() } returns 16
+
+        val webView = mockk<WebView>(relaxed = true)
+
+        assertThrows<IllegalStateException> {
+            sut.setWebViewBridge(webView)
+        }
+
+        unmockkObject(AndroidBuild)
+    }
+
+    @Test
+    fun `fetch - execute with throttle`() {
+        // given
+        every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
+
+        // when
+
+        sut.fetch()
+
+        // then
+        verify(exactly = 1) {
+            fetchThrottler.execute(any(), any())
+        }
+    }
+
+    @Test
+    fun `fetch - execute in background`() {
+        // given
+        every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
+
+        // when
+
+        sut.fetch()
+
+        // then
+        verify(exactly = 1) {
+            backgroundExecutor.execute(any())
+        }
+    }
+
+    @Test
+    fun `fetch - sync`() {
+        // given
+        every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
+
+        // when
+
+        sut.fetch()
+
+        // then
+        verify(exactly = 1) {
+            synchronizer.sync()
+        }
+    }
+
+    @Test
+    fun `fetch - callback`() {
+        // given
+        every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
+        val callback = mockk<Runnable>(relaxed = true)
+
+        // when
+        sut.fetch(callback)
+
+        // then
+        verify(exactly = 1) {
+            callback.run()
+        }
     }
 }
