@@ -4,6 +4,10 @@ import io.hackle.android.internal.model.Device
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifiers
+import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
+
+internal val HackleUser.hackleDeviceId: String? get() = identifiers[IdentifierType.HACKLE_DEVICE_ID.key]
 
 internal fun User.identifierEquals(other: User?): Boolean {
     if (other == null) {
