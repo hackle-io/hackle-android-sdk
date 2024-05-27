@@ -3,7 +3,6 @@ package io.hackle.android.internal.event
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
-import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
@@ -23,11 +22,11 @@ import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.user.IdentifierType
 import java.io.Closeable
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class DefaultEventProcessor(
-    private val eventDedupDeterminer: UserEventDedupDeterminer,
     private val eventPublisher: UserEventPublisher,
     private val eventExecutor: Executor,
     private val eventRepository: EventRepository,
@@ -44,6 +43,13 @@ internal class DefaultEventProcessor(
 ) : EventProcessor, AppStateChangeListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
+
+    private val filters = CopyOnWriteArrayList<UserEventFilter>()
+
+    fun addFilter(filter: UserEventFilter) {
+        filters.add(filter)
+        log.debug { "UserEventFilter added [${filter.javaClass.simpleName}]" }
+    }
 
     override fun process(event: UserEvent) {
         try {
@@ -127,7 +133,7 @@ internal class DefaultEventProcessor(
         override fun run() {
             try {
                 update(event)
-                if (eventDedupDeterminer.isDedupTarget(event)) {
+                if (filters.any { it.check(event).isBlock }) {
                     return
                 }
 
