@@ -6,9 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
+import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
@@ -58,7 +60,8 @@ class HackleApp internal constructor(
     private val fetchThrottler: Throttler,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
-    internal val sdk: Sdk
+    internal val sdk: Sdk,
+    internal val mode: HackleAppMode,
 ) : Closeable {
 
     /**
@@ -145,7 +148,7 @@ class HackleApp internal constructor(
 
     private fun sync(type: SynchronizerType, callback: Runnable?) {
         try {
-            backgroundExecutor.submit {
+            backgroundExecutor.execute {
                 try {
                     synchronizer.sync(type)
                 } catch (e: Exception) {
@@ -305,13 +308,14 @@ class HackleApp internal constructor(
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setWebViewBridge(webView: WebView) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
                         "JavaScript can use reflection to manipulate application"
             )
         }
-        val jsInterface = HackleJavascriptInterface(this)
+        val bridge = HackleBridge(this)
+        val jsInterface = HackleJavascriptInterface(bridge)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 

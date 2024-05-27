@@ -14,6 +14,8 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
+import java.lang.IllegalArgumentException
 
 class PushTokenManagerTest {
 
@@ -85,6 +87,18 @@ class PushTokenManagerTest {
     }
 
     @Test
+    fun `failed to get push token`() {
+        // given
+        every { dataSource.getPushToken() } throws IllegalArgumentException("fail")
+
+        // when
+        manager.initialize()
+
+        // then
+        expectThat(manager.registeredPushToken).isNull()
+    }
+
+    @Test
     fun `resend push token when user updated called`() {
         val pushToken = "foobar1234"
         preferences.putString("fcm_token", pushToken)
@@ -94,6 +108,16 @@ class PushTokenManagerTest {
 
         verify(exactly = 1) {
             eventTracker.trackToken(pushToken, any(), any())
+        }
+    }
+
+    @Test
+    fun `when push token is null then do not track`() {
+        val timestamp = System.currentTimeMillis()
+        manager.onUserUpdated(User.of("foo"), User.of("bar"), timestamp)
+
+        verify(exactly = 0) {
+            eventTracker.trackToken(any(), any(), any())
         }
     }
 }

@@ -3,6 +3,8 @@ package io.hackle.android
 import android.util.Log
 import io.mockk.every
 import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -13,6 +15,11 @@ class HackleConfigTest {
     fun before() {
         mockkStatic(Log::class)
         every { Log.isLoggable(any(), any()) } returns false
+    }
+
+    @After
+    fun after() {
+        unmockkStatic(Log::class)
     }
 
     @Test
@@ -62,6 +69,65 @@ class HackleConfigTest {
             configTest(i, HackleConfig::eventFlushThreshold) {
                 eventFlushThreshold(i)
             }
+        }
+    }
+
+    @Test
+    fun `uri`() {
+        configTests(
+            HackleConfig::sdkUri to "https://sdk.hackle.io",
+            HackleConfig::eventUri to "https://event.hackle.io",
+            HackleConfig::monitoringUri to "https://monitoring.hackle.io",
+        )
+        configTests(
+            HackleConfig::sdkUri to "https://test-sdk.hackle.io",
+            HackleConfig::eventUri to "https://test-event.hackle.io",
+            HackleConfig::monitoringUri to "https://test-monitoring.hackle.io",
+        ) {
+            sdkUri("https://test-sdk.hackle.io")
+            eventUri("https://test-event.hackle.io")
+            monitoringUri("https://test-monitoring.hackle.io")
+        }
+    }
+
+    @Test
+    fun `sessionTimeoutMillis`() {
+        configTests(HackleConfig::sessionTimeoutMillis to 1000 * 60 * 30)
+        configTests(HackleConfig::sessionTimeoutMillis to 42) {
+            sessionTimeoutMillis(42)
+        }
+    }
+
+    @Test
+    fun `pollingIntervalMillis`() {
+        configTests(HackleConfig::pollingIntervalMillis to -1)
+        configTests(HackleConfig::pollingIntervalMillis to 60000) {
+            pollingIntervalMillis(60000)
+        }
+        configTests(HackleConfig::pollingIntervalMillis to 60000) {
+            pollingIntervalMillis(59999)
+        }
+    }
+
+    @Test
+    fun `mode`() {
+        configTests(HackleConfig::mode to HackleAppMode.NATIVE)
+        configTests(
+            HackleConfig::mode to HackleAppMode.WEB_VIEW_WRAPPER,
+            HackleConfig::sessionTracking to false
+        ) {
+            mode(HackleAppMode.WEB_VIEW_WRAPPER)
+        }
+    }
+
+    private fun <T> configTests(
+        vararg tests: Pair<(HackleConfig) -> T, T>,
+        builder: HackleConfig.Builder.() -> Unit = {}
+    ) {
+
+        val config = HackleConfig.builder().apply(builder).build()
+        for ((actual, expected) in tests) {
+            assertEquals(expected, actual(config))
         }
     }
 
