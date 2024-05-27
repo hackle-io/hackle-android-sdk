@@ -1,30 +1,12 @@
 package io.hackle.android.internal.bridge
 
 import io.hackle.android.HackleApp
-import io.hackle.android.internal.bridge.model.BridgeInvocation
+import io.hackle.android.internal.bridge.model.*
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
-import io.hackle.android.internal.bridge.model.BridgeResponse
-import io.hackle.android.internal.bridge.model.DecisionDto
-import io.hackle.android.internal.bridge.model.EventDto
-import io.hackle.android.internal.bridge.model.FeatureFlagDecisionDto
-import io.hackle.android.internal.bridge.model.PropertyOperationsDto
-import io.hackle.android.internal.bridge.model.UserDto
-import io.hackle.android.internal.bridge.model.from
-import io.hackle.android.internal.bridge.model.toDto
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.HackleRemoteConfig
-import io.hackle.sdk.common.PropertyOperations
-import io.hackle.sdk.common.User
-import io.hackle.sdk.common.Variation
+import io.hackle.sdk.common.*
 
 @Suppress("DEPRECATION")
-internal class HackleBridge(
-    private val app: HackleApp
-) {
-
-    fun getAppSdkKey(): String {
-        return app.sdk.key
-    }
+internal class HackleBridge(val app: HackleApp) {
 
     fun invoke(string: String): String {
         val response: BridgeResponse = try {
@@ -41,58 +23,72 @@ internal class HackleBridge(
             GET_SESSION_ID -> {
                 BridgeResponse.success(app.sessionId)
             }
+
             GET_USER -> {
                 val data = app.user.toDto()
                 BridgeResponse.success(data)
             }
+
             SET_USER -> {
                 setUser(parameters)
                 BridgeResponse.success()
             }
+
             SET_USER_ID -> {
                 setUserId(parameters)
                 BridgeResponse.success()
             }
+
             SET_DEVICE_ID -> {
                 setDeviceId(parameters)
                 BridgeResponse.success()
             }
+
             SET_USER_PROPERTY -> {
                 setUserProperty(parameters)
                 BridgeResponse.success()
             }
+
             UPDATE_USER_PROPERTY -> {
                 updateUserProperties(parameters)
                 BridgeResponse.success()
             }
+
             RESET_USER -> {
                 app.resetUser()
                 BridgeResponse.success()
             }
+
             VARIATION -> {
                 val data = variation(parameters)
                 BridgeResponse.success(data)
             }
+
             VARIATION_DETAIL -> {
                 val data = variationDetail(parameters)
                 BridgeResponse.success(data)
             }
+
             IS_FEATURE_ON -> {
                 val data = isFeatureOn(parameters)
                 BridgeResponse.success(data)
             }
+
             FEATURE_FLAG_DETAIL -> {
                 val data = featureFlagDetail(parameters)
                 BridgeResponse.success(data)
             }
+
             TRACK -> {
                 track(parameters)
                 BridgeResponse.success()
             }
+
             REMOTE_CONFIG -> {
                 val data = remoteConfig(parameters)
                 BridgeResponse.success(data)
             }
+
             SHOW_USER_EXPLORER -> {
                 app.showUserExplorer()
                 BridgeResponse.success()
@@ -330,14 +326,17 @@ internal class HackleBridge(
                 val defaultValue = checkNotNull(parameters["defaultValue"] as? String)
                 return config.getString(key, defaultValue)
             }
+
             "number" -> {
                 val defaultValue = checkNotNull(parameters["defaultValue"] as? Number)
                 return config.getDouble(key, defaultValue.toDouble()).toString()
             }
+
             "boolean" -> {
                 val defaultValue = checkNotNull(parameters["defaultValue"] as? Boolean)
                 return config.getBoolean(key, defaultValue).toString()
             }
+
             else -> {
                 throw IllegalArgumentException("Valid parameter must be provided.")
             }

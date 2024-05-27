@@ -2,7 +2,7 @@ package io.hackle.android
 
 import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
-import java.util.*
+import java.util.Collections
 
 class HackleConfig private constructor(builder: Builder) {
 
@@ -12,6 +12,9 @@ class HackleConfig private constructor(builder: Builder) {
     val eventUri: String = builder.eventUri
     val monitoringUri: String = builder.monitoringUri
 
+    val mode: HackleAppMode = builder.mode
+
+    val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
     val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
 
     val pollingIntervalMillis: Int = builder.pollingIntervalMillis
@@ -32,6 +35,9 @@ class HackleConfig private constructor(builder: Builder) {
         internal var eventUri: String = DEFAULT_EVENT_URI
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
 
+        internal var mode: HackleAppMode = HackleAppMode.NATIVE
+
+        internal var sessionTracking: Boolean = true
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
 
         internal var pollingIntervalMillis: Int = DEFAULT_POLLING_INTERVAL_MILLIS
@@ -58,6 +64,10 @@ class HackleConfig private constructor(builder: Builder) {
 
         fun monitoringUri(monitoringUri: String) = apply {
             this.monitoringUri = monitoringUri
+        }
+
+        fun mode(mode: HackleAppMode) = apply {
+            this.mode = mode
         }
 
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
@@ -114,7 +124,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         private val log = AndroidLogger
 
-        internal const val DEFAULT_SDK_URI = "https://client-sdk.hackle.io"
+        internal const val DEFAULT_SDK_URI = "https://sdk.hackle.io"
         internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
         internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
 
