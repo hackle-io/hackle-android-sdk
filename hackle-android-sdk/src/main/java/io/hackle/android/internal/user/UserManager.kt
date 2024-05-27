@@ -1,10 +1,11 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.sync.Synchronizer
@@ -16,25 +17,18 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import java.util.concurrent.CopyOnWriteArrayList
 
 
 internal class UserManager(
     private val device: Device,
     private val repository: KeyValueRepository,
     private val cohortFetcher: UserCohortFetcher,
-) : Synchronizer, AppStateChangeListener {
+) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
 
-    private val userListeners = CopyOnWriteArrayList<UserListener>()
     private val defaultUser = User.builder().deviceId(device.id).build()
     private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty())
     private val currentContext: UserContext get() = synchronized(LOCK) { context }
     val currentUser: User get() = currentContext.user
-
-    fun addListener(listener: UserListener) {
-        userListeners.add(listener)
-        log.debug { "UserListener added [${listener::class.java.simpleName}]" }
-    }
 
     fun initialize(user: User?) {
         synchronized(LOCK) {
@@ -147,7 +141,7 @@ internal class UserManager(
     }
 
     private fun changeUser(oldUser: User, newUser: User, timestamp: Long) {
-        for (listener in userListeners) {
+        for (listener in listeners) {
             try {
                 listener.onUserUpdated(oldUser, newUser, timestamp)
             } catch (e: Exception) {
@@ -178,7 +172,7 @@ internal class UserManager(
         }
     }
 
-    override fun onChanged(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long) {
         return when (state) {
             FOREGROUND -> Unit
             BACKGROUND -> saveUser(currentUser)

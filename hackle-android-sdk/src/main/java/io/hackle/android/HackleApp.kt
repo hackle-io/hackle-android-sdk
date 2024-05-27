@@ -9,6 +9,7 @@ import android.webkit.WebView
 import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Device
@@ -17,6 +18,8 @@ import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.screen.Screen
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.sync.SynchronizerType
@@ -54,6 +57,7 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
     private val sessionManager: SessionManager,
+    private val screenManager: ScreenManager,
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
@@ -335,6 +339,16 @@ class HackleApp internal constructor(
         )
     }
 
+    @JvmOverloads
+    fun screen(screenName: String, screenClass: String? = null) {
+        try {
+            val screen = Screen(screenName, screenManager.resolveScreenClass(screenClass))
+            screenManager.setCurrentScreen(screen, clock.currentMillis())
+        } catch (e: Throwable) {
+            log.error { "Unexpected exception while track screen[$screenName]: $e" }
+        }
+    }
+
     override fun close() {
         core.tryClose()
     }
@@ -469,7 +483,7 @@ class HackleApp internal constructor(
 
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
-            LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
+            LifecycleManager.instance.registerTo(context)
         }
 
         @JvmStatic
@@ -548,7 +562,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
-                        .also { LifecycleManager.getInstance().repeatCurrentState() }
+                        .also { AppStateManager.instance.publishState() }
                         .also { INSTANCE = it }
             }
         }
