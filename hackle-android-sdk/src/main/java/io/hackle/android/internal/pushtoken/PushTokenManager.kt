@@ -39,14 +39,13 @@ internal class PushTokenManager(
     private fun updatePushToken() {
         try {
             val timestamp = System.currentTimeMillis()
-            val currentUser = userManager.currentUser
             val pushToken = dataSource.getPushToken()
             if (pushToken.isNullOrEmpty() || _registeredPushToken == pushToken) {
                 return
             }
 
             _registeredPushToken = pushToken
-            trackPushToken(currentUser, timestamp)
+            trackPushToken(userManager.currentUser, timestamp)
         } catch (e: Exception) {
             log.debug { "Failed to register push token: $e" }
         }
