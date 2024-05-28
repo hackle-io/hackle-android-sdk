@@ -143,6 +143,7 @@ internal object HackleApps {
         // ScreenManager
 
         val screenManager = ScreenManager(
+            userManager = userManager,
             activityProvider = lifecycleManager
         )
 

@@ -2,10 +2,14 @@ package io.hackle.android.internal.screen
 
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 
@@ -26,26 +30,13 @@ class ScreenEventTrackerTest {
     }
 
     @Test
-    fun `onScreenStarted - when currentScreen and previousScreen are same then do not track`() {
-        // given
-        val screen = Screen("test_screen", "test_screen")
-
-        // when
-        sut.onScreenStarted(screen, screen, 42)
-
-        // then
-        verify { userManager wasNot Called }
-        verify { core wasNot Called }
-    }
-
-    @Test
     fun `onScreenStarted - when previousScreen is null then track screen event`() {
         // given
         every { userManager.resolve(any()) } returns mockk()
         val screen = Screen("test_screen_name", "test_screen_class")
 
         // when
-        sut.onScreenStarted(null, screen, 42)
+        sut.onScreenStarted(null, screen, User.of("test"), 42)
 
         // then
         val event = Event.builder("\$screen_view")
@@ -65,7 +56,7 @@ class ScreenEventTrackerTest {
         val prevScreen = Screen("prev_screen_name", "prev_screen_class")
 
         // prevScreen
-        sut.onScreenStarted(prevScreen, screen, 42)
+        sut.onScreenStarted(prevScreen, screen, User.of("test"), 42)
 
         // then
         val event = Event.builder("\$screen_view")
@@ -81,6 +72,6 @@ class ScreenEventTrackerTest {
 
     @Test
     fun `onScreenEnded`() {
-        sut.onScreenEnded(mockk(), 42)
+        sut.onScreenEnded(mockk(), mockk(), 42)
     }
 }

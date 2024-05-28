@@ -33,7 +33,7 @@ class EngagementManagerTest {
     @Test
     fun `onScreenStarted - start engagement`() {
         // when
-        sut.onScreenStarted(null, mockk(), 100)
+        sut.onScreenStarted(null, mockk(), mockk(), 100)
 
         // then
         expectThat(sut.lastEngagementTime).isEqualTo(100L)
@@ -45,7 +45,7 @@ class EngagementManagerTest {
         val screen = Screen("name", "class")
 
         // when
-        sut.onScreenEnded(screen, 42)
+        sut.onScreenEnded(screen, mockk(), 42)
 
         // then
         verify { listener wasNot Called }
@@ -55,10 +55,10 @@ class EngagementManagerTest {
     fun `onScreenEnded - when engagement time is less than min time then do nothing`() {
         // given
         val screen = Screen("name", "class")
-        sut.onScreenStarted(null, screen, 42)
+        sut.onScreenStarted(null, screen, mockk(), 42)
 
         // when
-        sut.onScreenEnded(screen, 141)
+        sut.onScreenEnded(screen, mockk(), 141)
 
         // then
         verify { listener wasNot Called }
@@ -68,10 +68,10 @@ class EngagementManagerTest {
     fun `onScreenEnded - track engagement event`() {
         // given
         val screen = Screen("name", "class")
-        sut.onScreenStarted(null, screen, 42)
+        sut.onScreenStarted(null, screen, mockk(), 42)
 
         // when
-        sut.onScreenEnded(screen, 142)
+        sut.onScreenEnded(screen, mockk(), 142)
 
         // then
         verify(exactly = 1) {
@@ -81,6 +81,7 @@ class EngagementManagerTest {
                         get { durationMillis } isEqualTo 100
                     }
                 },
+                any(),
                 any()
             )
         }
@@ -104,7 +105,7 @@ class EngagementManagerTest {
         val s = Screen("name", "class")
         every { screenManager.currentScreen } returns s
 
-        sut.onScreenStarted(null, s, 42)
+        sut.onScreenStarted(null, s, mockk(), 42)
         sut.onLifecycle(Lifecycle.PAUSED, mockk(), 142)
 
         verify(exactly = 1) {
@@ -115,6 +116,7 @@ class EngagementManagerTest {
                         get { durationMillis } isEqualTo 100
                     }
                 },
+                any(),
                 142
             )
         }

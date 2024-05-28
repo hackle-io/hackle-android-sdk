@@ -21,10 +21,10 @@ class EngagementEventTrackerTest {
 
         every { userManager.toHackleUser(any()) } returns HackleUser.builder().build()
 
-        val engagement = Engagement(User.builder().build(), Screen("name", "class"), 42)
+        val engagement = Engagement(Screen("name", "class"), 42)
 
         // when
-        sut.onEngagement(engagement, 43L)
+        sut.onEngagement(engagement, User.builder().build(), 43L)
 
         // then
         val event = Event.builder("\$user_engagement")

@@ -7,11 +7,14 @@ import io.hackle.android.internal.lifecycle.Lifecycle
 import io.hackle.android.internal.lifecycle.Lifecycle.*
 import io.hackle.android.internal.lifecycle.LifecycleListener
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicReference
 
 
 internal class ScreenManager(
+    private val userManager: UserManager,
     private val activityProvider: ActivityProvider,
 ) : ApplicationListenerRegistry<ScreenListener>(), LifecycleListener {
 
@@ -35,28 +38,29 @@ internal class ScreenManager(
         if (screen == previousScreen) {
             return
         }
+        val user = userManager.currentUser
         if (previousScreen != null) {
-            publishEnd(previousScreen, timestamp)
+            publishEnd(previousScreen, user, timestamp)
         }
-        publishStart(previousScreen, screen, timestamp)
+        publishStart(previousScreen, screen, user, timestamp)
     }
 
-    private fun publishStart(previousScreen: Screen?, screen: Screen, timestamp: Long) {
+    private fun publishStart(previousScreen: Screen?, screen: Screen, user: User, timestamp: Long) {
         log.debug { "Publish ScreenStartEvent(previousScreen=${previousScreen}, screen=$screen)" }
         for (listener in listeners) {
             try {
-                listener.onScreenStarted(previousScreen, screen, timestamp)
+                listener.onScreenStarted(previousScreen, screen, user, timestamp)
             } catch (e: Throwable) {
                 log.error { "Failed to handle screen start [${listener.javaClass.simpleName}]: $e" }
             }
         }
     }
 
-    private fun publishEnd(screen: Screen, timestamp: Long) {
+    private fun publishEnd(screen: Screen, user: User, timestamp: Long) {
         log.debug { "Publish ScreenEndEvent(screen=$screen)" }
         for (listener in listeners) {
             try {
-                listener.onScreenEnded(screen, timestamp)
+                listener.onScreenEnded(screen, user, timestamp)
             } catch (e: Throwable) {
                 log.error { "Failed to handle screen end [${listener.javaClass.simpleName}]: $e" }
             }

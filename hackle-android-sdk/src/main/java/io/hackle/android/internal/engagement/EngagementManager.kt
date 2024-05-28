@@ -9,6 +9,7 @@ import io.hackle.android.internal.screen.Screen
 import io.hackle.android.internal.screen.ScreenListener
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicReference
 
@@ -33,26 +34,26 @@ internal class EngagementManager(
             return
         }
 
-        val engagement = Engagement(userManager.currentUser, screen, engagementDurationMillis)
-        publish(engagement, timestamp)
+        val engagement = Engagement(screen, engagementDurationMillis)
+        publish(engagement, userManager.currentUser, timestamp)
     }
 
-    private fun publish(engagement: Engagement, timestamp: Long) {
+    private fun publish(engagement: Engagement, user: User, timestamp: Long) {
         log.debug { "Publish EngagementEvent(engagement=${engagement})" }
         for (listener in listeners) {
             try {
-                listener.onEngagement(engagement, timestamp)
+                listener.onEngagement(engagement, user, timestamp)
             } catch (e: Throwable) {
                 log.error { "Failed to handle user engagement: $e" }
             }
         }
     }
 
-    override fun onScreenStarted(previousScreen: Screen?, currentScreen: Screen, timestamp: Long) {
+    override fun onScreenStarted(previousScreen: Screen?, currentScreen: Screen, user: User, timestamp: Long) {
         startEngagement(timestamp)
     }
 
-    override fun onScreenEnded(screen: Screen, timestamp: Long) {
+    override fun onScreenEnded(screen: Screen, user: User, timestamp: Long) {
         endEngagement(screen, timestamp)
     }
 

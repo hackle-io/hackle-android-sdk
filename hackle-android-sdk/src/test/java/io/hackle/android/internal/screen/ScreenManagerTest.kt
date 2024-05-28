@@ -3,6 +3,9 @@ package io.hackle.android.internal.screen
 import android.app.Activity
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.Lifecycle
+import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.User
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
@@ -16,16 +19,21 @@ class ScreenManagerTest {
 
     private var activity: Activity? = null
 
+    private lateinit var userManager: UserManager
     private lateinit var listener: ScreenListener
     private lateinit var sut: ScreenManager
 
     @Before
     fun before() {
+        userManager = mockk()
+        every { userManager.currentUser } returns User.of("test")
         listener = mockk(relaxed = true)
-        sut = ScreenManager(object : ActivityProvider {
-            override val currentActivity: Activity?
-                get() = activity
-        })
+        sut = ScreenManager(
+            userManager,
+            object : ActivityProvider {
+                override val currentActivity: Activity?
+                    get() = activity
+            })
         sut.addListener(listener)
     }
 
@@ -36,10 +44,10 @@ class ScreenManagerTest {
 
         expectThat(sut.currentScreen).isEqualTo(screen)
         verify(exactly = 1) {
-            listener.onScreenStarted(null, screen, 42)
+            listener.onScreenStarted(null, screen, any(), 42)
         }
         verify(exactly = 0) {
-            listener.onScreenEnded(any(), any())
+            listener.onScreenEnded(any(), any(), any())
         }
     }
 
@@ -57,10 +65,10 @@ class ScreenManagerTest {
         // then
         expectThat(sut.currentScreen).isSameInstanceAs(newScreen)
         verify(exactly = 1) {
-            listener.onScreenStarted(null, currentScreen, 42)
+            listener.onScreenStarted(null, currentScreen, any(), 42)
         }
         verify(exactly = 0) {
-            listener.onScreenEnded(any(), any())
+            listener.onScreenEnded(any(), any(), any())
         }
     }
 
@@ -77,10 +85,10 @@ class ScreenManagerTest {
         // then
         expectThat(sut.currentScreen).isSameInstanceAs(newScreen)
         verify(exactly = 2) {
-            listener.onScreenStarted(any(), any(), any())
+            listener.onScreenStarted(any(), any(), any(), any())
         }
         verify(exactly = 1) {
-            listener.onScreenEnded(any(), any())
+            listener.onScreenEnded(any(), any(), any())
         }
     }
 
