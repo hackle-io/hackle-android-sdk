@@ -32,7 +32,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when previousScreen is null then track screen event`() {
         // given
-        every { userManager.resolve(any()) } returns mockk()
+        every { userManager.toHackleUser(any()) } returns mockk()
         val screen = Screen("test_screen_name", "test_screen_class")
 
         // when
@@ -51,7 +51,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when currentScreen and previousScreen are different then track screen event`() {
         // given
-        every { userManager.resolve(any()) } returns mockk()
+        every { userManager.toHackleUser(any()) } returns mockk()
         val screen = Screen("test_screen_name", "test_screen_class")
         val prevScreen = Screen("prev_screen_name", "prev_screen_class")
 
