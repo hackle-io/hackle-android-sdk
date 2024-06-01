@@ -39,7 +39,7 @@ internal class AppStateManager(
     }
 
     private fun publish(state: AppState, timestamp: Long) {
-        log.debug { "Publish AppStateEvent(state=$state)" }
+        log.debug { "onState(state=$state)" }
         for (listener in listeners) {
             try {
                 listener.onState(state, timestamp)

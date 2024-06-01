@@ -11,10 +11,10 @@ internal class ScreenEventTracker(
 ) : ScreenListener {
     override fun onScreenStarted(previousScreen: Screen?, currentScreen: Screen, user: User, timestamp: Long) {
         val event = Event.builder(SCREEN_VIEW_EVENT_KEY)
-            .property("\$screen_name", currentScreen.name)
-            .property("\$screen_class", currentScreen.type)
-            .property("\$previous_screen_name", previousScreen?.name)
-            .property("\$previous_screen_class", previousScreen?.type)
+            .property(SCREEN_NAME_PROPERTY_KEY, currentScreen.name)
+            .property(SCREEN_CLASS_PROPERTY_KEY, currentScreen.className)
+            .property(PREVIOUS_SCREEN_NAME_PROPERTY_KEY, previousScreen?.name)
+            .property(PREVIOUS_SCREEN_CLASS_PROPERTY_KEY, previousScreen?.className)
             .build()
         val hackleUser = userManager.toHackleUser(user)
         core.track(event, hackleUser, timestamp)
@@ -25,6 +25,10 @@ internal class ScreenEventTracker(
     }
 
     companion object {
-        private const val SCREEN_VIEW_EVENT_KEY = "\$screen_view"
+        const val SCREEN_VIEW_EVENT_KEY = "\$page_view"
+        const val SCREEN_NAME_PROPERTY_KEY = "\$page_name"
+        const val SCREEN_CLASS_PROPERTY_KEY = "\$page_class"
+        const val PREVIOUS_SCREEN_NAME_PROPERTY_KEY = "\$previous_page_name"
+        const val PREVIOUS_SCREEN_CLASS_PROPERTY_KEY = "\$previous_page_class"
     }
 }

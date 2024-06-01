@@ -46,7 +46,7 @@ internal class ScreenManager(
     }
 
     private fun publishStart(previousScreen: Screen?, screen: Screen, user: User, timestamp: Long) {
-        log.debug { "Publish ScreenStartEvent(previousScreen=${previousScreen}, screen=$screen)" }
+        log.debug { "onScreenStarted(previousScreen=${previousScreen}, screen=$screen)" }
         for (listener in listeners) {
             try {
                 listener.onScreenStarted(previousScreen, screen, user, timestamp)
@@ -57,7 +57,7 @@ internal class ScreenManager(
     }
 
     private fun publishEnd(screen: Screen, user: User, timestamp: Long) {
-        log.debug { "Publish ScreenEndEvent(screen=$screen)" }
+        log.debug { "onScreenEnded(screen=$screen)" }
         for (listener in listeners) {
             try {
                 listener.onScreenEnded(screen, user, timestamp)

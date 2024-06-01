@@ -78,7 +78,7 @@ internal class LifecycleManager(
     }
 
     private fun publish(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        log.debug { "Publish LifecycleEvent(lifecycle=$lifecycle, activity=${activity.javaClass.simpleName})" }
+        log.debug { "onLifecycle(lifecycle=$lifecycle, activity=${activity.javaClass.simpleName})" }
         for (listener in listeners) {
             try {
                 listener.onLifecycle(lifecycle, activity, timestamp)

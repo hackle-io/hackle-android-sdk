@@ -204,7 +204,7 @@ internal class DefaultEventProcessor(
 
         val newUser = event.user.toBuilder()
             .hackleProperty("screenName", screen.name)
-            .hackleProperty("screenClass", screen.type)
+            .hackleProperty("screenClass", screen.className)
             .build()
 
         return event.with(newUser)

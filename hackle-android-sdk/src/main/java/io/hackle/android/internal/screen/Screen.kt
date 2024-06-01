@@ -4,7 +4,7 @@ import android.app.Activity
 
 internal data class Screen(
     val name: String,
-    val type: String, // ScreenClass
+    val className: String, // ScreenClass
 ) {
 
     companion object {

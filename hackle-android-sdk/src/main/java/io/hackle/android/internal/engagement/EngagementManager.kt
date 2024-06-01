@@ -39,7 +39,7 @@ internal class EngagementManager(
     }
 
     private fun publish(engagement: Engagement, user: User, timestamp: Long) {
-        log.debug { "Publish EngagementEvent(engagement=${engagement})" }
+        log.debug { "onEngagement(engagement=${engagement})" }
         for (listener in listeners) {
             try {
                 listener.onEngagement(engagement, user, timestamp)
