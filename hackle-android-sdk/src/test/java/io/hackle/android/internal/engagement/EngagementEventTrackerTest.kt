@@ -27,10 +27,10 @@ class EngagementEventTrackerTest {
         sut.onEngagement(engagement, User.builder().build(), 43L)
 
         // then
-        val event = Event.builder("\$user_engagement")
-            .property("\$screen_name", "name")
-            .property("\$screen_class", "class")
+        val event = Event.builder("\$engagement")
             .property("\$engagement_time_ms", 42L)
+            .property("\$page_name", "name")
+            .property("\$page_class", "class")
             .build()
         verify(exactly = 1) {
             core.track(event, any(), 43L)

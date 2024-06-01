@@ -39,9 +39,9 @@ class ScreenEventTrackerTest {
         sut.onScreenStarted(null, screen, User.of("test"), 42)
 
         // then
-        val event = Event.builder("\$screen_view")
-            .property("\$screen_name", "test_screen_name")
-            .property("\$screen_class", "test_screen_class")
+        val event = Event.builder("\$page_view")
+            .property("\$page_name", "test_screen_name")
+            .property("\$page_class", "test_screen_class")
             .build()
         verify(exactly = 1) {
             core.track(event, any(), 42)
@@ -59,11 +59,11 @@ class ScreenEventTrackerTest {
         sut.onScreenStarted(prevScreen, screen, User.of("test"), 42)
 
         // then
-        val event = Event.builder("\$screen_view")
-            .property("\$screen_name", "test_screen_name")
-            .property("\$screen_class", "test_screen_class")
-            .property("\$previous_screen_name", "prev_screen_name")
-            .property("\$previous_screen_class", "prev_screen_class")
+        val event = Event.builder("\$page_view")
+            .property("\$page_name", "test_screen_name")
+            .property("\$page_class", "test_screen_class")
+            .property("\$previous_page_name", "prev_screen_name")
+            .property("\$previous_page_class", "prev_screen_class")
             .build()
         verify(exactly = 1) {
             core.track(event, any(), 42)
