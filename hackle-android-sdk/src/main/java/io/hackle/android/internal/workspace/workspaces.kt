@@ -2,25 +2,9 @@ package io.hackle.android.internal.workspace
 
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.utils.enumValueOfOrNull
-import io.hackle.sdk.core.model.Action
-import io.hackle.sdk.core.model.Bucket
-import io.hackle.sdk.core.model.Container
-import io.hackle.sdk.core.model.ContainerGroup
-import io.hackle.sdk.core.model.EventType
-import io.hackle.sdk.core.model.Experiment
-import io.hackle.sdk.core.model.InAppMessage
-import io.hackle.sdk.core.model.ParameterConfiguration
-import io.hackle.sdk.core.model.RemoteConfigParameter
-import io.hackle.sdk.core.model.Segment
-import io.hackle.sdk.core.model.Slot
+import io.hackle.sdk.core.model.*
 import io.hackle.sdk.core.model.Target
-import io.hackle.sdk.core.model.TargetRule
-import io.hackle.sdk.core.model.TargetingType
-import io.hackle.sdk.core.model.TargetingType.IDENTIFIER
-import io.hackle.sdk.core.model.TargetingType.PROPERTY
-import io.hackle.sdk.core.model.TargetingType.SEGMENT
-import io.hackle.sdk.core.model.ValueType
-import io.hackle.sdk.core.model.Variation
+import io.hackle.sdk.core.model.TargetingType.*
 import java.util.concurrent.TimeUnit
 
 private val log = Logger<WorkspaceImpl>()
