@@ -73,14 +73,14 @@ class AppStateManagerTest {
     }
 
     @Test
-    fun `publishState - when currentState is null then do nothing`() {
+    fun `publishStateIfNeeded - when currentState is null then do nothing`() {
         // given
         val sut = AppStateManager(FixedClock(42))
         val listener = mockk<AppStateListener>()
         sut.addListener(listener)
 
         // when
-        sut.publishState()
+        sut.publishStateIfNeeded()
 
         // then
         verify {
@@ -89,7 +89,7 @@ class AppStateManagerTest {
     }
 
     @Test
-    fun `publishState - when currentState is not null then publish state`() {
+    fun `publishStateIfNeeded - when currentState is not null then publish state`() {
         // given
         val sut = AppStateManager(FixedClock(42))
         sut.onLifecycle(Lifecycle.RESUMED, mockk(), 100)
@@ -97,7 +97,7 @@ class AppStateManagerTest {
         // when
         val listener = mockk<AppStateListener>()
         sut.addListener(listener)
-        sut.publishState()
+        sut.publishStateIfNeeded()
 
         // then
         verify(exactly = 1) {

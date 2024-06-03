@@ -22,7 +22,7 @@ internal class AppStateManager(
         this.executor = executor
     }
 
-    fun publishState() {
+    fun publishStateIfNeeded() {
         val state = _currentState ?: return
         val timestamp = clock.currentMillis()
         execute {

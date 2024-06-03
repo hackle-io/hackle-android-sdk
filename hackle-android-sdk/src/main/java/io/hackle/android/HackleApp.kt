@@ -549,7 +549,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
-                        .also { AppStateManager.instance.publishState() }
+                        .also { AppStateManager.instance.publishStateIfNeeded() }
                         .also { INSTANCE = it }
             }
         }
