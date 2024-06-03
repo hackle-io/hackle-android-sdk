@@ -1,7 +1,6 @@
+package io.hackle.android
+
 import android.webkit.WebView
-import io.hackle.android.HackleApp
-import io.hackle.android.HackleAppMode
-import io.hackle.android.HackleConfig
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
@@ -9,7 +8,6 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
-import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -41,47 +39,6 @@ import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.RejectedExecutionException
 
-//package io.hackle.android
-//
-//import android.webkit.WebView
-//import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
-//import io.hackle.android.internal.event.DefaultEventProcessor
-//import io.hackle.android.internal.model.AndroidBuild
-//import io.hackle.android.internal.model.Sdk
-//import io.hackle.android.internal.notification.NotificationManager
-//import io.hackle.android.internal.pushtoken.PushTokenManager
-//import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
-//import io.hackle.android.internal.session.Session
-//import io.hackle.android.internal.session.SessionManager
-//import io.hackle.android.internal.sync.PollingSynchronizer
-//import io.hackle.android.internal.user.UserManager
-//import io.hackle.android.internal.utils.concurrent.Throttler
-//import io.hackle.android.internal.workspace.WorkspaceManager
-//import io.hackle.android.mock.MockDevice
-//import io.hackle.android.support.assertThrows
-//import io.hackle.android.ui.explorer.HackleUserExplorer
-//import io.hackle.sdk.common.*
-//import io.hackle.sdk.common.decision.Decision
-//import io.hackle.sdk.common.decision.DecisionReason
-//import io.hackle.sdk.common.decision.FeatureFlagDecision
-//import io.hackle.sdk.core.HackleCore
-//import io.hackle.sdk.core.internal.time.Clock
-//import io.hackle.sdk.core.model.Experiment
-//import io.hackle.sdk.core.user.HackleUser
-//import io.hackle.sdk.core.user.IdentifierType
-//import io.mockk.*
-//import io.mockk.impl.annotations.RelaxedMockK
-//import org.junit.Before
-//import org.junit.Test
-//import strikt.api.expectThat
-//import strikt.assertions.isA
-//import strikt.assertions.isEqualTo
-//import strikt.assertions.isSameInstanceAs
-//import java.util.concurrent.CompletableFuture
-//import java.util.concurrent.Executor
-//import java.util.concurrent.ExecutorService
-//import java.util.concurrent.RejectedExecutionException
-//
 class HackleAppTest {
     //
     @RelaxedMockK
@@ -104,9 +61,6 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var sessionManager: SessionManager
-
-    @RelaxedMockK
-    private lateinit var screenManager: ScreenManager
 
     @RelaxedMockK
     private lateinit var eventProcessor: DefaultEventProcessor
@@ -144,7 +98,6 @@ class HackleAppTest {
             userManager,
             workspaceManager,
             sessionManager,
-            screenManager,
             eventProcessor,
             pushTokenManager,
             notificationManager,
