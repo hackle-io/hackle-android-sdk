@@ -4,109 +4,107 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import io.hackle.android.internal.core.Ordered
+import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
+import io.hackle.android.internal.lifecycle.Lifecycle.*
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.time.Clock
 import java.lang.ref.WeakReference
-import java.util.concurrent.CopyOnWriteArrayList
 
-internal class LifecycleManager : Application.ActivityLifecycleCallbacks, ActivityProvider {
+internal class LifecycleManager(
+    private val clock: Clock
+) : ApplicationListenerRegistry<LifecycleListener>(), Application.ActivityLifecycleCallbacks, ActivityProvider {
 
-    enum class LifecycleState {
-        FOREGROUND,
-        BACKGROUND,
-    }
+    private var activity: WeakReference<Activity>? = null
+    override val currentActivity: Activity? get() = activity?.get()
 
-    interface LifecycleStateListener {
-        fun onState(state: LifecycleState, timestamp: Long)
-    }
-
-    private var _currentActivity: WeakReference<Activity>? = null
-    override var currentActivity: Activity?
-        get() = _currentActivity?.get()
-        private set(newValue) {
-            _currentActivity = WeakReference(newValue)
-        }
-
-    private var currentState: LifecycleState? = null
-    private val listeners: MutableList<LifecycleStateListener> = CopyOnWriteArrayList()
-
-    fun registerActivityLifecycleCallbacks(context: Context) {
-        val app = context.applicationContext as Application
-        app.unregisterActivityLifecycleCallbacks(this)
-        app.registerActivityLifecycleCallbacks(this)
-    }
-
-    fun repeatCurrentState(timestamp: Long = System.currentTimeMillis()) {
-        currentState?.let {
-            logger.debug { "Repeat current lifecycle state [$it:$timestamp]" }
-            dispatchForce(it, timestamp)
-        }
-    }
-
-    fun addStateListener(listener: LifecycleStateListener) {
-        listeners += listener
+    fun registerTo(context: Context) {
+        val application = context.applicationContext as Application
+        application.unregisterActivityLifecycleCallbacks(this)
+        application.registerActivityLifecycleCallbacks(this)
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        if (currentActivity != activity && activity !is HackleActivity) {
-            currentActivity = activity
-        }
+        onLifecycle(CREATED, activity, clock.currentMillis())
     }
-
 
     override fun onActivityStarted(activity: Activity) {
-        if (currentActivity != activity && activity !is HackleActivity) {
-            currentActivity = activity
-        }
-    }
-
-    override fun onActivityStopped(activity: Activity) {
-        if (activity == currentActivity) {
-            currentActivity = null
-        }
+        onLifecycle(STARTED, activity, clock.currentMillis())
     }
 
     override fun onActivityResumed(activity: Activity) {
-        if (currentActivity != activity && activity !is HackleActivity) {
-            currentActivity = activity
-        }
-        dispatch(LifecycleState.FOREGROUND)
+        onLifecycle(RESUMED, activity, clock.currentMillis())
     }
 
     override fun onActivityPaused(activity: Activity) {
-        dispatch(LifecycleState.BACKGROUND)
+        onLifecycle(PAUSED, activity, clock.currentMillis())
     }
 
-    private fun dispatch(state: LifecycleState, timestamp: Long = System.currentTimeMillis()) {
-        currentState = state
-        dispatchForce(state, timestamp)
+    override fun onActivityStopped(activity: Activity) {
+        onLifecycle(STOPPED, activity, clock.currentMillis())
     }
 
-    private fun dispatchForce(state: LifecycleState, timestamp: Long = System.currentTimeMillis()) {
-        for (listener in listeners) {
-            try {
-                listener.onState(state, timestamp)
-            } catch (throwable: Throwable) {
-                logger.error { "Unexpected exception calling ${listener::class.java.simpleName}[$state]: $throwable" }
+    override fun onActivityDestroyed(activity: Activity) {
+        onLifecycle(DESTROYED, activity, clock.currentMillis())
+    }
+
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+
+    private fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
+        if (activity is HackleActivity) {
+            return
+        }
+        resolveCurrentActivity(lifecycle, activity)
+        publish(lifecycle, activity, timestamp)
+    }
+
+    private fun resolveCurrentActivity(lifecycle: Lifecycle, activity: Activity) {
+        when (lifecycle) {
+            CREATED, STARTED, RESUMED -> {
+                if (activity != currentActivity) {
+                    this.activity = WeakReference(activity)
+                }
             }
-            logger.debug { "Dispatched lifecycle state [$state:$timestamp]" }
+
+            STOPPED -> {
+                if (activity == currentActivity) {
+                    this.activity = null
+                }
+            }
+
+            PAUSED, DESTROYED -> Unit
         }
     }
 
-    override fun onActivityDestroyed(activity: Activity) {}
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+    private fun publish(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
+        log.debug { "onLifecycle(lifecycle=$lifecycle, activity=${activity.javaClass.simpleName})" }
+        for (listener in listeners) {
+            try {
+                listener.onLifecycle(lifecycle, activity, timestamp)
+            } catch (e: Throwable) {
+                log.error { "Failed to handle lifecycle [${listener.javaClass.simpleName}, $lifecycle]: $e" }
+            }
+        }
+    }
 
     companion object {
+        private val log = Logger<LifecycleManager>()
+        private var INSTANCE: LifecycleManager? = null
 
-        private val logger = Logger<LifecycleManager>()
-        private var _instance: LifecycleManager? = null
-
-        fun getInstance(): LifecycleManager {
-            return _instance ?: synchronized(this) {
-                _instance ?: LifecycleManager().also {
-                    _instance = it
+        val instance: LifecycleManager
+            get() {
+                return INSTANCE ?: synchronized(this) {
+                    INSTANCE ?: create().also {
+                        INSTANCE = it
+                    }
                 }
             }
+
+        private fun create(): LifecycleManager {
+            val lifecycleManager = LifecycleManager(Clock.SYSTEM)
+            lifecycleManager.addListener(AppStateManager.instance, order = Ordered.LOWEST)
+            return lifecycleManager
         }
     }
 }

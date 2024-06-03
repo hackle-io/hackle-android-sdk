@@ -894,13 +894,13 @@ class UserManagerTest {
 
     @Test
     fun `onChanged - foreground`() {
-        sut.onChanged(AppState.FOREGROUND, 42)
+        sut.onState(AppState.FOREGROUND, 42)
     }
 
     @Test
     fun `onChanged - background`() {
         expectThat(repository.getString("user")).isNull()
-        sut.onChanged(AppState.BACKGROUND, 42)
+        sut.onState(AppState.BACKGROUND, 42)
         expectThat(repository.getString("user")).isNotNull()
     }
 }
