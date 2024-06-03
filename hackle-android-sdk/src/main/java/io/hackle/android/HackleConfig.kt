@@ -14,6 +14,8 @@ class HackleConfig private constructor(builder: Builder) {
 
     val mode: HackleAppMode = builder.mode
 
+    val automaticScreenTracking: Boolean = builder.automaticScreenTracking
+
     val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
     val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
 
@@ -36,6 +38,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
 
         internal var mode: HackleAppMode = HackleAppMode.NATIVE
+
+        internal var automaticScreenTracking: Boolean = true
 
         internal var sessionTracking: Boolean = true
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
@@ -68,6 +72,10 @@ class HackleConfig private constructor(builder: Builder) {
 
         fun mode(mode: HackleAppMode) = apply {
             this.mode = mode
+        }
+
+        fun automaticScreenTracking(automaticScreenTracking: Boolean) = apply {
+            this.automaticScreenTracking = automaticScreenTracking
         }
 
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {

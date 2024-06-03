@@ -2,10 +2,13 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
+import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.repository.NotificationHistoryRepositoryImpl
+import io.hackle.android.internal.engagement.EngagementEventTracker
+import io.hackle.android.internal.engagement.EngagementManager
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.UserEventPublisher
@@ -19,7 +22,6 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.android.internal.lifecycle.HackleActivityLifecycleCallbacks
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
@@ -31,6 +33,8 @@ import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.pushtoken.PushTokenRegistration
 import io.hackle.android.internal.pushtoken.datasource.ProviderType
+import io.hackle.android.internal.screen.ScreenEventTracker
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.storage.DefaultFileStorage
@@ -82,6 +86,11 @@ internal object HackleApps {
 
         val httpClient = createHttpClient(context, sdk)
 
+        // Lifecycle, AppState
+
+        val lifecycleManager = LifecycleManager.instance
+        val appStateManager = AppStateManager.instance
+
         // Synchronizer
 
         val compositeSynchronizer = CompositeSynchronizer(
@@ -131,6 +140,22 @@ internal object HackleApps {
         )
         userManager.addListener(sessionManager)
 
+        // ScreenManager
+
+        val screenManager = ScreenManager(
+            userManager = userManager,
+            activityProvider = lifecycleManager
+        )
+
+        // EngagementManager
+
+        val engagementManager = EngagementManager(
+            userManager = userManager,
+            screenManager = screenManager,
+            minimumEngagementDurationMillis = 1000L
+        )
+        screenManager.addListener(engagementManager)
+
         // EventProcessor
 
         val workspaceDatabase = DatabaseHelper.getWorkspaceDatabase(context, sdkKey)
@@ -148,8 +173,6 @@ internal object HackleApps {
 
         val eventPublisher = UserEventPublisher()
 
-        val appStateManager = AppStateManager()
-
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
@@ -163,7 +186,7 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            activityProvider = LifecycleManager.getInstance()
+            screenManager = screenManager
         )
 
         val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
@@ -201,16 +224,13 @@ internal object HackleApps {
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
 
-        // Lifecycle
+        // AppStateListener
 
-        val lifecycleCallbacks = HackleActivityLifecycleCallbacks(
-            eventExecutor = eventExecutor,
-            appStateManager = appStateManager
-        )
-        lifecycleCallbacks.addListener(pollingSynchronizer)
-        lifecycleCallbacks.addListener(sessionManager)
-        lifecycleCallbacks.addListener(userManager)
-        lifecycleCallbacks.addListener(eventProcessor)
+        appStateManager.setExecutor(eventExecutor)
+        appStateManager.addListener(pollingSynchronizer)
+        appStateManager.addListener(sessionManager)
+        appStateManager.addListener(userManager)
+        appStateManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
 
         // SessionEventTracker
 
@@ -222,7 +242,24 @@ internal object HackleApps {
             sessionManager.addListener(sessionEventTracker)
         }
 
+        // ScreenEventTracker
+
+        val screenEventTracker = ScreenEventTracker(
+            userManager = userManager,
+            core = core
+        )
+        screenManager.addListener(screenEventTracker)
+
+        // EngagementEventTracker
+
+        val engagementEventTracker = EngagementEventTracker(
+            userManager = userManager,
+            core = core
+        )
+        engagementManager.addListener(engagementEventTracker)
+
         // InAppMessage
+
         val inAppMessageEventTracker = InAppMessageEventTracker(
             core = core
         )
@@ -248,7 +285,7 @@ internal object HackleApps {
             processorFactory = inAppMessageEventProcessorFactory
         )
         val inAppMessageUi = InAppMessageUi.create(
-            activityProvider = LifecycleManager.getInstance(),
+            activityProvider = lifecycleManager,
             messageViewFactory = InAppMessageViewFactory(),
             eventHandler = inAppMessageEventHandler,
         )
@@ -312,18 +349,21 @@ internal object HackleApps {
                 featureFlagOverrideStorage = ffOverrideStorage,
                 pushTokenManager = pushTokenManager
             ),
-            activityProvider = LifecycleManager.getInstance()
+            activityProvider = lifecycleManager
         )
 
         // Metrics
 
-        metricConfiguration(config, lifecycleCallbacks, eventExecutor, httpExecutor, httpClient)
+        metricConfiguration(config, appStateManager, eventExecutor, httpExecutor, httpClient)
 
-        // LifecycleCallbacks
+        // LifecycleListener
 
-        LifecycleManager.getInstance().addStateListener(lifecycleCallbacks)
-        LifecycleManager.getInstance().addStateListener(userExplorer)
-        LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
+        if (config.automaticScreenTracking) {
+            lifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
+        }
+        lifecycleManager.addListener(engagementManager, order = Ordered.HIGHEST + 1)
+        lifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
+        lifecycleManager.registerTo(context)
 
         val throttleLimiter = ThrottleLimiter(
             intervalMillis = 60 * 1000,
@@ -361,7 +401,7 @@ internal object HackleApps {
 
     private fun metricConfiguration(
         config: HackleConfig,
-        callbacks: HackleActivityLifecycleCallbacks,
+        appStateManager: AppStateManager,
         eventExecutor: Executor,
         httpExecutor: Executor,
         httpClient: OkHttpClient,
@@ -373,7 +413,7 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        callbacks.addListener(monitoringMetricRegistry)
+        appStateManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 
