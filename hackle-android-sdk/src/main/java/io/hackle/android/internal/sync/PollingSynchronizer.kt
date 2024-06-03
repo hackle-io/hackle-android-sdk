@@ -2,7 +2,7 @@ package io.hackle.android.internal.sync
 
 import io.hackle.android.HackleConfig
 import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.internal.scheduler.Scheduler
@@ -12,7 +12,7 @@ internal class PollingSynchronizer(
     private val delegate: CompositeSynchronizer,
     private val scheduler: Scheduler,
     private val intervalMillis: Long,
-) : Synchronizer, AppStateChangeListener {
+) : Synchronizer, AppStateListener {
 
     private var pollingJob: ScheduledJob? = null
 
@@ -62,7 +62,7 @@ internal class PollingSynchronizer(
         }
     }
 
-    override fun onChanged(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long) {
         return when (state) {
             AppState.FOREGROUND -> start()
             AppState.BACKGROUND -> stop()

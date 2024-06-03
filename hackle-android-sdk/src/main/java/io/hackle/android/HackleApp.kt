@@ -9,6 +9,7 @@ import android.webkit.WebView
 import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Device
@@ -469,7 +470,7 @@ class HackleApp internal constructor(
 
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
-            LifecycleManager.getInstance().registerActivityLifecycleCallbacks(context)
+            LifecycleManager.instance.registerTo(context)
         }
 
         @JvmStatic
@@ -548,7 +549,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
-                        .also { LifecycleManager.getInstance().repeatCurrentState() }
+                        .also { AppStateManager.instance.publishStateIfNeeded() }
                         .also { INSTANCE = it }
             }
         }
