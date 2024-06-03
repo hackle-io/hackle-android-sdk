@@ -18,8 +18,6 @@ import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
-import io.hackle.android.internal.screen.Screen
-import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.sync.SynchronizerType
@@ -57,7 +55,6 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
     private val sessionManager: SessionManager,
-    private val screenManager: ScreenManager,
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
@@ -337,16 +334,6 @@ class HackleApp internal constructor(
                 callback?.run()
             }
         )
-    }
-
-    @JvmOverloads
-    fun screen(screenName: String, screenClass: String? = null) {
-        try {
-            val screen = Screen(screenName, screenManager.resolveScreenClass(screenClass))
-            screenManager.setCurrentScreen(screen, clock.currentMillis())
-        } catch (e: Throwable) {
-            log.error { "Unexpected exception while track screen[$screenName]: $e" }
-        }
     }
 
     override fun close() {
