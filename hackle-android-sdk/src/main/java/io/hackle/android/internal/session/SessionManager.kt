@@ -60,6 +60,7 @@ internal class SessionManager(
         val currentSession = currentSession ?: return
         val lastEventTime = lastEventTime ?: return
 
+        log.debug { "onSessionEnded(currentSession=${currentSession.id})" }
         for (listener in listeners) {
             listener.onSessionEnded(currentSession, user, lastEventTime)
         }
@@ -73,11 +74,10 @@ internal class SessionManager(
 
         updateLastEventTime(timestamp)
 
+        log.debug { "onSessionStarted(newSession=${newSession.id})" }
         for (listener in listeners) {
             listener.onSessionStarted(newSession, user, timestamp)
         }
-
-        log.debug { "Session started [${newSession.id}]" }
         return newSession
     }
 

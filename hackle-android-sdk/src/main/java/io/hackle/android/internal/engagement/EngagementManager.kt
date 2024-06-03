@@ -44,7 +44,7 @@ internal class EngagementManager(
             try {
                 listener.onEngagement(engagement, user, timestamp)
             } catch (e: Throwable) {
-                log.error { "Failed to handle user engagement: $e" }
+                log.error { "Failed to handle engagement: $e" }
             }
         }
     }

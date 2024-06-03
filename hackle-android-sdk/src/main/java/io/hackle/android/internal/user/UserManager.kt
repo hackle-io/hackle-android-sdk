@@ -141,6 +141,7 @@ internal class UserManager(
     }
 
     private fun changeUser(oldUser: User, newUser: User, timestamp: Long) {
+        log.debug { "onUserUpdated(oldUser=$oldUser, newUser=$newUser)" }
         for (listener in listeners) {
             try {
                 listener.onUserUpdated(oldUser, newUser, timestamp)
@@ -148,7 +149,6 @@ internal class UserManager(
                 log.error { "Failed to onUserUpdated [${listener::class.java.simpleName}]: $e" }
             }
         }
-        log.debug { "User changed" }
     }
 
     private fun loadUser(): User? {
