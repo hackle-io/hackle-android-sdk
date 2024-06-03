@@ -31,7 +31,6 @@ internal class AppStateManager(
     }
 
     private fun onState(state: AppState, timestamp: Long) {
-        log.debug { "AppState [$state]" }
         execute {
             publish(state, timestamp)
             _currentState = state
