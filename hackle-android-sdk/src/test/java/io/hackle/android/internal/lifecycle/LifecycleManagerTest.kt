@@ -11,6 +11,7 @@ import io.mockk.verifySequence
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isA
+import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 
@@ -47,6 +48,7 @@ class LifecycleManagerTest {
         val activity = CustomActivity()
         sut.onActivityCreated(activity, null)
         expectThat(sut.currentActivity) isSameInstanceAs activity
+        expectThat(sut.currentState) isEqualTo ActivityState.INACTIVE
     }
 
 
@@ -55,6 +57,7 @@ class LifecycleManagerTest {
         val activity = CustomActivity()
         sut.onActivityStarted(activity)
         expectThat(sut.currentActivity) isSameInstanceAs activity
+        expectThat(sut.currentState) isEqualTo ActivityState.INACTIVE
     }
 
     @Test
@@ -62,6 +65,7 @@ class LifecycleManagerTest {
         val activity = CustomActivity()
         sut.onActivityResumed(activity)
         expectThat(sut.currentActivity) isSameInstanceAs activity
+        expectThat(sut.currentState) isEqualTo ActivityState.ACTIVE
     }
 
     @Test
@@ -94,12 +98,26 @@ class LifecycleManagerTest {
     }
 
     @Test
-    fun `resolveCurrentActivity - PAUSED, DESTROYED`() {
+    fun `resolveCurrentActivity - PAUSED`() {
+        val activity = CustomActivity()
+        sut.onActivityResumed(activity)
+        expectThat(sut.currentActivity) isSameInstanceAs activity
+        expectThat(sut.currentState) isEqualTo ActivityState.ACTIVE
+
+        sut.onActivityPaused(activity)
+        expectThat(sut.currentActivity) isSameInstanceAs activity
+        expectThat(sut.currentState) isEqualTo ActivityState.INACTIVE
+
+        sut.onActivityDestroyed(activity)
+        expectThat(sut.currentActivity) isSameInstanceAs activity
+    }
+
+    @Test
+    fun `resolveCurrentActivity - DESTROYED`() {
         val activity = CustomActivity()
         sut.onActivityResumed(activity)
         expectThat(sut.currentActivity) isSameInstanceAs activity
 
-        sut.onActivityPaused(activity)
         sut.onActivityDestroyed(activity)
         expectThat(sut.currentActivity) isSameInstanceAs activity
     }
@@ -122,7 +140,7 @@ class LifecycleManagerTest {
         val instance = LifecycleManager.instance
         expectThat(instance) isSameInstanceAs LifecycleManager.instance
         expectThat(instance.listeners.first()).isA<AppStateManager>()
-     }
+    }
 
     private class InternalActivity : Activity(), HackleActivity
     private class CustomActivity : Activity()

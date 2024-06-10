@@ -2,17 +2,13 @@ package io.hackle.android.internal.inappmessage.trigger
 
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenter
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.lifecycle.ActivityProvider
+import io.hackle.android.internal.lifecycle.ActivityState
 import io.hackle.android.support.InAppMessages
-import io.mockk.Called
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -28,7 +24,7 @@ class InAppMessageManagerTest {
     private lateinit var presenter: InAppMessagePresenter
 
     @RelaxedMockK
-    private lateinit var appStateManager: AppStateManager
+    private lateinit var activityProvider: ActivityProvider
 
     @InjectMockKs
     private lateinit var sut: InAppMessageManager
@@ -36,7 +32,7 @@ class InAppMessageManagerTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        every { appStateManager.currentState } returns AppState.FOREGROUND
+        every { activityProvider.currentState } returns ActivityState.ACTIVE
     }
 
     @Test
@@ -72,7 +68,7 @@ class InAppMessageManagerTest {
         // given
         val context = InAppMessages.context()
         every { determiner.determineOrNull(any()) } returns context
-        every { appStateManager.currentState } returns AppState.BACKGROUND
+        every { activityProvider.currentState } returns ActivityState.INACTIVE
 
         // when
         sut.onEvent(mockk())
