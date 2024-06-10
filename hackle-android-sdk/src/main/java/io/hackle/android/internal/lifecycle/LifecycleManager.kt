@@ -16,8 +16,10 @@ internal class LifecycleManager(
     private val clock: Clock
 ) : ApplicationListenerRegistry<LifecycleListener>(), Application.ActivityLifecycleCallbacks, ActivityProvider {
 
+    private var state: ActivityState = ActivityState.INACTIVE
     private var activity: WeakReference<Activity>? = null
     override val currentActivity: Activity? get() = activity?.get()
+    override val currentState: ActivityState get() = state
 
     fun registerTo(context: Context) {
         val application = context.applicationContext as Application
@@ -61,19 +63,36 @@ internal class LifecycleManager(
 
     private fun resolveCurrentActivity(lifecycle: Lifecycle, activity: Activity) {
         when (lifecycle) {
-            CREATED, STARTED, RESUMED -> {
-                if (activity != currentActivity) {
-                    this.activity = WeakReference(activity)
-                }
+            CREATED, STARTED -> {
+                setCurrentActivityIfNeeded(activity)
+            }
+
+            RESUMED -> {
+                setCurrentActivityIfNeeded(activity)
+                this.state = ActivityState.ACTIVE
+            }
+
+            PAUSED -> {
+                this.state = ActivityState.INACTIVE
             }
 
             STOPPED -> {
-                if (activity == currentActivity) {
-                    this.activity = null
-                }
+                unsetCurrentActivityIfNeeded(activity)
             }
 
-            PAUSED, DESTROYED -> Unit
+            DESTROYED -> Unit
+        }
+    }
+
+    private fun setCurrentActivityIfNeeded(activity: Activity) {
+        if (activity != currentActivity) {
+            this.activity = WeakReference(activity)
+        }
+    }
+
+    private fun unsetCurrentActivityIfNeeded(activity: Activity) {
+        if (activity == currentActivity) {
+            this.activity = null
         }
     }
 

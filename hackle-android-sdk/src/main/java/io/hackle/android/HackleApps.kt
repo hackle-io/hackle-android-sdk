@@ -303,7 +303,7 @@ internal object HackleApps {
         val inAppMessageManager = InAppMessageManager(
             determiner = inAppMessageDeterminer,
             presenter = inAppMessageUi,
-            appStateManager = appStateManager
+            activityProvider = lifecycleManager
         )
         eventPublisher.add(inAppMessageManager)
 
