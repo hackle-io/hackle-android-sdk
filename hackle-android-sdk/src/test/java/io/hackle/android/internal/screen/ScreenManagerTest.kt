@@ -2,6 +2,7 @@ package io.hackle.android.internal.screen
 
 import android.app.Activity
 import io.hackle.android.internal.lifecycle.ActivityProvider
+import io.hackle.android.internal.lifecycle.ActivityState
 import io.hackle.android.internal.lifecycle.Lifecycle
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
@@ -33,6 +34,8 @@ class ScreenManagerTest {
             object : ActivityProvider {
                 override val currentActivity: Activity?
                     get() = activity
+                override val currentState: ActivityState
+                    get() = ActivityState.ACTIVE
             })
         sut.addListener(listener)
     }
