@@ -4,10 +4,12 @@ import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
-import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.screen.Screen
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -17,24 +19,15 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import io.mockk.Called
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.hasSize
-import strikt.assertions.isA
-import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
-import strikt.assertions.isSameInstanceAs
+import strikt.assertions.*
 import java.util.concurrent.Executor
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 class DefaultEventProcessorTest {
@@ -67,7 +60,7 @@ class DefaultEventProcessorTest {
     private lateinit var appStateManager: AppStateManager
 
     @RelaxedMockK
-    private lateinit var activityProvider: ActivityProvider
+    private lateinit var screenManager: ScreenManager
 
     @Before
     fun before() {
@@ -77,12 +70,11 @@ class DefaultEventProcessorTest {
         every { sessionManager.currentSession } returns null
         every { appStateManager.currentState } returns AppState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
-        every { activityProvider.currentActivity } returns null
+        every { screenManager.currentScreen } returns null
     }
 
 
     private fun processor(
-        eventDedupDeterminer: UserEventDedupDeterminer = this.eventDedupDeterminer,
         eventPublisher: UserEventPublisher = this.eventPublisher,
         eventExecutor: Executor = this.eventExecutor,
         eventRepository: EventRepository = this.eventRepository,
@@ -95,10 +87,9 @@ class DefaultEventProcessorTest {
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
         appStateManager: AppStateManager = this.appStateManager,
-        activityProvider: ActivityProvider = this.activityProvider
+        screenManager: ScreenManager = this.screenManager
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
-            eventDedupDeterminer = eventDedupDeterminer,
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
@@ -111,7 +102,7 @@ class DefaultEventProcessorTest {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            activityProvider = activityProvider
+            screenManager = screenManager
         )
     }
 
@@ -120,6 +111,21 @@ class DefaultEventProcessorTest {
         // given
         val sut = processor()
         every { eventExecutor.execute(any()) } returns Unit
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) {
+            eventExecutor.execute(any())
+        }
+    }
+
+    @Test
+    fun `process - fail to execute`() {
+        val sut = processor()
+        every { eventExecutor.execute(any()) } throws RejectedExecutionException()
         val event = event()
 
         // when
@@ -197,6 +203,7 @@ class DefaultEventProcessorTest {
     fun `process - 중복제거 대상이면 이벤트를 추가하지 않는다`() {
         // given
         val sut = processor()
+        sut.addFilter(DedupUserEventFilter(eventDedupDeterminer))
         every { eventDedupDeterminer.isDedupTarget(any()) } returns true
         val event = event()
 
@@ -242,6 +249,26 @@ class DefaultEventProcessorTest {
                 get { identifiers }.hasSize(2)
                 get { identifiers[IdentifierType.SESSION.key] } isEqualTo "42.session"
             }
+    }
+
+    @Test
+    fun `process - decorate screen`() {
+        // given
+        val sut = processor()
+        var savedEvent: UserEvent? = null
+        every { eventRepository.save(any()) } answers { savedEvent = firstArg() }
+        every { screenManager.currentScreen } returns Screen("ScreenName", "TestActivity")
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { eventRepository.save(any()) }
+        expectThat(savedEvent).isNotNull().and {
+            get { user.hackleProperties["screenName"] } isEqualTo "ScreenName"
+            get { user.hackleProperties["screenClass"] } isEqualTo "TestActivity"
+        }
     }
 
     @Test
@@ -358,7 +385,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onChanged(AppState.FOREGROUND, System.currentTimeMillis())
+        sut.onState(AppState.FOREGROUND, System.currentTimeMillis())
 
         // then
         verify(exactly = 1) { sut.start() }
@@ -370,7 +397,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onChanged(AppState.BACKGROUND, System.currentTimeMillis())
+        sut.onState(AppState.BACKGROUND, System.currentTimeMillis())
 
         // then
         verify(exactly = 1) { sut.stop() }

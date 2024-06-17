@@ -3,14 +3,13 @@ package io.hackle.android.internal.event
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
-import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
-import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.push.PushEventTracker
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -23,11 +22,11 @@ import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.user.IdentifierType
 import java.io.Closeable
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class DefaultEventProcessor(
-    private val eventDedupDeterminer: UserEventDedupDeterminer,
     private val eventPublisher: UserEventPublisher,
     private val eventExecutor: Executor,
     private val eventRepository: EventRepository,
@@ -40,10 +39,17 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
-    private val activityProvider: ActivityProvider,
-) : EventProcessor, AppStateChangeListener, Closeable {
+    private val screenManager: ScreenManager,
+) : EventProcessor, AppStateListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
+
+    private val filters = CopyOnWriteArrayList<UserEventFilter>()
+
+    fun addFilter(filter: UserEventFilter) {
+        filters.add(filter)
+        log.debug { "UserEventFilter added [${filter.javaClass.simpleName}]" }
+    }
 
     override fun process(event: UserEvent) {
         try {
@@ -111,7 +117,7 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
-    override fun onChanged(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long) {
         when (state) {
             FOREGROUND -> start()
             BACKGROUND -> stop()
@@ -127,7 +133,7 @@ internal class DefaultEventProcessor(
         override fun run() {
             try {
                 update(event)
-                if (eventDedupDeterminer.isDedupTarget(event)) {
+                if (filters.any { it.check(event).isBlock }) {
                     return
                 }
 
@@ -194,10 +200,11 @@ internal class DefaultEventProcessor(
     }
 
     private fun decorateScreenName(event: UserEvent): UserEvent {
-        val currentActivity = activityProvider.currentActivity ?: return event
+        val screen = screenManager.currentScreen ?: return event
 
         val newUser = event.user.toBuilder()
-            .hackleProperty("screenClass", currentActivity.javaClass.simpleName)
+            .hackleProperty("screenName", screen.name)
+            .hackleProperty("screenClass", screen.className)
             .build()
 
         return event.with(newUser)

@@ -1,12 +1,13 @@
 package io.hackle.android.ui.explorer
 
+import android.app.Activity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import io.hackle.android.R
 import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleState
-import io.hackle.android.internal.lifecycle.LifecycleManager.LifecycleStateListener
+import io.hackle.android.internal.lifecycle.Lifecycle
+import io.hackle.android.internal.lifecycle.LifecycleListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
@@ -15,21 +16,20 @@ import io.hackle.sdk.core.internal.log.Logger
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
     private val activityProvider: ActivityProvider,
-) : LifecycleStateListener {
+) : LifecycleListener {
 
     private var isShow: Boolean = false
 
     fun show() {
         isShow = true
+        val activity = activityProvider.currentActivity ?: return
         runOnUiThread {
-            attach()
+            attach(activity)
         }
     }
 
-    private fun attach() {
+    private fun attach(activity: Activity) {
         try {
-            val activity = activityProvider.currentActivity ?: return
-
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
                 return
             }
@@ -46,15 +46,11 @@ internal class HackleUserExplorer(
         }
     }
 
-    override fun onState(state: LifecycleState, timestamp: Long) {
-        when (state) {
-            LifecycleState.FOREGROUND -> {
-                activityProvider.currentActivity ?: return
-                if (isShow) {
-                    attach()
-                }
+    override fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
+        if (lifecycle == Lifecycle.RESUMED) {
+            if (isShow) {
+                attach(activity)
             }
-            LifecycleState.BACKGROUND -> {}
         }
     }
 

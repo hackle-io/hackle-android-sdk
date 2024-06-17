@@ -27,6 +27,16 @@ internal class PushEventTracker(
 
     companion object {
         private const val PUSH_TOKEN_EVENT_NAME = "\$push_token"
+        private const val PUSH_CLICK_EVENT_NAME = "\$push_click"
+
+        fun isPushEvent(event: UserEvent): Boolean {
+            return isPushClickEvent(event) || isPushTokenEvent(event)
+        }
+
+        fun isPushClickEvent(event: UserEvent): Boolean {
+            val trackEvent = event as? UserEvent.Track ?: return false
+            return trackEvent.event.key == PUSH_CLICK_EVENT_NAME
+        }
 
         fun isPushTokenEvent(event: UserEvent): Boolean {
             val trackEvent = event as? UserEvent.Track ?: return false

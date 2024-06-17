@@ -1,23 +1,21 @@
 package io.hackle.android.internal.session
 
+import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateChangeListener
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
-import java.util.concurrent.CopyOnWriteArrayList
 
 internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
     private val sessionTimeoutMillis: Long,
-) : AppStateChangeListener, UserListener {
-
-    private val sessionListeners = CopyOnWriteArrayList<SessionListener>()
+) : ApplicationListenerRegistry<SessionListener>(), AppStateListener, UserListener {
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
 
@@ -33,10 +31,6 @@ internal class SessionManager(
         log.debug { "SessionManager initialized." }
     }
 
-    fun addListener(listener: SessionListener) {
-        sessionListeners.add(listener)
-        log.debug { "SessionListener added [${listener::class.java.simpleName}]" }
-    }
 
     fun startNewSession(user: User, timestamp: Long): Session {
         endSession(user)
@@ -66,7 +60,8 @@ internal class SessionManager(
         val currentSession = currentSession ?: return
         val lastEventTime = lastEventTime ?: return
 
-        for (listener in sessionListeners) {
+        log.debug { "onSessionEnded(currentSession=${currentSession.id})" }
+        for (listener in listeners) {
             listener.onSessionEnded(currentSession, user, lastEventTime)
         }
         log.debug { "Session ended [${currentSession.id}]" }
@@ -79,11 +74,10 @@ internal class SessionManager(
 
         updateLastEventTime(timestamp)
 
-        for (listener in sessionListeners) {
+        log.debug { "onSessionStarted(newSession=${newSession.id})" }
+        for (listener in listeners) {
             listener.onSessionStarted(newSession, user, timestamp)
         }
-
-        log.debug { "Session started [${newSession.id}]" }
         return newSession
     }
 
@@ -106,12 +100,13 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
-    override fun onChanged(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long) {
         return when (state) {
             FOREGROUND -> {
                 startNewSessionIfNeeded(userManager.currentUser, timestamp)
                 Unit
             }
+
             BACKGROUND -> {
                 updateLastEventTime(timestamp)
                 currentSession?.let { saveSession(it) }
