@@ -5,6 +5,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
+import io.hackle.android.external.OptOutManager.isOffline
 import io.hackle.android.internal.pushtoken.datasource.PushTokenDataSource
 import io.hackle.sdk.core.internal.log.Logger
 
@@ -17,6 +18,9 @@ internal class FcmPushTokenDataSource(context: Context) : PushTokenDataSource {
     }
 
     override fun getPushToken(): String? {
+        if (isOffline) {
+            return null
+        }
         try {
             log.debug { "Attempting FirebaseMessaging.getToken." }
             val token = getPushTokenFromFirebaseMessaging()

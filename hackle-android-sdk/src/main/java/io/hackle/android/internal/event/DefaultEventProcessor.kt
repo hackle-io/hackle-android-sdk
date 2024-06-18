@@ -1,8 +1,11 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.external.OptOutManager.isOffline
+import io.hackle.android.external.OptOutManager.isOptOutTracking
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.database.workspace.toBody
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
@@ -92,7 +95,7 @@ internal class DefaultEventProcessor(
                 eventFlushIntervalMillis,
                 MILLISECONDS
             ) { flush() }
-            log.info { "DefaultEventProcessor started. Flush events every $eventFlushIntervalMillis ms" }
+            log.debug { "DefaultEventProcessor started. Flush events every $eventFlushIntervalMillis ms" }
         }
     }
 
@@ -101,11 +104,15 @@ internal class DefaultEventProcessor(
             flushingJob?.cancel()
             flushingJob = null
             flush()
-            log.info { "DefaultEventProcessor stopped." }
+            log.debug { "DefaultEventProcessor stopped." }
         }
     }
 
     fun dispatch(limit: Int) {
+        if (isOffline) {
+            return
+        }
+
         if (limit <= 0) {
             return
         }
@@ -174,6 +181,12 @@ internal class DefaultEventProcessor(
 
 
         private fun save(event: UserEvent) {
+            log.debug { "UserEvent tracked: ${event.toBody()}" }
+
+            if (isOffline || isOptOutTracking) {
+                return
+            }
+
             eventRepository.save(event)
 
 

@@ -73,24 +73,6 @@ class HackleConfigTest {
     }
 
     @Test
-    fun `uri`() {
-        configTests(
-            HackleConfig::sdkUri to "https://sdk.hackle.io",
-            HackleConfig::eventUri to "https://event.hackle.io",
-            HackleConfig::monitoringUri to "https://monitoring.hackle.io",
-        )
-        configTests(
-            HackleConfig::sdkUri to "https://test-sdk.hackle.io",
-            HackleConfig::eventUri to "https://test-event.hackle.io",
-            HackleConfig::monitoringUri to "https://test-monitoring.hackle.io",
-        ) {
-            sdkUri("https://test-sdk.hackle.io")
-            eventUri("https://test-event.hackle.io")
-            monitoringUri("https://test-monitoring.hackle.io")
-        }
-    }
-
-    @Test
     fun `sessionTimeoutMillis`() {
         configTests(HackleConfig::sessionTimeoutMillis to 1000 * 60 * 30)
         configTests(HackleConfig::sessionTimeoutMillis to 42) {

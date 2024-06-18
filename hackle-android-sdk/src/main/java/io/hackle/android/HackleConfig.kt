@@ -12,6 +12,9 @@ class HackleConfig private constructor(builder: Builder) {
     val eventUri: String = builder.eventUri
     val monitoringUri: String = builder.monitoringUri
 
+    val offline: Boolean = builder.offline
+    val outOutTracking: Boolean = builder.outOutTracking
+
     val mode: HackleAppMode = builder.mode
 
     val automaticScreenTracking: Boolean = builder.automaticScreenTracking
@@ -36,6 +39,9 @@ class HackleConfig private constructor(builder: Builder) {
         internal var sdkUri: String = DEFAULT_SDK_URI
         internal var eventUri: String = DEFAULT_EVENT_URI
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
+
+        internal var offline: Boolean = false
+        internal var outOutTracking: Boolean = false
 
         internal var mode: HackleAppMode = HackleAppMode.NATIVE
 
@@ -68,6 +74,14 @@ class HackleConfig private constructor(builder: Builder) {
 
         fun monitoringUri(monitoringUri: String) = apply {
             this.monitoringUri = monitoringUri
+        }
+
+        fun offline(offline: Boolean) = apply {
+            this.offline = offline
+        }
+
+        fun outOutTracking(outOutTracking: Boolean) = apply {
+            this.outOutTracking = outOutTracking
         }
 
         fun mode(mode: HackleAppMode) = apply {
@@ -132,9 +146,9 @@ class HackleConfig private constructor(builder: Builder) {
 
         private val log = AndroidLogger
 
-        internal const val DEFAULT_SDK_URI = "https://sdk.hackle.io"
-        internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
-        internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
+        internal const val DEFAULT_SDK_URI = "http://localhost"
+        internal const val DEFAULT_EVENT_URI = "http://localhost"
+        internal const val DEFAULT_MONITORING_URI = "http://localhost"
 
         internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m
 

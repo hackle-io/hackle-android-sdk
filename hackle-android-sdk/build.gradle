@@ -21,6 +21,8 @@ android {
         versionName version
 
         buildConfigField "String", "VERSION_NAME", "\"$version\""
+        buildConfigField "String", "PROD_SDK_KEY", "\"$sdk_key_prod\""
+        buildConfigField "String", "DEV_SDK_KEY", "\"$sdk_key_dev\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "hackle-proguard-rules.pro"

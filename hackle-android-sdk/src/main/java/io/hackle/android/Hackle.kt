@@ -15,26 +15,6 @@ fun Hackle.registerActivityLifecycleCallbacks(context: Context) {
 
 fun Hackle.isHacklePushMessage(intent: Intent) = HackleApp.isHacklePushMessage(intent)
 
-fun Hackle.initialize(
-    context: Context,
-    sdkKey: String,
-    config: HackleConfig = HackleConfig.DEFAULT,
-    onReady: () -> Unit = {},
-): HackleApp {
-    return HackleApp.initializeApp(context, sdkKey, config, onReady)
-}
-
-
-fun Hackle.initialize(
-    context: Context,
-    sdkKey: String,
-    user: User? = null,
-    config: HackleConfig = HackleConfig.DEFAULT,
-    onReady: () -> Unit = {},
-): HackleApp {
-    return HackleApp.initializeApp(context, sdkKey, user, config, onReady)
-}
-
 fun Hackle.user(id: String) = User.of(id)
 fun Hackle.user(id: String? = null, init: User.Builder.() -> Unit) =
     User.builder().id(id).apply(init).build()

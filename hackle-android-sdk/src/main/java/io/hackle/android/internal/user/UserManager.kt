@@ -1,5 +1,6 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.external.OptOutManager.isOffline
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
@@ -69,6 +70,9 @@ internal class UserManager(
     }
 
     override fun sync() {
+        if (isOffline) {
+            return
+        }
         val cohorts = try {
             cohortFetcher.fetch(currentUser)
         } catch (e: Exception) {

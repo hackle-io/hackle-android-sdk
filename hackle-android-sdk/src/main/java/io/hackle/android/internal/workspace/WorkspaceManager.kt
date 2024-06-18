@@ -1,5 +1,6 @@
 package io.hackle.android.internal.workspace
 
+import io.hackle.android.external.OptOutManager.isOffline
 import io.hackle.android.internal.sync.Synchronizer
 import io.hackle.android.internal.workspace.repository.WorkspaceConfigRepository
 import io.hackle.sdk.core.internal.log.Logger
@@ -24,6 +25,9 @@ internal class WorkspaceManager(
     }
 
     override fun sync() {
+        if (isOffline) {
+            return
+        }
         try {
             val config = httpWorkspaceFetcher.fetchIfModified(lastModified.get())
             if (config != null) {
@@ -41,6 +45,9 @@ internal class WorkspaceManager(
     }
 
     private fun readWorkspaceConfigFromLocal() {
+        if (isOffline) {
+            return
+        }
         try {
             val config = repository.get()
             if (config != null) {

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
+import io.hackle.android.external.OptOutManager
 import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
@@ -336,6 +337,10 @@ class HackleApp internal constructor(
         )
     }
 
+    fun setOptOutTracking(optOutTracking: Boolean) {
+        OptOutManager.setOptOutTracking(optOutTracking)
+    }
+
     override fun close() {
         core.tryClose()
     }
@@ -494,46 +499,34 @@ class HackleApp internal constructor(
         @JvmStatic
         fun initializeApp(
             context: Context,
-            sdkKey: String,
+            production: Boolean,
             user: User?,
             config: HackleConfig = HackleConfig.DEFAULT,
             onReady: Runnable = Runnable { },
         ): HackleApp {
+            val sdkKey = if (production) BuildConfig.PROD_SDK_KEY else BuildConfig.DEV_SDK_KEY
             return initializeAppInternal(context, sdkKey, user, config, onReady)
         }
-
-        /**
-         * Initialized the HackleApp instance.
-         *
-         * @param context [Context]
-         * @param sdkKey the SDK key of your Hackle environment.
-         * @param config the HackleConfig that contains the desired configuration.
-         * @param onReady callback that is called when HackleApp is ready to use.
-         */
+        
         @JvmOverloads
         @JvmStatic
         fun initializeApp(
             context: Context,
-            sdkKey: String,
+            production: Boolean,
             config: HackleConfig = HackleConfig.DEFAULT,
             onReady: Runnable = Runnable { },
         ): HackleApp {
+            val sdkKey = if (production) BuildConfig.PROD_SDK_KEY else BuildConfig.DEV_SDK_KEY
             return initializeAppInternal(context, sdkKey, null, config, onReady)
         }
 
-        /**
-         * Initialized the HackleApp instance.
-         *
-         * @param context [Context]
-         * @param sdkKey the SDK key of your Hackle environment.
-         * @param onReady callback that is called when HackleApp is ready to use.
-         */
         @JvmStatic
         fun initializeApp(
             context: Context,
-            sdkKey: String,
+            production: Boolean,
             onReady: Runnable,
         ): HackleApp {
+            val sdkKey = if (production) BuildConfig.PROD_SDK_KEY else BuildConfig.DEV_SDK_KEY
             return initializeAppInternal(context, sdkKey, null, HackleConfig.DEFAULT, onReady)
         }
 
