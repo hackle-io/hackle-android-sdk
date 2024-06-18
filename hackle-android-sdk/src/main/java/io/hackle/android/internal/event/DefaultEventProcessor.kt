@@ -181,9 +181,9 @@ internal class DefaultEventProcessor(
 
 
         private fun save(event: UserEvent) {
-            log.debug { "UserEvent tracked: ${event.toBody()}" }
 
             if (isOffline || isOptOutTracking) {
+                log.debug { "UserEvent tracked: ${event.toBody()}" }
                 return
             }
 
