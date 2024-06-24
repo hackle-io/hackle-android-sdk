@@ -10,7 +10,7 @@ import io.hackle.android.R
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
-internal class InAppMessageModalFrameLand : RelativeLayout {
+internal class InAppMessageModalLandContainerView : RelativeLayout {
 
 
     constructor(context: Context) : super(context)
@@ -18,12 +18,9 @@ internal class InAppMessageModalFrameLand : RelativeLayout {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val minWidth =
-            resources.getDimensionPixelSize(R.dimen.io_hackle_inappmessage_modal_min_width)
-        val maxWidth =
-            resources.getDimensionPixelSize(R.dimen.io_hackle_inappmessage_modal_max_width)
-        val maxHeight =
-            resources.getDimensionPixelSize(R.dimen.io_hackle_inappmessage_modal_max_height)
+        val minWidth = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_min_width)
+        val maxWidth = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_max_width)
+        val maxHeight = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_max_height)
 
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)

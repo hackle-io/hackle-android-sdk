@@ -11,21 +11,32 @@ import kotlin.math.min
 
 internal class InAppMessageImageView : ImageView {
 
+    constructor(context: Context?) : super(context)
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
     private var path = Path()
     private var rect = RectF()
-    private var radius = 8f * context.resources.displayMetrics.density
-    private var radii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+    private var cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
     private var aspectRatio = -1f
 
-    constructor(context: Context) : super(context)
+    fun setCornersRadiiPx(px: Float) {
+        setCornersRadiiPx(px, px, px, px)
+    }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+    fun setCornersRadiiPx(topLeft: Float, topRight: Float, bottomLeft: Float, bottomRight: Float) {
+        cornerRadii = floatArrayOf(
+            topLeft, topLeft,
+            topRight, topRight,
+            bottomLeft, bottomLeft,
+            bottomRight, bottomRight
+        )
+    }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
-    )
+    fun setAspectRatio(aspectRatio: Float) {
+        this.aspectRatio = aspectRatio
+        requestLayout()
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val widthSpec =
@@ -45,30 +56,23 @@ internal class InAppMessageImageView : ImageView {
         }
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
+        clip(canvas)
+        super.onDraw(canvas)
+    }
+
+    private fun clip(canvas: Canvas) {
         try {
-            canvas?.let {
-                rect.set(0f, 0f, width.toFloat(), height.toFloat())
-                path.reset()
-                path.addRoundRect(rect, radii, Path.Direction.CW)
-                it.clipPath(path)
-                super.onDraw(it)
-            }
-        } catch (e: Exception) {
-            log.error { "Encountered exception while trying to clip image" }
+            rect.set(0f, 0f, width.toFloat(), height.toFloat())
+            path.reset()
+            path.addRoundRect(rect, cornerRadii, Path.Direction.CW)
+            canvas.clipPath(path)
+        } catch (e: Throwable) {
+            log.error { "Failed to clip in-app message image: $e" }
         }
-
     }
-
-
-    fun setAspectRatio(aspectRatio: Float) {
-        this.aspectRatio = aspectRatio
-        requestLayout()
-    }
-
 
     companion object {
         private val log = Logger<InAppMessageImageView>()
     }
-
 }

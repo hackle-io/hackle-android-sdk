@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="io_hackle_inappmessage_modal_min_width">320dp</dimen>
-    <dimen name="io_hackle_inappmessage_modal_max_width">450dp</dimen>
-    <dimen name="io_hackle_inappmessage_modal_max_height">750dp</dimen>
-    <dimen name="io_hackle_inappmessage_modal_margin">16dp</dimen>
+    <dimen name="hackle_iam_modal_min_width">320dp</dimen>
+    <dimen name="hackle_iam_modal_max_width">380dp</dimen>
+    <dimen name="hackle_iam_modal_max_height">750dp</dimen>
+    <dimen name="hackle_iam_modal_margin">16dp</dimen>
 </resources>

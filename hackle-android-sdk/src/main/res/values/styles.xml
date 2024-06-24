@@ -13,9 +13,9 @@
     </style>
     
     <style name="Hackle.InAppMessage.Modal">
-        <item name="inAppMessageMaxHeight">@dimen/io_hackle_inappmessage_modal_max_height</item>
-        <item name="inAppMessageMaxWidth">@dimen/io_hackle_inappmessage_modal_max_width</item>
-        <item name="inAppMessageMinWidth">@dimen/io_hackle_inappmessage_modal_min_width</item>
+        <item name="inAppMessageMaxHeight">@dimen/hackle_iam_modal_max_height</item>
+        <item name="inAppMessageMaxWidth">@dimen/hackle_iam_modal_max_width</item>
+        <item name="inAppMessageMinWidth">@dimen/hackle_iam_modal_min_width</item>
         <item name="android:layout_centerInParent">true</item>
     </style>
 
