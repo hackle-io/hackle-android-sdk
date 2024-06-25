@@ -3,14 +3,11 @@ package io.hackle.android.ui.inappmessage.event
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.close
 import io.hackle.sdk.core.model.InAppMessage
-import io.mockk.Called
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat

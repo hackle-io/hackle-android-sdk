@@ -6,8 +6,6 @@ import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresente
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -19,13 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Note that this class is managed as single instance.
  * @see InAppMessageUi.instance
  */
-internal class InAppMessageUi(
+internal class InAppMessageUi private constructor(
     private val activityProvider: ActivityProvider,
-    private val messageViewFactory: InAppMessageViewFactory,
+    private val messageControllerFactory: InAppMessageControllerFactory,
     val eventHandler: InAppMessageEventHandler,
 ) : InAppMessagePresenter {
 
-    var currentMessageView: InAppMessageView? = null
+    var currentMessageController: InAppMessageController? = null
         private set
 
     private val opening = AtomicBoolean(false)
@@ -43,17 +41,17 @@ internal class InAppMessageUi(
 
     private fun presentNow(context: InAppMessagePresentationContext) {
         val activity = activityProvider.currentActivity ?: return
-        if (currentMessageView != null) return
+        if (currentMessageController != null) return
         if (!isSupportedOrientation(activity, context)) return
 
-        var messageView: InAppMessageView? = null
+        var messageController: InAppMessageController? = null
         try {
-            messageView = messageViewFactory.create(context, this)
-            this.currentMessageView = messageView
-            messageView.open(activity)
+            messageController = messageControllerFactory.create(context, this)
+            this.currentMessageController = messageController
+            messageController.open(activity)
         } catch (e: Throwable) {
             log.error { "Failed to present InAppMessage: $e" }
-            messageView?.close()
+            messageController?.close()
         }
     }
 
@@ -63,7 +61,7 @@ internal class InAppMessageUi(
     }
 
     fun closeCurrent() {
-        currentMessageView = null
+        currentMessageController = null
     }
 
     companion object {
@@ -73,11 +71,11 @@ internal class InAppMessageUi(
 
         fun create(
             activityProvider: ActivityProvider,
-            messageViewFactory: InAppMessageViewFactory,
+            messageControllerFactory: InAppMessageControllerFactory,
             eventHandler: InAppMessageEventHandler,
         ): InAppMessageUi {
             return INSTANCE
-                ?: InAppMessageUi(activityProvider, messageViewFactory, eventHandler)
+                ?: InAppMessageUi(activityProvider, messageControllerFactory, eventHandler)
                     .also { INSTANCE = it }
         }
 

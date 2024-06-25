@@ -53,9 +53,9 @@ import io.hackle.android.internal.workspace.repository.DefaultWorkspaceConfigRep
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
+import io.hackle.android.ui.inappmessage.InAppMessageControllerFactory
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.*
-import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext
@@ -286,7 +286,7 @@ internal object HackleApps {
         )
         val inAppMessageUi = InAppMessageUi.create(
             activityProvider = lifecycleManager,
-            messageViewFactory = InAppMessageViewFactory(),
+            messageControllerFactory = InAppMessageControllerFactory(),
             eventHandler = inAppMessageEventHandler,
         )
         val inAppMessageEventMatcher = InAppMessageEventMatcher(

@@ -2,8 +2,9 @@ package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
-import io.hackle.android.ui.inappmessage.InAppMessageUi
+import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.handle
 import io.hackle.sdk.core.model.InAppMessage
 
 
@@ -13,33 +14,25 @@ import io.hackle.sdk.core.model.InAppMessage
 internal interface InAppMessageView {
 
     /**
-     * The [Activity] where [InAppMessageView] is presented.
-     *
-     * Can be different from the activity parameters passed on [open].
+     * The controller that manages the lifecycle and interactions of this [InAppMessageView].
      */
-    val activity: Activity?
+    val controller: InAppMessageController
 
     /**
-     * [InAppMessage] context to present.
+     * The context in which this [InAppMessageView] is presented.
      */
     val context: InAppMessagePresentationContext
 
     /**
-     * Used to present, interact and manage [InAppMessageView].
+     * The [Activity] where [InAppMessageView] is presented.
      */
-    val ui: InAppMessageUi
+    val activity: Activity?
+}
 
-    /**
-     * Opens an [InAppMessage] on the [activity].
-     */
-    fun open(activity: Activity)
-
-    /**
-     * Closes an [InAppMessage].
-     */
-    fun close()
+internal fun InAppMessageView.close() {
+    controller.close()
 }
 
 internal fun InAppMessageView.handle(event: InAppMessageEvent) {
-    ui.eventHandler.handle(this, event)
+    controller.handle(event)
 }
