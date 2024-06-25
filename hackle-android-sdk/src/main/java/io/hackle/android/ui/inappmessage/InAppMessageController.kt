@@ -14,7 +14,7 @@ internal interface InAppMessageController {
     /**
      * The [InAppMessageLayout] instance managed by this controller.
      */
-    val view: InAppMessageLayout
+    val layout: InAppMessageLayout
 
     /**
      * The context in which [InAppMessageLayout] is presented.
@@ -38,5 +38,5 @@ internal interface InAppMessageController {
 }
 
 internal fun InAppMessageController.handle(event: InAppMessageEvent) {
-    ui.eventHandler.handle(view, event)
+    ui.eventHandler.handle(layout, event)
 }

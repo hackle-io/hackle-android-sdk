@@ -16,7 +16,7 @@ internal class InAppMessageActivityController private constructor(
 ) : InAppMessageController {
 
     private var activityView: InAppMessageActivity? = null
-    override val view: InAppMessageLayout get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${viewType.simpleName}]" }
+    override val layout: InAppMessageLayout get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${viewType.simpleName}]" }
 
     override fun open(activity: Activity) {
         val intent = Intent(activity, viewType)
