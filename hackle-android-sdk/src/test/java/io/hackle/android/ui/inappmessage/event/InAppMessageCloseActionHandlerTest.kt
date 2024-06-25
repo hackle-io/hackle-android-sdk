@@ -1,8 +1,8 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.support.InAppMessages
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.close
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.layout.close
 import io.hackle.sdk.core.model.InAppMessage.ActionType.CLOSE
 import io.hackle.sdk.core.model.InAppMessage.ActionType.WEB_LINK
 import io.mockk.mockk
@@ -27,7 +27,7 @@ internal class InAppMessageCloseActionHandlerTest {
         // given
         val sut = InAppMessageCloseActionHandler()
 
-        val view = mockk<InAppMessageView>(relaxUnitFun = true)
+        val view = mockk<InAppMessageLayout>(relaxUnitFun = true)
         val action = InAppMessages.action(type = CLOSE)
 
         // when

@@ -2,14 +2,14 @@ package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpression
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
 
 internal interface InAppMessageEventProcessor<EVENT : InAppMessageEvent> {
     fun supports(event: InAppMessageEvent): Boolean
-    fun process(view: InAppMessageView, event: EVENT, timestamp: Long)
+    fun process(view: InAppMessageLayout, event: EVENT, timestamp: Long)
 }
 
 internal class InAppMessageEventProcessorFactory(private val processors: List<InAppMessageEventProcessor<out InAppMessageEvent>>) {
@@ -26,7 +26,7 @@ internal class InAppMessageImpressionEventProcessor(
         return event is InAppMessageEvent.Impression
     }
 
-    override fun process(view: InAppMessageView, event: InAppMessageEvent.Impression, timestamp: Long) {
+    override fun process(view: InAppMessageLayout, event: InAppMessageEvent.Impression, timestamp: Long) {
         try {
             saveImpression(view.context.inAppMessage, view.context.user, timestamp)
         } catch (e: Throwable) {
@@ -61,7 +61,7 @@ internal class InAppMessageActionEventProcessor(
         return event is InAppMessageEvent.Action
     }
 
-    override fun process(view: InAppMessageView, event: InAppMessageEvent.Action, timestamp: Long) {
+    override fun process(view: InAppMessageLayout, event: InAppMessageEvent.Action, timestamp: Long) {
         val handler = actionHandlerFactory.get(event.action) ?: return
         handler.handle(view, event.action)
     }
@@ -72,7 +72,7 @@ internal class InAppMessageCloseEventProcessor : InAppMessageEventProcessor<InAp
         return event is InAppMessageEvent.Close
     }
 
-    override fun process(view: InAppMessageView, event: InAppMessageEvent.Close, timestamp: Long) {
+    override fun process(view: InAppMessageLayout, event: InAppMessageEvent.Close, timestamp: Long) {
         // Do nothing. This method is called after the view is closed.
     }
 }

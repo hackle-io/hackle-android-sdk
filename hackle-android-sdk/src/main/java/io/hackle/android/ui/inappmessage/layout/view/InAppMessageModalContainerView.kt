@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.view
+package io.hackle.android.ui.inappmessage.layout.view
 
 import android.content.Context
 import android.graphics.Color
@@ -10,8 +10,7 @@ import io.hackle.android.R
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
-internal class InAppMessageModalLandContainerView : RelativeLayout {
-
+internal class InAppMessageModalContainerView : RelativeLayout {
 
     constructor(context: Context) : super(context)
 
@@ -22,18 +21,18 @@ internal class InAppMessageModalLandContainerView : RelativeLayout {
         val maxWidth = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_max_width)
         val maxHeight = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_max_height)
 
-
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         val newMaxHeight = min(maxHeight, measuredHeight)
         if (measuredWidth < minWidth) {
-            setMeasuredDimension(minWidth, newMaxHeight)
+            setMeasuredDimension(minWidth, measuredHeight)
         } else if (measuredWidth > maxWidth) {
             resize(maxWidth, newMaxHeight)
         } else {
             resize(measuredWidth, newMaxHeight)
         }
     }
+
 
     private fun resize(width: Int, height: Int) {
         val view = getChildAt(0)
@@ -57,7 +56,6 @@ internal class InAppMessageModalLandContainerView : RelativeLayout {
         background = gradientDrawable
     }
 
-
     fun setImageViewStyle(
         message: InAppMessage.Message,
         inAppMessageImageView: InAppMessageImageView
@@ -69,9 +67,8 @@ internal class InAppMessageModalLandContainerView : RelativeLayout {
         }
     }
 
-
     companion object {
-        private const val NO_TEXT_IMAGE_VIEW_ASPECT_RATIO = 300f / 200f
+        private const val NO_TEXT_IMAGE_VIEW_ASPECT_RATIO = 200f / 300f
         private const val TEXT_IMAGE_VIEW_ASPECT_RATIO = 290f / 100f
     }
 }

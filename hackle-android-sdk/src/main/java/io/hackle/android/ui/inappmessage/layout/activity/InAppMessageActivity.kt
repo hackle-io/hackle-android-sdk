@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.view
+package io.hackle.android.ui.inappmessage.layout.activity
 
 import android.app.Activity
 import android.graphics.Color
@@ -9,10 +9,11 @@ import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenta
 import io.hackle.android.ui.HackleActivity
 import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.hackle.android.ui.inappmessage.view.InAppMessageActivityController.Companion.IN_APP_MESSAGE_ID
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivityController.Companion.IN_APP_MESSAGE_ID
 import io.hackle.sdk.core.model.InAppMessage
 
-internal abstract class InAppMessageActivityView : FragmentActivity(), HackleActivity, InAppMessageView {
+internal abstract class InAppMessageActivity : FragmentActivity(), HackleActivity, InAppMessageLayout {
 
     private lateinit var messageController: InAppMessageController
 

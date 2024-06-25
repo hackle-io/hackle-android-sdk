@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:background="@color/hackle_iam_modal_frame_background">
 
-        <io.hackle.android.ui.inappmessage.view.InAppMessageModalLandContainerView
+        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageModalLandContainerView
             android:id="@+id/hackle_iam_modal_land_container_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -27,7 +27,7 @@
             android:gravity="center_vertical"
             android:minWidth="@dimen/hackle_iam_modal_min_width">
 
-            <io.hackle.android.ui.inappmessage.view.InAppMessageImageView
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
                 android:id="@+id/hackle_iam_modal_image_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
                 android:adjustViewBounds="true" />
 
 
-            <io.hackle.android.ui.inappmessage.view.InAppMessageTextContainerView
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextContainerView
                 android:id="@+id/hackle_iam_modal_text_container_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <io.hackle.android.ui.inappmessage.view.InAppMessageBodyTextView
+                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageBodyTextView
                     android:id="@+id/hackle_iam_modal_body_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -70,7 +70,7 @@
                     android:textColor="#1c1c1c"
                     android:textSize="16sp" />
 
-            </io.hackle.android.ui.inappmessage.view.InAppMessageTextContainerView>
+            </io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextContainerView>
 
             <LinearLayout
                 android:id="@+id/hackle_iam_modal_button_container_view"
@@ -84,7 +84,7 @@
                 android:padding="16dp"
                 android:visibility="gone">
 
-                <io.hackle.android.ui.inappmessage.view.InAppMessageButtonView
+                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
                     android:id="@+id/hackle_iam_modal_first_button"
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="0dp"
@@ -99,7 +99,7 @@
                     android:textStyle="bold"
                     android:visibility="gone" />
 
-                <io.hackle.android.ui.inappmessage.view.InAppMessageButtonView
+                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
                     android:id="@+id/hackle_iam_modal_second_button"
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="0dp"
@@ -124,9 +124,9 @@
                     android:id="@+id/hackle_iam_modal_close_button"
                     style="@style/Hackle.InAppMessage.CloseButton" />
             </RelativeLayout>
-        </io.hackle.android.ui.inappmessage.view.InAppMessageModalLandContainerView>
+        </io.hackle.android.ui.inappmessage.layout.view.InAppMessageModalLandContainerView>
 
-        <io.hackle.android.ui.inappmessage.view.InAppMessageButtonView
+        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
             android:id="@+id/hackle_iam_modal_left_bottom_outer_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -139,7 +139,7 @@
             android:textSize="16sp"
             android:visibility="gone" />
 
-        <io.hackle.android.ui.inappmessage.view.InAppMessageButtonView
+        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
             android:id="@+id/hackle_iam_modal_right_bottom_outer_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

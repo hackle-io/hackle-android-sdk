@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.view
+package io.hackle.android.ui.inappmessage.layout.activity
 
 import android.app.Activity
 import android.content.Intent
@@ -7,15 +7,16 @@ import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 
 internal class InAppMessageActivityController private constructor(
     override val context: InAppMessagePresentationContext,
     override val ui: InAppMessageUi,
-    private val viewType: Class<out InAppMessageActivityView>
+    private val viewType: Class<out InAppMessageActivity>
 ) : InAppMessageController {
 
-    private var activityView: InAppMessageActivityView? = null
-    override val view: InAppMessageView get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${viewType.simpleName}]" }
+    private var activityView: InAppMessageActivity? = null
+    override val view: InAppMessageLayout get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${viewType.simpleName}]" }
 
     override fun open(activity: Activity) {
         val intent = Intent(activity, viewType)
@@ -23,7 +24,7 @@ internal class InAppMessageActivityController private constructor(
         activity.startActivity(intent)
     }
 
-    fun onOpen(activityView: InAppMessageActivityView) {
+    fun onOpen(activityView: InAppMessageActivity) {
         this.activityView = activityView
         handle(InAppMessageEvent.Impression)
     }
@@ -37,7 +38,7 @@ internal class InAppMessageActivityController private constructor(
 
     companion object {
         const val IN_APP_MESSAGE_ID = "hackleInAppMessageId"
-        inline fun <reified VIEW : InAppMessageActivityView> create(
+        inline fun <reified VIEW : InAppMessageActivity> create(
             context: InAppMessagePresentationContext,
             ui: InAppMessageUi
         ): InAppMessageActivityController {

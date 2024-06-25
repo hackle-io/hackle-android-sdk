@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.view
+package io.hackle.android.ui.inappmessage.layout.activity
 
 import android.content.res.Configuration
 import android.graphics.Color
@@ -15,6 +15,9 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.signature.ObjectKey
 import io.hackle.android.R
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.layout.close
+import io.hackle.android.ui.inappmessage.layout.handle
+import io.hackle.android.ui.inappmessage.layout.view.*
 import io.hackle.android.ui.inappmessage.orientation
 import io.hackle.android.ui.inappmessage.outerButtonOrNull
 import io.hackle.android.ui.inappmessage.px
@@ -29,7 +32,7 @@ import io.hackle.sdk.core.model.InAppMessage.Orientation.HORIZONTAL
 import io.hackle.sdk.core.model.InAppMessage.Orientation.VERTICAL
 
 
-internal class InAppMessageModalView : InAppMessageActivityView() {
+internal class InAppMessageModalActivity : InAppMessageActivity() {
 
     private lateinit var frameView: RelativeLayout
     private lateinit var containerView: InAppMessageModalContainerView

@@ -2,8 +2,8 @@ package io.hackle.android.ui.inappmessage.event
 
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.close
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.layout.close
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
@@ -36,7 +36,7 @@ internal class InAppMessageLinkAndCloseHandlerTest {
     @Test
     fun `handle - when activity is null then do nothing`() {
         // given
-        val view = mockk<InAppMessageView> {
+        val view = mockk<InAppMessageLayout> {
             every { activity } returns null
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.LINK_AND_CLOSE)
@@ -51,7 +51,7 @@ internal class InAppMessageLinkAndCloseHandlerTest {
     @Test
     fun `when action value is null then do nothing`() {
         // given
-        val view = mockk<InAppMessageView> {
+        val view = mockk<InAppMessageLayout> {
             every { activity } returns mockk()
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.LINK_AND_CLOSE, value = null)
@@ -67,7 +67,7 @@ internal class InAppMessageLinkAndCloseHandlerTest {
     fun `handle uri and close`() {
         // given
         val activity = mockk<Activity>()
-        val view = mockk<InAppMessageView>(relaxUnitFun = true) {
+        val view = mockk<InAppMessageLayout>(relaxUnitFun = true) {
             every { this@mockk.activity } returns activity
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.LINK_AND_CLOSE, value = "gogo")

@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.view
+package io.hackle.android.ui.inappmessage.layout
 
 import android.app.Activity
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
@@ -9,30 +9,30 @@ import io.hackle.sdk.core.model.InAppMessage
 
 
 /**
- * Base view interface for [InAppMessage].
+ * Base layout interface for [InAppMessage].
  */
-internal interface InAppMessageView {
+internal interface InAppMessageLayout {
 
     /**
-     * The controller that manages the lifecycle and interactions of this [InAppMessageView].
+     * The controller that manages the lifecycle and interactions of this [InAppMessageLayout].
      */
     val controller: InAppMessageController
 
     /**
-     * The context in which this [InAppMessageView] is presented.
+     * The context in which this [InAppMessageLayout] is presented.
      */
     val context: InAppMessagePresentationContext
 
     /**
-     * The [Activity] where [InAppMessageView] is presented.
+     * The [Activity] where [InAppMessageLayout] is presented.
      */
     val activity: Activity?
 }
 
-internal fun InAppMessageView.close() {
+internal fun InAppMessageLayout.close() {
     controller.close()
 }
 
-internal fun InAppMessageView.handle(event: InAppMessageEvent) {
+internal fun InAppMessageLayout.handle(event: InAppMessageEvent) {
     controller.handle(event)
 }
