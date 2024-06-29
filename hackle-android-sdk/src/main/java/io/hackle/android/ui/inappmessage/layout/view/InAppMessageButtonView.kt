@@ -31,7 +31,7 @@ internal class InAppMessageButtonView : Button {
 
     fun bind(positionalButton: InAppMessage.Message.PositionalButton) {
         this.text = positionalButton.button.text
-        this.setTextColor(Color.parseColor(positionalButton.button.style.textColor))
+        this.setTextColor(positionalButton.button.textColor)
         this.background = ColorDrawable(Color.TRANSPARENT)
     }
 }
