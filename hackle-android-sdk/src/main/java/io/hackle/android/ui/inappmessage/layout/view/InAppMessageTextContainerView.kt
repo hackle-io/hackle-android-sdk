@@ -1,12 +1,12 @@
 package io.hackle.android.ui.inappmessage.layout.view
 
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import io.hackle.android.R
+import io.hackle.android.ui.inappmessage.color
 import io.hackle.sdk.core.model.InAppMessage
 
 internal class InAppMessageTextContainerView : LinearLayout {
@@ -28,18 +28,19 @@ internal class InAppMessageTextContainerView : LinearLayout {
         titleTextView = findViewById(R.id.hackle_iam_modal_title_text_view)
         bodyTextView = findViewById(R.id.hackle_iam_modal_body_text_view)
 
-        if (message.text == null) {
+        val messageText = message.text
+        if (messageText == null) {
             bodyTextView.visibility = TextView.GONE
             titleTextView.visibility = TextView.GONE
             visibility = View.GONE
             return
         }
-        titleTextView.text = message.text!!.title.text
-        bodyTextView.text = message.text!!.body.text
+        titleTextView.text = messageText.title.text
+        titleTextView.setTextColor(messageText.title.color)
 
+        bodyTextView.text = messageText.body.text
+        bodyTextView.setTextColor(messageText.body.color)
 
-        titleTextView.setTextColor(Color.parseColor(message.text!!.title.style.textColor))
-        bodyTextView.setTextColor(Color.parseColor(message.text!!.body.style.textColor))
         visibility = View.VISIBLE
     }
 }

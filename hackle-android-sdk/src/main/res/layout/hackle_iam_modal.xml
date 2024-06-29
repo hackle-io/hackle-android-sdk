@@ -17,10 +17,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
+            android:layout_marginStart="@dimen/hackle_iam_modal_margin"
+            android:layout_marginLeft="@dimen/hackle_iam_modal_margin"
+            android:layout_marginEnd="@dimen/hackle_iam_modal_margin"
+            android:layout_marginRight="@dimen/hackle_iam_modal_margin"
             android:gravity="center_vertical"
             android:minWidth="@dimen/hackle_iam_modal_min_width">
 
@@ -81,7 +81,7 @@
                     android:id="@+id/hackle_iam_modal_first_button"
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginEnd="4dp"
                     android:layout_marginRight="4dp"
                     android:layout_weight="1"
@@ -96,7 +96,7 @@
                     android:id="@+id/hackle_iam_modal_second_button"
                     style="?android:attr/borderlessButtonStyle"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:layout_marginLeft="4dp"
                     android:layout_weight="1"
@@ -109,13 +109,21 @@
             </LinearLayout>
 
             <RelativeLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="16dp">
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:padding="8dp">
 
-                <ImageButton
+                <TextView
                     android:id="@+id/hackle_iam_modal_close_button"
-                    style="@style/Hackle.InAppMessage.CloseButton" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="@android:color/transparent"
+                    android:gravity="center"
+                    android:text="@string/hackle_iam_close_button_text"
+                    android:textAlignment="center"
+                    android:textSize="16sp" />
             </RelativeLayout>
         </io.hackle.android.ui.inappmessage.layout.view.InAppMessageModalContainerView>
 

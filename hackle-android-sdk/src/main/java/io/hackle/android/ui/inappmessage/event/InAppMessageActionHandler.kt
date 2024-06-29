@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.close
 import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
@@ -12,7 +11,7 @@ import io.hackle.sdk.core.model.InAppMessage
 
 internal interface InAppMessageActionHandler {
     fun supports(action: InAppMessage.Action): Boolean
-    fun handle(view: InAppMessageLayout, action: InAppMessage.Action)
+    fun handle(layout: InAppMessageLayout, action: InAppMessage.Action)
 }
 
 internal class InAppMessageActionHandlerFactory(private val handlers: List<InAppMessageActionHandler>) {
@@ -26,8 +25,8 @@ internal class InAppMessageCloseActionHandler : InAppMessageActionHandler {
         return action.type == InAppMessage.ActionType.CLOSE
     }
 
-    override fun handle(view: InAppMessageLayout, action: InAppMessage.Action) {
-        view.close()
+    override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
+        layout.close()
     }
 }
 
@@ -39,16 +38,16 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
         return action.type == InAppMessage.ActionType.WEB_LINK
     }
 
-    override fun handle(view: InAppMessageLayout, action: InAppMessage.Action) {
-        val activity = view.activity
+    override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
+        val activity = layout.activity
         if (activity == null) {
-            log.warn { "InAppMessage activity is null, not handle action [${view.context.inAppMessage.id}]" }
+            log.warn { "InAppMessage activity is null, not handle action [${layout.context.inAppMessage.id}]" }
             return
         }
 
         val link = action.value
         if (link == null) {
-            log.error { "InAppMessage action value is null, not handle action [${view.context.inAppMessage.id}]" }
+            log.error { "InAppMessage action value is null, not handle action [${layout.context.inAppMessage.id}]" }
             return
         }
         uriHandler.handle(activity, link)
@@ -63,19 +62,19 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
         return action.type == InAppMessage.ActionType.LINK_AND_CLOSE
     }
 
-    override fun handle(view: InAppMessageLayout, action: InAppMessage.Action) {
-        val activity = view.activity
+    override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
+        val activity = layout.activity
         if (activity == null) {
-            log.warn { "InAppMessage activity is null, not handle action [${view.context.inAppMessage.id}]" }
+            log.warn { "InAppMessage activity is null, not handle action [${layout.context.inAppMessage.id}]" }
             return
         }
 
         val link = action.value
         if (link == null) {
-            log.error { "InAppMessage action value is null, not handle action [${view.context.inAppMessage.id}]" }
+            log.error { "InAppMessage action value is null, not handle action [${layout.context.inAppMessage.id}]" }
             return
         }
-        view.close()
+        layout.close()
         uriHandler.handle(activity, link)
     }
 }
@@ -88,10 +87,10 @@ internal class InAppMessageHideActionHandler(
         return action.type == InAppMessage.ActionType.HIDDEN
     }
 
-    override fun handle(view: InAppMessageLayout, action: InAppMessage.Action) {
+    override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
         val expireAt = clock.currentMillis() + DEFAULT_HIDDEN_DURATION_MILLIS
-        storage.put(view.context.inAppMessage, expireAt)
-        view.close()
+        storage.put(layout.context.inAppMessage, expireAt)
+        layout.close()
     }
 
     companion object {

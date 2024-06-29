@@ -4,7 +4,6 @@ import android.app.Activity
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.sdk.core.model.InAppMessage
 
 /**
  * Controller interface for handling [InAppMessageLayout]
@@ -27,12 +26,12 @@ internal interface InAppMessageController {
     val ui: InAppMessageUi
 
     /**
-     * Opens the [InAppMessage] on the [activity].
+     * Opens the [InAppMessageLayout] on the [activity].
      */
     fun open(activity: Activity)
 
     /**
-     * Closes the [InAppMessage].
+     * Closes the [InAppMessageLayout].
      */
     fun close()
 }

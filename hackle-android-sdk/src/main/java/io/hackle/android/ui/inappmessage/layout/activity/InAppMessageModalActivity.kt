@@ -1,27 +1,14 @@
 package io.hackle.android.ui.inappmessage.layout.activity
 
 import android.content.res.Configuration
-import android.graphics.Color
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.LinearLayout
+import android.widget.*
 import android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
-import android.widget.RelativeLayout
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.signature.ObjectKey
 import io.hackle.android.R
+import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
-import io.hackle.android.ui.inappmessage.layout.close
 import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.android.ui.inappmessage.layout.view.*
-import io.hackle.android.ui.inappmessage.orientation
-import io.hackle.android.ui.inappmessage.outerButtonOrNull
-import io.hackle.android.ui.inappmessage.px
-import io.hackle.android.ui.inappmessage.supports
 import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionArea.*
@@ -31,30 +18,25 @@ import io.hackle.sdk.core.model.InAppMessage.Message.Alignment.Vertical.BOTTOM
 import io.hackle.sdk.core.model.InAppMessage.Orientation.HORIZONTAL
 import io.hackle.sdk.core.model.InAppMessage.Orientation.VERTICAL
 
-
 internal class InAppMessageModalActivity : InAppMessageActivity() {
 
+    // Attribute
+    private val cornerRadius get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_corner_radius)
+
+    // View
     private lateinit var frameView: RelativeLayout
     private lateinit var containerView: InAppMessageModalContainerView
     private lateinit var landContainerView: InAppMessageModalLandContainerView
 
     private lateinit var imageView: InAppMessageImageView
     private lateinit var textContainerView: InAppMessageTextContainerView
-    private lateinit var firstButton: InAppMessageButtonView
-    private lateinit var secondButton: InAppMessageButtonView
+    private lateinit var firstButtonView: InAppMessageButtonView
+    private lateinit var secondButtonView: InAppMessageButtonView
 
-    private lateinit var leftBottomButton: InAppMessageButtonView
-    private lateinit var rightBottomButton: InAppMessageButtonView
+    private lateinit var leftBottomButtonView: InAppMessageButtonView
+    private lateinit var rightBottomButtonView: InAppMessageButtonView
 
-    private lateinit var closeButton: ImageButton
-
-    private val requestOptions: RequestOptions
-        get() {
-            // images are only cached for 1 minute
-            return RequestOptions()
-                .onlyRetrieveFromCache(false) // true is cached only set
-                .signature(ObjectKey(System.currentTimeMillis() / (1000 * 60 * 1)))
-        }
+    private lateinit var closeButtonView: TextView
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -78,22 +60,38 @@ internal class InAppMessageModalActivity : InAppMessageActivity() {
                 setContentView(R.layout.hackle_iam_modal)
                 frameView = findViewById(R.id.hackle_iam_modal_frame_view)
                 frameView.setOnClickListener { close() }
+
                 imageView = findViewById(R.id.hackle_iam_modal_image_view)
-                loadImageWithGlide(orientation)
+                loadImage(orientation)
+
                 containerView = findViewById(R.id.hackle_iam_modal_container_view)
                 containerView.setModalFrameStyle(message)
                 containerView.setImageViewStyle(message, imageView)
+                containerView.setOnClickListener {
+                    val action = message.action
+                    if (action != null) {
+                        handle(InAppMessageEvent.Action(action, MESSAGE))
+                    }
+                }
             }
 
             HORIZONTAL -> {
                 setContentView(R.layout.hackle_iam_modal_land)
                 frameView = findViewById(R.id.hackle_iam_modal_frame_view)
                 frameView.setOnClickListener { close() }
-                landContainerView = findViewById(R.id.hackle_iam_modal_land_container_view)
+
                 imageView = findViewById(R.id.hackle_iam_modal_image_view)
-                loadImageWithGlide(orientation)
+                loadImage(orientation)
+
+                landContainerView = findViewById(R.id.hackle_iam_modal_land_container_view)
                 landContainerView.setModalFrameStyle(message)
                 landContainerView.setImageViewStyle(message, imageView)
+                landContainerView.setOnClickListener {
+                    val action = message.action
+                    if (action != null) {
+                        handle(InAppMessageEvent.Action(action, MESSAGE))
+                    }
+                }
             }
         }.safe
 
@@ -103,57 +101,49 @@ internal class InAppMessageModalActivity : InAppMessageActivity() {
 
         // Buttons
         val buttonContainer = findViewById<View>(R.id.hackle_iam_modal_button_container_view)
-        firstButton = findViewById(R.id.hackle_iam_modal_first_button)
-        secondButton = findViewById(R.id.hackle_iam_modal_second_button)
+        firstButtonView = findViewById(R.id.hackle_iam_modal_first_button)
+        secondButtonView = findViewById(R.id.hackle_iam_modal_second_button)
 
-        val radiusPx = px(8)
+        val radiusPx = cornerRadius.toFloat()
         when (message.buttons.size) {
             0 -> {
                 buttonContainer.visibility = View.GONE
-                imageView.setCornersRadiiPx(radiusPx)
+                imageView.setCornersRadius(radiusPx)
             }
 
             1 -> {
                 buttonContainer.visibility = View.VISIBLE
-                imageView.setCornersRadiiPx(radiusPx, radiusPx, 0f, 0f)
-                configureButton(firstButton, message.buttons[0])
-                firstButton.layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT).apply { rightMargin = 0 }
+                imageView.setCornersRadii(radiusPx, radiusPx, 0f, 0f)
+                configureButton(firstButtonView, message.buttons[0])
+                firstButtonView.layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT).apply { rightMargin = 0 }
             }
 
             2 -> {
                 buttonContainer.visibility = View.VISIBLE
-                imageView.setCornersRadiiPx(radiusPx, radiusPx, 0f, 0f)
-                configureButton(firstButton, message.buttons[0])
-                configureButton(secondButton, message.buttons[1])
+                imageView.setCornersRadii(radiusPx, radiusPx, 0f, 0f)
+                configureButton(firstButtonView, message.buttons[0])
+                configureButton(secondButtonView, message.buttons[1])
             }
         }
+        imageView.setHeightRatio(0.8)
 
         // OuterButton
-        leftBottomButton = findViewById(R.id.hackle_iam_modal_left_bottom_outer_button)
-        rightBottomButton = findViewById(R.id.hackle_iam_modal_right_bottom_outer_button)
+        leftBottomButtonView = findViewById(R.id.hackle_iam_modal_left_bottom_outer_button)
+        rightBottomButtonView = findViewById(R.id.hackle_iam_modal_right_bottom_outer_button)
         if (message.layout.layoutType == InAppMessage.LayoutType.IMAGE) {
             message.outerButtonOrNull(LEFT, BOTTOM)?.let {
-                configureButton(leftBottomButton, it)
+                configureButton(leftBottomButtonView, it)
             }
-
             message.outerButtonOrNull(RIGHT, BOTTOM)?.let {
-                configureButton(rightBottomButton, it)
+                configureButton(rightBottomButtonView, it)
             }
         }
 
         // CloseButton
-        closeButton = findViewById(R.id.hackle_iam_modal_close_button)
+        closeButtonView = findViewById(R.id.hackle_iam_modal_close_button)
         message.closeButton?.let { button ->
-            val buttonDrawable = closeButton.drawable
-            buttonDrawable.mutate()
-            buttonDrawable.colorFilter =
-                BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-                    Color.parseColor(button.style.textColor),
-                    BlendModeCompat.SRC_IN
-                )
-            closeButton.setImageDrawable(buttonDrawable)
-
-            closeButton.setOnClickListener {
+            closeButtonView.setTextColor(button.textColor)
+            closeButtonView.setOnClickListener {
                 handle(InAppMessageEvent.Action(button.action, X_BUTTON))
             }
         }
@@ -175,19 +165,16 @@ internal class InAppMessageModalActivity : InAppMessageActivity() {
         buttonView.visibility = Button.VISIBLE
     }
 
-    private fun loadImageWithGlide(orientation: InAppMessage.Orientation) {
-        val image = images.first { it.orientation == orientation }
+    private fun loadImage(orientation: InAppMessage.Orientation) {
+        val image = context.image(orientation)
+        imageView.scaleType = ImageView.ScaleType.FIT_CENTER
+        imageView.render(image, this)
 
-        Glide.with(this)
-            .load(image.imagePath)
-            .apply(requestOptions)
-            .fitCenter()
-            .into(imageView).also {
-                image.action?.let { imageAction ->
-                    imageView.setOnClickListener {
-                        handle(InAppMessageEvent.Action(imageAction, IMAGE))
-                    }
-                }
+        imageView.setOnClickListener {
+            val action = image.action
+            if (action != null) {
+                handle(InAppMessageEvent.Action(action, IMAGE))
             }
+        }
     }
 }

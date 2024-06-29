@@ -15,11 +15,11 @@ internal class InAppMessageManager(
 ) : UserEventListener {
 
     override fun onEvent(event: UserEvent) {
-        val context = determine(event) ?: return
-
         if (activityProvider.currentState != ActivityState.ACTIVE) {
             return
         }
+
+        val context = determine(event) ?: return
         presenter.present(context)
     }
 

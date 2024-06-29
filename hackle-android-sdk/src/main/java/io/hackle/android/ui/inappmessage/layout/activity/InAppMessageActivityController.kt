@@ -12,14 +12,14 @@ import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 internal class InAppMessageActivityController private constructor(
     override val context: InAppMessagePresentationContext,
     override val ui: InAppMessageUi,
-    private val viewType: Class<out InAppMessageActivity>
+    private val activityClass: Class<out InAppMessageActivity>
 ) : InAppMessageController {
 
     private var activityView: InAppMessageActivity? = null
-    override val layout: InAppMessageLayout get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${viewType.simpleName}]" }
+    override val layout: InAppMessageLayout get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${activityClass.simpleName}]" }
 
     override fun open(activity: Activity) {
-        val intent = Intent(activity, viewType)
+        val intent = Intent(activity, activityClass)
         intent.putExtra(IN_APP_MESSAGE_ID, context.inAppMessage.id)
         activity.startActivity(intent)
     }
@@ -38,11 +38,11 @@ internal class InAppMessageActivityController private constructor(
 
     companion object {
         const val IN_APP_MESSAGE_ID = "hackleInAppMessageId"
-        inline fun <reified VIEW : InAppMessageActivity> create(
+        inline fun <reified ACTIVITY : InAppMessageActivity> create(
             context: InAppMessagePresentationContext,
             ui: InAppMessageUi
         ): InAppMessageActivityController {
-            return InAppMessageActivityController(context, ui, VIEW::class.java)
+            return InAppMessageActivityController(context, ui, ACTIVITY::class.java)
         }
     }
 }

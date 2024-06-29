@@ -6,7 +6,9 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.widget.ImageView
+import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
 internal class InAppMessageImageView : ImageView {
@@ -19,12 +21,13 @@ internal class InAppMessageImageView : ImageView {
     private var rect = RectF()
     private var cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
     private var aspectRatio = -1f
+    private var heightRatio = 1.0
 
-    fun setCornersRadiiPx(px: Float) {
-        setCornersRadiiPx(px, px, px, px)
+    fun setCornersRadius(px: Float) {
+        setCornersRadii(px, px, px, px)
     }
 
-    fun setCornersRadiiPx(topLeft: Float, topRight: Float, bottomLeft: Float, bottomRight: Float) {
+    fun setCornersRadii(topLeft: Float, topRight: Float, bottomLeft: Float, bottomRight: Float) {
         cornerRadii = floatArrayOf(
             topLeft, topLeft,
             topRight, topRight,
@@ -38,21 +41,27 @@ internal class InAppMessageImageView : ImageView {
         requestLayout()
     }
 
+    fun setHeightRatio(heightRatio: Double) {
+        this.heightRatio = heightRatio
+        requestLayout()
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val widthSpec =
-            MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY)
-        super.onMeasure(widthSpec, heightMeasureSpec)
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
-
-        if (aspectRatio != -1f && measuredHeight > 0 && measuredWidth > 0) {
-            var newWidth = measuredWidth
-            val maxHeight = min((newWidth / aspectRatio).toInt(), (parentHeight * 0.8).toInt()) + 1
-            newWidth = (maxHeight * aspectRatio).toInt()
-            val newHeight = min(measuredHeight, maxHeight)
+        if (aspectRatio != -1f && measuredWidth > 0 && measuredHeight > 0) {
+            val newWidth = measuredWidth
+            val maxHeight = (measuredWidth / aspectRatio).toInt()
+            val newHeight = min(measuredHeight, maxHeight) + 1
             setMeasuredDimension(newWidth, newHeight)
         } else {
             setMeasuredDimension(measuredWidth, measuredHeight)
+        }
+
+        if (heightRatio != 1.0) {
+            val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
+            val newHeight = min(measuredHeight, (parentHeight * heightRatio).toInt())
+            setMeasuredDimension(measuredWidth, newHeight)
         }
     }
 
@@ -75,4 +84,12 @@ internal class InAppMessageImageView : ImageView {
     companion object {
         private val log = Logger<InAppMessageImageView>()
     }
+}
+
+internal fun InAppMessageImageView.render(image: InAppMessage.Message.Image, view: InAppMessageView) {
+    view.controller.ui.imageLoader.renderTo(view.getContext(), image.imagePath, this)
+}
+
+internal fun InAppMessageImageView.render(image: InAppMessage.Message.Image, activity: InAppMessageActivity) {
+    activity.controller.ui.imageLoader.renderTo(activity, image.imagePath, this)
 }

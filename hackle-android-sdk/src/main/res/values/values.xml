@@ -22,6 +22,7 @@
     <string name="hackle_label_ab_test">A/B TEST</string>
     <string name="hackle_label_feature_flag">FEATURE FLAG</string>
 
+    <string name="hackle_iam_close_button_text">✕</string>
 
     <color name="hackle_transparent">#00000000</color>
     <color name="hackle_primary">#5c85eb</color>

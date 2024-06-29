@@ -4,6 +4,7 @@ import android.app.Activity
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*
@@ -25,6 +26,9 @@ class InAppMessageUiTest {
     @RelaxedMockK
     private lateinit var eventHandler: InAppMessageEventHandler
 
+    @RelaxedMockK
+    private lateinit var imageLoader: ImageLoader
+
     @InjectMockKs
     private lateinit var sut: InAppMessageUi
 
@@ -37,13 +41,13 @@ class InAppMessageUiTest {
         mockkObject(TaskExecutors)
         mockkStatic("io.hackle.android.ui.inappmessage.InAppMessageExtensionsKt")
         every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
-        activity = mockk() {
+        activity = mockk {
             every { orientation } returns InAppMessage.Orientation.VERTICAL
         }
         controller = mockk(relaxUnitFun = true)
 
         every { activityProvider.currentActivity } returns activity
-        every { messageControllerFactory.create(any(), any()) } returns controller
+        every { messageControllerFactory.create(any(), any(), any()) } returns controller
     }
 
     @Test
@@ -60,7 +64,7 @@ class InAppMessageUiTest {
 
 
     @Test
-    fun `when view is already presented then should not open again`() {
+    fun `when message is already presented then should not open again`() {
 
         val context = InAppMessages.context()
         sut.present(context)

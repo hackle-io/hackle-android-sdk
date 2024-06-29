@@ -3,7 +3,6 @@ package io.hackle.android.ui.inappmessage.event
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.close
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs

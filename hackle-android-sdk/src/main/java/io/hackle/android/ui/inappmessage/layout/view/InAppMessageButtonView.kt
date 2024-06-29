@@ -6,7 +6,10 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.widget.Button
+import io.hackle.android.ui.inappmessage.backgroundColor
+import io.hackle.android.ui.inappmessage.borderColor
 import io.hackle.android.ui.inappmessage.px
+import io.hackle.android.ui.inappmessage.textColor
 import io.hackle.sdk.core.model.InAppMessage
 
 internal class InAppMessageButtonView : Button {
@@ -16,18 +19,19 @@ internal class InAppMessageButtonView : Button {
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     fun bind(button: InAppMessage.Message.Button) {
-        text = button.text
-        setTextColor(Color.parseColor(button.style.textColor))
-        background = GradientDrawable().apply {
-            setColor(Color.parseColor(button.style.bgColor))
-            setStroke(1, Color.parseColor(button.style.borderColor))
-            cornerRadius = px(4)
-        }
+        this.text = button.text
+        this.setTextColor(button.textColor)
+
+        val background = GradientDrawable()
+        background.setColor(button.backgroundColor)
+        background.setStroke(px(1).toInt(), button.borderColor)
+        background.cornerRadius = px(4)
+        this.background = background
     }
 
     fun bind(positionalButton: InAppMessage.Message.PositionalButton) {
-        text = positionalButton.button.text
-        setTextColor(Color.parseColor(positionalButton.button.style.textColor))
-        background = ColorDrawable(Color.TRANSPARENT)
+        this.text = positionalButton.button.text
+        this.setTextColor(Color.parseColor(positionalButton.button.style.textColor))
+        this.background = ColorDrawable(Color.TRANSPARENT)
     }
 }
