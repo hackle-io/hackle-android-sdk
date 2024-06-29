@@ -15,8 +15,8 @@ internal class InAppMessageActivityController private constructor(
     private val activityClass: Class<out InAppMessageActivity>
 ) : InAppMessageController {
 
-    private var activityView: InAppMessageActivity? = null
-    override val layout: InAppMessageLayout get() = checkNotNull(activityView) { "InAppMessageActivityView not opened [${activityClass.simpleName}]" }
+    private var messageActivity: InAppMessageActivity? = null
+    override val layout: InAppMessageLayout get() = checkNotNull(messageActivity) { "InAppMessageActivity not opened [${activityClass.simpleName}]" }
 
     override fun open(activity: Activity) {
         val intent = Intent(activity, activityClass)
@@ -24,15 +24,15 @@ internal class InAppMessageActivityController private constructor(
         activity.startActivity(intent)
     }
 
-    fun onOpen(activityView: InAppMessageActivity) {
-        this.activityView = activityView
+    fun onOpen(messageActivity: InAppMessageActivity) {
+        this.messageActivity = messageActivity
         handle(InAppMessageEvent.Impression)
     }
 
     override fun close() {
         handle(InAppMessageEvent.Close)
-        activityView?.activity?.finish()
-        activityView = null
+        messageActivity?.activity?.finish()
+        messageActivity = null
         ui.closeCurrent()
     }
 
