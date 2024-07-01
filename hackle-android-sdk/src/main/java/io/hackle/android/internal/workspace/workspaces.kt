@@ -283,14 +283,17 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InA
         closeButton = closeButton?.let { it.toButtonOrNull() ?: return null },
         background = InAppMessage.Message.Background(
             color = background.color
-        )
+        ),
+        action = action?.let { it.toActionOrNull() ?: return null },
+        outerButtons = outerButtons.map { it.toPositionalButtonOrNull() ?: return null }
     )
 }
 
 internal fun InAppMessageDto.MessageContextDto.MessageDto.LayoutDto.toLayoutOrNull(): InAppMessage.Message.Layout? {
     return InAppMessage.Message.Layout(
         displayType = parseEnumOrNull<InAppMessage.DisplayType>(displayType) ?: return null,
-        layoutType = parseEnumOrNull<InAppMessage.LayoutType>(layoutType) ?: return null
+        layoutType = parseEnumOrNull<InAppMessage.LayoutType>(layoutType) ?: return null,
+        alignment = alignment?.let { it.toAlignmentOrNull() ?: return null }
     )
 }
 
@@ -347,5 +350,19 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.TextDto.TextAttributeD
         style = InAppMessage.Message.Text.Style(
             textColor = style.textColor
         )
+    )
+}
+
+internal fun InAppMessageDto.MessageContextDto.AlignmentDto.toAlignmentOrNull(): InAppMessage.Message.Alignment? {
+    return InAppMessage.Message.Alignment(
+        vertical = parseEnumOrNull<InAppMessage.Message.Alignment.Vertical>(vertical) ?: return null,
+        horizontal = parseEnumOrNull<InAppMessage.Message.Alignment.Horizontal>(horizontal) ?: return null
+    )
+}
+
+internal fun InAppMessageDto.MessageContextDto.MessageDto.PositionalButtonDto.toPositionalButtonOrNull(): InAppMessage.Message.PositionalButton? {
+    return InAppMessage.Message.PositionalButton(
+        button = button.toButtonOrNull() ?: return null,
+        alignment = alignment.toAlignmentOrNull() ?: return null
     )
 }

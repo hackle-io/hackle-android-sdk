@@ -1,6 +1,6 @@
 package io.hackle.android.ui.inappmessage.event
 
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -35,7 +35,7 @@ class InAppMessageActionEventProcessorTest {
     @Test
     fun `process - when cannot found handler then do nothing`() {
         // given
-        val view = mockk<InAppMessageView>()
+        val view = mockk<InAppMessageLayout>()
         val event = InAppMessageEvent.Action(mockk(), mockk())
         every { actionHandlerFactory.get(any()) } returns null
 
@@ -46,7 +46,7 @@ class InAppMessageActionEventProcessorTest {
     @Test
     fun `process - handle`() {
         // given
-        val view = mockk<InAppMessageView>()
+        val view = mockk<InAppMessageLayout>()
         val event = InAppMessageEvent.Action(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
