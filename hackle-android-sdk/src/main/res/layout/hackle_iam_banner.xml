@@ -25,8 +25,7 @@
             android:layout_alignParentLeft="true"
             android:layout_marginEnd="@dimen/hackle_iam_banner_spacing"
             android:layout_marginRight="@dimen/hackle_iam_banner_spacing"
-            android:adjustViewBounds="true"
-            android:background="@drawable/hackle_iam_banner_image_background" />
+            android:adjustViewBounds="true" />
 
         <TextView
             android:id="@+id/hackle_iam_banner_text_view"
