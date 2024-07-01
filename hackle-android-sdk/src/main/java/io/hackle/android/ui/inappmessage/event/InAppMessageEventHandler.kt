@@ -1,6 +1,6 @@
 package io.hackle.android.ui.inappmessage.event
 
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.core.internal.time.Clock
 
 internal class InAppMessageEventHandler(
@@ -8,10 +8,10 @@ internal class InAppMessageEventHandler(
     private val eventTracker: InAppMessageEventTracker,
     private val processorFactory: InAppMessageEventProcessorFactory
 ) {
-    fun handle(view: InAppMessageView, event: InAppMessageEvent) {
+    fun handle(layout: InAppMessageLayout, event: InAppMessageEvent) {
         val timestamp = clock.currentMillis()
-        eventTracker.track(view.context, event, timestamp)
+        eventTracker.track(layout.context, event, timestamp)
         val processor = processorFactory.get(event) ?: return
-        processor.process(view, event, timestamp)
+        processor.process(layout, event, timestamp)
     }
 }

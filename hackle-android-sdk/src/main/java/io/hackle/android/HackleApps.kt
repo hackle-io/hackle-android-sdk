@@ -50,12 +50,14 @@ import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.internal.workspace.repository.DefaultWorkspaceConfigRepository
+import io.hackle.android.ui.core.GlideImageLoader
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
+import io.hackle.android.ui.inappmessage.InAppMessageControllerFactory
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.*
-import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext
@@ -284,10 +286,12 @@ internal object HackleApps {
             eventTracker = inAppMessageEventTracker,
             processorFactory = inAppMessageEventProcessorFactory
         )
+        val imageLoader = GlideImageLoader()
         val inAppMessageUi = InAppMessageUi.create(
             activityProvider = lifecycleManager,
-            messageViewFactory = InAppMessageViewFactory(),
+            messageControllerFactory = InAppMessageControllerFactory(InAppMessageViewFactory()),
             eventHandler = inAppMessageEventHandler,
+            imageLoader = imageLoader
         )
         val inAppMessageEventMatcher = InAppMessageEventMatcher(
             ruleDeterminer = InAppMessageEventTriggerRuleDeterminer(EvaluationContext.GLOBAL.get()),

@@ -227,12 +227,15 @@ internal data class InAppMessageDto(
             val text: TextDto?,
             val buttons: List<ButtonDto>,
             val background: BackgroundDto,
-            val closeButton: CloseButtonDto?
+            val closeButton: CloseButtonDto?,
+            val action: ActionDto?,
+            val outerButtons: List<PositionalButtonDto>,
         ) {
 
             data class LayoutDto(
                 val displayType: String,
-                val layoutType: String
+                val layoutType: String,
+                val alignment: AlignmentDto?
             )
 
             data class ImageDto(
@@ -268,6 +271,11 @@ internal data class InAppMessageDto(
                 )
             }
 
+            data class PositionalButtonDto(
+                val button: ButtonDto,
+                val alignment: AlignmentDto,
+            )
+
             data class BackgroundDto(
                 val color: String
             )
@@ -286,6 +294,11 @@ internal data class InAppMessageDto(
                 val key: Long?
             )
         }
+
+        data class AlignmentDto(
+            val vertical: String,
+            val horizontal: String
+        )
 
         data class ActionDto(
             val behavior: String,

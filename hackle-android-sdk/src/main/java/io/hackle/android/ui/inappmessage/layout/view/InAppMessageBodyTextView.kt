@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.view
+package io.hackle.android.ui.inappmessage.layout.view
 
 import android.content.Context
 import android.util.AttributeSet

@@ -118,20 +118,25 @@ internal object InAppMessages {
         images: List<InAppMessage.Message.Image> = listOf(image()),
         text: InAppMessage.Message.Text? = text(),
         buttons: List<InAppMessage.Message.Button> = listOf(button()),
-        closeButton: InAppMessage.Message.Button? = null
+        closeButton: InAppMessage.Message.Button? = null,
+        action: InAppMessage.Action? = null,
+        outerButtons: List<InAppMessage.Message.PositionalButton> = emptyList(),
     ): InAppMessage.Message {
         return InAppMessage.Message(
             variationKey = variationKey,
             lang = lang,
             layout = InAppMessage.Message.Layout(
                 displayType = InAppMessage.DisplayType.MODAL,
-                layoutType = InAppMessage.LayoutType.IMAGE_ONLY
+                layoutType = InAppMessage.LayoutType.IMAGE_ONLY,
+                alignment = null
             ),
             images = images,
             text = text,
             buttons = buttons,
             closeButton = closeButton,
-            background = InAppMessage.Message.Background("#FFFFFF")
+            background = InAppMessage.Message.Background("#FFFFFF"),
+            action = action,
+            outerButtons = outerButtons
         )
     }
 
