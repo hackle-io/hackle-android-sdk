@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <declare-styleable name="InAppMessageModal">
-        <attr name="inAppMessageMaxHeight" format="dimension"/>
-        <attr name="inAppMessageMinWidth" format="dimension"/>
-        <attr name="inAppMessageMaxWidth" format="dimension"/>
-        <attr name="inAppMessageMargin" format="dimension"/>
-    </declare-styleable>
-</resources>

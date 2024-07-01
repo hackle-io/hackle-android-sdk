@@ -4,19 +4,12 @@ import android.app.Activity
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.sdk.core.model.InAppMessage
-import io.mockk.Called
-import io.mockk.MockKAnnotations
-import io.mockk.every
+import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.mockkStatic
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.CyclicBarrier
@@ -28,16 +21,19 @@ class InAppMessageUiTest {
     private lateinit var activityProvider: ActivityProvider
 
     @RelaxedMockK
-    private lateinit var messageViewFactory: InAppMessageViewFactory
+    private lateinit var messageControllerFactory: InAppMessageControllerFactory
 
     @RelaxedMockK
     private lateinit var eventHandler: InAppMessageEventHandler
+
+    @RelaxedMockK
+    private lateinit var imageLoader: ImageLoader
 
     @InjectMockKs
     private lateinit var sut: InAppMessageUi
 
     private lateinit var activity: Activity
-    private lateinit var view: InAppMessageView
+    private lateinit var controller: InAppMessageController
 
     @Before
     fun before() {
@@ -45,13 +41,13 @@ class InAppMessageUiTest {
         mockkObject(TaskExecutors)
         mockkStatic("io.hackle.android.ui.inappmessage.InAppMessageExtensionsKt")
         every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
-        activity = mockk() {
+        activity = mockk {
             every { orientation } returns InAppMessage.Orientation.VERTICAL
         }
-        view = mockk(relaxUnitFun = true)
+        controller = mockk(relaxUnitFun = true)
 
         every { activityProvider.currentActivity } returns activity
-        every { messageViewFactory.create(any(), any()) } returns view
+        every { messageControllerFactory.create(any(), any(), any()) } returns controller
     }
 
     @Test
@@ -63,12 +59,12 @@ class InAppMessageUiTest {
         sut.present(InAppMessages.context())
 
         // then
-        verify { view wasNot Called }
+        verify { controller wasNot Called }
     }
 
 
     @Test
-    fun `when view is already presented then should not open again`() {
+    fun `when message is already presented then should not open again`() {
 
         val context = InAppMessages.context()
         sut.present(context)
@@ -76,7 +72,7 @@ class InAppMessageUiTest {
         sut.present(context)
 
         verify(exactly = 1) {
-            view.open(any())
+            controller.open(any())
         }
     }
 
@@ -90,7 +86,7 @@ class InAppMessageUiTest {
         sut.present(context)
 
         // then
-        verify { view wasNot Called }
+        verify { controller wasNot Called }
     }
 
     @Test
@@ -108,7 +104,7 @@ class InAppMessageUiTest {
         jobs.forEach { it.join() }
 
         verify(exactly = 1) {
-            view.open(any())
+            controller.open(any())
         }
     }
 
@@ -116,14 +112,14 @@ class InAppMessageUiTest {
     fun `when exception occurs while opening then close`() {
         // given
         val context = InAppMessages.context()
-        every { view.open(any()) } throws IllegalArgumentException("fail")
+        every { controller.open(any()) } throws IllegalArgumentException("fail")
 
         // when
         sut.present(context)
 
         // then
         verify {
-            view.close()
+            controller.close()
         }
     }
 
@@ -137,7 +133,7 @@ class InAppMessageUiTest {
 
         // then
         verify {
-            view.open(activity)
+            controller.open(activity)
         }
     }
 }

@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Hackle"/>
-    <style name="Hackle.InAppMessage"/>
 
-    <style name="Hackle.InAppMessage.CloseButton">
-        <item name="android:layout_width">20dp</item>
-        <item name="android:layout_height">20dp</item>
-        <item name="android:layout_alignParentRight">true</item>
-        <item name="android:layout_alignParentEnd">true</item>
-        <item name="android:background">@android:color/transparent</item>
-        <item name="android:src">@drawable/hackle_in_app_close</item>
-    </style>
-    
-    <style name="Hackle.InAppMessage.Modal">
-        <item name="inAppMessageMaxHeight">@dimen/io_hackle_inappmessage_modal_max_height</item>
-        <item name="inAppMessageMaxWidth">@dimen/io_hackle_inappmessage_modal_max_width</item>
-        <item name="inAppMessageMinWidth">@dimen/io_hackle_inappmessage_modal_min_width</item>
-        <item name="android:layout_centerInParent">true</item>
-    </style>
+    <style name="Hackle" />
+
+    <style name="Hackle.InAppMessage" />
 
     <style name="Hackle.NotificationTrampoline.Transparent" parent="@android:style/Theme.Translucent.NoTitleBar">
         <item name="android:windowIsTranslucent">true</item>
