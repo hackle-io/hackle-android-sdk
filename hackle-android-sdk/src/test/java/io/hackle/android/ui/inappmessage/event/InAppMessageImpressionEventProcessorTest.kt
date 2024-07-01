@@ -3,7 +3,7 @@ package io.hackle.android.ui.inappmessage.event
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
 import io.hackle.android.support.InAppMessages
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.mockk
@@ -40,7 +40,7 @@ internal class InAppMessageImpressionEventProcessorTest {
             .build()
         val inAppMessage = InAppMessages.create(id = 42)
         val context = InAppMessages.context(inAppMessage = inAppMessage, user = user)
-        val view = mockk<InAppMessageView>(relaxUnitFun = true) {
+        val view = mockk<InAppMessageLayout>(relaxUnitFun = true) {
             every { this@mockk.context } returns context
         }
 
@@ -60,7 +60,7 @@ internal class InAppMessageImpressionEventProcessorTest {
     fun `process - when exceed impression limit then remove first`() {
         val inAppMessage = InAppMessages.create(id = 42)
         val context = InAppMessages.context(inAppMessage = inAppMessage)
-        val view = mockk<InAppMessageView>(relaxUnitFun = true) {
+        val view = mockk<InAppMessageLayout>(relaxUnitFun = true) {
             every { this@mockk.context } returns context
         }
 

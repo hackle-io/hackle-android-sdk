@@ -5,15 +5,16 @@ import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenta
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenter
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
+import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 
 /**
- * This class is used to display in-app messages, handle events, and manage [InAppMessageView].
+ * This class is used to display in-app messages, handle events, and manage [InAppMessageLayout].
  * Only one in-app message is displayed at a time.
  *
  * Note that this class is managed as single instance.
@@ -21,12 +22,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 internal class InAppMessageUi(
     private val activityProvider: ActivityProvider,
-    private val messageViewFactory: InAppMessageViewFactory,
+    private val messageControllerFactory: InAppMessageControllerFactory,
     val eventHandler: InAppMessageEventHandler,
+    val imageLoader: ImageLoader
 ) : InAppMessagePresenter {
 
-    var currentMessageView: InAppMessageView? = null
-        private set
+    private val _currentMessageController = AtomicReference<InAppMessageController>()
+    val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
 
     private val opening = AtomicBoolean(false)
 
@@ -43,17 +45,17 @@ internal class InAppMessageUi(
 
     private fun presentNow(context: InAppMessagePresentationContext) {
         val activity = activityProvider.currentActivity ?: return
-        if (currentMessageView != null) return
+        if (currentMessageController != null) return
         if (!isSupportedOrientation(activity, context)) return
 
-        var messageView: InAppMessageView? = null
+        var messageController: InAppMessageController? = null
         try {
-            messageView = messageViewFactory.create(context, this)
-            this.currentMessageView = messageView
-            messageView.open(activity)
+            messageController = messageControllerFactory.create(context, this, activity)
+            _currentMessageController.set(messageController)
+            messageController.open(activity)
         } catch (e: Throwable) {
             log.error { "Failed to present InAppMessage: $e" }
-            messageView?.close()
+            messageController?.close()
         }
     }
 
@@ -63,7 +65,7 @@ internal class InAppMessageUi(
     }
 
     fun closeCurrent() {
-        currentMessageView = null
+        _currentMessageController.set(null)
     }
 
     companion object {
@@ -73,11 +75,12 @@ internal class InAppMessageUi(
 
         fun create(
             activityProvider: ActivityProvider,
-            messageViewFactory: InAppMessageViewFactory,
+            messageControllerFactory: InAppMessageControllerFactory,
             eventHandler: InAppMessageEventHandler,
+            imageLoader: ImageLoader,
         ): InAppMessageUi {
             return INSTANCE
-                ?: InAppMessageUi(activityProvider, messageViewFactory, eventHandler)
+                ?: InAppMessageUi(activityProvider, messageControllerFactory, eventHandler, imageLoader)
                     .also { INSTANCE = it }
         }
 

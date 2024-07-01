@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="io_hackle_inappmessage_modal_min_width">320dp</dimen>
-    <dimen name="io_hackle_inappmessage_modal_max_width">450dp</dimen>
-    <dimen name="io_hackle_inappmessage_modal_max_height">750dp</dimen>
-    <dimen name="io_hackle_inappmessage_modal_margin">16dp</dimen>
+    <dimen name="hackle_iam_modal_min_width">320dp</dimen>
+    <dimen name="hackle_iam_modal_max_width">380dp</dimen>
+    <dimen name="hackle_iam_modal_max_height">750dp</dimen>
+    <dimen name="hackle_iam_modal_margin">16dp</dimen>
+    <dimen name="hackle_iam_modal_corner_radius">8dp</dimen>
+
+    <dimen name="hackle_iam_banner_max_height">84dp</dimen>
+    <dimen name="hackle_iam_banner_max_width">340dp</dimen>
+    <dimen name="hackle_iam_banner_horizontal_margin">32dp</dimen>
+    <dimen name="hackle_iam_banner_top_margin">32dp</dimen>
+    <dimen name="hackle_iam_banner_bottom_margin">84dp</dimen>
+    <dimen name="hackle_iam_banner_corner_radius">8dp</dimen>
+    <dimen name="hackle_iam_banner_image_corner_radius">4dp</dimen>
+    <dimen name="hackle_iam_banner_content_height">60dp</dimen>
+    <dimen name="hackle_iam_banner_padding">12dp</dimen>
+    <dimen name="hackle_iam_banner_spacing">8dp</dimen>
 </resources>

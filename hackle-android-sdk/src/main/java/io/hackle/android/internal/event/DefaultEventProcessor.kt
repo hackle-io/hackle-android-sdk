@@ -60,7 +60,7 @@ internal class DefaultEventProcessor(
         }
     }
 
-    private fun flush() {
+    override fun flush() {
         try {
             eventExecutor.execute(FlushTask())
         } catch (e: Exception) {

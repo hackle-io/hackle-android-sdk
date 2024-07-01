@@ -36,6 +36,21 @@ class InAppMessageManagerTest {
     }
 
     @Test
+    fun `when current state is not ACTIVE then should not present`() {
+        // given
+        every { activityProvider.currentState } returns ActivityState.INACTIVE
+
+        // when
+        sut.onEvent(mockk())
+
+        // then
+        verify {
+            presenter wasNot Called
+        }
+    }
+
+
+    @Test
     fun `when cannot determine message then should not present`() {
         // given
         every { determiner.determineOrNull(any()) } returns null
@@ -63,21 +78,6 @@ class InAppMessageManagerTest {
         }
     }
 
-    @Test
-    fun `when current state is not FOREGROUND then should not present`() {
-        // given
-        val context = InAppMessages.context()
-        every { determiner.determineOrNull(any()) } returns context
-        every { activityProvider.currentState } returns ActivityState.INACTIVE
-
-        // when
-        sut.onEvent(mockk())
-
-        // then
-        verify {
-            presenter wasNot Called
-        }
-    }
 
     @Test
     fun `when message is determined then present the message`() {
