@@ -1,6 +1,5 @@
 package io.hackle.android.internal.sync
 
-import io.hackle.android.support.assertThrows
 import io.hackle.sdk.core.internal.metrics.cumulative.CumulativeMetricRegistry
 import io.mockk.every
 import io.mockk.mockk
@@ -24,8 +23,8 @@ class CompositeSynchronizerTest {
         workspaceSynchronizer = mockk(relaxed = true)
         cohortSynchronizer = mockk(relaxed = true)
         sut = CompositeSynchronizer(Executors.newCachedThreadPool())
-        sut.add(SynchronizerType.WORKSPACE, workspaceSynchronizer)
-        sut.add(SynchronizerType.COHORT, cohortSynchronizer)
+        sut.add(workspaceSynchronizer)
+        sut.add(cohortSynchronizer)
     }
 
     @Test
@@ -36,17 +35,6 @@ class CompositeSynchronizerTest {
             workspaceSynchronizer.sync()
         }
         verify(exactly = 1) {
-            cohortSynchronizer.sync()
-        }
-    }
-
-    @Test
-    fun `sync only`() {
-        sut.sync(SynchronizerType.WORKSPACE)
-        verify(exactly = 1) {
-            workspaceSynchronizer.sync()
-        }
-        verify(exactly = 0) {
             cohortSynchronizer.sync()
         }
     }
@@ -70,17 +58,6 @@ class CompositeSynchronizerTest {
         expectThat(count).isEqualTo(0)
         Thread.sleep(100)
         expectThat(count).isEqualTo(1)
-    }
-
-    @Test
-    fun `unsupported type`() {
-        val sut = CompositeSynchronizer(Executors.newCachedThreadPool())
-
-        val exception = assertThrows<IllegalArgumentException> {
-            sut.sync(SynchronizerType.WORKSPACE)
-        }
-
-        expectThat(exception.message).isEqualTo("Unsupported SynchronizerType [WORKSPACE]")
     }
 
     @Test
