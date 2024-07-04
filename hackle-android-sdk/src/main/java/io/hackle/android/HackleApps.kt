@@ -40,8 +40,6 @@ import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
 import io.hackle.android.internal.sync.PollingSynchronizer
-import io.hackle.android.internal.sync.SynchronizerType.COHORT
-import io.hackle.android.internal.sync.SynchronizerType.WORKSPACE
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
@@ -121,7 +119,7 @@ internal object HackleApps {
             httpWorkspaceFetcher = httpWorkspaceFetcher,
             repository = workspaceConfigRepository
         )
-        compositeSynchronizer.add(WORKSPACE, workspaceManager)
+        compositeSynchronizer.add(workspaceManager)
 
         // UserManager
 
@@ -131,7 +129,7 @@ internal object HackleApps {
             repository = keyValueRepositoryBySdkKey,
             cohortFetcher = cohortFetcher
         )
-        compositeSynchronizer.add(COHORT, userManager)
+        compositeSynchronizer.add(userManager)
 
         // SessionManager
 
