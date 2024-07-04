@@ -1,5 +1,6 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
@@ -11,17 +12,14 @@ import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifier
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.hasSize
-import strikt.assertions.isEqualTo
-import strikt.assertions.isGreaterThan
-import strikt.assertions.isNotNull
-import strikt.assertions.isNull
+import strikt.assertions.*
 
 class UserManagerTest {
 
@@ -236,9 +234,102 @@ class UserManagerTest {
     }
 
     @Test
+    fun `syncIfNeeded - when no new identifier then do not sync`() {
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().build(),
+                current = User.builder().build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").build(),
+                current = User.builder().build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").build(),
+                current = User.builder().id("id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").build(),
+                current = User.builder().id("id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").build(),
+                current = User.builder().id("id").deviceId("device_id").build()
+            )
+        )
+
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build(),
+                current = User.builder().id("id").deviceId("device_id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build(),
+                current = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build()
+            )
+        )
+
+        verify { cohortFetcher wasNot Called }
+    }
+
+    @Test
+    fun `syncIfNeeded - when has new identifier then sync`() {
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().build(),
+                current = User.builder().id("new_id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").build(),
+                current = User.builder().id("new_id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").build(),
+                current = User.builder().id("id").deviceId("new_device_id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").build(),
+                current = User.builder().id("id").deviceId("new_device_id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").build(),
+                current = User.builder().id("id").deviceId("device_id").identifier("custom", "new_custom_id").build()
+            )
+        )
+        sut.syncIfNeeded(
+            Updated(
+                previous = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build(),
+                current = User.builder().id("id").deviceId("device_id").identifier("custom", "new_custom_id").build()
+            )
+        )
+
+        verify(exactly = 6) {
+            cohortFetcher.fetch(any())
+        }
+    }
+
+    @Test
     fun `setUser - decorate hackleDeviceId`() {
-        val user = sut.setUser(User.builder().build())
-        expectThat(user).isEqualTo(
+        val actual = sut.setUser(User.builder().build())
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -249,20 +340,21 @@ class UserManagerTest {
     @Test
     fun `setUser - defaultUser to deviceId`() {
         sut.initialize(null)
-        expectThat(sut.currentUser).isEqualTo(
-            User.builder()
-                .id("hackle_device_id")
-                .deviceId("hackle_device_id")
-                .build()
-        )
+        val initUser = User.builder()
+            .id("hackle_device_id")
+            .deviceId("hackle_device_id")
+            .build()
+        expectThat(sut.currentUser).isEqualTo(initUser)
 
-        sut.setUser(User.builder().deviceId("device_id").build())
-        expectThat(sut.currentUser).isEqualTo(
-            User.builder()
-                .id("hackle_device_id")
-                .deviceId("device_id")
-                .build()
-        )
+        val actual = sut.setUser(User.builder().deviceId("device_id").build())
+
+        val currentUser = User.builder()
+            .id("hackle_device_id")
+            .deviceId("device_id")
+            .build()
+        expectThat(actual.previous).isEqualTo(initUser)
+        expectThat(actual.current).isEqualTo(currentUser)
+        expectThat(sut.currentUser).isEqualTo(currentUser)
         verify(exactly = 1) {
             listener.onUserUpdated(
                 User.builder()
@@ -661,7 +753,7 @@ class UserManagerTest {
             .append("c", "cc")
             .build()
         val actual = sut.updateProperties(operations)
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -688,7 +780,7 @@ class UserManagerTest {
             .append("c", "cc")
             .build()
         val actual = sut.updateProperties(operations)
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -704,7 +796,7 @@ class UserManagerTest {
     fun `setUserId - new`() {
         sut.initialize(null)
         val actual = sut.setUserId("user_id")
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -735,7 +827,7 @@ class UserManagerTest {
         )
 
         val actual = sut.setUserId(null)
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -764,7 +856,7 @@ class UserManagerTest {
         )
 
         val actual = sut.setUserId("user_id_2")
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -795,7 +887,7 @@ class UserManagerTest {
         )
 
         val actual = sut.setUserId("user_id")
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("hackle_device_id")
@@ -819,7 +911,7 @@ class UserManagerTest {
     fun `setDeviceId - new`() {
         sut.initialize(null)
         val actual = sut.setDeviceId("device_id")
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("device_id")
@@ -847,7 +939,7 @@ class UserManagerTest {
         )
 
         val actual = sut.setDeviceId("device_id_2")
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("device_id_2")
@@ -875,7 +967,7 @@ class UserManagerTest {
         )
 
         val actual = sut.setDeviceId("device_id")
-        expectThat(actual).isEqualTo(
+        expectThat(actual.current).isEqualTo(
             User.builder()
                 .id("hackle_device_id")
                 .deviceId("device_id")

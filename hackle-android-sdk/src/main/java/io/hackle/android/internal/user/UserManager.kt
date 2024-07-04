@@ -1,6 +1,8 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
+import io.hackle.android.internal.core.map
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
@@ -38,6 +40,9 @@ internal class UserManager(
         }
     }
 
+
+    // HackleUser resolve
+
     fun resolve(user: User?): HackleUser {
         if (user == null) {
             return toHackleUser(currentContext)
@@ -45,7 +50,7 @@ internal class UserManager(
         val context = synchronized(LOCK) {
             updateUser(user)
         }
-        return toHackleUser(context)
+        return toHackleUser(context.current)
     }
 
     fun toHackleUser(user: User): HackleUser {
@@ -68,6 +73,8 @@ internal class UserManager(
             .build()
     }
 
+    // Sync
+
     override fun sync() {
         val cohorts = try {
             cohortFetcher.fetch(currentUser)
@@ -80,53 +87,68 @@ internal class UserManager(
         }
     }
 
-    fun setUser(user: User): User {
-        return synchronized(LOCK) {
-            updateUser(user).user
+    fun syncIfNeeded(updated: Updated<User>) {
+        if (hasNewIdentifiers(updated.previous, updated.current)) {
+            sync()
         }
     }
 
-    fun resetUser(): User {
+    private fun hasNewIdentifiers(previousUser: User, currentUser: User): Boolean {
+        val previousIdentifiers = previousUser.resolvedIdentifiers
+        val currentIdentifiers = currentUser.resolvedIdentifiers.asList()
+        return currentIdentifiers.any { it !in previousIdentifiers }
+    }
+
+    // User Update
+
+    fun setUser(user: User): Updated<User> {
         return synchronized(LOCK) {
-            updateContext { defaultUser }.user
+            updateUser(user).map { it.user }
         }
     }
 
-    fun setUserId(userId: String?): User {
+    fun resetUser(): Updated<User> {
+        return synchronized(LOCK) {
+            updateContext { defaultUser }.map { it.user }
+        }
+    }
+
+    fun setUserId(userId: String?): Updated<User> {
         return synchronized(LOCK) {
             val user = context.user.toBuilder().userId(userId).build()
-            updateUser(user).user
+            updateUser(user).map { it.user }
         }
     }
 
-    fun setDeviceId(deviceId: String): User {
+    fun setDeviceId(deviceId: String): Updated<User> {
         return synchronized(LOCK) {
             val user = context.user.toBuilder().deviceId(deviceId).build()
-            updateUser(user).user
+            updateUser(user).map { it.user }
         }
     }
 
-    fun updateProperties(operations: PropertyOperations): User {
+    fun updateProperties(operations: PropertyOperations): Updated<User> {
         return synchronized(LOCK) {
-            operateProperties(operations).user
+            operateProperties(operations).map { it.user }
         }
     }
 
-    private fun updateUser(user: User): UserContext {
+    private fun updateUser(user: User): Updated<UserContext> {
         return updateContext { currentUser ->
             user.with(device).mergeWith(currentUser)
         }
     }
 
-    private fun operateProperties(operations: PropertyOperations): UserContext {
+    private fun operateProperties(operations: PropertyOperations): Updated<UserContext> {
         return updateContext { currentUser ->
             val properties = operations.operate(currentUser.properties)
             currentUser.copy(properties = properties)
         }
     }
 
-    private fun updateContext(updater: (User) -> User): UserContext {
-        val oldUser = this.context.user
+    private fun updateContext(updater: (User) -> User): Updated<UserContext> {
+        val oldContext = this.context
+        val oldUser = oldContext.user
         val newUser = updater(oldUser)
 
         val newContext = context.with(newUser)
@@ -137,7 +159,7 @@ internal class UserManager(
         }
 
         log.debug { "User updated [${newContext.user}]" }
-        return newContext
+        return Updated(oldContext, newContext)
     }
 
     private fun changeUser(oldUser: User, newUser: User, timestamp: Long) {
