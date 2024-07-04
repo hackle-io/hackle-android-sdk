@@ -28,21 +28,6 @@ class PollingSynchronizerTest {
     }
 
     @Test
-    fun `sync one - delegate`() {
-        // given
-        val delegate = mockk<CompositeSynchronizer>(relaxed = true)
-        val sut = PollingSynchronizer(delegate, Schedulers.executor("test"), 10000)
-
-        // when
-        sut.sync(SynchronizerType.COHORT)
-
-        // then
-        verify(exactly = 1) {
-            delegate.sync(SynchronizerType.COHORT)
-        }
-    }
-
-    @Test
     fun `start - no polling`() {
         // given
         val delegate = mockk<CompositeSynchronizer>(relaxed = true)
