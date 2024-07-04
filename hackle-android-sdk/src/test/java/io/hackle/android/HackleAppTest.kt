@@ -166,7 +166,7 @@ class HackleAppTest {
     @Test
     fun `setUser - run callback event if failed to sync`() {
         // given
-        every { synchronizer.sync(any()) } throws IllegalArgumentException()
+        every { userManager.syncIfNeeded(any()) } throws IllegalArgumentException()
         val user = User.builder().build()
         val callback = mockk<Runnable>(relaxed = true)
 
@@ -224,7 +224,7 @@ class HackleAppTest {
     @Test
     fun `setUserId - run callback event if failed to sync`() {
         // given
-        every { synchronizer.sync(any()) } throws IllegalArgumentException()
+        every { userManager.syncIfNeeded(any()) } throws IllegalArgumentException()
         val callback = mockk<Runnable>(relaxed = true)
 
         // when
@@ -280,7 +280,7 @@ class HackleAppTest {
     @Test
     fun `setDeviceId - run callback event if failed to sync`() {
         // given
-        every { synchronizer.sync(any()) } throws IllegalArgumentException()
+        every { userManager.syncIfNeeded(any()) } throws IllegalArgumentException()
         val callback = mockk<Runnable>(relaxed = true)
 
         // when

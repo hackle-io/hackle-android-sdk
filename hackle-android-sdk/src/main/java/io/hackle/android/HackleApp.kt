@@ -8,6 +8,7 @@ import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
+import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
@@ -20,8 +21,6 @@ import io.hackle.android.internal.pushtoken.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
-import io.hackle.android.internal.sync.SynchronizerType
-import io.hackle.android.internal.sync.SynchronizerType.COHORT
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
@@ -41,7 +40,6 @@ import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.model.toEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 
 /**
  * Entry point of Hackle Sdk.
@@ -50,7 +48,7 @@ class HackleApp internal constructor(
     private val clock: Clock,
     private val core: HackleCore,
     private val eventExecutor: Executor,
-    private val backgroundExecutor: ExecutorService,
+    private val backgroundExecutor: Executor,
     private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
@@ -85,8 +83,8 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun setUser(user: User, callback: Runnable? = null) {
         try {
-            userManager.setUser(user)
-            sync(COHORT, callback)
+            val updated = userManager.setUser(user)
+            syncCohortIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set user: $e" }
             callback?.run()
@@ -96,8 +94,8 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun setUserId(userId: String?, callback: Runnable? = null) {
         try {
-            userManager.setUserId(userId)
-            sync(COHORT, callback)
+            val updated = userManager.setUserId(userId)
+            syncCohortIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set userId: $e" }
             callback?.run()
@@ -107,8 +105,8 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun setDeviceId(deviceId: String, callback: Runnable? = null) {
         try {
-            userManager.setDeviceId(deviceId)
-            sync(COHORT, callback)
+            val updated = userManager.setDeviceId(deviceId)
+            syncCohortIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set deviceId: $e" }
             callback?.run()
@@ -138,20 +136,20 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
         try {
-            userManager.resetUser()
+            val updated = userManager.resetUser()
             track(PropertyOperations.clearAll().toEvent())
-            sync(COHORT, callback)
+            syncCohortIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
             callback?.run()
         }
     }
 
-    private fun sync(type: SynchronizerType, callback: Runnable?) {
+    private fun syncCohortIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
         try {
             backgroundExecutor.execute {
                 try {
-                    synchronizer.sync(type)
+                    userManager.syncIfNeeded(userUpdated)
                 } catch (e: Exception) {
                     log.error { "Failed to sync: $e" }
                 } finally {
