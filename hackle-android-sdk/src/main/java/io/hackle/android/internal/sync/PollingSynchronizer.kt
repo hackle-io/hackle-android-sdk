@@ -24,14 +24,6 @@ internal class PollingSynchronizer(
         }
     }
 
-    fun sync(type: SynchronizerType) {
-        try {
-            delegate.sync(type)
-        } catch (e: Exception) {
-            log.error { "Failed to sync $delegate: $e" }
-        }
-    }
-
     fun start() {
         if (intervalMillis == HackleConfig.NO_POLLING.toLong()) {
             return

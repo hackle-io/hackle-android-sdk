@@ -5,59 +5,44 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 
-internal enum class SynchronizerType {
-    WORKSPACE,
-    COHORT
-}
-
-internal class Synchronization(
-    val type: SynchronizerType,
-    val synchronizer: Synchronizer
-)
-
 internal class CompositeSynchronizer(private val executor: ExecutorService) : Synchronizer {
 
-    private val synchronizations = CopyOnWriteArrayList<Synchronization>()
+    private val synchronizers = CopyOnWriteArrayList<Synchronizer>()
 
-    fun add(type: SynchronizerType, synchronizer: Synchronizer) {
-        synchronizations.add(Synchronization(type, synchronizer))
+    fun add(synchronizer: Synchronizer) {
+        synchronizers.add(synchronizer)
         log.debug { "Synchronizer added [${synchronizer::class.java.simpleName}]" }
     }
 
     override fun sync() {
         val jobs = mutableListOf<SyncJob>()
-        for (synchronization in synchronizations) {
+        for (synchronizer in synchronizers) {
             try {
-                val future = executor.submit { synchronization.synchronizer.sync() }
-                jobs.add(SyncJob(synchronization, future))
+                val future = executor.submit { synchronizer.sync() }
+                jobs.add(SyncJob(synchronizer, future))
             } catch (e: Exception) {
-                log.error { "Failed to sync $synchronization: $e" }
+                log.error { "Failed to sync $synchronizer: $e" }
             }
         }
         jobs.forEach { it.await() }
     }
 
-    fun sync(type: SynchronizerType) {
-        val synchronization = synchronizations.find { it.type == type }
-        requireNotNull(synchronization) { "Unsupported SynchronizerType [$type]" }
-        synchronization.synchronizer.sync()
-    }
 
     class SyncJob(
-        private val synchronization: Synchronization,
+        private val synchronizer: Synchronizer,
         private val future: Future<*>
     ) {
         fun await() {
             try {
                 future.get()
             } catch (e: Exception) {
-                log.error { "Failed to sync ${synchronization.synchronizer}: $e" }
+                log.error { "Failed to sync ${synchronizer}: $e" }
             }
         }
     }
 
     override fun toString(): String {
-        return synchronizations.joinToString(
+        return synchronizers.joinToString(
             separator = ", ",
             prefix = "CompositeSynchronizer(",
             postfix = ")"
