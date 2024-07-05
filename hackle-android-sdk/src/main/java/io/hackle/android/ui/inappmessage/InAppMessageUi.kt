@@ -50,7 +50,7 @@ internal class InAppMessageUi(
 
         var messageController: InAppMessageController? = null
         try {
-            messageController = messageControllerFactory.create(context, this, activity)
+            messageController = messageControllerFactory.create(context, this, activity) ?: return
             _currentMessageController.set(messageController)
             messageController.open(activity)
         } catch (e: Throwable) {
