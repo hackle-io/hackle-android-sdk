@@ -4,8 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.LinearLayout
 import io.hackle.android.R
-import io.hackle.android.ui.inappmessage.requiredOrientation
-import io.hackle.sdk.core.model.InAppMessage
 
 internal class InAppMessageModalContentView @JvmOverloads constructor(
     context: Context,
@@ -21,10 +19,7 @@ internal class InAppMessageModalContentView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        val maxWidth = when (requiredOrientation) {
-            InAppMessage.Orientation.VERTICAL -> maxWidth
-            InAppMessage.Orientation.HORIZONTAL -> (maxWidth * widthRatio).toInt()
-        }
+        val maxWidth = (maxWidth * widthRatio).toInt()
         val newWidth = when {
             measuredWidth < minWidth -> minWidth
             measuredWidth > maxWidth -> maxWidth
