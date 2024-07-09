@@ -1,156 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@id/hackle_in_app_view"
+<io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:screenOrientation="portrait">
+    android:padding="0dp">
 
     <RelativeLayout
         android:id="@+id/hackle_iam_modal_frame_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/hackle_iam_modal_frame_background">
+        android:background="@color/hackle_iam_modal_frame_background" />
 
-        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageModalContainerView
+    <io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContentView
+        android:id="@+id/hackle_iam_banner_content_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="@dimen/hackle_iam_modal_margin"
+        android:layout_marginLeft="@dimen/hackle_iam_modal_margin"
+        android:layout_marginEnd="@dimen/hackle_iam_modal_margin"
+        android:layout_marginRight="@dimen/hackle_iam_modal_margin"
+        android:orientation="vertical">
+
+        <io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContainerView
             android:id="@+id/hackle_iam_modal_container_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="@dimen/hackle_iam_modal_margin"
-            android:layout_marginLeft="@dimen/hackle_iam_modal_margin"
-            android:layout_marginEnd="@dimen/hackle_iam_modal_margin"
-            android:layout_marginRight="@dimen/hackle_iam_modal_margin"
-            android:gravity="center_vertical"
-            android:minWidth="@dimen/hackle_iam_modal_min_width">
-
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
-                android:id="@+id/hackle_iam_modal_image_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:adjustViewBounds="true" />
-
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextContainerView
-                android:id="@+id/hackle_iam_modal_text_container_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/hackle_iam_modal_image_view"
-                android:layout_centerInParent="true"
-                android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginRight="16dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/hackle_iam_modal_title_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:autoSizeTextType="uniform"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:textColor="#1c1c1c"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageBodyTextView
-                    android:id="@+id/hackle_iam_modal_body_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:autoSizeTextType="uniform"
-                    android:gravity="center_horizontal"
-                    android:textColor="#1c1c1c"
-                    android:textSize="16sp" />
-            </io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextContainerView>
+            android:background="@drawable/hackle_iam_modal_container_background"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/hackle_iam_modal_button_container_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/hackle_iam_modal_text_container_view"
-                android:layout_centerInParent="true"
-                android:layout_centerHorizontal="true"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:visibility="gone">
+                android:orientation="vertical">
 
-                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
-                    android:id="@+id/hackle_iam_modal_first_button"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="#1c1c1c"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
+                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
+                    android:id="@+id/hackle_iam_modal_image_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true" />
 
-                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
-                    android:id="@+id/hackle_iam_modal_second_button"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginLeft="4dp"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="#1c1c1c"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
+                <LinearLayout
+                    android:id="@+id/hackle_iam_modal_text_container_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="@dimen/hackle_iam_modal_padding"
+                    android:paddingLeft="@dimen/hackle_iam_modal_padding"
+                    android:paddingTop="@dimen/hackle_iam_modal_spacing"
+                    android:paddingEnd="@dimen/hackle_iam_modal_padding"
+                    android:paddingRight="@dimen/hackle_iam_modal_padding">
+
+                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextView
+                        android:id="@+id/hackle_iam_modal_title_text_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        tools:text="IN APP MESSAGE TITLE TEXT" />
+
+                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextView
+                        android:id="@+id/hackle_iam_modal_body_text_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textSize="16sp"
+                        tools:text="IN APP MESSAGE BODY TEXT" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/hackle_iam_modal_button_container_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/hackle_iam_modal_padding">
+
+                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
+                        android:id="@+id/hackle_iam_modal_first_button"
+                        style="?android:attr/borderlessButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_margin="0dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/hackle_iam_modal_button_background"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textStyle="bold"
+                        tools:text="BUTTON 1" />
+
+                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
+                        android:id="@+id/hackle_iam_modal_second_button"
+                        style="?android:attr/borderlessButtonStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/hackle_iam_modal_button_background"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textStyle="bold"
+                        tools:text="BUTTON 2" />
+                </LinearLayout>
             </LinearLayout>
 
-            <RelativeLayout
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
+                android:id="@+id/hackle_iam_modal_close_button_view"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:text="@string/hackle_iam_close_button_text"
+                android:textAlignment="center"
+                android:textSize="16sp" />
+        </io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContainerView>
+
+        <RelativeLayout
+            android:id="@+id/hackle_iam_modal_bottom_outer_button_container_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+                android:id="@+id/hackle_iam_modal_left_bottom_outer_button"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="8dp"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                app:alignHorizontal="left"
+                app:alignVertical="bottom"
+                tools:text="OUTER BUTTON 1" />
+
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+                android:id="@+id/hackle_iam_modal_right_bottom_outer_button"
+                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:padding="8dp">
+                android:background="@android:color/transparent"
+                android:gravity="center"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:padding="8dp"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                app:alignHorizontal="right"
+                app:alignVertical="bottom"
+                tools:ignore="RelativeOverlap"
+                tools:text="OUTER BUTTON 2" />
 
-                <TextView
-                    android:id="@+id/hackle_iam_modal_close_button"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:background="@android:color/transparent"
-                    android:gravity="center"
-                    android:text="@string/hackle_iam_close_button_text"
-                    android:textAlignment="center"
-                    android:textSize="16sp" />
-            </RelativeLayout>
-        </io.hackle.android.ui.inappmessage.layout.view.InAppMessageModalContainerView>
-
-        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
-            android:id="@+id/hackle_iam_modal_left_bottom_outer_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/hackle_iam_modal_container_view"
-            android:layout_alignStart="@id/hackle_iam_modal_container_view"
-            android:layout_alignLeft="@id/hackle_iam_modal_container_view"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="8dp"
-            android:textSize="16sp"
-            android:visibility="gone" />
-
-        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
-            android:id="@+id/hackle_iam_modal_right_bottom_outer_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/hackle_iam_modal_container_view"
-            android:layout_alignEnd="@id/hackle_iam_modal_container_view"
-            android:layout_alignRight="@id/hackle_iam_modal_container_view"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:padding="8dp"
-            android:textSize="16sp"
-            android:visibility="gone" />
-    </RelativeLayout>
-</RelativeLayout>
+        </RelativeLayout>
+    </io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContentView>
+</io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView>
