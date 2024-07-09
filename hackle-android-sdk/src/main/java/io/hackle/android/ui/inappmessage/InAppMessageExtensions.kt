@@ -27,16 +27,13 @@ internal val View.orientation: InAppMessage.Orientation?
         }
     }
 
-internal fun View.px(dp: Int): Float {
-    return dp * resources.displayMetrics.density
-}
+internal val View.requiredOrientation: InAppMessage.Orientation
+    get() {
+        return requireNotNull(orientation) { "Failed to get orientation [${javaClass.name}]" }
+    }
 
 internal fun InAppMessage.supports(orientation: InAppMessage.Orientation): Boolean {
     return orientation in messageContext.orientations
-}
-
-internal fun InAppMessage.supports(orientation: AndroidOrientation): Boolean {
-    return messageContext.orientations.any { it.supports(orientation) }
 }
 
 internal fun InAppMessage.Orientation.supports(orientation: AndroidOrientation): Boolean {
@@ -46,11 +43,8 @@ internal fun InAppMessage.Orientation.supports(orientation: AndroidOrientation):
     }
 }
 
-internal fun InAppMessage.Message.outerButtonOrNull(
-    horizontal: InAppMessage.Message.Alignment.Horizontal,
-    vertical: InAppMessage.Message.Alignment.Vertical
-): InAppMessage.Message.PositionalButton? {
-    return outerButtons.find { it.alignment.horizontal == horizontal && it.alignment.vertical == vertical }
+internal fun InAppMessage.Message.outerButtonOrNull(alignment: InAppMessage.Message.Alignment): InAppMessage.Message.PositionalButton? {
+    return outerButtons.find { it.alignment == alignment }
 }
 
 internal val InAppMessage.Message.backgroundColor: AndroidColor get() = Color.parseColor(background.color)
