@@ -8,7 +8,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.ImageView.ScaleType.FIT_CENTER
 import android.widget.ImageView.ScaleType.FIT_XY
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
@@ -60,7 +59,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
         frameView.setOnClickListener(createCloseListener())
 
         // ContentView (content area)
-        contentView.setWidthRatio(widthRatio)
+        contentView.setMaxWidthRatio(widthRatio)
 
         // ContainerView (inside of modal)
         containerView.background = messageBackground

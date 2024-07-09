@@ -15,11 +15,11 @@ internal class InAppMessageModalContentView @JvmOverloads constructor(
     private val minWidth get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_min_width)
     private val maxWidth get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_max_width)
 
-    private var widthRatio: Double = 1.0
+    private var maxWidthRatio: Double = 1.0
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        val maxWidth = (maxWidth * widthRatio).toInt()
+        val maxWidth = (maxWidth * maxWidthRatio).toInt()
         val newWidth = when {
             measuredWidth < minWidth -> minWidth
             measuredWidth > maxWidth -> maxWidth
@@ -28,7 +28,7 @@ internal class InAppMessageModalContentView @JvmOverloads constructor(
         setMeasuredDimension(newWidth, measuredHeight)
     }
 
-    fun setWidthRatio(ratio: Double) {
-        this.widthRatio = ratio
+    fun setMaxWidthRatio(ratio: Double) {
+        this.maxWidthRatio = ratio
     }
 }
