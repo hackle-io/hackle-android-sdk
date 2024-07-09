@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/hackle_iam_skeleton" />
-    <corners android:radius="@dimen/hackle_iam_banner_image_corner_radius" />
+    <solid android:color="@color/hackle_white" />
+    <corners android:radius="@dimen/hackle_iam_banner_corner_radius" />
 </shape>
