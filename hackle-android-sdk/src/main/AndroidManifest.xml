@@ -13,19 +13,14 @@
             android:theme="@style/HackleTheme" />
 
         <activity
-            android:name=".ui.inappmessage.layout.activity.InAppMessageModalActivity"
-            android:configChanges="orientation|screenSize"
-            android:exported="false"
-            android:theme="@style/HackleInAppMessageTheme" />
-
-        <activity
             android:name=".ui.notification.NotificationTrampolineActivity"
             android:exported="false"
             android:theme="@style/Hackle.NotificationTrampoline.Transparent" />
 
-        <receiver android:name=".ui.notification.NotificationBroadcastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND"
-            android:exported="true">
+        <receiver
+            android:name=".ui.notification.NotificationBroadcastReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>

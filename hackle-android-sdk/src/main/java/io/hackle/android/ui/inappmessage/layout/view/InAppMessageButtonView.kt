@@ -1,37 +1,27 @@
 package io.hackle.android.ui.inappmessage.layout.view
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.Button
-import io.hackle.android.ui.inappmessage.backgroundColor
-import io.hackle.android.ui.inappmessage.borderColor
-import io.hackle.android.ui.inappmessage.px
+import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.android.ui.inappmessage.textColor
 import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.InAppMessage.ActionArea.BUTTON
 
-internal class InAppMessageButtonView : Button {
+internal open class InAppMessageButtonView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : Button(context, attrs, defStyleAttr) {
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
-
-    fun bind(button: InAppMessage.Message.Button) {
+    fun configure(inAppMessageView: InAppMessageView, button: InAppMessage.Message.Button, background: Drawable) {
         this.text = button.text
         this.setTextColor(button.textColor)
-
-        val background = GradientDrawable()
-        background.setColor(button.backgroundColor)
-        background.setStroke(px(1).toInt(), button.borderColor)
-        background.cornerRadius = px(4)
         this.background = background
-    }
-
-    fun bind(positionalButton: InAppMessage.Message.PositionalButton) {
-        this.text = positionalButton.button.text
-        this.setTextColor(positionalButton.button.textColor)
-        this.background = ColorDrawable(Color.TRANSPARENT)
+        this.setOnClickListener {
+            inAppMessageView.handle(InAppMessageEvent.Action(button.action, BUTTON, button.text))
+        }
     }
 }

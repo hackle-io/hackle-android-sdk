@@ -11,57 +11,41 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
-internal class InAppMessageImageView : ImageView {
-
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+internal class InAppMessageImageView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : ImageView(context, attrs, defStyleAttr) {
 
     private var path = Path()
     private var rect = RectF()
-    private var cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f)
-    private var aspectRatio = -1f
-    private var heightRatio = 1.0
+    private var cornerRadii: CornersRadii = CornersRadii.ZERO
+    private var aspectRatio: AspectRatio? = null
 
     fun setCornersRadius(px: Float) {
-        setCornersRadii(px, px, px, px)
+        setCornersRadii(CornersRadii.of(px))
     }
 
-    fun setCornersRadii(topLeft: Float, topRight: Float, bottomLeft: Float, bottomRight: Float) {
-        cornerRadii = floatArrayOf(
-            topLeft, topLeft,
-            topRight, topRight,
-            bottomLeft, bottomLeft,
-            bottomRight, bottomRight
-        )
+    fun setCornersRadii(cornerRadii: CornersRadii) {
+        this.cornerRadii = cornerRadii
     }
 
-    fun setAspectRatio(aspectRatio: Float) {
+    fun setAspectRatio(aspectRatio: AspectRatio?) {
         this.aspectRatio = aspectRatio
-        requestLayout()
-    }
-
-    fun setHeightRatio(heightRatio: Double) {
-        this.heightRatio = heightRatio
         requestLayout()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        if (aspectRatio != -1f && measuredWidth > 0 && measuredHeight > 0) {
+        val aspectRatio = aspectRatio
+        if (aspectRatio != null && measuredWidth > 0 && measuredHeight > 0) {
             val newWidth = measuredWidth
-            val maxHeight = (measuredWidth / aspectRatio).toInt()
+            val maxHeight = aspectRatio.calculateHeight(measuredWidth)
             val newHeight = min(measuredHeight, maxHeight) + 1
             setMeasuredDimension(newWidth, newHeight)
         } else {
             setMeasuredDimension(measuredWidth, measuredHeight)
-        }
-
-        if (heightRatio != 1.0) {
-            val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
-            val newHeight = min(measuredHeight, (parentHeight * heightRatio).toInt())
-            setMeasuredDimension(measuredWidth, newHeight)
         }
     }
 
@@ -74,10 +58,70 @@ internal class InAppMessageImageView : ImageView {
         try {
             rect.set(0f, 0f, width.toFloat(), height.toFloat())
             path.reset()
-            path.addRoundRect(rect, cornerRadii, Path.Direction.CW)
+            path.addRoundRect(rect, cornerRadii.toFloatArray(), Path.Direction.CW)
             canvas.clipPath(path)
         } catch (e: Throwable) {
             log.error { "Failed to clip in-app message image: $e" }
+        }
+    }
+
+    fun configure(inAppMessageView: InAppMessageView, image: InAppMessage.Message.Image, scaleType: ScaleType? = null) {
+        if (scaleType != null) {
+            this.scaleType = scaleType
+        }
+        render(image, inAppMessageView)
+        setOnClickListener(inAppMessageView.createImageClickListener(image))
+    }
+
+    data class AspectRatio(val width: Float, val height: Float) {
+        val value: Float get() = width / height
+
+        fun calculateHeight(width: Int): Int {
+            return (width / value).toInt()
+        }
+    }
+
+    /*
+     *   2          3
+     * 1 ┌──────────┐ 4
+     *   │          │
+     *   │          │
+     * 8 └──────────┘ 5
+     *   7          6
+     */
+    data class CornersRadii(
+        val v1: Float,
+        val v2: Float,
+        val v3: Float,
+        val v4: Float,
+        val v5: Float,
+        val v6: Float,
+        val v7: Float,
+        val v8: Float
+    ) {
+        fun toFloatArray(): FloatArray {
+            return floatArrayOf(v1, v2, v3, v4, v5, v6, v7, v8)
+        }
+
+        companion object {
+            val ZERO = of(0f)
+
+            fun of(radius: Float): CornersRadii {
+                return CornersRadii(radius, radius, radius, radius, radius, radius, radius, radius)
+            }
+
+            fun of(topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float): CornersRadii {
+                return CornersRadii(
+                    topLeft,
+                    topLeft,
+                    topRight,
+                    topRight,
+                    bottomRight,
+                    bottomRight,
+                    bottomLeft,
+                    bottomLeft
+                )
+            }
         }
     }
 
