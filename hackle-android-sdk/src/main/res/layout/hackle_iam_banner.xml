@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.hackle.android.ui.inappmessage.layout.view.InAppMessageBannerView xmlns:android="http://schemas.android.com/apk/res/android"
+<io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/hackle_iam_banner_view"
     android:layout_width="match_parent"
     android:layout_height="@dimen/hackle_iam_banner_max_height"
@@ -27,7 +27,7 @@
             android:layout_marginRight="@dimen/hackle_iam_banner_spacing"
             android:adjustViewBounds="true" />
 
-        <TextView
+        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextView
             android:id="@+id/hackle_iam_banner_text_view"
             android:layout_width="match_parent"
             android:layout_height="@dimen/hackle_iam_banner_content_height"
@@ -40,7 +40,7 @@
             android:textSize="14sp" />
     </RelativeLayout>
 
-    <TextView
+    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
         android:id="@+id/hackle_iam_banner_close_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
@@ -57,4 +57,4 @@
         android:text="@string/hackle_iam_close_button_text"
         android:textSize="16sp" />
 
-</io.hackle.android.ui.inappmessage.layout.view.InAppMessageBannerView>
+</io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView>
