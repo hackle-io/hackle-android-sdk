@@ -13,6 +13,7 @@ import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionArea.IMAGE
 import io.hackle.sdk.core.model.InAppMessage.ActionArea.MESSAGE
+import java.lang.ref.WeakReference
 
 internal abstract class InAppMessageView @JvmOverloads constructor(
     context: Context,
@@ -22,11 +23,11 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
 
     private var _controller: InAppMessageController? = null
     private var _context: InAppMessagePresentationContext? = null
-    private var _activity: Activity? = null
+    private var _activity: WeakReference<Activity>? = null
 
     override val controller: InAppMessageController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageView." }
     override val context: InAppMessagePresentationContext get() = requireNotNull(_context) { "InAppMessagePresentationContext is not set on InAppMessageView." }
-    override val activity: Activity? get() = _activity
+    override val activity: Activity? get() = _activity?.get()
 
     val inAppMessage: InAppMessage get() = context.inAppMessage
     val message: InAppMessage.Message get() = context.message
@@ -40,12 +41,7 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
     }
 
     fun onOpen(activity: Activity) {
-        _activity = activity
-    }
-
-    fun onClose() {
-        _activity = null
-        _controller = null
+        _activity = WeakReference(activity)
     }
 
     abstract fun configure()
