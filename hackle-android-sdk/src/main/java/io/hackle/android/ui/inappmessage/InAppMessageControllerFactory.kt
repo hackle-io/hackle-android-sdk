@@ -4,6 +4,7 @@ import android.app.Activity
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.sdk.core.model.InAppMessage.DisplayType.*
 
 internal class InAppMessageControllerFactory(
     private val viewFactory: InAppMessageViewFactory
@@ -12,7 +13,18 @@ internal class InAppMessageControllerFactory(
         context: InAppMessagePresentationContext,
         ui: InAppMessageUi,
         activity: Activity
-    ): InAppMessageController {
+    ): InAppMessageController? {
+        return when (context.message.layout.displayType) {
+            NONE -> null
+            MODAL, BANNER -> createViewController(context, ui, activity)
+        }
+    }
+
+    private fun createViewController(
+        context: InAppMessagePresentationContext,
+        ui: InAppMessageUi,
+        activity: Activity
+    ): InAppMessageViewController {
         val view = viewFactory.create(context, activity)
         val controller = InAppMessageViewController(view, context, ui)
         view.setController(controller)

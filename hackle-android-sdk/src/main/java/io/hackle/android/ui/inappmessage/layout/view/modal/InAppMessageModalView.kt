@@ -140,6 +140,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
     private val configuration: Configuration
         get() = when (message.layout.layoutType) {
+            NONE -> Configuration(image = false, text = false, button = false, outerButton = false)
             IMAGE_ONLY -> Configuration(image = true, text = false, button = true, outerButton = false)
             IMAGE_TEXT -> Configuration(image = true, text = true, button = true, outerButton = false)
             TEXT_ONLY -> Configuration(image = false, text = true, button = true, outerButton = false)
@@ -149,6 +150,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     private val messageBackground: Drawable
         get() {
             return when (message.layout.layoutType) {
+                NONE -> Drawables.transparent()
                 IMAGE -> Drawables.transparent()
                 IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> Drawables.of(
                     radius = cornerRadius.toFloat(),
@@ -161,6 +163,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
         get() {
             val radius = cornerRadius.toFloat()
             return when (message.layout.layoutType) {
+                NONE -> CornersRadii.ZERO
                 IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> CornersRadii.of(radius, radius, 0f, 0f)
                 IMAGE -> CornersRadii.of(radius)
             }
@@ -169,6 +172,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     private val imageAspectRatio: AspectRatio?
         get() {
             return when (message.layout.layoutType) {
+                NONE -> null
                 TEXT_ONLY -> null
                 IMAGE_TEXT -> AspectRatio(width = 290f, height = 100f)
                 IMAGE_ONLY, IMAGE -> {
