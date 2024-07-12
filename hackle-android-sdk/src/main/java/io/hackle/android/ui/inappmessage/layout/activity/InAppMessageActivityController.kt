@@ -8,6 +8,7 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import java.lang.ref.WeakReference
 
 internal class InAppMessageActivityController private constructor(
     override val context: InAppMessagePresentationContext,
@@ -15,8 +16,8 @@ internal class InAppMessageActivityController private constructor(
     private val activityClass: Class<out InAppMessageActivity>
 ) : InAppMessageController {
 
-    private var messageActivity: InAppMessageActivity? = null
-    override val layout: InAppMessageLayout get() = checkNotNull(messageActivity) { "InAppMessageActivity not opened [${activityClass.simpleName}]" }
+    private var messageActivity: WeakReference<InAppMessageActivity>? = null
+    override val layout: InAppMessageLayout get() = checkNotNull(messageActivity?.get()) { "InAppMessageActivity not opened [${activityClass.simpleName}]" }
 
     override fun open(activity: Activity) {
         val intent = Intent(activity, activityClass)
@@ -25,14 +26,13 @@ internal class InAppMessageActivityController private constructor(
     }
 
     fun onOpen(messageActivity: InAppMessageActivity) {
-        this.messageActivity = messageActivity
+        this.messageActivity = WeakReference(messageActivity)
         handle(InAppMessageEvent.Impression)
     }
 
     override fun close() {
         handle(InAppMessageEvent.Close)
-        messageActivity?.activity?.finish()
-        messageActivity = null
+        messageActivity?.get()?.activity?.finish()
         ui.closeCurrent()
     }
 

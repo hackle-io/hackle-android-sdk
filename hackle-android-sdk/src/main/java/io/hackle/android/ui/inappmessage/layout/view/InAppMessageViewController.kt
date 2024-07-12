@@ -37,7 +37,6 @@ internal class InAppMessageViewController(
         val parent = view.parent as? ViewGroup ?: return
         handle(InAppMessageEvent.Close)
         parent.removeView(view)
-        view.onClose()
         ui.closeCurrent()
     }
 
