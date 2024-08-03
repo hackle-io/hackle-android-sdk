@@ -9,9 +9,12 @@ import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView.ScaleType.FIT_CENTER
 import io.hackle.android.R
+import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.inappmessage.image
+import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
+import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView.AspectRatio
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.layout.view.createMessageClickListener
 import io.hackle.android.ui.inappmessage.requiredOrientation
@@ -38,22 +41,26 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
     // Model
     private val messageAlignment: InAppMessage.Message.Alignment get() = requireNotNull(message.layout.alignment) { "Not found Alignment in banner in-app message [${inAppMessage.id}]" }
 
+    // Animation
+    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(50))
+    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(50))
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val newWidth = min(maxWidth, measuredWidth)
-        setMeasuredDimension(newWidth, measuredHeight)
+        setMeasuredDimension(newWidth, imageAspectRatio.calculateHeight(newWidth))
     }
 
     override fun configure() {
 
         // Frame
-        this.layoutParams = frameLayoutParams()
+        this.layoutParams = messageLayoutParams
 
         // Image
         val image = context.image(requiredOrientation)
         imageView.configure(this, image, FIT_CENTER)
-        imageView.setAspectRatio(IMAGE_VIEW_ASPECT_RATIO)
-        imageView.setCornersRadius(cornerRadius.toFloat())
+        imageView.setAspectRatio(imageAspectRatio)
+        imageView.setCornerRadius(cornerRadius.toFloat())
         imageView.setOnClickListener(createMessageClickListener())
 
         // CloseButton
@@ -65,18 +72,20 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
         }
     }
 
-    private fun frameLayoutParams(): FrameLayout.LayoutParams {
-        val layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        layoutParams.width = maxWidth
-        layoutParams.gravity = messageAlignment.bannerGravity
-        layoutParams.setMargins(horizontalMargin, topMargin, horizontalMargin, bottomMargin)
-        return layoutParams
-    }
+    private val messageLayoutParams: FrameLayout.LayoutParams
+        get() {
+            val layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            layoutParams.width = maxWidth
+            layoutParams.gravity = messageAlignment.bannerGravity
+            layoutParams.setMargins(horizontalMargin, topMargin, horizontalMargin, bottomMargin)
+            return layoutParams
+        }
+    private val imageAspectRatio: AspectRatio
+        get() {
+            return AspectRatio(width = 288f, height = 84f)
+        }
 
     companion object {
-
-        private val IMAGE_VIEW_ASPECT_RATIO = InAppMessageImageView.AspectRatio(width = 288f, height = 84f)
-
         fun create(activity: Activity): InAppMessageBannerImageView {
             @SuppressLint("InflateParams")
             val view = activity.layoutInflater.inflate(R.layout.hackle_iam_bannerimage, null)

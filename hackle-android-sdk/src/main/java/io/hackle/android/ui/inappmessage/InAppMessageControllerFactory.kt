@@ -16,7 +16,7 @@ internal class InAppMessageControllerFactory(
     ): InAppMessageController? {
         return when (context.message.layout.displayType) {
             NONE -> null
-            MODAL, BANNER -> createViewController(context, ui, activity)
+            MODAL, BANNER, BOTTOM_SHEET -> createViewController(context, ui, activity)
         }
     }
 
