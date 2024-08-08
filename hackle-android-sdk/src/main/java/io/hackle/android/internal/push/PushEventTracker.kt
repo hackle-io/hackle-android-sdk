@@ -1,6 +1,6 @@
 package io.hackle.android.internal.push
 
-import io.hackle.android.internal.pushtoken.datasource.ProviderType
+import io.hackle.android.internal.push.token.PushToken
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -12,10 +12,10 @@ internal class PushEventTracker(
     private val core: HackleCore,
 ) {
 
-    fun trackToken(token: String, user: User, timestamp: Long) {
+    fun trackToken(token: PushToken, user: User, timestamp: Long) {
         val event = Event.builder(PUSH_TOKEN_EVENT_NAME)
-            .property("provider_type", ProviderType.FCM.name)
-            .property("token", token)
+            .property("provider_type", token.providerType.name)
+            .property("token", token.value)
             .build()
         track(event, user, timestamp)
     }

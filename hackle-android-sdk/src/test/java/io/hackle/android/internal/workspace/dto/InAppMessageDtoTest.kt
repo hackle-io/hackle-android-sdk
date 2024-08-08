@@ -114,6 +114,16 @@ internal class InAppMessageDtoTest {
         expectThat(iam.messageContext.messages[0].outerButtons[0].button.action.type).isEqualTo(CLOSE)
         expectThat(iam.messageContext.messages[0].outerButtons[0].alignment.horizontal).isEqualTo(RIGHT)
         expectThat(iam.messageContext.messages[0].outerButtons[0].alignment.vertical).isEqualTo(BOTTOM)
+
+        expectThat(iam.messageContext.messages[0].innerButtons.size).isEqualTo(1)
+        expectThat(iam.messageContext.messages[0].innerButtons[0].button.text).isEqualTo("inner")
+        expectThat(iam.messageContext.messages[0].innerButtons[0].button.style.textColor).isEqualTo("#000000")
+        expectThat(iam.messageContext.messages[0].innerButtons[0].button.style.bgColor).isEqualTo("#FFFFFF")
+        expectThat(iam.messageContext.messages[0].innerButtons[0].button.style.borderColor).isEqualTo("#FFFFFF")
+        expectThat(iam.messageContext.messages[0].innerButtons[0].button.action.behavior).isEqualTo(CLICK)
+        expectThat(iam.messageContext.messages[0].innerButtons[0].button.action.type).isEqualTo(CLOSE)
+        expectThat(iam.messageContext.messages[0].innerButtons[0].alignment.horizontal).isEqualTo(RIGHT)
+        expectThat(iam.messageContext.messages[0].innerButtons[0].alignment.vertical).isEqualTo(BOTTOM)
     }
 
     @Test

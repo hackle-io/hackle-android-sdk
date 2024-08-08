@@ -285,7 +285,8 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InA
             color = background.color
         ),
         action = action?.let { it.toActionOrNull() ?: return null },
-        outerButtons = outerButtons.map { it.toPositionalButtonOrNull() ?: return null }
+        outerButtons = outerButtons.map { it.toPositionalButtonOrNull() ?: return null },
+        innerButtons = innerButtons.map { it.toPositionalButtonOrNull() ?: return null }
     )
 }
 

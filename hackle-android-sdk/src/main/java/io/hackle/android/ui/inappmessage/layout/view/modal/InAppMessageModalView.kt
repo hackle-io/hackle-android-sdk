@@ -12,11 +12,13 @@ import android.widget.ImageView.ScaleType.FIT_XY
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import io.hackle.android.R
+import io.hackle.android.ui.core.Animations
+import io.hackle.android.ui.core.CornerRadii
 import io.hackle.android.ui.core.Drawables
 import io.hackle.android.ui.inappmessage.*
+import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.view.*
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView.AspectRatio
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView.CornersRadii
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 import io.hackle.sdk.core.model.InAppMessage.Orientation.HORIZONTAL
@@ -52,6 +54,11 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     private val buttonViews get() = listOf(firstButtonView, secondButtonView)
     private val outerButtonViews get() = listOf(leftBottomButtonView, rightBottomButtonView)
 
+    // Animation
+    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(100))
+    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(100))
+
+    // Configuration
     override fun configure() {
         val configuration = configuration
 
@@ -68,9 +75,9 @@ internal class InAppMessageModalView @JvmOverloads constructor(
         // Image
         if (configuration.image) {
             val image = context.image(requiredOrientation)
-            imageView.configure(this, image, FIT_XY)
-            imageView.setCornersRadii(imageCornerRadii)
             imageView.setAspectRatio(imageAspectRatio)
+            imageView.setCornerRadii(imageCornerRadii)
+            imageView.configure(this, image, FIT_XY)
         } else {
             imageView.visibility = View.GONE
         }
@@ -121,8 +128,6 @@ internal class InAppMessageModalView @JvmOverloads constructor(
         }
     }
 
-    // Configuration
-
     private class Configuration(
         val image: Boolean,
         val text: Boolean,
@@ -153,19 +158,19 @@ internal class InAppMessageModalView @JvmOverloads constructor(
                 NONE -> Drawables.transparent()
                 IMAGE -> Drawables.transparent()
                 IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> Drawables.of(
-                    radius = cornerRadius.toFloat(),
+                    radii = CornerRadii.of(cornerRadius.toFloat()),
                     color = message.backgroundColor
                 )
             }
         }
 
-    private val imageCornerRadii: CornersRadii
+    private val imageCornerRadii: CornerRadii
         get() {
             val radius = cornerRadius.toFloat()
             return when (message.layout.layoutType) {
-                NONE -> CornersRadii.ZERO
-                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> CornersRadii.of(radius, radius, 0f, 0f)
-                IMAGE -> CornersRadii.of(radius)
+                NONE -> CornerRadii.ZERO
+                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> CornerRadii.of(radius, radius, 0f, 0f)
+                IMAGE -> CornerRadii.of(radius)
             }
         }
 
@@ -186,7 +191,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
     private val InAppMessage.Message.Button.backgroundDrawable: Drawable
         get() {
-            val background = Drawables.of(radius = buttonCornerRadius.toFloat(), color = backgroundColor)
+            val background = Drawables.of(radii = CornerRadii.of(buttonCornerRadius.toFloat()), color = backgroundColor)
             background.setStroke(buttonStrokeWith, borderColor)
             return background
         }

@@ -1,6 +1,7 @@
 package io.hackle.android.internal.push
 
 import io.hackle.android.internal.event.UserEvents
+import io.hackle.android.internal.push.token.PushToken
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -34,9 +35,10 @@ class PushEventTrackerTest {
         // given
         every { userManager.toHackleUser(any()) } returns mockk()
         val user = User.builder().deviceId("device_id").build()
+        val token = PushToken.of("token_42")
 
         // when
-        sut.trackToken("token_42", user, 42)
+        sut.trackToken(token, user, 42)
 
         // then
         verify(exactly = 1) {

@@ -230,6 +230,7 @@ internal data class InAppMessageDto(
             val closeButton: CloseButtonDto?,
             val action: ActionDto?,
             val outerButtons: List<PositionalButtonDto>,
+            val innerButtons: List<PositionalButtonDto>,
         ) {
 
             data class LayoutDto(

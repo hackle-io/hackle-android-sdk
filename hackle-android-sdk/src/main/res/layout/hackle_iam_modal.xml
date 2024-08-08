@@ -128,7 +128,6 @@
 
             <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
                 android:id="@+id/hackle_iam_modal_left_bottom_outer_button"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
@@ -146,7 +145,6 @@
 
             <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
                 android:id="@+id/hackle_iam_modal_right_bottom_outer_button"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
