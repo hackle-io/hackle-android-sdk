@@ -6,6 +6,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.widget.ImageView
+import io.hackle.android.ui.core.CornerRadii
 import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
@@ -19,14 +20,14 @@ internal class InAppMessageImageView @JvmOverloads constructor(
 
     private var path = Path()
     private var rect = RectF()
-    private var cornerRadii: CornersRadii = CornersRadii.ZERO
+    private var cornerRadii: CornerRadii = CornerRadii.ZERO
     private var aspectRatio: AspectRatio? = null
 
-    fun setCornersRadius(px: Float) {
-        setCornersRadii(CornersRadii.of(px))
+    fun setCornerRadius(px: Float) {
+        setCornerRadii(CornerRadii.of(px))
     }
 
-    fun setCornersRadii(cornerRadii: CornersRadii) {
+    fun setCornerRadii(cornerRadii: CornerRadii) {
         this.cornerRadii = cornerRadii
     }
 
@@ -39,11 +40,11 @@ internal class InAppMessageImageView @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         val aspectRatio = aspectRatio
-        if (aspectRatio != null && measuredWidth > 0 && measuredHeight > 0) {
+        if (aspectRatio != null && measuredWidth > 0) {
             val newWidth = measuredWidth
             val maxHeight = aspectRatio.calculateHeight(measuredWidth)
-            val newHeight = min(measuredHeight, maxHeight) + 1
-            setMeasuredDimension(newWidth, newHeight)
+            val newHeight = if (measuredHeight > 0) min(measuredHeight, maxHeight) else maxHeight
+            setMeasuredDimension(newWidth, newHeight + 1)
         } else {
             setMeasuredDimension(measuredWidth, measuredHeight)
         }
@@ -78,50 +79,6 @@ internal class InAppMessageImageView @JvmOverloads constructor(
 
         fun calculateHeight(width: Int): Int {
             return (width / value).toInt()
-        }
-    }
-
-    /*
-     *   2          3
-     * 1 ┌──────────┐ 4
-     *   │          │
-     *   │          │
-     * 8 └──────────┘ 5
-     *   7          6
-     */
-    data class CornersRadii(
-        val v1: Float,
-        val v2: Float,
-        val v3: Float,
-        val v4: Float,
-        val v5: Float,
-        val v6: Float,
-        val v7: Float,
-        val v8: Float
-    ) {
-        fun toFloatArray(): FloatArray {
-            return floatArrayOf(v1, v2, v3, v4, v5, v6, v7, v8)
-        }
-
-        companion object {
-            val ZERO = of(0f)
-
-            fun of(radius: Float): CornersRadii {
-                return CornersRadii(radius, radius, radius, radius, radius, radius, radius, radius)
-            }
-
-            fun of(topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float): CornersRadii {
-                return CornersRadii(
-                    topLeft,
-                    topLeft,
-                    topRight,
-                    topRight,
-                    bottomRight,
-                    bottomRight,
-                    bottomLeft,
-                    bottomLeft
-                )
-            }
         }
     }
 
