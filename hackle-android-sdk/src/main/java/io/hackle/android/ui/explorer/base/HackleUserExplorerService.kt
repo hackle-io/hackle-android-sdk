@@ -1,6 +1,6 @@
 package io.hackle.android.ui.explorer.base
 
-import io.hackle.android.internal.pushtoken.PushTokenManager
+import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage
 import io.hackle.sdk.common.decision.Decision
@@ -25,7 +25,7 @@ internal class HackleUserExplorerService(
     }
 
     fun registeredPushToken(): String? {
-        return pushTokenManager.registeredPushToken
+        return pushTokenManager.currentPushToken?.value
     }
 
     fun getAbTestDecisions(): List<Pair<Experiment, Decision>> {
