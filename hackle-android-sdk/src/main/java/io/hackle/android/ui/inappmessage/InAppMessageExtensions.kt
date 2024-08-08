@@ -43,6 +43,10 @@ internal fun InAppMessage.Orientation.supports(orientation: AndroidOrientation):
     }
 }
 
+internal fun InAppMessage.Message.buttonOrNull(alignment: InAppMessage.Message.Alignment): InAppMessage.Message.PositionalButton? {
+    return innerButtons.find { it.alignment == alignment }
+}
+
 internal fun InAppMessage.Message.outerButtonOrNull(alignment: InAppMessage.Message.Alignment): InAppMessage.Message.PositionalButton? {
     return outerButtons.find { it.alignment == alignment }
 }

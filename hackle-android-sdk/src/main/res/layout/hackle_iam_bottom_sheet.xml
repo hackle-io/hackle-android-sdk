@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/hackle_iam_bottom_sheet_frame_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/hackle_iam_modal_frame_background" />
+
+    <io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetContainerView
+        android:id="@+id/hackle_iam_bottom_sheet_container_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@color/hackle_iam_skeleton"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
+                android:id="@+id/hackle_iam_bottom_sheet_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true" />
+
+            <RelativeLayout
+                android:id="@+id/hackle_iam_bottom_sheet_button_container_view"
+                android:layout_width="match_parent"
+                android:layout_height="44dp">
+
+                <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+                    android:id="@+id/hackle_iam_bottom_sheet_left_bottom_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerInParent="true"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:background="@android:color/transparent"
+                    android:gravity="center"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="8dp"
+                    android:textSize="14sp"
+                    app:alignHorizontal="left"
+                    app:alignVertical="bottom"
+                    tools:text="LEFT BUTTON 1" />
+
+                <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+                    android:id="@+id/hackle_iam_bottom_sheet_right_bottom_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerInParent="true"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginRight="8dp"
+                    android:background="@android:color/transparent"
+                    android:gravity="center"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="8dp"
+                    android:textSize="14sp"
+                    app:alignHorizontal="right"
+                    app:alignVertical="bottom"
+                    tools:ignore="RelativeOverlap"
+                    tools:text="RIGHT BUTTON 2" />
+
+            </RelativeLayout>
+        </LinearLayout>
+
+        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
+            android:id="@+id/hackle_iam_bottom_sheet_close_button_view"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="@string/hackle_iam_close_button_text"
+            android:textAlignment="center"
+            android:textSize="20sp" />
+
+    </io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetContainerView>
+</io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetView>
