@@ -6,7 +6,7 @@ import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pushtoken.PushTokenManager
+import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
