@@ -17,7 +17,7 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pushtoken.PushTokenManager
+import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -343,10 +343,10 @@ class HackleApp internal constructor(
         eventExecutor.execute {
             try {
                 workspaceManager.initialize()
+                pushTokenManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
                 synchronizer.sync()
-                pushTokenManager.initialize()
                 notificationManager.flush()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {

@@ -5,6 +5,7 @@ import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenta
 import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerImageView
 import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView
 import io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView
+import io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 
@@ -15,6 +16,7 @@ internal class InAppMessageViewFactory {
             InAppMessage.DisplayType.NONE -> throw IllegalArgumentException("Unsupported in-app message display type [${context.inAppMessage.id}, ${context.message.layout.displayType}]")
             InAppMessage.DisplayType.MODAL -> InAppMessageModalView.create(activity)
             InAppMessage.DisplayType.BANNER -> createBannerView(context, activity)
+            InAppMessage.DisplayType.BOTTOM_SHEET -> InAppMessageBottomSheetView.create(activity)
         }
         view.setContext(context)
         return view

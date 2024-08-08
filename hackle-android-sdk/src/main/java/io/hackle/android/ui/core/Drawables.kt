@@ -11,10 +11,14 @@ internal object Drawables {
         return ColorDrawable(Color.TRANSPARENT)
     }
 
-    fun of(shape: Int = GradientDrawable.RECTANGLE, radius: Float = 0f, color: AndroidColor): GradientDrawable {
+    fun of(
+        shape: Int = GradientDrawable.RECTANGLE,
+        radii: CornerRadii = CornerRadii.ZERO,
+        color: AndroidColor
+    ): GradientDrawable {
         val drawable = GradientDrawable()
         drawable.shape = shape
-        drawable.cornerRadius = radius
+        drawable.cornerRadii = radii.toFloatArray()
         drawable.setColor(color)
         return drawable
     }
