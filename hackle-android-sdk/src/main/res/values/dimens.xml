@@ -20,4 +20,7 @@
     <dimen name="hackle_iam_banner_content_height">60dp</dimen>
     <dimen name="hackle_iam_banner_padding">12dp</dimen>
     <dimen name="hackle_iam_banner_spacing">8dp</dimen>
+
+    <dimen name="hackle_iam_bottom_sheet_max_width">540dp</dimen>
+    <dimen name="hackle_iam_bottom_sheet_radius">16dp</dimen>
 </resources>

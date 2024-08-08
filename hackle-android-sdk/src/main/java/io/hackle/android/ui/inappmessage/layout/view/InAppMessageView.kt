@@ -8,6 +8,7 @@ import android.widget.RelativeLayout
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.sdk.core.model.InAppMessage
@@ -40,9 +41,12 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
         _context = context
     }
 
-    fun onOpen(activity: Activity) {
+    fun setActivity(activity: Activity) {
         _activity = WeakReference(activity)
     }
+
+    abstract val openAnimator: InAppMessageAnimator?
+    abstract val closeAnimator: InAppMessageAnimator?
 
     abstract fun configure()
 }

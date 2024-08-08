@@ -30,9 +30,8 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.push.PushEventTracker
-import io.hackle.android.internal.pushtoken.PushTokenManager
-import io.hackle.android.internal.pushtoken.PushTokenRegistration
-import io.hackle.android.internal.pushtoken.datasource.ProviderType
+import io.hackle.android.internal.push.token.PushTokenFetchers
+import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.screen.ScreenEventTracker
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionEventTracker
@@ -310,22 +309,17 @@ internal object HackleApps {
         eventPublisher.add(inAppMessageManager)
 
         // PushToken
-
-        val pushTokenDataSource = PushTokenRegistration.create(
-            context = context,
-            providerType = ProviderType.FCM
-        )
+        val pushTokenFetcher = PushTokenFetchers.create(context)
         val pushEventTracker = PushEventTracker(
             userManager = userManager,
             core = core
         )
         val pushTokenManager = PushTokenManager(
-            preferences = keyValueRepositoryBySdkKey,
-            userManager = userManager,
-            dataSource = pushTokenDataSource,
-            eventTracker = pushEventTracker
+            repository = keyValueRepositoryBySdkKey,
+            pushTokenFetcher = pushTokenFetcher,
+            pushEventTracker = pushEventTracker
         )
-        userManager.addListener(pushTokenManager)
+        sessionManager.addListener(pushTokenManager)
 
         // Notification
 

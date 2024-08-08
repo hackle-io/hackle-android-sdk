@@ -11,9 +11,12 @@ import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView.ScaleType.FIT_CENTER
 import io.hackle.android.R
+import io.hackle.android.ui.core.Animations
+import io.hackle.android.ui.core.CornerRadii
 import io.hackle.android.ui.core.Drawables
 import io.hackle.android.ui.inappmessage.backgroundColor
 import io.hackle.android.ui.inappmessage.imageOrNull
+import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.view.*
 import io.hackle.android.ui.inappmessage.requiredOrientation
 import io.hackle.sdk.core.model.InAppMessage
@@ -43,6 +46,10 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
     private val messageAlignment: InAppMessage.Message.Alignment get() = requireNotNull(message.layout.alignment) { "Not found Alignment in banner in-app message [${inAppMessage.id}]" }
     private val messageText: InAppMessage.Message.Text get() = requireNotNull(message.text) { "Not found Text in banner in-app message [${inAppMessage.id}]" }
 
+    // Animation
+    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(50))
+    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(50))
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         setMeasuredDimension(min(maxWidth, measuredWidth), maxHeight)
@@ -59,7 +66,7 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
         val image = context.imageOrNull(requiredOrientation)
         if (image != null) {
             imageView.configure(this, image, FIT_CENTER)
-            imageView.setCornersRadius(imageCornerRadius.toFloat())
+            imageView.setCornerRadius(imageCornerRadius.toFloat())
         } else {
             imageView.visibility = View.GONE
         }
@@ -89,7 +96,7 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
 
     private val messageBackground: Drawable
         get() {
-            return Drawables.of(radius = cornerRadius.toFloat(), color = message.backgroundColor)
+            return Drawables.of(radii = CornerRadii.of(cornerRadius.toFloat()), color = message.backgroundColor)
         }
 
     companion object {
