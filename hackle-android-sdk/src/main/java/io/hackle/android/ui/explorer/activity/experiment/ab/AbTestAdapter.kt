@@ -44,14 +44,14 @@ internal class AbTestAdapter(
 
     private inner class AbTestOverrideListener : OnOverrideSetListener {
         override fun onOverrideSet(experiment: Experiment, variation: Variation) {
-            explorerService.setAbTestOverride(experiment, variation.id)
+            explorerService.setAbTestOverride(experiment, variation)
             fetchAndUpdate()
         }
     }
 
     private inner class AbTestOverrideResetListener : OnOverrideResetListener {
-        override fun onOverrideReset(experiment: Experiment) {
-            explorerService.resetAbTestOverride(experiment)
+        override fun onOverrideReset(experiment: Experiment, variation: Variation) {
+            explorerService.resetAbTestOverride(experiment, variation)
             fetchAndUpdate()
         }
     }
