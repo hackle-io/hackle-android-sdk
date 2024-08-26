@@ -28,9 +28,7 @@ internal class FeatureFlagAdapter(
     }
 
     override fun createViewHolder(parent: ViewGroup?): FeatureFlagViewHolder {
-        return FeatureFlagViewHolder.create(
-            context, overrideSetListener, overrideResetListener, parent
-        )
+        return FeatureFlagViewHolder.create(context, overrideSetListener, overrideResetListener, parent)
     }
 
     fun fetchAndUpdate() {
@@ -46,14 +44,14 @@ internal class FeatureFlagAdapter(
 
     private inner class FeatureFlagOverrideListener : OnOverrideSetListener {
         override fun onOverrideSet(experiment: Experiment, variation: Variation) {
-            explorerService.setFeatureFlagOverride(experiment, variation.id)
+            explorerService.setFeatureFlagOverride(experiment, variation)
             fetchAndUpdate()
         }
     }
 
     private inner class FeatureFlagOverrideResetListener : OnOverrideResetListener {
-        override fun onOverrideReset(experiment: Experiment) {
-            explorerService.resetFeatureFlagOverride(experiment)
+        override fun onOverrideReset(experiment: Experiment, variation: Variation) {
+            explorerService.resetFeatureFlagOverride(experiment, variation)
             fetchAndUpdate()
         }
     }
