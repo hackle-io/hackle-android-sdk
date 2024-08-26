@@ -10,6 +10,7 @@ class HackleConfig private constructor(builder: Builder) {
 
     val sdkUri: String = builder.sdkUri
     val eventUri: String = builder.eventUri
+    val apiUrl: String = builder.apiUri
     val monitoringUri: String = builder.monitoringUri
 
     val mode: HackleAppMode = builder.mode
@@ -35,6 +36,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal var sdkUri: String = DEFAULT_SDK_URI
         internal var eventUri: String = DEFAULT_EVENT_URI
+        internal var apiUri: String = DEFAULT_API_URI
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
 
         internal var mode: HackleAppMode = HackleAppMode.NATIVE
@@ -49,8 +51,7 @@ class HackleConfig private constructor(builder: Builder) {
         internal var eventFlushIntervalMillis: Int = DEFAULT_EVENT_FLUSH_INTERVAL_MILLIS
         internal var eventFlushThreshold: Int = DEFAULT_EVENT_FLUSH_THRESHOLD
 
-        internal var exposureEventDedupIntervalMillis: Int =
-            DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
+        internal var exposureEventDedupIntervalMillis: Int = DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
 
         internal val extra = hashMapOf<String, String>()
 
@@ -64,6 +65,10 @@ class HackleConfig private constructor(builder: Builder) {
 
         fun eventUri(eventUri: String) = apply {
             this.eventUri = eventUri
+        }
+
+        fun apiUri(apiUri: String) = apply {
+            this.apiUri = apiUri
         }
 
         fun monitoringUri(monitoringUri: String) = apply {
@@ -134,6 +139,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal const val DEFAULT_SDK_URI = "https://sdk.hackle.io"
         internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
+        internal const val DEFAULT_API_URI = "https://api.hackle.io"
         internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
 
         internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m

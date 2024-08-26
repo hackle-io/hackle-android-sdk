@@ -3,12 +3,9 @@ package io.hackle.android.ui.explorer.activity.experiment.ff.viewholder
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.Spinner
-import android.widget.TextView
+import android.widget.*
 import io.hackle.android.R
 import io.hackle.android.ui.explorer.activity.experiment.listener.OnOverrideResetListener
 import io.hackle.android.ui.explorer.activity.experiment.listener.OnOverrideSetListener
@@ -42,9 +39,7 @@ internal class FeatureFlagViewHolder private constructor(
         spinner.isEnabled = item.decision.reason.isManualOverridable
 
         resetButton.isEnabled = item.isManualOverridden
-        resetButton.setOnClickListener {
-            resetListener.onOverrideReset(item.experiment)
-        }
+        resetButton.setOnClickListener(ResetClickListener(item))
     }
 
     inner class VariationSelectedListener(private val item: FeatureFlagItem) :
@@ -58,6 +53,14 @@ internal class FeatureFlagViewHolder private constructor(
             val variationKey = item.variationKeys[position]
             val variation = item.experiment.getVariationOrNull(variationKey) ?: return
             spinnerListener.onOverrideSet(item.experiment, variation)
+        }
+    }
+
+    inner class ResetClickListener(private val item: FeatureFlagItem) : OnClickListener {
+        override fun onClick(v: View?) {
+            val variationKey = item.variationKeys[spinner.selectedItemPosition]
+            val variation = item.experiment.getVariationOrNull(variationKey) ?: return
+            resetListener.onOverrideReset(item.experiment, variation)
         }
     }
 
@@ -76,6 +79,10 @@ internal class FeatureFlagViewHolder private constructor(
 }
 
 private val FeatureFlagItem.keyLabel get() = "[${experiment.key}] ${experiment.name ?: ""}"
-private val FeatureFlagItem.descLabel get() = experiment.status.name
+private val FeatureFlagItem.descLabel
+    get() = listOf(
+        experiment.status.name,
+        experiment.identifierType
+    ).joinToString(" | ")
 private val FeatureFlagItem.variationKeys get() = experiment.variations.map { it.key }
 private val FeatureFlagItem.isManualOverridden get() = overriddenVariation != null
