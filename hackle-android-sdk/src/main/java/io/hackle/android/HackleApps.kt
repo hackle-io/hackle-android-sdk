@@ -7,6 +7,7 @@ import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.repository.NotificationHistoryRepositoryImpl
+import io.hackle.android.internal.devtools.DevToolsApi
 import io.hackle.android.internal.engagement.EngagementEventTracker
 import io.hackle.android.internal.engagement.EngagementManager
 import io.hackle.android.internal.event.DefaultEventProcessor
@@ -336,6 +337,11 @@ internal object HackleApps {
             .setNotificationDataReceiver(notificationManager)
 
         // UserExplorer
+        val devToolsApi = DevToolsApi(
+            sdk = sdk,
+            url = config.apiUrl,
+            httpClient = httpClient
+        )
 
         val userExplorer = HackleUserExplorer(
             explorerService = HackleUserExplorerService(
@@ -343,7 +349,8 @@ internal object HackleApps {
                 userManager = userManager,
                 abTestOverrideStorage = abOverrideStorage,
                 featureFlagOverrideStorage = ffOverrideStorage,
-                pushTokenManager = pushTokenManager
+                pushTokenManager = pushTokenManager,
+                devToolsApi = devToolsApi,
             ),
             activityProvider = lifecycleManager
         )

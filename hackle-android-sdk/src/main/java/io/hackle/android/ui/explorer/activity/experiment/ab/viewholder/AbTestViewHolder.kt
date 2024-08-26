@@ -3,6 +3,7 @@ package io.hackle.android.ui.explorer.activity.experiment.ab.viewholder
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -41,9 +42,7 @@ internal class AbTestViewHolder private constructor(
         spinner.isEnabled = item.decision.reason.isManualOverridable
 
         resetButton.isEnabled = item.isManualOverridden
-        resetButton.setOnClickListener {
-            overrideResetListener.onOverrideReset(item.experiment)
-        }
+        resetButton.setOnClickListener(ResetClickListener(item))
     }
 
     inner class VariationSelectedListener(private val item: AbTestItem) :
@@ -57,6 +56,14 @@ internal class AbTestViewHolder private constructor(
             val variationKey = item.variationKeys[position]
             val variation = item.experiment.getVariationOrNull(variationKey) ?: return
             overrideSetListener.onOverrideSet(item.experiment, variation)
+        }
+    }
+
+    inner class ResetClickListener(private val item: AbTestItem) : OnClickListener {
+        override fun onClick(v: View?) {
+            val variationKey = item.variationKeys[spinner.selectedItemPosition]
+            val variation = item.experiment.getVariationOrNull(variationKey) ?: return
+            overrideResetListener.onOverrideReset(item.experiment, variation)
         }
     }
 
@@ -79,7 +86,8 @@ private val AbTestItem.descLabel
     get() = listOf(
         "V${experiment.version}",
         experiment.status.name,
-        experiment.variations.joinToString("/") { it.key }
+        experiment.variations.joinToString("/") { it.key },
+        experiment.identifierType
     ).joinToString(" | ")
 private val AbTestItem.variationKeys get() = experiment.variations.map { it.key }
 private val AbTestItem.decisionVariationKey get() = decision.variation.name
