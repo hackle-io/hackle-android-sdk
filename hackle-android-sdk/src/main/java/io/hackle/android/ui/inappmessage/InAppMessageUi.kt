@@ -8,6 +8,7 @@ import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -23,12 +24,16 @@ import java.util.concurrent.atomic.AtomicReference
 internal class InAppMessageUi(
     private val activityProvider: ActivityProvider,
     private val messageControllerFactory: InAppMessageControllerFactory,
+    private val defaultListener: HackleInAppMessageListener,
     val eventHandler: InAppMessageEventHandler,
     val imageLoader: ImageLoader
 ) : InAppMessagePresenter {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()
     val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
+
+    private var customListener: HackleInAppMessageListener? = null
+    val listener get() = customListener ?: defaultListener
 
     private val opening = AtomicBoolean(false)
 
@@ -64,6 +69,10 @@ internal class InAppMessageUi(
         return context.inAppMessage.supports(orientation)
     }
 
+    fun setListener(listener: HackleInAppMessageListener?) {
+        customListener = listener
+    }
+
     fun closeCurrent() {
         _currentMessageController.set(null)
     }
@@ -80,8 +89,13 @@ internal class InAppMessageUi(
             imageLoader: ImageLoader,
         ): InAppMessageUi {
             return INSTANCE
-                ?: InAppMessageUi(activityProvider, messageControllerFactory, eventHandler, imageLoader)
-                    .also { INSTANCE = it }
+                ?: InAppMessageUi(
+                    activityProvider,
+                    messageControllerFactory,
+                    InAppMessageListener,
+                    eventHandler,
+                    imageLoader
+                ).also { INSTANCE = it }
         }
 
         val instance: InAppMessageUi get() = requireNotNull(INSTANCE) { "InAppMessageUi not initialized" }

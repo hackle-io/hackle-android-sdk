@@ -3,6 +3,7 @@ package io.hackle.android.ui.inappmessage.event
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpression
 import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.layout.listener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
@@ -62,6 +63,10 @@ internal class InAppMessageActionEventProcessor(
     }
 
     override fun process(layout: InAppMessageLayout, event: InAppMessageEvent.Action, timestamp: Long) {
+        val isProcessed = layout.listener.onClick(layout, layout.inAppMessage, event.action)
+        if (isProcessed) {
+            return
+        }
         val handler = actionHandlerFactory.get(event.action) ?: return
         handler.handle(layout, event.action)
     }

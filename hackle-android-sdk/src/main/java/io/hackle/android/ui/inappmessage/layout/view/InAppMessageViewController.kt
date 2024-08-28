@@ -12,6 +12,7 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
+import io.hackle.android.ui.inappmessage.listener
 
 
 internal class InAppMessageViewController(
@@ -26,15 +27,20 @@ internal class InAppMessageViewController(
     override fun open(activity: Activity) {
         lockScreenOrientation(activity)
 
+        listener.onWillOpen(context.inAppMessage)
+
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
         parent.addView(view)
         ViewCompat.requestApplyInsets(parent)
         view.setActivity(activity)
         view.openAnimator?.start()
         handle(InAppMessageEvent.Impression)
+
+        listener.onDidOpen(context.inAppMessage)
     }
 
     override fun close() {
+        listener.onWillClose(context.inAppMessage)
         val animator = view.closeAnimator
         if (animator != null) {
             animator.setListener(CloseAnimationListener())
@@ -51,6 +57,8 @@ internal class InAppMessageViewController(
         handle(InAppMessageEvent.Close)
         parent.removeView(view)
         ui.closeCurrent()
+
+        listener.onDidClose(context.inAppMessage)
     }
 
     private fun lockScreenOrientation(activity: Activity) {

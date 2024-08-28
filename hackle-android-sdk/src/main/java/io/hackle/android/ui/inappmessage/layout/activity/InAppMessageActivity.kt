@@ -20,7 +20,7 @@ internal abstract class InAppMessageActivity : FragmentActivity(), HackleActivit
     override val activity: Activity get() = this
     override val controller: InAppMessageController get() = messageController
     override val context: InAppMessagePresentationContext get() = controller.context
-    val inAppMessage: InAppMessage get() = context.inAppMessage
+    override val inAppMessage: InAppMessage get() = context.inAppMessage
     val message: InAppMessage.Message get() = context.message
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -30,7 +30,7 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
     override val context: InAppMessagePresentationContext get() = requireNotNull(_context) { "InAppMessagePresentationContext is not set on InAppMessageView." }
     override val activity: Activity? get() = _activity?.get()
 
-    val inAppMessage: InAppMessage get() = context.inAppMessage
+    override val inAppMessage: InAppMessage get() = context.inAppMessage
     val message: InAppMessage.Message get() = context.message
 
     fun setController(controller: InAppMessageViewController) {
