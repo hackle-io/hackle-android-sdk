@@ -115,6 +115,7 @@ internal object InAppMessages {
     fun message(
         variationKey: String? = null,
         lang: String = "ko",
+        layout: InAppMessage.Message.Layout = layout(),
         images: List<InAppMessage.Message.Image> = listOf(image()),
         text: InAppMessage.Message.Text? = text(),
         buttons: List<InAppMessage.Message.Button> = listOf(button()),
@@ -126,11 +127,7 @@ internal object InAppMessages {
         return InAppMessage.Message(
             variationKey = variationKey,
             lang = lang,
-            layout = InAppMessage.Message.Layout(
-                displayType = InAppMessage.DisplayType.MODAL,
-                layoutType = InAppMessage.LayoutType.IMAGE_ONLY,
-                alignment = null
-            ),
+            layout = layout,
             images = images,
             text = text,
             buttons = buttons,
@@ -142,6 +139,18 @@ internal object InAppMessages {
         )
     }
 
+    fun layout(
+        displayType: InAppMessage.DisplayType = InAppMessage.DisplayType.MODAL,
+        layoutType: InAppMessage.LayoutType = InAppMessage.LayoutType.IMAGE_ONLY,
+        alignment: InAppMessage.Message.Alignment? = null
+    ): InAppMessage.Message.Layout {
+        return InAppMessage.Message.Layout(
+            displayType = displayType,
+            layoutType = layoutType,
+            alignment = alignment
+        )
+    }
+
     fun action(
         behavior: InAppMessage.Behavior = InAppMessage.Behavior.CLICK,
         type: InAppMessage.ActionType = InAppMessage.ActionType.CLOSE,
@@ -149,7 +158,7 @@ internal object InAppMessages {
     ): InAppMessage.Action {
         return InAppMessage.Action(
             behavior = behavior,
-            type = type,
+            actionType = type,
             value = value
         )
     }

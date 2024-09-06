@@ -25,6 +25,7 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.Variation.Companion.CONTROL
@@ -310,12 +311,16 @@ class HackleApp internal constructor(
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                        "JavaScript can use reflection to manipulate application"
+                    "JavaScript can use reflection to manipulate application"
             )
         }
         val bridge = HackleBridge(this)
         val jsInterface = HackleJavascriptInterface(bridge)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
+    }
+
+    fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
+        InAppMessageUi.instance.setListener(listener)
     }
 
     @JvmOverloads

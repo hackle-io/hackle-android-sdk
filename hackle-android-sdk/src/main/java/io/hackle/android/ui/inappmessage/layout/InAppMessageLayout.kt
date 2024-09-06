@@ -5,12 +5,13 @@ import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenta
 import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
+import io.hackle.sdk.common.HackleInAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 
 /**
  * Base layout interface for [InAppMessage].
  */
-internal interface InAppMessageLayout {
+internal interface InAppMessageLayout : HackleInAppMessageView {
 
     /**
      * The controller that manages the lifecycle and interactions of this [InAppMessageLayout].
@@ -30,7 +31,7 @@ internal interface InAppMessageLayout {
     /**
      * Closes the [InAppMessageLayout]
      */
-    fun close() {
+    override fun close() {
         controller.close()
     }
 }
@@ -38,3 +39,5 @@ internal interface InAppMessageLayout {
 internal fun InAppMessageLayout.handle(event: InAppMessageEvent) {
     controller.handle(event)
 }
+
+internal val InAppMessageLayout.listener get() = controller.ui.listener
