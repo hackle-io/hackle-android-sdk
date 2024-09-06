@@ -6,6 +6,7 @@ import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
+import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
@@ -22,6 +23,9 @@ class InAppMessageUiTest {
 
     @RelaxedMockK
     private lateinit var messageControllerFactory: InAppMessageControllerFactory
+
+    @RelaxedMockK
+    private lateinit var defaultListener: HackleInAppMessageListener
 
     @RelaxedMockK
     private lateinit var eventHandler: InAppMessageEventHandler
