@@ -49,8 +49,8 @@ internal class InAppMessageViewController(
 
         ui.listener.beforeInAppMessageClose(context.inAppMessage)
         startAnimation(view.closeAnimator, completion = {
-            removeView()
             handle(InAppMessageEvent.Close)
+            removeView()
             ui.listener.afterInAppMessageClose(context.inAppMessage)
         })
     }
