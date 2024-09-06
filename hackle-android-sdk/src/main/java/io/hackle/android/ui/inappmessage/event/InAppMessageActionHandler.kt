@@ -22,7 +22,7 @@ internal class InAppMessageActionHandlerFactory(private val handlers: List<InApp
 
 internal class InAppMessageCloseActionHandler : InAppMessageActionHandler {
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.type == InAppMessage.ActionType.CLOSE
+        return action.actionType == InAppMessage.ActionType.CLOSE
     }
 
     override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
@@ -35,7 +35,7 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
     private val log = Logger<InAppMessageLinkActionHandler>()
 
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.type == InAppMessage.ActionType.WEB_LINK
+        return action.actionType == InAppMessage.ActionType.WEB_LINK
     }
 
     override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
@@ -59,7 +59,7 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
     private val log = Logger<InAppMessageLinkActionHandler>()
 
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.type == InAppMessage.ActionType.LINK_AND_CLOSE
+        return action.actionType == InAppMessage.ActionType.LINK_AND_CLOSE
     }
 
     override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
@@ -84,7 +84,7 @@ internal class InAppMessageHideActionHandler(
     private val clock: Clock
 ) : InAppMessageActionHandler {
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.type == InAppMessage.ActionType.HIDDEN
+        return action.actionType == InAppMessage.ActionType.HIDDEN
     }
 
     override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {

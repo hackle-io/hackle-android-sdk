@@ -28,6 +28,7 @@ class InAppMessageEventTrackerTest {
     @Test
     fun `impression`() {
         val message = InAppMessages.message(
+            layout = InAppMessages.layout(displayType = InAppMessage.DisplayType.BANNER),
             images = listOf(InAppMessages.image(imagePath = "image_path")),
             text = InAppMessages.text(title = "text_title", body = "text_body"),
             buttons = listOf(
@@ -56,6 +57,7 @@ class InAppMessageEventTrackerTest {
                         get { properties } isEqualTo mapOf(
                             "in_app_message_id" to 42L,
                             "in_app_message_key" to 320L,
+                            "in_app_message_display_type" to "BANNER",
                             "title_text" to "text_title",
                             "body_text" to "text_body",
                             "image_url" to listOf("image_path"),
@@ -73,6 +75,7 @@ class InAppMessageEventTrackerTest {
     @Test
     fun `close`() {
         val message = InAppMessages.message(
+            layout = InAppMessages.layout(displayType = InAppMessage.DisplayType.BOTTOM_SHEET),
             images = listOf(InAppMessages.image(imagePath = "image_path")),
             text = InAppMessages.text(title = "text_title", body = "text_body"),
             buttons = listOf(
@@ -101,6 +104,7 @@ class InAppMessageEventTrackerTest {
                         get { properties } isEqualTo mapOf(
                             "in_app_message_id" to 42L,
                             "in_app_message_key" to 320L,
+                            "in_app_message_display_type" to "BOTTOM_SHEET",
                             "decision_reason" to "IN_APP_MESSAGE_TARGET",
                         )
                     }
@@ -115,6 +119,7 @@ class InAppMessageEventTrackerTest {
     fun `action`() {
         val action = InAppMessages.action(type = InAppMessage.ActionType.WEB_LINK, value = "button_link_click")
         val message = InAppMessages.message(
+            layout = InAppMessages.layout(displayType = InAppMessage.DisplayType.MODAL),
             images = listOf(InAppMessages.image(imagePath = "image_path")),
             text = InAppMessages.text(title = "text_title", body = "text_body"),
             buttons = listOf(
@@ -143,6 +148,7 @@ class InAppMessageEventTrackerTest {
                         get { properties } isEqualTo mapOf(
                             "in_app_message_id" to 42L,
                             "in_app_message_key" to 320L,
+                            "in_app_message_display_type" to "MODAL",
                             "action_area" to "BUTTON",
                             "action_type" to "WEB_LINK",
                             "button_text" to "button_text_",

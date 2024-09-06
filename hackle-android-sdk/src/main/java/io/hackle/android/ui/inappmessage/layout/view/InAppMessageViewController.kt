@@ -12,6 +12,8 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
+import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.atomic.AtomicReference
 
 
 internal class InAppMessageViewController(
@@ -23,32 +25,49 @@ internal class InAppMessageViewController(
     override val layout: InAppMessageView get() = view
     private var originalOrientation: Int? = null
 
+    private val state = AtomicReference(State.CLOSED)
+
     override fun open(activity: Activity) {
+        if (!state.compareAndSet(State.CLOSED, State.OPENED)) {
+            log.debug { "InAppMessage is already open (key=${context.inAppMessage.key})" }
+            return
+        }
+
+        ui.listener.beforeInAppMessageOpen(context.inAppMessage)
+        addView(activity)
+        startAnimation(view.openAnimator, completion = {
+            handle(InAppMessageEvent.Impression)
+            ui.listener.afterInAppMessageOpen(context.inAppMessage)
+        })
+    }
+
+    override fun close() {
+        if (!state.compareAndSet(State.OPENED, State.CLOSED)) {
+            log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
+            return
+        }
+
+        ui.listener.beforeInAppMessageClose(context.inAppMessage)
+        startAnimation(view.closeAnimator, completion = {
+            removeView()
+            handle(InAppMessageEvent.Close)
+            ui.listener.afterInAppMessageClose(context.inAppMessage)
+        })
+    }
+
+    private fun addView(activity: Activity) {
         lockScreenOrientation(activity)
 
         val parent = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content)
         parent.addView(view)
         ViewCompat.requestApplyInsets(parent)
         view.setActivity(activity)
-        view.openAnimator?.start()
-        handle(InAppMessageEvent.Impression)
     }
 
-    override fun close() {
-        val animator = view.closeAnimator
-        if (animator != null) {
-            animator.setListener(CloseAnimationListener())
-            animator.start()
-        } else {
-            closeMessage()
-        }
-    }
-
-    private fun closeMessage() {
+    private fun removeView() {
         unlockScreenOrientation()
 
         val parent = view.parent as? ViewGroup ?: return
-        handle(InAppMessageEvent.Close)
         parent.removeView(view)
         ui.closeCurrent()
     }
@@ -71,9 +90,24 @@ internal class InAppMessageViewController(
         }
     }
 
-    inner class CloseAnimationListener : InAppMessageAnimator.Listener {
-        override fun onAnimationEnd() {
-            closeMessage()
+    private fun startAnimation(animator: InAppMessageAnimator?, completion: () -> Unit) {
+        if (animator != null) {
+            animator.setListener(object : InAppMessageAnimator.Listener {
+                override fun onAnimationEnd() {
+                    completion()
+                }
+            })
+            animator.start()
+        } else {
+            completion()
         }
+    }
+
+    enum class State {
+        CLOSED, OPENED
+    }
+
+    companion object {
+        private val log = Logger<InAppMessageViewController>()
     }
 }
