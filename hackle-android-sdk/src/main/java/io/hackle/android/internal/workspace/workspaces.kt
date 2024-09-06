@@ -309,7 +309,7 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.ImageDto.toImageOrNull
 internal fun InAppMessageDto.MessageContextDto.ActionDto.toActionOrNull(): InAppMessage.Action? {
     return InAppMessage.Action(
         behavior = parseEnumOrNull<InAppMessage.Behavior>(behavior) ?: return null,
-        type = parseEnumOrNull<InAppMessage.ActionType>(type) ?: return null,
+        actionType = parseEnumOrNull<InAppMessage.ActionType>(type) ?: return null,
         value = value
     )
 }
