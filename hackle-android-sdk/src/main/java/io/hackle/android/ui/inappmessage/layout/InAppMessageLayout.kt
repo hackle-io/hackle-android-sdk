@@ -14,6 +14,11 @@ import io.hackle.sdk.core.model.InAppMessage
 internal interface InAppMessageLayout : HackleInAppMessageView {
 
     /**
+     * The current state of the [InAppMessageLayout]
+     */
+    val state: State
+
+    /**
      * The controller that manages the lifecycle and interactions of this [InAppMessageLayout].
      */
     val controller: InAppMessageController
@@ -33,6 +38,10 @@ internal interface InAppMessageLayout : HackleInAppMessageView {
      */
     override fun close() {
         controller.close()
+    }
+
+    enum class State {
+        OPENED, CLOSED
     }
 }
 

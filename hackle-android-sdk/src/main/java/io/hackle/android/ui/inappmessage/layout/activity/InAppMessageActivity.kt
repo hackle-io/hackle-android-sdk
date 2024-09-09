@@ -7,7 +7,6 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.HackleActivity
-import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivityController.Companion.IN_APP_MESSAGE_ID
@@ -15,10 +14,11 @@ import io.hackle.sdk.core.model.InAppMessage
 
 internal abstract class InAppMessageActivity : FragmentActivity(), HackleActivity, InAppMessageLayout {
 
-    private lateinit var messageController: InAppMessageController
+    private lateinit var _controller: InAppMessageActivityController
 
     override val activity: Activity get() = this
-    override val controller: InAppMessageController get() = messageController
+    override val state: InAppMessageLayout.State get() = controller.state
+    override val controller: InAppMessageActivityController get() = _controller
     override val context: InAppMessagePresentationContext get() = controller.context
     val inAppMessage: InAppMessage get() = context.inAppMessage
     val message: InAppMessage.Message get() = context.message
@@ -47,7 +47,7 @@ internal abstract class InAppMessageActivity : FragmentActivity(), HackleActivit
             return false
         }
 
-        this.messageController = messageController
+        this._controller = messageController
         messageController.onOpen(this)
         return true
     }
