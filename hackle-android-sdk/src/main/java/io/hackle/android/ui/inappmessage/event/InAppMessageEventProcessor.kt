@@ -67,6 +67,11 @@ internal class InAppMessageActionEventProcessor(
         if (isProcessed) {
             return
         }
+
+        if (layout.state == InAppMessageLayout.State.CLOSED) {
+            return
+        }
+
         val handler = actionHandlerFactory.get(event.action) ?: return
         handler.handle(layout, event.action)
     }
