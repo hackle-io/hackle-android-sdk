@@ -35,41 +35,12 @@ class InAppMessageActionEventProcessorTest {
     }
 
     @Test
-    fun `process - when cannot found handler then do nothing`() {
-        // given
-        val layout = layout(DefaultInAppMessageListener)
-        val event = InAppMessageEvent.Action(mockk(), mockk())
-        every { actionHandlerFactory.get(any()) } returns null
-
-        // when
-        sut.process(layout, event, 42)
-    }
-
-    @Test
-    fun `process - handle`() {
-        // given
-        val layout = layout(DefaultInAppMessageListener)
-        val event = InAppMessageEvent.Action(mockk(), mockk())
-
-        val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
-        every { actionHandlerFactory.get(any()) } returns handler
-
-        // when
-        sut.process(layout, event, 42)
-
-        // then
-        verify(exactly = 1) {
-            handler.handle(layout, any())
-        }
-    }
-
-    @Test
-    fun `process - when custom processed then to not handle action`() {
+    fun `process - when custom processed then do not handle action`() {
         // given
         val listener = mockk<HackleInAppMessageListener>()
         every { listener.onInAppMessageClick(any(), any(), any()) } returns true
 
-        val layout = layout(listener)
+        val layout = layout(listener, InAppMessageLayout.State.OPENED)
         val event = InAppMessageEvent.Action(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
@@ -87,8 +58,60 @@ class InAppMessageActionEventProcessorTest {
         }
     }
 
-    private fun layout(listener: HackleInAppMessageListener): InAppMessageLayout {
+    @Test
+    fun `process - when layout is closed then do not handle action`() {
+        // given
+        val listener = mockk<HackleInAppMessageListener>()
+        every { listener.onInAppMessageClick(any(), any(), any()) } returns false
+
+        val layout = layout(listener, InAppMessageLayout.State.CLOSED)
+        val event = InAppMessageEvent.Action(mockk(), mockk())
+
+        val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
+        every { actionHandlerFactory.get(any()) } returns handler
+
+        // when
+        sut.process(layout, event, 42)
+
+        // then
+        verify(exactly = 0) {
+            handler.handle(any(), any())
+        }
+    }
+
+    @Test
+    fun `process - when cannot found handler then do nothing`() {
+        // given
+        val layout = layout(DefaultInAppMessageListener, InAppMessageLayout.State.OPENED)
+        val event = InAppMessageEvent.Action(mockk(), mockk())
+        every { actionHandlerFactory.get(any()) } returns null
+
+        // when
+        sut.process(layout, event, 42)
+    }
+
+    @Test
+    fun `process - handle`() {
+        // given
+        val layout = layout(DefaultInAppMessageListener, InAppMessageLayout.State.OPENED)
+        val event = InAppMessageEvent.Action(mockk(), mockk())
+
+        val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
+        every { actionHandlerFactory.get(any()) } returns handler
+
+        // when
+        sut.process(layout, event, 42)
+
+        // then
+        verify(exactly = 1) {
+            handler.handle(layout, any())
+        }
+    }
+
+
+    private fun layout(listener: HackleInAppMessageListener, state: InAppMessageLayout.State): InAppMessageLayout {
         return mockk(relaxed = true) {
+            every { this@mockk.state } returns state
             every { controller } returns mockk {
                 every { ui } returns mockk {
                     every { this@mockk.listener } returns listener

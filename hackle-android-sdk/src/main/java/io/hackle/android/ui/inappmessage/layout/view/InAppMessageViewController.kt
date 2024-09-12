@@ -12,6 +12,7 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
+import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicReference
 
@@ -25,10 +26,11 @@ internal class InAppMessageViewController(
     override val layout: InAppMessageView get() = view
     private var originalOrientation: Int? = null
 
-    private val state = AtomicReference(State.CLOSED)
+    private val _state = AtomicReference(State.CLOSED)
+    val state: State get() = _state.get()
 
     override fun open(activity: Activity) {
-        if (!state.compareAndSet(State.CLOSED, State.OPENED)) {
+        if (!_state.compareAndSet(State.CLOSED, State.OPENED)) {
             log.debug { "InAppMessage is already open (key=${context.inAppMessage.key})" }
             return
         }
@@ -42,7 +44,7 @@ internal class InAppMessageViewController(
     }
 
     override fun close() {
-        if (!state.compareAndSet(State.OPENED, State.CLOSED)) {
+        if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
             return
         }
@@ -101,10 +103,6 @@ internal class InAppMessageViewController(
         } else {
             completion()
         }
-    }
-
-    enum class State {
-        CLOSED, OPENED
     }
 
     companion object {

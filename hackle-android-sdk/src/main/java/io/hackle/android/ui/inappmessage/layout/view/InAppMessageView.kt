@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.View.OnClickListener
 import android.widget.RelativeLayout
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
-import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
@@ -22,11 +21,12 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : RelativeLayout(context, attrs, defStyleAttr), InAppMessageLayout {
 
-    private var _controller: InAppMessageController? = null
+    private var _controller: InAppMessageViewController? = null
     private var _context: InAppMessagePresentationContext? = null
     private var _activity: WeakReference<Activity>? = null
 
-    override val controller: InAppMessageController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageView." }
+    override val state: InAppMessageLayout.State get() = controller.state
+    override val controller: InAppMessageViewController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageView." }
     override val context: InAppMessagePresentationContext get() = requireNotNull(_context) { "InAppMessagePresentationContext is not set on InAppMessageView." }
     override val activity: Activity? get() = _activity?.get()
 
