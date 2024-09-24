@@ -126,6 +126,7 @@ class HackleApp internal constructor(
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
         try {
             track(operations.toEvent())
+            eventProcessor.flush()
             userManager.updateProperties(operations)
         } catch (e: Exception) {
             log.error { "Unexpected exception while update user properties: $e" }
