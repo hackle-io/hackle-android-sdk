@@ -42,7 +42,7 @@ android {
 
 dependencies {
 
-    api "io.hackle:hackle-sdk-common:2.25.4"
+    api "io.hackle:hackle-sdk-common:2.25.5"
     implementation "io.hackle:hackle-sdk-core:2.25.5"
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
