@@ -324,6 +324,18 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
 
+    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
+        val operations = HacklePushSubscriptionOperations.builder()
+            .global(status)
+            .build()
+        try {
+            track(operations.toEvent())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription properties: $e" }
+        }
+    }
+
     @JvmOverloads
     fun fetch(callback: Runnable? = null) {
         fetchThrottler.execute(
