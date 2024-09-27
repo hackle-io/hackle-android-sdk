@@ -371,6 +371,9 @@ class HackleAppTest {
         verify(exactly = 1) {
             callback.run()
         }
+        verify(exactly = 1) {
+            eventProcessor.flush()
+        }
     }
 
     @Test
@@ -713,6 +716,63 @@ class HackleAppTest {
         // then
         verify(exactly = 1) {
             callback.run()
+        }
+    }
+
+    @Test
+    fun `updatePushSubscriptionStatus - set subscribed`() {
+        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$push_subscriptions")
+                            .property("\$global", "SUBSCRIBED")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+        verify(exactly = 1) {
+            eventProcessor.flush()
+        }
+    }
+
+    @Test
+    fun `updatePushSubscriptionStatus - set unsubscribed`() {
+        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNSUBSCRIBED)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$push_subscriptions")
+                            .property("\$global", "UNSUBSCRIBED")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `updatePushSubscriptionStatus - set unknown`() {
+        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNKNOWN)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$push_subscriptions")
+                            .property("\$global", "UNKNOWN")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
         }
     }
 }
