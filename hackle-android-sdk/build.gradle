@@ -42,8 +42,8 @@ android {
 
 dependencies {
 
-    api "io.hackle:hackle-sdk-common:2.25.4"
-    implementation "io.hackle:hackle-sdk-core:2.25.4"
+    api "io.hackle:hackle-sdk-common:2.25.5"
+    implementation "io.hackle:hackle-sdk-core:2.25.5"
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
     implementation "com.google.android.gms:play-services-base:17.3.0"
