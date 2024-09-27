@@ -126,6 +126,7 @@ class HackleApp internal constructor(
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
         try {
             track(operations.toEvent())
+            eventProcessor.flush()
             userManager.updateProperties(operations)
         } catch (e: Exception) {
             log.error { "Unexpected exception while update user properties: $e" }
@@ -321,6 +322,18 @@ class HackleApp internal constructor(
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
         InAppMessageUi.instance.setListener(listener)
+    }
+
+    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
+        val operations = HacklePushSubscriptionOperations.builder()
+            .global(status)
+            .build()
+        try {
+            track(operations.toEvent())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription properties: $e" }
+        }
     }
 
     @JvmOverloads
