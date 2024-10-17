@@ -191,8 +191,8 @@ internal object HackleApps {
 
         val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
             listOf(
-                RemoteConfigEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
-                ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+                RemoteConfigEventDedupDeterminer(context, sdkKey, config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
+                ExposureEventDedupDeterminer(context, sdkKey, config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
             )
         )
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)

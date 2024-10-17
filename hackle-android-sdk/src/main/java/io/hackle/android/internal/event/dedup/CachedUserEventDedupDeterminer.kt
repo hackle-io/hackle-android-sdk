@@ -1,18 +1,32 @@
 package io.hackle.android.internal.event.dedup
 
+import android.content.Context
+import android.util.Log
 import io.hackle.android.HackleConfig
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.event.dedup.CachedUserEventDedupDeterminer.Key
+import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppStateListener
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.user.HackleUser
 
 internal abstract class CachedUserEventDedupDeterminer<CACHE_KEY : Key, USER_EVENT : UserEvent>(
+    private val context: Context,
+    private val repositorySuiteName: String,
     private val dedupIntervalMillis: Long,
     private val clock: Clock,
-) : UserEventDedupDeterminer {
-
+) : UserEventDedupDeterminer, AppStateListener {
     private var cache = hashMapOf<CACHE_KEY, Long>()
     private var currentUser: HackleUser? = null
+    private val appStateManager: AppStateManager = AppStateManager.instance
+    private lateinit var repository: AndroidKeyValueRepository
+
+    init {
+        repository = AndroidKeyValueRepository.create(context, repositorySuiteName)
+        appStateManager.addListener(this)
+    }
 
     override fun isDedupTarget(event: UserEvent): Boolean {
 
@@ -46,4 +60,10 @@ internal abstract class CachedUserEventDedupDeterminer<CACHE_KEY : Key, USER_EVE
         override fun equals(other: Any?): Boolean
         override fun hashCode(): Int
     }
+
+    override fun onState(state: AppState, timestamp: Long) {
+        Log.d("Dedup", "onState(state=$state)")
+    }
 }
+
+

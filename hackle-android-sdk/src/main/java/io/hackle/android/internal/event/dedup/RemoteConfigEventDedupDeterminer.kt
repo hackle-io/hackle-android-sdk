@@ -1,13 +1,19 @@
 package io.hackle.android.internal.event.dedup
 
+import android.content.Context
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 
 internal class RemoteConfigEventDedupDeterminer(
+    context: Context,
+    sdkKey: String,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM,
 ) : CachedUserEventDedupDeterminer<RemoteConfigEventDedupDeterminer.Key, UserEvent.RemoteConfig>(
+    context,
+    "Hackle_remote_config_event_dedup_$sdkKey",
     dedupIntervalMillis,
     clock,
 ) {

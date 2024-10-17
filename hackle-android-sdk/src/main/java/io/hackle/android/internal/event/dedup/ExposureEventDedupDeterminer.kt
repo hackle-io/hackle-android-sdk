@@ -1,13 +1,18 @@
 package io.hackle.android.internal.event.dedup
 
+import android.content.Context
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 
 internal class ExposureEventDedupDeterminer(
+    context: Context,
+    sdkKey: String,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM
 ) : CachedUserEventDedupDeterminer<ExposureEventDedupDeterminer.Key, UserEvent.Exposure>(
+    context,
+    "Hackle_exposure_event_dedup_$sdkKey",
     dedupIntervalMillis,
     clock
 ) {
