@@ -1,15 +1,19 @@
 package io.hackle.android.internal.event.dedup
 
+import androidx.test.core.app.ApplicationProvider
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.event.dedup.CachedUserEventDedupDeterminer.Key
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.mockk
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import strikt.api.expectThat
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
+@RunWith(RobolectricTestRunner::class)
 class DelegatingUserEventDedupDeterminerTest {
 
     @Test
@@ -65,7 +69,7 @@ class DelegatingUserEventDedupDeterminerTest {
     private class DeterminerStub(
         private val isSupported: Boolean,
         private val isDedupTarget: Boolean,
-    ) : CachedUserEventDedupDeterminer<Key, UserEvent>(-1, Clock.SYSTEM) {
+    ) : CachedUserEventDedupDeterminer<Key, UserEvent>(ApplicationProvider.getApplicationContext(), "abcd1234", -1, Clock.SYSTEM) {
 
         override fun isDedupTarget(event: UserEvent): Boolean {
             return isDedupTarget
