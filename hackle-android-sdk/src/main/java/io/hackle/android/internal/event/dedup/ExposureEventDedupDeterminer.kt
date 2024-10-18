@@ -7,12 +7,12 @@ import io.hackle.sdk.core.internal.time.Clock
 
 internal class ExposureEventDedupDeterminer(
     context: Context,
-    sdkKey: String,
+    repositoryName: String,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM
 ) : CachedUserEventDedupDeterminer<ExposureEventDedupDeterminer.Key, UserEvent.Exposure>(
     context,
-    "Hackle_exposure_event_dedup_$sdkKey",
+    repositoryName,
     dedupIntervalMillis,
     clock
 ) {

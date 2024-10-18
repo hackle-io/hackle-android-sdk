@@ -8,12 +8,12 @@ import io.hackle.sdk.core.internal.time.Clock
 
 internal class RemoteConfigEventDedupDeterminer(
     context: Context,
-    sdkKey: String,
+    repositoryName: String,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM,
 ) : CachedUserEventDedupDeterminer<RemoteConfigEventDedupDeterminer.Key, UserEvent.RemoteConfig>(
     context,
-    "Hackle_remote_config_event_dedup_$sdkKey",
+    repositoryName,
     dedupIntervalMillis,
     clock,
 ) {
