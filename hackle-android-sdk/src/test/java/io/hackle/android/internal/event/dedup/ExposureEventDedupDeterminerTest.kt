@@ -1,6 +1,7 @@
 package io.hackle.android.internal.event.dedup
 
 import androidx.test.core.app.ApplicationProvider
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.decision.DecisionReason
@@ -11,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -21,9 +23,16 @@ import strikt.assertions.isTrue
 @RunWith(RobolectricTestRunner::class)
 class ExposureEventDedupDeterminerTest {
 
+    private lateinit var rcEventDedupRepository: AndroidKeyValueRepository
+
+    @Before
+    fun before() {
+        rcEventDedupRepository = AndroidKeyValueRepository.create(ApplicationProvider.getApplicationContext(), "unittest_exposure_repo_abcd1234")
+    }
+
     @Test
     fun `supports`() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234", -1)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository, -1)
         expectThat(sut.supports(UserEvents.track("test"))).isFalse()
         expectThat(sut.supports(mockk<UserEvent.Exposure>())).isTrue()
     }
@@ -31,7 +40,7 @@ class ExposureEventDedupDeterminerTest {
     @Test
     fun `dedupInterval 이 -1 이면 중복제거 하지 않는다`() {
 
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",-1)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,-1)
         val event = event(HackleUser.of("test_id"))
 
         val actual = sut.isDedupTarget(event)
@@ -42,7 +51,7 @@ class ExposureEventDedupDeterminerTest {
     @Test
     fun `첫 번째 노출이벤트면 중복제거 하지 않는다`() {
 
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
         val event = event(HackleUser.of("test_id"))
 
         val actual = sut.isDedupTarget(event)
@@ -53,7 +62,7 @@ class ExposureEventDedupDeterminerTest {
     @Test
     fun `같은 사용자의 같은 노출이벤트에 대해 중복제거 기간 이내에 들어온 이벤트는 중복제거 한다`() {
 
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
         val event1 = event(HackleUser.of("test_id"))
         val event2 = event(HackleUser.of("test_id"))
 
@@ -63,7 +72,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun `같은 사용자의 같은 노출이벤트지만 중복제거 기간 이후에 들어오면 중복제거 하지 않는다`() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",100)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,100)
 
         val user = HackleUser.of("test_id")
         val event1 = event(user)
@@ -76,7 +85,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun `같은 사용자의 중복제거 기간 이내지만 다른 실험에 대한 분배면 중복제거 하지 않는다`() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
         val user = HackleUser.of("test_id")
         val event1 = event(user, 1)
@@ -88,7 +97,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun `같은 사용자의 중복제거 기간 이내지만 분배사유가 변경되면 중복제거 하지 않는다`() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
         val user = HackleUser.of("test_id")
         val event1 = event(user, decisionReason = DecisionReason.TRAFFIC_ALLOCATED)
@@ -100,7 +109,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun `사용자의 속성이 변경되어도 식별자만 같으면 같은 사용자로 판단하고 중복제거한다`() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
         val event1 = event(HackleUser.of(User.builder("test_id").build()))
         val event2 = event(HackleUser.of(User.builder("test_id").property("age", 30).build()))
@@ -111,7 +120,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun TC1() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
         val userA = HackleUser.of("a")
         val userB = HackleUser.of("b")
@@ -129,7 +138,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun TC2() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
         val userA = HackleUser.of("a")
         val userAA = HackleUser.of(User.builder("a").userId("aa").build())
@@ -147,7 +156,7 @@ class ExposureEventDedupDeterminerTest {
 
     @Test
     fun TC3() {
-        val sut = ExposureEventDedupDeterminer(ApplicationProvider.getApplicationContext(), "abce1234",1000)
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
         val userA = HackleUser.of("a")
 

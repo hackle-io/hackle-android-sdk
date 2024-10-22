@@ -1,19 +1,18 @@
 package io.hackle.android.internal.event.dedup
 
-import android.content.Context
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 
 internal class RemoteConfigEventDedupDeterminer(
-    context: Context,
-    repositoryName: String,
+    repository: AndroidKeyValueRepository,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM,
-) : CachedUserEventDedupDeterminer<RemoteConfigEventDedupDeterminer.Key, UserEvent.RemoteConfig>(
-    context,
-    repositoryName,
+): AppStateListener, CachedUserEventDedupDeterminer<RemoteConfigEventDedupDeterminer.Key, UserEvent.RemoteConfig>(
+    repository,
     dedupIntervalMillis,
     clock,
 ) {
@@ -22,8 +21,19 @@ internal class RemoteConfigEventDedupDeterminer(
         return event is UserEvent.RemoteConfig
     }
 
-    override fun cacheKey(event: UserEvent.RemoteConfig): Key {
-        return Key.from(event)
+    override fun cacheKey(event: UserEvent.RemoteConfig): String {
+        return key(event)
+    }
+
+    private fun key(event: UserEvent.RemoteConfig): String {
+        val key = Key.from(event)
+        return listOf("${key.parameterId}", "${key.valueId}", key.decisionReason).joinToString("-")
+    }
+
+    override fun onState(state: AppState, timestamp: Long) {
+        if (state == AppState.BACKGROUND) {
+            saveToRepository()
+        }
     }
 
     data class Key(
