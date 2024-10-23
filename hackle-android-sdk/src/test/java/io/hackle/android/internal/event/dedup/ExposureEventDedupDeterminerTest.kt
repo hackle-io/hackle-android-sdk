@@ -119,6 +119,20 @@ class ExposureEventDedupDeterminerTest {
     }
 
     @Test
+    fun `Preference에 저장 후 중복제거 기간 이후에 불러오면 필터링되므로 중복제거 하지 않는다`() {
+        val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
+        val event1 = event(HackleUser.of("test_id_02"))
+        val event2 = event(HackleUser.of("test_id_02"))
+
+        assertFalse(sut.isDedupTarget(event1))
+        assertTrue(sut.isDedupTarget(event2))
+        sut.saveToRepository()
+        Thread.sleep(2000)
+        sut.loadFromRepository()
+        assertFalse(sut.isDedupTarget(event1))
+    }
+
+    @Test
     fun TC1() {
         val sut = ExposureEventDedupDeterminer(rcEventDedupRepository,1000)
 
