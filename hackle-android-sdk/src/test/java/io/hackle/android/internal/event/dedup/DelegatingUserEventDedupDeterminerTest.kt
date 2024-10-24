@@ -7,13 +7,10 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.mockk
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import strikt.api.expectThat
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
-@RunWith(RobolectricTestRunner::class)
 class DelegatingUserEventDedupDeterminerTest {
 
     @Test

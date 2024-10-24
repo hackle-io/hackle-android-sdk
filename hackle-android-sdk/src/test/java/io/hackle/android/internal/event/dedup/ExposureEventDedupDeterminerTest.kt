@@ -13,13 +13,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import strikt.api.expectThat
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
-@RunWith(RobolectricTestRunner::class)
 class ExposureEventDedupDeterminerTest {
 
     private lateinit var rcEventDedupRepository: MapKeyValueRepository
