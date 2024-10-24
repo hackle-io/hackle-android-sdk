@@ -1,7 +1,6 @@
 package io.hackle.android.internal.event.dedup
 
-import androidx.test.core.app.ApplicationProvider
-import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.event.dedup.CachedUserEventDedupDeterminer.Key
 import io.hackle.sdk.core.event.UserEvent
@@ -70,7 +69,7 @@ class DelegatingUserEventDedupDeterminerTest {
     private class DeterminerStub(
         private val isSupported: Boolean,
         private val isDedupTarget: Boolean,
-    ) : CachedUserEventDedupDeterminer<Key, UserEvent>(AndroidKeyValueRepository.create(ApplicationProvider.getApplicationContext(), "unittest_exposure_repo_abcd1234"), -1, Clock.SYSTEM) {
+    ) : CachedUserEventDedupDeterminer<Key, UserEvent>(MapKeyValueRepository(), -1, Clock.SYSTEM) {
 
         override fun isDedupTarget(event: UserEvent): Boolean {
             return isDedupTarget

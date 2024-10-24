@@ -54,21 +54,8 @@ dependencies {
 
 //    implementation 'io.hackle:hackle-android-sdk:2.47.0.rc.01-SNAPSHOT'
     implementation project(':hackle-android-sdk')
-
     implementation "com.google.code.gson:gson:2.8.6"
-
-
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
-
-    // For Test ============================================================
-
-//    implementation("com.google.firebase:firebase-config-ktx")
-//    implementation("com.google.firebase:firebase-analytics-ktx")
-//    implementation 'io.dfinery:android-sdk:2.4.0.3'
-//    implementation 'com.sendbird.sdk:sendbird-chat:4.12.1'
-//    implementation "io.customer.android:messaging-in-app:3.5.0"
-//    implementation 'io.channel:plugin-android:10.0.7'
-//    implementation 'com.amplitude:android-sdk:2.39.2'
 
     // For Test ============================================================
     implementation 'androidx.core:core-ktx:1.7.0'

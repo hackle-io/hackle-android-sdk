@@ -1,6 +1,6 @@
 package io.hackle.android.internal.event.dedup
 
-import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.sdk.common.decision.DecisionReason
@@ -8,7 +8,7 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 
 internal class RemoteConfigEventDedupDeterminer(
-    repository: AndroidKeyValueRepository,
+    repository: KeyValueRepository,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM,
 ): AppStateListener, CachedUserEventDedupDeterminer<RemoteConfigEventDedupDeterminer.Key, UserEvent.RemoteConfig>(

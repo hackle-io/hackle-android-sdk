@@ -1,7 +1,7 @@
 package io.hackle.android.internal.event.dedup
 
 import io.hackle.android.HackleConfig
-import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.event.dedup.CachedUserEventDedupDeterminer.Key
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.internal.utils.json.toJson
@@ -9,7 +9,7 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 
 internal abstract class CachedUserEventDedupDeterminer<CACHE_KEY : Key, USER_EVENT : UserEvent>(
-    private val repository: AndroidKeyValueRepository,
+    private val repository: KeyValueRepository,
     private val dedupIntervalMillis: Long,
     private val clock: Clock,
 ) : UserEventDedupDeterminer {
@@ -17,7 +17,7 @@ internal abstract class CachedUserEventDedupDeterminer<CACHE_KEY : Key, USER_EVE
     private var cache = HashMap<String, Long>()
     private var currentUserIdentifiers: Map<String, String>? = null
     private val repositoryKeyDedupCache = "DEDUP_CACHE"
-    private val repositoryKeyCurrentUser = "CURRENT_USE_PROPERTIES"
+    private val repositoryKeyCurrentUser = "USER_IDENTIFIERS"
 
     init {
         loadFromRepository()
@@ -67,8 +67,9 @@ internal abstract class CachedUserEventDedupDeterminer<CACHE_KEY : Key, USER_EVE
     }
 
     private fun saveCurrentUserToRepository() {
-        if (currentUserIdentifiers != null) {
-            repository.putString(repositoryKeyCurrentUser, currentUserIdentifiers!!.toJson())
+        val identifiers = currentUserIdentifiers
+        if (identifiers != null) {
+            repository.putString(repositoryKeyCurrentUser, identifiers.toJson())
             return
         }
 
@@ -99,13 +100,7 @@ internal abstract class CachedUserEventDedupDeterminer<CACHE_KEY : Key, USER_EVE
 
     private fun updateCacheForIntervalExpiry() {
         val now = clock.currentMillis()
-        val iterator = cache.entries.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            if (now - entry.value > dedupIntervalMillis) {
-                iterator.remove()
-            }
-        }
+        this.cache = this.cache.filterTo(HashMap()) { (_, timestamp) -> now - timestamp <= dedupIntervalMillis }
     }
 }
 

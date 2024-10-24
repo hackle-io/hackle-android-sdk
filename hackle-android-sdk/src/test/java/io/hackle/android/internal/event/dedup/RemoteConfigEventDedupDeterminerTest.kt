@@ -1,7 +1,6 @@
 package io.hackle.android.internal.event.dedup
 
-import androidx.test.core.app.ApplicationProvider
-import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
@@ -21,11 +20,11 @@ import strikt.assertions.isTrue
 @RunWith(RobolectricTestRunner::class)
 class RemoteConfigEventDedupDeterminerTest {
 
-    private lateinit var rcEventDedupRepository: AndroidKeyValueRepository
+    private lateinit var rcEventDedupRepository: MapKeyValueRepository
 
     @Before
     fun before() {
-        rcEventDedupRepository = AndroidKeyValueRepository.create(ApplicationProvider.getApplicationContext(), "unittest_exposure_repo_abcd1234")
+        rcEventDedupRepository = MapKeyValueRepository()
     }
 
     @Test
