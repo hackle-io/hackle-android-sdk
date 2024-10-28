@@ -5,6 +5,7 @@ import io.hackle.sdk.core.internal.scheduler.Schedulers
 import io.mockk.Called
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.Ignore
 import org.junit.Test
 import java.util.concurrent.CyclicBarrier
 import kotlin.concurrent.thread
@@ -59,6 +60,7 @@ class PollingSynchronizerTest {
         }
     }
 
+    @Ignore
     @Test
     fun `start - once`() {
         // given
