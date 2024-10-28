@@ -16,6 +16,17 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.2
+      - name: Set up secrets
+        env:
+          SDKKEY: ${{secrets.SDKKEY}}
+          EVENTURI: ${{secrets.EVENTURI}}
+          SDKURI: ${{secrets.SDKURI}}
+          MONITORINGURI: ${{secrets.MONITORINGURI}}
+        run: |
+            echo "sdkKey=\"$SDKKEY\"" >> ./local.properties
+            echo "eventUri=\"$EVENTURI\"" >> ./local.properties
+            echo "sdkUri=\"$SDKURI\"" >> ./local.properties
+            echo "monitoringUri=\"$MONITORINGURI\"" >> ./local.properties
       - name: Publish
         run: gradle :hackle-android-sdk:clean :hackle-android-sdk:build :hackle-android-sdk:publishToSonatype --info
         env:
