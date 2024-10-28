@@ -52,7 +52,7 @@ android {
 
 dependencies {
 
-//    implementation 'io.hackle:hackle-android-sdk:2.47.0.rc.01-SNAPSHOT'
+//    implementation 'io.hackle:hackle-android-sdk:2.47.0'
     implementation project(':hackle-android-sdk')
     implementation "com.google.code.gson:gson:2.8.6"
     implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
