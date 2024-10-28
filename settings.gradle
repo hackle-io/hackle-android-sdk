@@ -1,2 +1,3 @@
 include ':hackle-android-sdk'
 rootProject.name = "hackle-android-sdk"
+include ':TesterApp'

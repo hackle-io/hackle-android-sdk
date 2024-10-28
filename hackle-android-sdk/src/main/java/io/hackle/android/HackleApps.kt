@@ -189,10 +189,19 @@ internal object HackleApps {
             screenManager = screenManager
         )
 
+        val rcEventDedupRepository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
+        val exposureEventDedupRepository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey")
+
+        val rcEventDedupDeterminer = RemoteConfigEventDedupDeterminer(rcEventDedupRepository , config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+        val exposureEventDedupDeterminer = ExposureEventDedupDeterminer(exposureEventDedupRepository, config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+
+        appStateManager.addListener(rcEventDedupDeterminer)
+        appStateManager.addListener(exposureEventDedupDeterminer)
+
         val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
             listOf(
-                RemoteConfigEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM),
-                ExposureEventDedupDeterminer(config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+                rcEventDedupDeterminer,
+                exposureEventDedupDeterminer
             )
         )
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
