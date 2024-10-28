@@ -1,0 +1,444 @@
+<html>
+<head>
+    <script src="index.browser.umd.min.js"></script>
+    <script>
+    const sdkKey = "YOUR_SDK_KEY"
+    const user = {
+      id: "device",
+      userId: "user",
+      deviceId: "device"
+    }
+    window.hackleClient = window.hackleClient || Hackle.createInstance(sdkKey, { debug: true, user: user })
+    hackleClient.onReady(function() {
+    })
+</script>
+</head>
+<body>
+<h1>Webview</h1>
+<div>
+    <div>
+        User Properties
+        <table>
+            <tbody>
+            <tr>
+                <td>
+                    <input id="propertyKey01" placeholder="key" />
+                    <input id="propertyValue01" placeholder="value" />
+                    <button id="setUserPropertyButton" onclick="setUserProperty()">Set</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="propertyKey02" placeholder="key" />
+                    <input id="propertyValue02" placeholder="value" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="propertyKey03" placeholder="key" />
+                    <input id="propertyValue03" placeholder="value" />
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br />
+    <div>
+        Identifiers
+        <table>
+            <tbody>
+            <tr>
+                <td width="80px">
+                    ID
+                </td>
+                <td>
+                    <input id="defaultId" placeholder="identifier" />
+                    <input type="checkbox" id="defaultIdUuid"> Auto
+                </td>
+            </tr>
+            <tr>
+                <td width="80px">
+                    User ID
+                </td>
+                <td>
+                    <input id="userId" placeholder="identifier" />
+                    <input type="checkbox" id="userIdUuid"> Auto
+                    <button id="setUserIdButton" onclick="setUserId()">Set</button>
+                </td>
+            </tr>
+            <tr>
+                <td width="80px">
+                    Device ID
+                </td>
+                <td>
+                    <input id="deviceId" placeholder="identifier" />
+                    <input type="checkbox" id="deviceIdUuid"> Auto
+                    <button id="setDeviceIdButton" onclick="setDeviceId()">Set</button>
+                </td>
+            </tr>
+            <tr>
+                <td width="80px">
+                    <input id="customIdType" placeholder="custom" />
+                </td>
+                <td>
+                    <input id="customId" placeholder="identifier" />
+                    <input type="checkbox" id="customIdUuid"> Auto
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="setUserButton" onclick="setUser()">Set User</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="resetUserButton" onclick="resetUser()">Reset User</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button onclick="printUser()">Print User</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br />
+    <div>
+        <table>
+            <tbody>
+            <tr>
+                <td>
+                    <input type="checkbox" id="experimentWithUser"> <input id="experimentKey" placeholder="experimentKey" />
+                </td>
+                <td>
+                    <button onclick="ab()">A/B Test</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" id="featureWithUser"> <input id="featureKey" placeholder="featureKey" />
+                </td>
+                <td>
+                    <button onclick="ff()">Feature Flag</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" id="trackWithUser"> <input id="eventKey" placeholder="eventKey" />
+                </td>
+                <td>
+                    <button onclick="track()">Track</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="parameterKey" placeholder="parameterKey" />
+                </td>
+                <td>
+                    <input id="defaultValue" placeholder="defaultValue" />
+                </td>
+                <td>
+                    <input id="requiredType" placeholder="requiredType" />
+                </td>
+                <td>
+                    <button onclick="remoteConfig()">Remote Config</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div>
+    <span id="result"></span>
+    <span id="remoteConfigResult"></span>
+</div>
+<div>
+    <span id="userDisplay"></span>
+</div>
+<script>
+
+  function setUserProperty() {
+    const property = getPropertyOrNull("propertyKey01", "propertyValue01")
+    if (property) {
+      hackleClient.setUserProperty(property.key, property.value)
+    }
+    userDisplay(hackleClient.getUser())
+  }
+
+  function setUserId() {
+    const userId = getIdentifierValueOrNull("userId")
+    hackleClient.setUserId(userId)
+    userDisplay(hackleClient.getUser())
+  }
+
+  function setDeviceId() {
+    const deviceId = getIdentifierValueOrNull("deviceId")
+    if (deviceId) {
+      hackleClient.setUserId(deviceId)
+    }
+    userDisplay(hackleClient.getUser())
+  }
+
+  function setUser() {
+    const user = getUser()
+    hackleClient.setUser(user)
+    userDisplay(hackleClient.getUser())
+  }
+
+  function resetUser() {
+    hackleClient.resetUser()
+    userDisplay(hackleClient.getUser())
+  }
+
+  function printUser() {
+    userDisplay(hackleClient.getUser())
+  }
+
+  function ab() {
+    const experimentKey = getNumberOrNull("experimentKey")
+    if (!experimentKey) {
+      return
+    }
+
+    hackleClient.onReady(function() {
+      if (isChecked("experimentWithUser")) {
+        const user = getUser()
+        const decision = hackleClient.variationDetail(experimentKey, user)
+        userDisplay(hackleClient.getUser())
+        result(decision, hackleClient.getUser())
+      } else {
+        const decision = hackleClient.variationDetail(experimentKey)
+        userDisplay(hackleClient.getUser())
+        result(decision, hackleClient.getUser())
+      }
+
+    })
+  }
+
+  function ff() {
+    const featureKey = getNumberOrNull("featureKey")
+    if (!featureKey) {
+      return
+    }
+
+    hackleClient.onReady(function() {
+
+      if (isChecked("featureWithUser")) {
+        const user = getUser()
+        const decision = hackleClient.featureFlagDetail(featureKey, user)
+        userDisplay(hackleClient.getUser())
+        result(decision, hackleClient.getUser())
+      } else {
+        const decision = hackleClient.featureFlagDetail(featureKey)
+        userDisplay(hackleClient.getUser())
+        result(decision, hackleClient.getUser())
+      }
+    })
+  }
+
+  function track() {
+    const eventKey = getStringOrNull("eventKey")
+    if (!eventKey) {
+      return
+    }
+
+    hackleClient.onReady(function() {
+
+      if (isChecked("trackWithUser")) {
+        const user = getUser()
+        hackleClient.track(eventKey, user)
+        userDisplay(hackleClient.getUser())
+      } else {
+        hackleClient.track(eventKey)
+        userDisplay(hackleClient.getUser())
+      }
+    })
+  }
+
+  function remoteConfig() {
+    const parameterKey = getStringOrNull("parameterKey")
+    const requiredType = getStringOrNull("requiredType")
+
+    let defaultValue
+    if (requiredType === "string") {
+      defaultValue = getStringOrNull("defaultValue")
+    } else if (requiredType === "number") {
+      defaultValue = getNumberOrNull("defaultValue")
+    } else if (requiredType === "boolean") {
+      defaultValue = getBooleanOrNull("defaultValue")
+    } else {
+      defaultValue = getIdentifierValueOrNull("defaultValue")
+    }
+
+    console.log("default value : " + defaultValue)
+    hackleClient.onReady(function() {
+      const user = getUser()
+      hackleClient.setUser(user)
+      console.log(user, hackleClient.getUser())
+      const remoteConfigVal = hackleClient.remoteConfig().get(parameterKey, defaultValue)
+      remoteConfigResult(remoteConfigVal, hackleClient.getUser())
+    })
+  }
+
+  function getUser() {
+
+    const user = {}
+
+    const defaultId = getIdentifierValueOrNull("defaultId")
+    const userId = getIdentifierValueOrNull("userId")
+    const deviceId = getIdentifierValueOrNull("deviceId")
+    const customIdType = getStringOrNull("customIdType")
+    const customId = getIdentifierValueOrNull("customId")
+
+
+    if (defaultId) {
+      user["id"] = defaultId
+    }
+
+    if (userId) {
+      user["userId"] = userId
+    }
+
+    if (deviceId) {
+      user["deviceId"] = deviceId
+    }
+
+    if (customIdType && customId) {
+      user[customIdType] = customId
+    }
+
+    user["properties"] = getProperties()
+
+    console.log(user)
+    return user
+
+  }
+
+  function getIdentifierValueOrNull(id) {
+    if (isChecked(id + "Uuid")) {
+      return uuidv4()
+    }
+
+    return getStringOrNull(id)
+  }
+
+  function getProperties() {
+    const properties = {}
+
+    function addProperty(id) {
+      const property = getPropertyOrNull("propertyKey" + id, "propertyValue" + id)
+      if (property) {
+        properties[property.key] = property.value
+      }
+    }
+
+    addProperty("01")
+    addProperty("02")
+    addProperty("03")
+
+    return properties
+  }
+
+  function getPropertyOrNull(keyId, valueId) {
+    const propertyKey = getPropertyKeyOrNull(keyId)
+    if (propertyKey === undefined || propertyKey === null || propertyKey === "") {
+      return undefined
+    }
+
+    const propertyValue = getPropertyValueOrNull(valueId)
+    if (propertyValue === undefined || propertyValue === null) {
+      return undefined
+    }
+
+    return {
+      key: propertyKey,
+      value: propertyValue
+    }
+  }
+
+  function getPropertyKeyOrNull(id) {
+    return getStringOrNull(id)
+  }
+
+  function getPropertyValueOrNull(id) {
+    const booleanValue = getBooleanOrNull(id)
+    if (booleanValue) {
+      return booleanValue
+    }
+
+    const numberValue = getNumberOrNull(id)
+    if (numberValue !== null && numberValue !== undefined) {
+      return numberValue
+    }
+
+    const stringValue = getStringOrNull(id)
+    if (stringValue === undefined || stringValue === null) {
+      return undefined
+    }
+
+    if (stringValue.startsWith("'") && stringValue.endsWith("'")) {
+      return stringValue.replaceAll("'", "")
+    }
+    return stringValue
+  }
+
+  function getStringOrNull(id) {
+    return document.getElementById(id).value
+  }
+
+  function getNumberOrNull(id) {
+    const stringValue = getStringOrNull(id)
+    if (stringValue === undefined || stringValue === null) {
+      return undefined
+    }
+    const intValue = parseInt(stringValue)
+    if (intValue === undefined || intValue === null || isNaN(intValue) || !isFinite(intValue)) {
+      return undefined
+    }
+
+    return intValue
+  }
+
+  function getBooleanOrNull(id) {
+    const stringValue = getStringOrNull(id)
+    if (stringValue === undefined || stringValue === null) {
+      return undefined
+    }
+
+    if (stringValue === "true") {
+      return true
+    }
+
+    if (stringValue === "false") {
+      return false
+    }
+
+    return undefined
+  }
+
+  function isChecked(id) {
+    return document.getElementById(id).checked
+  }
+
+  function userDisplay(user) {
+    console.log(user)
+    document.getElementById("userDisplay").innerText = JSON.stringify(user, null, 2)
+  }
+
+  function result(decision, user) {
+    document.getElementById("result").innerText = `${JSON.stringify(decision, null, 2)}\n${JSON.stringify(user, null, 2)}`
+  }
+
+  function remoteConfigResult(value, user) {
+    document.getElementById("remoteConfigResult").innerText = `${JSON.stringify(value, null, 2)}\n${JSON.stringify(user, null, 2)}`
+  }
+
+  function uuidv4() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
+  }
+</script>
+</body>
+</html>

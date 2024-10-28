@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">android-sdk-tester</string>
+    <string name="user_properties">User Properties</string>
+    <string name="property_key">key</string>
+    <string name="property_value">value</string>
+    <string name="identifiers">Identifiers</string>
+    <string name="identifier">identifier</string>
+    <string name="experiment_key">experimentKey</string>
+    <string name="variation">A/B Test</string>
+    <string name="feature_key">featureKey</string>
+    <string name="feature_flag">feature flag</string>
+    <string name="event_key">eventKey</string>
+    <string name="track">track</string>
+    <string name="push_subscribed">push subscribed</string>
+    <string name="push_unsubscribed">push unsubscribed</string>
+    <string name="not_initialized">NOT_INITIALIZED</string>
+    <string name="user">User</string>
+    <string name="set_user">SET USER</string>
+    <string name="set">SET</string>
+    <string name="title_activity_seconds">SecondsActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+</resources>
