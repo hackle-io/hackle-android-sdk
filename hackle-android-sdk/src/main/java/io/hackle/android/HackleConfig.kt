@@ -27,7 +27,7 @@ class HackleConfig private constructor(builder: Builder) {
 
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
-    private val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
+    val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
 
     internal operator fun get(key: String): String? = extra[key]
 

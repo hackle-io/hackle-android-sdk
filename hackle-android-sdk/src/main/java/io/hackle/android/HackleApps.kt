@@ -316,7 +316,10 @@ internal object HackleApps {
             presenter = inAppMessageUi,
             activityProvider = lifecycleManager
         )
-        eventPublisher.add(inAppMessageManager)
+
+        if (!inAppMessageDisabled(config)) {
+            eventPublisher.add(inAppMessageManager)
+        }
 
         // PushToken
         val pushTokenFetcher = PushTokenFetchers.create(context)
@@ -448,5 +451,10 @@ internal object HackleApps {
         }
 
         return builder.build()
+    }
+
+    private fun inAppMessageDisabled(config: HackleConfig): Boolean {
+        val disableInAppMessage: String? = config.extra.get("\$disable_inappmessage")
+        return disableInAppMessage.toBoolean()
     }
 }

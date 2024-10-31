@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
 //            .logLevel(Log.DEBUG)
 //            .pollingIntervalMillis(10000)
 //            .sessionTimeoutMillis(10000)
+            .add("\$disable_inappmessage", "true")
             .build()
 
         HackleApp.initializeApp(this, sdkKey, config) {
@@ -68,6 +69,33 @@ class MainActivity : AppCompatActivity() {
         Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
 
         Log.i("HackleSdk", "##### app_launch")
+
+        Hackle.app.setInAppMessageListener(object : HackleInAppMessageListener {
+            override fun afterInAppMessageClose(inAppMessage: HackleInAppMessage) {
+                Log.d("HackleSdk", "afterInAppMessageClose")
+            }
+
+            override fun afterInAppMessageOpen(inAppMessage: HackleInAppMessage) {
+                Log.d("HackleSdk", "afterInAppMessageOpen")
+            }
+
+            override fun beforeInAppMessageClose(inAppMessage: HackleInAppMessage) {
+                Log.d("HackleSdk", "beforeInAppMessageClose")
+            }
+
+            override fun beforeInAppMessageOpen(inAppMessage: HackleInAppMessage) {
+                Log.d("HackleSdk", "beforeInAppMessageOpen")
+            }
+
+            override fun onInAppMessageClick(
+                inAppMessage: HackleInAppMessage,
+                view: HackleInAppMessageView,
+                action: HackleInAppMessageAction
+            ): Boolean {
+                Log.d("HackleSdk", "onInAppMessageClick")
+                return  false
+            }
+        })
 
         findViewById<TextView>(R.id.sdk_status).setOnClickListener {
 //            startActivity(Intent(this, WebViewActivity::class.java))
@@ -168,32 +196,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.pushUnsubscription_btn).setOnClickListener {
             Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNSUBSCRIBED)
         }
-
-        Hackle.app.setInAppMessageListener(object : HackleInAppMessageListener {
-            override fun afterInAppMessageClose(inAppMessage: HackleInAppMessage) {
-                TODO("Not yet implemented")
-            }
-
-            override fun afterInAppMessageOpen(inAppMessage: HackleInAppMessage) {
-                TODO("Not yet implemented")
-            }
-
-            override fun beforeInAppMessageClose(inAppMessage: HackleInAppMessage) {
-                TODO("Not yet implemented")
-            }
-
-            override fun beforeInAppMessageOpen(inAppMessage: HackleInAppMessage) {
-                TODO("Not yet implemented")
-            }
-
-            override fun onInAppMessageClick(
-                inAppMessage: HackleInAppMessage,
-                view: HackleInAppMessageView,
-                action: HackleInAppMessageAction
-            ): Boolean {
-                TODO("Not yet implemented")
-            }
-        })
     }
 
     private fun result(value: String) {
