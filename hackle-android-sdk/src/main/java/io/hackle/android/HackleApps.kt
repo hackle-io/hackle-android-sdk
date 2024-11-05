@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -454,7 +455,6 @@ internal object HackleApps {
     }
 
     private fun inAppMessageDisabled(config: HackleConfig): Boolean {
-        val disableInAppMessage: String? = config.extra.get("\$disable_inappmessage")
-        return disableInAppMessage.toBoolean()
+        return config["\$disable_inappmessage"].toBoolean()
     }
 }
