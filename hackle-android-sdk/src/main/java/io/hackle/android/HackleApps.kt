@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -316,7 +317,10 @@ internal object HackleApps {
             presenter = inAppMessageUi,
             activityProvider = lifecycleManager
         )
-        eventPublisher.add(inAppMessageManager)
+
+        if (!inAppMessageDisabled(config)) {
+            eventPublisher.add(inAppMessageManager)
+        }
 
         // PushToken
         val pushTokenFetcher = PushTokenFetchers.create(context)
@@ -448,5 +452,9 @@ internal object HackleApps {
         }
 
         return builder.build()
+    }
+
+    private fun inAppMessageDisabled(config: HackleConfig): Boolean {
+        return config["\$disable_inappmessage"].toBoolean()
     }
 }
