@@ -30,10 +30,10 @@ class HackleConfigTest {
         }
 
         configTest(60000, HackleConfig::exposureEventDedupIntervalMillis) {
-            exposureEventDedupIntervalMillis(3600001)
+            exposureEventDedupIntervalMillis(86400001)
         }
 
-        for (i in 1000..3600000) {
+        for (i in 1000..86400000) {
             configTest(i, HackleConfig::exposureEventDedupIntervalMillis) {
                 exposureEventDedupIntervalMillis(i)
             }
