@@ -161,7 +161,7 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val USER_EVENT_NO_DEDUP = -1
         internal const val DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 60 * 1000 // 1m (default)
         internal const val MIN_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 1000 // 1s (min)
-        internal const val MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 60 * 60 * 1000 // 1h (max)
+        internal const val MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 24 * 60 * 60 * 1000 // 24h (max)
 
         val DEFAULT: HackleConfig = builder().build()
 
