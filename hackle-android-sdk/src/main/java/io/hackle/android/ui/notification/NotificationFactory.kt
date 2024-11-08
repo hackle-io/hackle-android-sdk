@@ -32,6 +32,7 @@ internal object NotificationFactory {
         setThumbnailIcon(context, builder, data)
         setContentTitle(builder, data)
         setContentText(builder, data)
+        setStyle(builder, data)
         setContentIntent(context, builder, extras, data)
         setBigPictureStyle(context, builder, data)
         return builder.build()
@@ -90,6 +91,11 @@ internal object NotificationFactory {
     private fun setContentText(builder: NotificationCompat.Builder, data: NotificationData) {
         val body = data.body ?: return
         builder.setContentText(body)
+    }
+
+    private fun setStyle(builder: NotificationCompat.Builder, data: NotificationData) {
+        val body = data.body ?: return
+        builder.setStyle(NotificationCompat.BigTextStyle().bigText(body))
     }
 
     private fun setContentIntent(context: Context, builder: NotificationCompat.Builder, extras: Bundle, data: NotificationData) {
