@@ -7,322 +7,340 @@
     android:padding="10dp"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/sdk_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#ff0000"
-        android:gravity="center_horizontal"
-        android:text="@string/not_initialized"
-        android:textAlignment="center" />
-
-
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/result"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:height="40dp"
-            android:textSize="12sp" />
-
-    </LinearLayout>
-
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/user" />
-
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:width="60dp"
-            android:text="ID" />
-
-        <CheckBox
-            android:id="@+id/default_id_random_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-
-        <EditText
-            android:id="@+id/default_id"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/identifier" />
-    </LinearLayout>
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/sdk_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#ff0000"
+                android:gravity="center_horizontal"
+                android:text="@string/not_initialized"
+                android:textAlignment="center" />
 
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:width="60dp"
-            android:text="User ID" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
 
-        <CheckBox
-            android:id="@+id/user_id_random_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                <TextView
+                    android:id="@+id/result"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:height="40dp"
+                    android:textSize="12sp" />
 
-        <EditText
-            android:id="@+id/user_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="200dp"
-            android:hint="@string/identifier" />
+            </LinearLayout>
 
-        <Button
-            android:id="@+id/set_user_id_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/set" />
-    </LinearLayout>
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/user" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:width="60dp"
-            android:text="Device ID" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-        <CheckBox
-            android:id="@+id/device_id_random_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:width="60dp"
+                    android:text="ID" />
 
-
-        <EditText
-            android:id="@+id/device_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="200dp"
-            android:hint="@string/identifier" />
-
-        <Button
-            android:id="@+id/set_device_id_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/set" />
-
-    </LinearLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/user_properties" />
+                <CheckBox
+                    android:id="@+id/default_id_random_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/property_key_01"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:width="110dp"
-            android:hint="@string/property_key" />
-
-        <EditText
-            android:id="@+id/property_value_01"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="200dp"
-            android:hint="@string/property_value" />
-
-        <Button
-            android:id="@+id/set_property_01_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/set" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:id="@+id/property_key_02"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:width="120dp"
-            android:hint="@string/property_key" />
-
-        <EditText
-            android:id="@+id/property_value_02"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/property_value" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/set_user_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/set_user" />
+                <EditText
+                    android:id="@+id/default_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/identifier" />
+            </LinearLayout>
 
 
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:width="60dp"
+                    android:text="User ID" />
 
-        <CheckBox
-            android:id="@+id/experiment_with_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                <CheckBox
+                    android:id="@+id/user_id_random_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
-        <EditText
-            android:id="@+id/experiment_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="150dp"
-            android:hint="@string/experiment_key"
-            android:inputType="number" />
+                <EditText
+                    android:id="@+id/user_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="200dp"
+                    android:hint="@string/identifier" />
 
-        <Button
-            android:id="@+id/ab_text_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/variation" />
-    </LinearLayout>
+                <Button
+                    android:id="@+id/set_user_id_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/set" />
+            </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <CheckBox
-            android:id="@+id/feature_flag_with_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:width="60dp"
+                    android:text="Device ID" />
 
-        <EditText
-            android:id="@+id/feature_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="150dp"
-            android:hint="@string/feature_key"
-            android:inputType="number" />
-
-        <Button
-            android:id="@+id/feature_flag_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/feature_flag" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <CheckBox
-            android:id="@+id/rc_with_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/rc_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="150dp"
-            android:hint="rcKey"
-            android:inputType="text" />
-
-        <Button
-            android:id="@+id/rc_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="RC" />
-    </LinearLayout>
+                <CheckBox
+                    android:id="@+id/device_id_random_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/device_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="200dp"
+                    android:hint="@string/identifier" />
 
-        <CheckBox
-            android:id="@+id/track_with_user"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+                <Button
+                    android:id="@+id/set_device_id_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/set" />
 
-        <EditText
-            android:id="@+id/event_key"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:width="150dp"
-            android:hint="@string/event_key" />
+            </LinearLayout>
 
-        <Button
-            android:id="@+id/track_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/track" />
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/user_properties" />
 
-    <Spinner
-        android:id="@+id/hackle_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-    </Spinner>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="2">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/pushSubscription_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/push_subscribed"
-            android:layout_weight="1"/>
+                <EditText
+                    android:id="@+id/property_key_01"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:width="110dp"
+                    android:hint="@string/property_key" />
 
-        <Button
-            android:id="@+id/pushUnsubscription_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/push_unsubscribed"
-            android:layout_weight="1"
-            android:layout_marginLeft="16dp"/>
+                <EditText
+                    android:id="@+id/property_value_01"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="200dp"
+                    android:hint="@string/property_value" />
 
-    </LinearLayout>
+                <Button
+                    android:id="@+id/set_property_01_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/set" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/property_key_02"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:width="120dp"
+                    android:hint="@string/property_key" />
+
+                <EditText
+                    android:id="@+id/property_value_02"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/property_value" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/set_user_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/set_user" />
+
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/experiment_with_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <EditText
+                    android:id="@+id/experiment_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="150dp"
+                    android:hint="@string/experiment_key"
+                    android:inputType="number" />
+
+                <Button
+                    android:id="@+id/ab_text_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/variation" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/feature_flag_with_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <EditText
+                    android:id="@+id/feature_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="150dp"
+                    android:hint="@string/feature_key"
+                    android:inputType="number" />
+
+                <Button
+                    android:id="@+id/feature_flag_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/feature_flag" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/rc_with_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <EditText
+                    android:id="@+id/rc_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="150dp"
+                    android:hint="rcKey"
+                    android:inputType="text" />
+
+                <Button
+                    android:id="@+id/rc_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="RC" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/track_with_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <EditText
+                    android:id="@+id/event_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="150dp"
+                    android:hint="@string/event_key" />
+
+                <Button
+                    android:id="@+id/track_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/track" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/hackle_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </Spinner>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <Button
+                    android:id="@+id/pushSubscription_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/push_subscribed"
+                    android:layout_weight="1"/>
+
+                <Button
+                    android:id="@+id/pushUnsubscription_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/push_unsubscribed"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="16dp"/>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/secondPage_btn"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="@string/second_page" />
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>

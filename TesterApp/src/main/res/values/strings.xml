@@ -13,6 +13,7 @@
     <string name="track">track</string>
     <string name="push_subscribed">push subscribed</string>
     <string name="push_unsubscribed">push unsubscribed</string>
+    <string name="second_page">Second Page</string>
     <string name="not_initialized">NOT_INITIALIZED</string>
     <string name="user">User</string>
     <string name="set_user">SET USER</string>
