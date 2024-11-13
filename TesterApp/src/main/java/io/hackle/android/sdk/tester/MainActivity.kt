@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 //            .logLevel(Log.DEBUG)
 //            .pollingIntervalMillis(10000)
 //            .sessionTimeoutMillis(10000)
-            .add("\$disable_inappmessage", "true")
+//            .add("\$disable_inappmessage", "true")
             .build()
 
         HackleApp.initializeApp(this, sdkKey, config) {
@@ -195,6 +195,10 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.pushUnsubscription_btn).setOnClickListener {
             Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNSUBSCRIBED)
+        }
+
+        findViewById<Button>(R.id.secondPage_btn).setOnClickListener {
+            startActivity(Intent(this, SecondPageActivity::class.java))
         }
     }
 
