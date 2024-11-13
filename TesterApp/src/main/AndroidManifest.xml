@@ -25,6 +25,7 @@
         </activity>
         <activity android:name=".SubActivity" />
         <activity android:name=".WebViewActivity" />
+        <activity android:name=".SecondPageActivity" />
     </application>
 
 </manifest>
