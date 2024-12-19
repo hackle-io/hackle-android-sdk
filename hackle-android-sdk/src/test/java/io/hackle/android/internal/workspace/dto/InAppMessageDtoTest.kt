@@ -74,6 +74,8 @@ internal class InAppMessageDtoTest {
         expectThat(iam.messageContext.messages[0].images[1].action?.actionType).isEqualTo(WEB_LINK)
         expectThat(iam.messageContext.messages[0].images[1].action?.value).isEqualTo("https://www.hackle.io")
 
+        expectThat(iam.messageContext.messages[0].imageAutoScroll).isEqualTo(InAppMessage.Message.ImageAutoScroll(42_000))
+
         expectThat(iam.messageContext.messages[0].text?.title?.text).isEqualTo("title_text")
         expectThat(iam.messageContext.messages[0].text?.title?.style?.textColor).isEqualTo("#0000FF")
         expectThat(iam.messageContext.messages[0].text?.body?.text).isEqualTo("body_text")

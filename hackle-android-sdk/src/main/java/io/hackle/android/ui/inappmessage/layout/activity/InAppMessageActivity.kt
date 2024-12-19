@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.HackleActivity
+import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivityController.Companion.IN_APP_MESSAGE_ID
@@ -33,6 +34,8 @@ internal abstract class InAppMessageActivity : FragmentActivity(), HackleActivit
         window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         layout()
     }
+
+    override fun publish(lifecycle: InAppMessageLifecycle) {}
 
     private fun initialize(): Boolean {
         val messageController = InAppMessageUi.instance.currentMessageController ?: return false

@@ -7,10 +7,9 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
-import io.hackle.android.ui.inappmessage.InAppMessageController
-import io.hackle.android.ui.inappmessage.InAppMessageUi
+import io.hackle.android.ui.inappmessage.*
+import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
-import io.hackle.android.ui.inappmessage.handle
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
 import io.hackle.sdk.core.internal.log.Logger
@@ -35,11 +34,11 @@ internal class InAppMessageViewController(
             return
         }
 
-        ui.listener.beforeInAppMessageOpen(context.inAppMessage)
+        lifecycle(BEFORE_OPEN)
         addView(activity)
         startAnimation(view.openAnimator, completion = {
             handle(InAppMessageEvent.Impression)
-            ui.listener.afterInAppMessageOpen(context.inAppMessage)
+            lifecycle(AFTER_OPEN)
         })
     }
 
@@ -49,12 +48,17 @@ internal class InAppMessageViewController(
             return
         }
 
-        ui.listener.beforeInAppMessageClose(context.inAppMessage)
+        lifecycle(BEFORE_CLOSE)
         startAnimation(view.closeAnimator, completion = {
             handle(InAppMessageEvent.Close)
             removeView()
-            ui.listener.afterInAppMessageClose(context.inAppMessage)
+            lifecycle(AFTER_CLOSE)
         })
+    }
+
+    private fun lifecycle(lifecycle: InAppMessageLifecycle) {
+        view.publish(lifecycle)
+        ui.listener.onLifecycle(lifecycle, context.inAppMessage)
     }
 
     private fun addView(activity: Activity) {

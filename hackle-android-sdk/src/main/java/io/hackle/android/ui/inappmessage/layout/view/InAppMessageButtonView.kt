@@ -8,7 +8,6 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.android.ui.inappmessage.textColor
 import io.hackle.sdk.core.model.InAppMessage
-import io.hackle.sdk.core.model.InAppMessage.ActionArea.BUTTON
 
 internal open class InAppMessageButtonView @JvmOverloads constructor(
     context: Context,
@@ -21,7 +20,7 @@ internal open class InAppMessageButtonView @JvmOverloads constructor(
         this.setTextColor(button.textColor)
         this.background = background
         this.setOnClickListener {
-            inAppMessageView.handle(InAppMessageEvent.Action(button.action, BUTTON, button.text))
+            inAppMessageView.handle(InAppMessageEvent.buttonAction(button.action, button))
         }
     }
 }
