@@ -16,32 +16,39 @@ internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationCon
     return when (this) {
         is InAppMessageEvent.Impression ->
             Event.builder("\$in_app_impression")
-                .properties(context.properties)
-                .property("in_app_message_id", context.inAppMessage.id)
-                .property("in_app_message_key", context.inAppMessage.key)
-                .property("in_app_message_display_type", context.message.layout.displayType.name)
+                .properties(context)
                 .property("title_text", context.message.text?.title?.text)
                 .property("body_text", context.message.text?.body?.text)
                 .property("button_text", context.message.buttons.map { it.text })
                 .property("image_url", context.message.images.map { it.imagePath })
                 .build()
 
+        is InAppMessageEvent.ImageImpression ->
+            Event.builder("\$in_app_image_impression")
+                .properties(context)
+                .property("image_url", image.imagePath)
+                .property("image_order", order)
+                .build()
+
         is InAppMessageEvent.Close -> Event.builder("\$in_app_close")
-            .properties(context.properties)
-            .property("in_app_message_id", context.inAppMessage.id)
-            .property("in_app_message_key", context.inAppMessage.key)
-            .property("in_app_message_display_type", context.message.layout.displayType.name)
+            .properties(context)
             .build()
 
         is InAppMessageEvent.Action -> Event.builder("\$in_app_action")
-            .properties(context.properties)
-            .property("in_app_message_id", context.inAppMessage.id)
-            .property("in_app_message_key", context.inAppMessage.key)
-            .property("in_app_message_display_type", context.message.layout.displayType.name)
+            .properties(context)
             .property("action_type", action.actionType.name)
             .property("action_area", area.name)
             .property("action_value", action.value)
-            .property("button_text", text)
+            .property("button_text", button?.text)
+            .property("image_url", image?.imagePath)
+            .property("image_order", imageOrder)
             .build()
     }
+}
+
+private fun Event.Builder.properties(context: InAppMessagePresentationContext) = apply {
+    properties(context.properties)
+    property("in_app_message_id", context.inAppMessage.id)
+    property("in_app_message_key", context.inAppMessage.key)
+    property("in_app_message_display_type", context.message.layout.displayType.name)
 }

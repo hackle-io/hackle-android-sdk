@@ -23,6 +23,7 @@
     <string name="hackle_label_feature_flag">FEATURE FLAG</string>
 
     <string name="hackle_iam_close_button_text">✕</string>
+    <string name="hackle_iam_scroll_image_page_template">%1$d / %2$d</string>
 
     <color name="hackle_transparent">#00000000</color>
     <color name="hackle_primary">#5c85eb</color>
