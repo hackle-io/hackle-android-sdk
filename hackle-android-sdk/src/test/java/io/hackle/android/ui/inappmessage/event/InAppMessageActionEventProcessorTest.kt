@@ -30,7 +30,7 @@ class InAppMessageActionEventProcessorTest {
 
     @Test
     fun `supports`() {
-        expectThat(sut.supports(InAppMessageEvent.Action(mockk(), mockk()))).isTrue()
+        expectThat(sut.supports(InAppMessageEvent.buttonAction(mockk(), mockk()))).isTrue()
         expectThat(sut.supports(InAppMessageEvent.Impression)).isFalse()
     }
 
@@ -41,7 +41,7 @@ class InAppMessageActionEventProcessorTest {
         every { listener.onInAppMessageClick(any(), any(), any()) } returns true
 
         val layout = layout(listener, InAppMessageLayout.State.OPENED)
-        val event = InAppMessageEvent.Action(mockk(), mockk())
+        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
         every { actionHandlerFactory.get(any()) } returns handler
@@ -65,7 +65,7 @@ class InAppMessageActionEventProcessorTest {
         every { listener.onInAppMessageClick(any(), any(), any()) } returns false
 
         val layout = layout(listener, InAppMessageLayout.State.CLOSED)
-        val event = InAppMessageEvent.Action(mockk(), mockk())
+        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
         every { actionHandlerFactory.get(any()) } returns handler
@@ -83,7 +83,7 @@ class InAppMessageActionEventProcessorTest {
     fun `process - when cannot found handler then do nothing`() {
         // given
         val layout = layout(DefaultInAppMessageListener, InAppMessageLayout.State.OPENED)
-        val event = InAppMessageEvent.Action(mockk(), mockk())
+        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
         every { actionHandlerFactory.get(any()) } returns null
 
         // when
@@ -94,7 +94,7 @@ class InAppMessageActionEventProcessorTest {
     fun `process - handle`() {
         // given
         val layout = layout(DefaultInAppMessageListener, InAppMessageLayout.State.OPENED)
-        val event = InAppMessageEvent.Action(mockk(), mockk())
+        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
         every { actionHandlerFactory.get(any()) } returns handler

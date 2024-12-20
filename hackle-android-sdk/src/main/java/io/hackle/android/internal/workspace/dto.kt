@@ -224,6 +224,7 @@ internal data class InAppMessageDto(
             val lang: String,
             val layout: LayoutDto,
             val images: List<ImageDto>,
+            val imageAutoScroll: ImageAutoScrollDto?,
             val text: TextDto?,
             val buttons: List<ButtonDto>,
             val background: BackgroundDto,
@@ -243,6 +244,10 @@ internal data class InAppMessageDto(
                 val orientation: String,
                 val imagePath: String,
                 val action: ActionDto?
+            )
+
+            data class ImageAutoScrollDto(
+                val interval: DurationDto
             )
 
             data class TextDto(

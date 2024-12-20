@@ -71,7 +71,6 @@ internal class InAppMessageImageView @JvmOverloads constructor(
             this.scaleType = scaleType
         }
         render(image, inAppMessageView)
-        setOnClickListener(inAppMessageView.createImageClickListener(image))
     }
 
     data class AspectRatio(val width: Float, val height: Float) {

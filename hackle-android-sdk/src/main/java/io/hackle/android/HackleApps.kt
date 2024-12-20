@@ -2,7 +2,6 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -190,11 +189,21 @@ internal object HackleApps {
             screenManager = screenManager
         )
 
-        val rcEventDedupRepository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
-        val exposureEventDedupRepository = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey")
+        val rcEventDedupRepository =
+            AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
+        val exposureEventDedupRepository =
+            AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey")
 
-        val rcEventDedupDeterminer = RemoteConfigEventDedupDeterminer(rcEventDedupRepository , config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
-        val exposureEventDedupDeterminer = ExposureEventDedupDeterminer(exposureEventDedupRepository, config.exposureEventDedupIntervalMillis.toLong(), Clock.SYSTEM)
+        val rcEventDedupDeterminer = RemoteConfigEventDedupDeterminer(
+            rcEventDedupRepository,
+            config.exposureEventDedupIntervalMillis.toLong(),
+            Clock.SYSTEM
+        )
+        val exposureEventDedupDeterminer = ExposureEventDedupDeterminer(
+            exposureEventDedupRepository,
+            config.exposureEventDedupIntervalMillis.toLong(),
+            Clock.SYSTEM
+        )
 
         appStateManager.addListener(rcEventDedupDeterminer)
         appStateManager.addListener(exposureEventDedupDeterminer)
@@ -298,6 +307,7 @@ internal object HackleApps {
         val inAppMessageUi = InAppMessageUi.create(
             activityProvider = lifecycleManager,
             messageControllerFactory = InAppMessageControllerFactory(InAppMessageViewFactory()),
+            scheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
             eventHandler = inAppMessageEventHandler,
             imageLoader = imageLoader
         )

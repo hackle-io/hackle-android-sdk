@@ -6,13 +6,13 @@ import android.util.AttributeSet
 import android.view.View.OnClickListener
 import android.widget.RelativeLayout
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.android.ui.inappmessage.layout.handle
+import io.hackle.android.ui.inappmessage.layout.publishInAppMessageLifecycle
 import io.hackle.sdk.core.model.InAppMessage
-import io.hackle.sdk.core.model.InAppMessage.ActionArea.IMAGE
-import io.hackle.sdk.core.model.InAppMessage.ActionArea.MESSAGE
 import java.lang.ref.WeakReference
 
 internal abstract class InAppMessageView @JvmOverloads constructor(
@@ -45,6 +45,10 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
         _activity = WeakReference(activity)
     }
 
+    override fun publish(lifecycle: InAppMessageLifecycle) {
+        publishInAppMessageLifecycle(lifecycle)
+    }
+
     abstract val openAnimator: InAppMessageAnimator?
     abstract val closeAnimator: InAppMessageAnimator?
 
@@ -58,13 +62,16 @@ internal fun InAppMessageView.createCloseListener(): OnClickListener {
 internal fun InAppMessageView.createMessageClickListener(): OnClickListener {
     return OnClickListener {
         val action = message.action ?: return@OnClickListener
-        handle(InAppMessageEvent.Action(action, MESSAGE))
+        handle(InAppMessageEvent.messageAction(action))
     }
 }
 
-internal fun InAppMessageView.createImageClickListener(image: InAppMessage.Message.Image): OnClickListener {
+internal fun InAppMessageView.createImageClickListener(
+    image: InAppMessage.Message.Image,
+    order: Int?
+): OnClickListener {
     return OnClickListener {
         val action = image.action ?: return@OnClickListener
-        handle(InAppMessageEvent.Action(action, IMAGE))
+        handle(InAppMessageEvent.imageAction(action, image, order))
     }
 }

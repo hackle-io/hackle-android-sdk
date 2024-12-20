@@ -2,15 +2,15 @@ package io.hackle.android.ui.inappmessage.layout.view.sheet
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.RelativeLayout
 import io.hackle.android.R
+import io.hackle.android.ui.inappmessage.layout.view.InAppMessageContainerView
 import kotlin.math.min
 
 internal class InAppMessageBottomSheetContainerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : RelativeLayout(context, attrs, defStyleAttr) {
+) : InAppMessageContainerView(context, attrs, defStyleAttr) {
 
     // Attributes
     private val maxWidth get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_bottom_sheet_max_width)

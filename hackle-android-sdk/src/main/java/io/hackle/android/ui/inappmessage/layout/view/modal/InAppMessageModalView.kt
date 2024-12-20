@@ -8,7 +8,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.ImageView.ScaleType.FIT_XY
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import io.hackle.android.R
@@ -40,7 +39,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     private val contentView: InAppMessageModalContentView get() = findViewById(R.id.hackle_iam_banner_content_view)
     private val containerView: InAppMessageModalContainerView get() = findViewById(R.id.hackle_iam_modal_container_view)
     private val closeButtonView: InAppMessageCloseButtonView get() = findViewById(R.id.hackle_iam_modal_close_button_view)
-    private val imageView: InAppMessageImageView get() = findViewById(R.id.hackle_iam_modal_image_view)
+    private val imageContainerView: InAppMessageImageContainerView get() = findViewById(R.id.hackle_iam_modal_image_container_view)
     private val textContainerView: LinearLayout get() = findViewById(R.id.hackle_iam_modal_text_container_view)
     private val titleTextView: InAppMessageTextView get() = findViewById(R.id.hackle_iam_modal_title_text_view)
     private val bodyTextView: InAppMessageTextView get() = findViewById(R.id.hackle_iam_modal_body_text_view)
@@ -70,17 +69,12 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
         // ContainerView (inside of modal)
         containerView.background = messageBackground
+        containerView.setCornerRadii(cornerRadii)
         containerView.setOnClickListener(createMessageClickListener())
 
         // Image
-        if (configuration.image) {
-            val image = context.image(requiredOrientation)
-            imageView.setAspectRatio(imageAspectRatio)
-            imageView.setCornerRadii(imageCornerRadii)
-            imageView.configure(this, image, FIT_XY)
-        } else {
-            imageView.visibility = View.GONE
-        }
+        imageContainerView.setAspectRatio(imageAspectRatio)
+        imageContainerView.configure(this, requiredOrientation)
 
         // Text
         if (configuration.text) {
@@ -121,7 +115,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
         // CloseButton
         val closeButton = message.closeButton
-        if (closeButton != null) {
+        if (context.images(requiredOrientation).size < 2 && closeButton != null) {
             closeButtonView.configure(this, closeButton)
         } else {
             closeButtonView.visibility = View.GONE
@@ -152,25 +146,13 @@ internal class InAppMessageModalView @JvmOverloads constructor(
             IMAGE -> Configuration(image = true, text = false, button = false, outerButton = true)
         }
 
+    private val cornerRadii: CornerRadii get() = CornerRadii.of(cornerRadius.toFloat())
     private val messageBackground: Drawable
         get() {
             return when (message.layout.layoutType) {
                 NONE -> Drawables.transparent()
                 IMAGE -> Drawables.transparent()
-                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> Drawables.of(
-                    radii = CornerRadii.of(cornerRadius.toFloat()),
-                    color = message.backgroundColor
-                )
-            }
-        }
-
-    private val imageCornerRadii: CornerRadii
-        get() {
-            val radius = cornerRadius.toFloat()
-            return when (message.layout.layoutType) {
-                NONE -> CornerRadii.ZERO
-                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> CornerRadii.of(radius, radius, 0f, 0f)
-                IMAGE -> CornerRadii.of(radius)
+                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> Drawables.of(radii = cornerRadii, color = message.backgroundColor)
             }
         }
 
