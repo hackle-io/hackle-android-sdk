@@ -90,8 +90,9 @@ internal class InAppMessageScrollImageView @JvmOverloads constructor(
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {
-        if (!configured) return
         super.onVisibilityChanged(changedView, visibility)
+
+        if (!configured) return
         when (visibility) {
             View.VISIBLE -> startAutoScroll()
             View.INVISIBLE, View.GONE -> stopAutoScroll()
@@ -99,8 +100,9 @@ internal class InAppMessageScrollImageView @JvmOverloads constructor(
     }
 
     override fun onDetachedFromWindow() {
-        if (!configured) return
         super.onDetachedFromWindow()
+
+        if (!configured) return
         stopAutoScroll()
     }
 
@@ -119,7 +121,6 @@ internal class InAppMessageScrollImageView @JvmOverloads constructor(
     // AutoScroll
 
     private fun startAutoScroll() {
-        log.debug { "InAppMessageScrollImageView.startAutoScroll()" }
         stopAutoScroll()
         val interval = autoScroll?.intervalMillis ?: return
         autoScrollJob = InAppMessageUi.instance.scheduler.schedulePeriodically(interval, interval, MILLISECONDS) {
@@ -128,15 +129,11 @@ internal class InAppMessageScrollImageView @JvmOverloads constructor(
     }
 
     private fun stopAutoScroll() {
-        if (autoScrollJob != null) {
-            log.debug { "InAppMessageScrollImageView.stopAutoScroll()" }
-        }
         autoScrollJob?.cancel()
         autoScrollJob = null
     }
 
     private fun scroll() {
-        log.debug { "InAppMessageScrollImageView.scroll()" }
         val nextPosition = currentPosition + 1
         recyclerView.smoothScrollToPosition(nextPosition)
     }
