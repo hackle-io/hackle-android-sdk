@@ -3,4 +3,5 @@
     <color name="hackle_iam_modal_frame_background">#801C1C1C</color>
     <color name="hackle_iam_banner_background">#EFEFEF</color>
     <color name="hackle_iam_skeleton">#EEEEEE</color>
+    <color name="hackle_iam_scroll_image_page_background">#801C1C1C</color>
 </resources>

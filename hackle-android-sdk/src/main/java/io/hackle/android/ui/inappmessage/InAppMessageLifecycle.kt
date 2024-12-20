@@ -5,6 +5,13 @@ import io.hackle.sdk.common.HackleInAppMessageAction
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HackleInAppMessageView
 
+internal enum class InAppMessageLifecycle {
+    BEFORE_OPEN,
+    AFTER_OPEN,
+    BEFORE_CLOSE,
+    AFTER_CLOSE
+}
+
 internal object DefaultInAppMessageListener : HackleInAppMessageListener {
     override fun beforeInAppMessageOpen(inAppMessage: HackleInAppMessage) {}
     override fun afterInAppMessageOpen(inAppMessage: HackleInAppMessage) {}
@@ -15,4 +22,16 @@ internal object DefaultInAppMessageListener : HackleInAppMessageListener {
         view: HackleInAppMessageView,
         action: HackleInAppMessageAction
     ): Boolean = false
+}
+
+internal fun HackleInAppMessageListener.onLifecycle(
+    lifecycle: InAppMessageLifecycle,
+    inAppMessage: HackleInAppMessage
+) {
+    return when (lifecycle) {
+        InAppMessageLifecycle.BEFORE_OPEN -> beforeInAppMessageOpen(inAppMessage)
+        InAppMessageLifecycle.AFTER_OPEN -> afterInAppMessageOpen(inAppMessage)
+        InAppMessageLifecycle.BEFORE_CLOSE -> beforeInAppMessageClose(inAppMessage)
+        InAppMessageLifecycle.AFTER_CLOSE -> afterInAppMessageClose(inAppMessage)
+    }
 }
