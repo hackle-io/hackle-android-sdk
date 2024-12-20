@@ -67,3 +67,7 @@ internal fun InAppMessagePresentationContext.imageOrNull(orientation: InAppMessa
 internal fun InAppMessagePresentationContext.image(orientation: InAppMessage.Orientation): InAppMessage.Message.Image {
     return requireNotNull(imageOrNull(orientation)) { "Not found in-app message image [${inAppMessage.id}, $orientation]" }
 }
+
+internal fun InAppMessagePresentationContext.images(orientation: InAppMessage.Orientation): List<InAppMessage.Message.Image> {
+    return message.images.filter { it.orientation == orientation }
+}

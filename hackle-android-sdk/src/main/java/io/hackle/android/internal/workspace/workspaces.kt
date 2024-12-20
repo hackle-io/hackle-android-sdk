@@ -278,6 +278,7 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InA
         lang = lang,
         layout = layout.toLayoutOrNull() ?: return null,
         images = images.map { it.toImageOrNull() ?: return null },
+        imageAutoScroll = imageAutoScroll?.let { it.toImageAutoScrollOrNull() ?: return null },
         text = text?.toText(),
         buttons = buttons.map { it.toButtonOrNull() ?: return null },
         closeButton = closeButton?.let { it.toButtonOrNull() ?: return null },
@@ -303,6 +304,13 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.ImageDto.toImageOrNull
         orientation = parseEnumOrNull<InAppMessage.Orientation>(orientation) ?: return null,
         imagePath = imagePath,
         action = action?.let { it.toActionOrNull() ?: return null }
+    )
+}
+
+internal fun InAppMessageDto.MessageContextDto.MessageDto.ImageAutoScrollDto.toImageAutoScrollOrNull(): InAppMessage.Message.ImageAutoScroll? {
+    val timeUnit = parseEnumOrNull<TimeUnit>(interval.timeUnit) ?: return null
+    return InAppMessage.Message.ImageAutoScroll(
+        intervalMillis = timeUnit.toMillis(interval.amount)
     )
 }
 

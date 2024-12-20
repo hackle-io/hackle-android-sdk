@@ -138,7 +138,7 @@ class InAppMessageEventTrackerTest {
             properties = mapOf("decision_reason" to "IN_APP_MESSAGE_TARGET")
         )
 
-        sut.track(context, InAppMessageEvent.Action(action, InAppMessage.ActionArea.BUTTON, "button_text_"), 42)
+        sut.track(context, InAppMessageEvent.buttonAction(action, message.buttons[0]), 42)
 
         verify(exactly = 1) {
             core.track(
@@ -151,7 +151,7 @@ class InAppMessageEventTrackerTest {
                             "in_app_message_display_type" to "MODAL",
                             "action_area" to "BUTTON",
                             "action_type" to "WEB_LINK",
-                            "button_text" to "button_text_",
+                            "button_text" to "button_1",
                             "action_value" to "button_link_click",
                             "decision_reason" to "IN_APP_MESSAGE_TARGET",
                         )

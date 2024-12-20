@@ -2,12 +2,13 @@
 <resources>
     <dimen name="hackle_iam_modal_min_width">320dp</dimen>
     <dimen name="hackle_iam_modal_max_width">450dp</dimen>
-    <dimen name="hackle_iam_modal_margin">16dp</dimen>
+    <dimen name="hackle_iam_modal_margin">32dp</dimen>
     <dimen name="hackle_iam_modal_padding">16dp</dimen>
     <dimen name="hackle_iam_modal_spacing">16dp</dimen>
     <dimen name="hackle_iam_modal_corner_radius">8dp</dimen>
     <dimen name="hackle_iam_modal_button_stroke_width">1dp</dimen>
     <dimen name="hackle_iam_modal_button_corner_radius">4dp</dimen>
+    <dimen name="hackle_iam_modal_scroll_image_page_radius">10dp</dimen>
 
 
     <dimen name="hackle_iam_banner_max_height">84dp</dimen>

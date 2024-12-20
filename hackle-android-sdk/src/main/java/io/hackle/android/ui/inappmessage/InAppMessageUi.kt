@@ -10,6 +10,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.scheduler.Scheduler
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -25,6 +26,7 @@ internal class InAppMessageUi(
     private val activityProvider: ActivityProvider,
     private val messageControllerFactory: InAppMessageControllerFactory,
     private val defaultListener: HackleInAppMessageListener,
+    val scheduler: Scheduler,
     val eventHandler: InAppMessageEventHandler,
     val imageLoader: ImageLoader
 ) : InAppMessagePresenter {
@@ -85,6 +87,7 @@ internal class InAppMessageUi(
         fun create(
             activityProvider: ActivityProvider,
             messageControllerFactory: InAppMessageControllerFactory,
+            scheduler: Scheduler,
             eventHandler: InAppMessageEventHandler,
             imageLoader: ImageLoader,
         ): InAppMessageUi {
@@ -93,6 +96,7 @@ internal class InAppMessageUi(
                     activityProvider,
                     messageControllerFactory,
                     DefaultInAppMessageListener,
+                    scheduler,
                     eventHandler,
                     imageLoader
                 ).also { INSTANCE = it }

@@ -7,7 +7,6 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.android.ui.inappmessage.textColor
 import io.hackle.sdk.core.model.InAppMessage
-import io.hackle.sdk.core.model.InAppMessage.ActionArea.X_BUTTON
 
 internal class InAppMessageCloseButtonView @JvmOverloads constructor(
     context: Context,
@@ -18,7 +17,7 @@ internal class InAppMessageCloseButtonView @JvmOverloads constructor(
     fun configure(inAppMessageView: InAppMessageView, closeButton: InAppMessage.Message.Button) {
         setTextColor(closeButton.textColor)
         setOnClickListener {
-            inAppMessageView.handle(InAppMessageEvent.Action(closeButton.action, X_BUTTON))
+            inAppMessageView.handle(InAppMessageEvent.closeButtonAction(closeButton.action))
         }
     }
 }

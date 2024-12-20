@@ -1,8 +1,12 @@
 package io.hackle.android.ui.inappmessage.layout
 
 import android.app.Activity
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.children
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageController
+import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.handle
 import io.hackle.sdk.common.HackleInAppMessageView
@@ -34,6 +38,11 @@ internal interface InAppMessageLayout : HackleInAppMessageView {
     val activity: Activity?
 
     /**
+     * Publishes the lifecycle event to child views.
+     */
+    fun publish(lifecycle: InAppMessageLifecycle)
+
+    /**
      * Closes the [InAppMessageLayout]
      */
     override fun close() {
@@ -42,6 +51,34 @@ internal interface InAppMessageLayout : HackleInAppMessageView {
 
     enum class State {
         OPENED, CLOSED
+    }
+
+    interface LifecycleListener {
+        fun beforeInAppMessageOpen() {}
+        fun afterInAppMessageOpen() {}
+        fun beforeInAppMessageClose() {}
+        fun afterInAppMessageClose() {}
+    }
+}
+
+internal fun View.publishInAppMessageLifecycle(lifecycle: InAppMessageLifecycle) {
+    if (this is InAppMessageLayout.LifecycleListener) {
+        onLifeCycle(lifecycle)
+    }
+
+    if (this is ViewGroup) {
+        for (view in children) {
+            view.publishInAppMessageLifecycle(lifecycle)
+        }
+    }
+}
+
+internal fun InAppMessageLayout.LifecycleListener.onLifeCycle(lifecycle: InAppMessageLifecycle) {
+    return when (lifecycle) {
+        InAppMessageLifecycle.BEFORE_OPEN -> beforeInAppMessageOpen()
+        InAppMessageLifecycle.AFTER_OPEN -> afterInAppMessageOpen()
+        InAppMessageLifecycle.BEFORE_CLOSE -> beforeInAppMessageClose()
+        InAppMessageLifecycle.AFTER_CLOSE -> afterInAppMessageClose()
     }
 }
 

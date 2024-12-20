@@ -25,11 +25,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
-                android:id="@+id/hackle_iam_bottom_sheet_image_view"
+            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageContainerView
+                android:id="@+id/hackle_iam_bottom_sheet_image_container_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true" />
+                android:layout_height="wrap_content" />
 
             <RelativeLayout
                 android:id="@+id/hackle_iam_bottom_sheet_button_container_view"
