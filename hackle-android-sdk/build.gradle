@@ -40,12 +40,21 @@ android {
     }
 }
 
-dependencies {
-    debugApi "io.hackle:hackle-sdk-common"
-    debugImplementation "io.hackle:hackle-sdk-core"
+def hasLocalSdk = getHackleJavaSdkPath() != null
 
-    releaseApi "io.hackle:hackle-sdk-common:2.25.7"
-    releaseImplementation "io.hackle:hackle-sdk-core:2.25.7"
+dependencies {
+    // if settings-local.gradle exists, use local hackle-sdk-common and hackle-sdk-core
+    if(hasLocalSdk)  {
+        debugApi "io.hackle:hackle-sdk-common"
+        debugImplementation "io.hackle:hackle-sdk-core"
+
+        releaseApi "io.hackle:hackle-sdk-common:2.25.7"
+        releaseImplementation "io.hackle:hackle-sdk-core:2.25.7"
+    } else {
+        api "io.hackle:hackle-sdk-common:2.25.7"
+        implementation "io.hackle:hackle-sdk-core:2.25.7"
+    }
+
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
     implementation "com.google.android.gms:play-services-base:17.3.0"
@@ -132,4 +141,14 @@ signing {
     def signingPassword = System.getenv("SIGNING_PASSWORD")
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign publishing.publications
+}
+
+def getHackleJavaSdkPath() {
+    def properties = new Properties()
+    def localPropertiesFile = rootProject.file('local.properties')
+    if (localPropertiesFile.exists()) {
+        properties.load(localPropertiesFile.newDataInputStream())
+        return properties.getProperty('hackle.java.sdk.path')
+    }
+    return null
 }
