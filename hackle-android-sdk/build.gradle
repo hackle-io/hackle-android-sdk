@@ -43,7 +43,7 @@ android {
 def hasLocalSdk = getHackleJavaSdkPath() != null
 
 dependencies {
-    // if settings-local.gradle exists, use local hackle-sdk-common and hackle-sdk-core
+    // if hackle.java.sdk.path exist in local.properties, use local hackle-sdk-common and hackle-sdk-core
     if(hasLocalSdk)  {
         debugApi "io.hackle:hackle-sdk-common"
         debugImplementation "io.hackle:hackle-sdk-core"
