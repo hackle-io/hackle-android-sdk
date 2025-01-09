@@ -41,9 +41,11 @@ android {
 }
 
 dependencies {
+    debugApi "io.hackle:hackle-sdk-common"
+    debugImplementation "io.hackle:hackle-sdk-core"
 
-    api "io.hackle:hackle-sdk-common:2.25.7"
-    implementation "io.hackle:hackle-sdk-core:2.25.7"
+    releaseApi "io.hackle:hackle-sdk-common:2.25.7"
+    releaseImplementation "io.hackle:hackle-sdk-core:2.25.7"
 
     implementation 'com.squareup.okhttp3:okhttp:3.12.2'
     implementation "com.google.android.gms:play-services-base:17.3.0"
