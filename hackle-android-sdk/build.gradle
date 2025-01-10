@@ -40,7 +40,7 @@ android {
     }
 }
 
-def hasLocalSdk = getHackleJavaSdkPath() != null
+def hasLocalSdk = getLocalProperty('hackle.java.sdk.path') != null
 
 dependencies {
     // if hackle.java.sdk.path exist in local.properties, use local hackle-sdk-common and hackle-sdk-core
@@ -143,12 +143,16 @@ signing {
     sign publishing.publications
 }
 
-def getHackleJavaSdkPath() {
-    def properties = new Properties()
-    def localPropertiesFile = rootProject.file('local.properties')
-    if (localPropertiesFile.exists()) {
-        properties.load(localPropertiesFile.newDataInputStream())
-        return properties.getProperty('hackle.java.sdk.path')
+def getLocalProperty(String key) {
+    if (key == null) {
+        return null
+    }
+
+    Properties properties = new Properties()
+    def localProperties = file("local.properties")
+    if (localProperties.exists()) {
+        properties.load(localProperties.newDataInputStream())
+        return properties.getProperty(key)
     }
     return null
 }
