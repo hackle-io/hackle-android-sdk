@@ -48,11 +48,11 @@ dependencies {
         debugApi "io.hackle:hackle-sdk-common"
         debugImplementation "io.hackle:hackle-sdk-core"
 
-        releaseApi "io.hackle:hackle-sdk-common:2.25.7"
-        releaseImplementation "io.hackle:hackle-sdk-core:2.25.7"
+        releaseApi "io.hackle:hackle-sdk-common:2.25.8"
+        releaseImplementation "io.hackle:hackle-sdk-core:2.25.8"
     } else {
-        api "io.hackle:hackle-sdk-common:2.25.7"
-        implementation "io.hackle:hackle-sdk-core:2.25.7"
+        api "io.hackle:hackle-sdk-common:2.25.8"
+        implementation "io.hackle:hackle-sdk-core:2.25.8"
     }
 
 
