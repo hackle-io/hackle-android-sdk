@@ -1,3 +1,28 @@
 include ':hackle-android-sdk'
 rootProject.name = "hackle-android-sdk"
 include ':TesterApp'
+
+def hackleJavaSdkPath = getLocalProperty('hackle.java.sdk.path')
+if (hackleJavaSdkPath) {
+    // hackle-java-sdk settings.gradle
+    includeBuild(hackleJavaSdkPath) {
+        dependencySubstitution {
+            substitute module('io.hackle:hackle-sdk-common') using project(':hackle-sdk-common')
+            substitute module('io.hackle:hackle-sdk-core') using project(':hackle-sdk-core')
+        }
+    }
+}
+
+def getLocalProperty(String key) {
+    if (key == null) {
+        return null
+    }
+
+    Properties properties = new Properties()
+    def localProperties = file("local.properties")
+    if (localProperties.exists()) {
+        properties.load(localProperties.newDataInputStream())
+        return properties.getProperty(key)
+    }
+    return null
+}
