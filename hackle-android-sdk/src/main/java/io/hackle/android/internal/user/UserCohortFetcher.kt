@@ -13,6 +13,8 @@ import okhttp3.Request
 import okhttp3.Response
 import kotlin.text.Charsets.UTF_8
 
+// TODO: fetch user cohorts and target events
+// TODO: rename class
 internal class UserCohortFetcher(
     sdkUri: String,
     private val httpClient: OkHttpClient,

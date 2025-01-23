@@ -4,6 +4,7 @@ import io.hackle.android.internal.model.Device
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifiers
+import io.hackle.sdk.core.model.TargetEvent
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 
@@ -45,4 +46,14 @@ internal fun UserCohorts.filterBy(user: User): UserCohorts {
 
 internal fun UserCohorts.rawCohorts(): List<Cohort> {
     return asList().flatMap { it.cohorts }
+}
+
+internal fun UserTargetEvents.filterBy(user: User): UserTargetEvents {
+    val identifiers = user.resolvedIdentifiers
+    val filtered = asMap().filter { it.key in identifiers }
+    return UserTargetEvents.from(filtered)
+}
+
+internal fun UserTargetEvents.rawTargetEvents(): List<TargetEvent> {
+    return asList().flatMap { it.targetEvents }
 }

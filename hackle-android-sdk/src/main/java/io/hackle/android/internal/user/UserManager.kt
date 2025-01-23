@@ -28,14 +28,14 @@ internal class UserManager(
 ) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
-    private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty())
+    private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty(), UserTargetEvents.empty())
     private val currentContext: UserContext get() = synchronized(LOCK) { context }
     val currentUser: User get() = currentContext.user
 
     fun initialize(user: User?) {
         synchronized(LOCK) {
             val initUser = user ?: loadUser() ?: defaultUser
-            context = UserContext.of(initUser.with(device), UserCohorts.empty())
+            context = UserContext.of(initUser.with(device), UserCohorts.empty(), UserTargetEvents.empty())
             log.debug { "UserManager initialized [$context]" }
         }
     }
@@ -70,6 +70,7 @@ internal class UserManager(
             .properties(context.user.properties)
             .hackleProperties(device.properties)
             .cohorts(context.cohorts.rawCohorts())
+            .targetEvents(context.targetEvents.rawTargetEvents())
             .build()
     }
 
@@ -83,7 +84,7 @@ internal class UserManager(
             return
         }
         synchronized(LOCK) {
-            context = context.update(cohorts)
+            context = context.update(cohorts, UserTargetEvents.empty()) // TODO: update target events
         }
     }
 
