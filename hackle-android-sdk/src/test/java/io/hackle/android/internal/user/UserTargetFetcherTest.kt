@@ -5,11 +5,17 @@ import io.hackle.android.support.assertThrows
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifier
+import io.hackle.sdk.core.model.Target
+import io.hackle.sdk.core.model.TargetEvent
+import io.mockk.MockKStubScope
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
+import okhttp3.Call
 import okhttp3.OkHttpClient
+import okhttp3.Response
+import okhttp3.ResponseBody
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -18,15 +24,14 @@ import strikt.assertions.isNotNull
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class UserCohortFetcherTest {
-
+class UserTargetFetcherTest {
     private lateinit var httpClient: OkHttpClient
-    private lateinit var sut: UserCohortFetcher
+    private lateinit var sut: UserTargetFetcher
 
     @Before
     fun before() {
         httpClient = mockk()
-        sut = UserCohortFetcher("http://localhost", httpClient)
+        sut = UserTargetFetcher("http://localhost", httpClient)
 
         mockkStatic(Base64::class)
         every { Base64.encodeToString(any(), any()) } answers {
@@ -43,7 +48,7 @@ class UserCohortFetcherTest {
 
         // when
         val exception = assertThrows<IllegalArgumentException> {
-            sut.fetch(User.builder().id("42").build())
+            sut.fetch(User.builder().build())
         }
 
         // then
@@ -57,7 +62,7 @@ class UserCohortFetcherTest {
 
         // when
         val exception = assertThrows<IllegalStateException> {
-            sut.fetch(User.builder().id("42").build())
+            sut.fetch(User.builder().build())
         }
 
         // then
@@ -71,7 +76,7 @@ class UserCohortFetcherTest {
 
         // when
         val exception = assertThrows<IllegalStateException> {
-            sut.fetch(User.builder().id("42").build())
+            sut.fetch(User.builder().build())
         }
 
         // then
@@ -82,7 +87,7 @@ class UserCohortFetcherTest {
     fun `success`() {
         // given
         val body =
-            String(Files.readAllBytes(Paths.get("src/test/resources/workspace_cohorts.json")))
+            String(Files.readAllBytes(Paths.get("src/test/resources/workspace_target.json")))
         every { httpClient.newCall(any()) }.response(200, body)
 
         // when
@@ -94,14 +99,44 @@ class UserCohortFetcherTest {
             .put(UserCohort(Identifier("\$userId", "user_id"), listOf()))
             .build()
 
-        expectThat(actual).isEqualTo(cohorts)
+        val events = UserTargetEvents.builder()
+            .put(
+                TargetEvent(
+                "purchase",
+                listOf(
+                    TargetEvent.Stat(1737361789000, 10),
+                    TargetEvent.Stat(1737361790000, 20),
+                    TargetEvent.Stat(1737361793000, 30)
+                ),
+                TargetEvent.Property(
+                    "product_name",
+                    Target.Key.Type.EVENT_PROPERTY,
+                    "shampoo"
+                ))
+            )
+            .put(TargetEvent(
+                "cart",
+                listOf(
+                    TargetEvent.Stat(1737361789000, 10),
+                    TargetEvent.Stat(1737361790000, 20),
+                    TargetEvent.Stat(1737361793000, 30)
+                ),
+                null))
+            .build()
+
+        val userTarget = UserTarget(
+            cohorts = cohorts,
+            targetEvents = events,
+        )
+
+        expectThat(actual).isEqualTo(userTarget)
     }
 
     @Test
     fun `request header`() {
         // given
         val body =
-            String(Files.readAllBytes(Paths.get("src/test/resources/workspace_cohorts.json")))
+            String(Files.readAllBytes(Paths.get("src/test/resources/workspace_target.json")))
         every { httpClient.newCall(any()) }.response(200, body)
 
         // when
@@ -118,3 +153,17 @@ class UserCohortFetcherTest {
     }
 }
 
+internal fun MockKStubScope<Call, Call>.response(statusCode: Int, body: String? = null) {
+
+    val response = Response.Builder()
+        .request(mockk())
+        .protocol(mockk())
+        .code(statusCode)
+        .message(statusCode.toString())
+        .body(body?.let { ResponseBody.create(null, it) })
+        .build()
+    val call = mockk<Call> {
+        every { execute() } returns response
+    }
+    returns(call)
+}

@@ -10,6 +10,7 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifier
+import io.hackle.sdk.core.model.TargetEvent
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import io.mockk.Called
@@ -211,30 +212,35 @@ class UserManagerTest {
     }
 
     @Test
-    fun `sync - update userCohorts`() {
+    fun `sync - update userTarget`() {
         val userCohorts = UserCohorts.builder()
             .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
             .build()
         val userTargetEvents = UserTargetEvents.builder()
+            .put(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null))
             .build()
         every { targetFetcher.fetch(any()) } returns UserTarget(userCohorts, userTargetEvents)
 
         sut.initialize(null)
         expectThat(sut.resolve(null).cohorts).hasSize(0)
+        expectThat(sut.resolve(null).targetEvents).hasSize(0)
 
         sut.sync()
         expectThat(sut.resolve(null).cohorts).isEqualTo(listOf(Cohort(42)))
+        expectThat(sut.resolve(null).targetEvents).isEqualTo(listOf(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null)))
     }
 
     @Test
-    fun `sync - when error on fetch cohort then do not update cohort`() {
+    fun `sync - when error on fetch userTarget then do not update userTarget`() {
         every { targetFetcher.fetch(any()) } throws IllegalArgumentException("fail")
 
         sut.initialize(null)
         expectThat(sut.resolve(null).cohorts).hasSize(0)
+        expectThat(sut.resolve(null).targetEvents).hasSize(0)
 
         sut.sync()
         expectThat(sut.resolve(null).cohorts).hasSize(0)
+        expectThat(sut.resolve(null).targetEvents).hasSize(0)
     }
 
     @Test
@@ -745,6 +751,35 @@ class UserManagerTest {
                 .identifier(IdentifierType.DEVICE, "device_id")
                 .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
                 .cohort(Cohort(42))
+                .build()
+        )
+    }
+
+    @Test
+    fun `setUser - update targetEvent`() {
+        val userCohorts = UserCohorts.builder()
+            .build()
+        val userTargetEvents = UserTargetEvents.builder()
+            .put(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null))
+            .build()
+        every { targetFetcher.fetch(any()) } returns UserTarget(userCohorts, userTargetEvents)
+
+        sut.initialize(null)
+        sut.sync()
+
+        sut.setUser(User.builder().deviceId("device_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.resolve(null)).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "hackle_device_id")
+                .identifier(IdentifierType.DEVICE, "device_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .targetEvent(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null))
                 .build()
         )
     }
