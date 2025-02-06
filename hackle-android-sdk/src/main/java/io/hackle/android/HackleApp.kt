@@ -85,7 +85,7 @@ class HackleApp internal constructor(
     fun setUser(user: User, callback: Runnable? = null) {
         try {
             val updated = userManager.setUser(user)
-            syncCohortIfNeeded(updated, callback)
+            syncUserTargetIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set user: $e" }
             callback?.run()
@@ -96,7 +96,7 @@ class HackleApp internal constructor(
     fun setUserId(userId: String?, callback: Runnable? = null) {
         try {
             val updated = userManager.setUserId(userId)
-            syncCohortIfNeeded(updated, callback)
+            syncUserTargetIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set userId: $e" }
             callback?.run()
@@ -107,7 +107,7 @@ class HackleApp internal constructor(
     fun setDeviceId(deviceId: String, callback: Runnable? = null) {
         try {
             val updated = userManager.setDeviceId(deviceId)
-            syncCohortIfNeeded(updated, callback)
+            syncUserTargetIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while set deviceId: $e" }
             callback?.run()
@@ -140,14 +140,14 @@ class HackleApp internal constructor(
         try {
             val updated = userManager.resetUser()
             track(PropertyOperations.clearAll().toEvent())
-            syncCohortIfNeeded(updated, callback)
+            syncUserTargetIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
             callback?.run()
         }
     }
 
-    private fun syncCohortIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
+    private fun syncUserTargetIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
         try {
             backgroundExecutor.execute {
                 try {

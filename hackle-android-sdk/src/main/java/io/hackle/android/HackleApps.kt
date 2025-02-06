@@ -41,7 +41,6 @@ import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.task.TaskExecutors
-import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.user.UserTargetFetcher
 import io.hackle.android.internal.utils.concurrent.ThrottleLimiter
