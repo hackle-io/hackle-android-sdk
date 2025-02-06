@@ -24,7 +24,7 @@ import strikt.assertions.*
 class UserManagerTest {
 
     private lateinit var repository: KeyValueRepository
-    private lateinit var cohortFetcher: UserCohortFetcher
+    private lateinit var targetFetcher: UserTargetFetcher
     private lateinit var sut: UserManager
 
     private lateinit var listener: UserListener
@@ -32,8 +32,8 @@ class UserManagerTest {
     @Before
     fun before() {
         repository = MapKeyValueRepository()
-        cohortFetcher = mockk()
-        sut = UserManager(MockDevice("hackle_device_id", emptyMap()), repository, cohortFetcher)
+        targetFetcher = mockk()
+        sut = UserManager(MockDevice("hackle_device_id", emptyMap()), repository, targetFetcher)
 
         listener = mockk(relaxed = true)
         sut.addListener(listener)
@@ -141,7 +141,9 @@ class UserManagerTest {
                 )
             )
             .build()
-        every { cohortFetcher.fetch(any()) } returns userCohorts
+        val userTargetEvents = UserTargetEvents.builder()
+            .build()
+        every { targetFetcher.fetch(any()) } returns UserTarget(userCohorts, userTargetEvents)
 
         // when
         sut.initialize(User.builder().id("id").property("a", "a").build())
@@ -202,7 +204,7 @@ class UserManagerTest {
         val sut = UserManager(
             MockDevice("hackle_device_id", mapOf("age" to 42)),
             repository,
-            cohortFetcher
+            targetFetcher
         )
         val hackleUser = sut.toHackleUser(User.builder().build())
         expectThat(hackleUser.hackleProperties.size).isGreaterThan(0)
@@ -213,7 +215,9 @@ class UserManagerTest {
         val userCohorts = UserCohorts.builder()
             .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
             .build()
-        every { cohortFetcher.fetch(any()) } returns userCohorts
+        val userTargetEvents = UserTargetEvents.builder()
+            .build()
+        every { targetFetcher.fetch(any()) } returns UserTarget(userCohorts, userTargetEvents)
 
         sut.initialize(null)
         expectThat(sut.resolve(null).cohorts).hasSize(0)
@@ -224,7 +228,7 @@ class UserManagerTest {
 
     @Test
     fun `sync - when error on fetch cohort then do not update cohort`() {
-        every { cohortFetcher.fetch(any()) } throws IllegalArgumentException("fail")
+        every { targetFetcher.fetch(any()) } throws IllegalArgumentException("fail")
 
         sut.initialize(null)
         expectThat(sut.resolve(null).cohorts).hasSize(0)
@@ -279,7 +283,7 @@ class UserManagerTest {
             )
         )
 
-        verify { cohortFetcher wasNot Called }
+        verify { targetFetcher wasNot Called }
     }
 
     @Test
@@ -322,7 +326,7 @@ class UserManagerTest {
         )
 
         verify(exactly = 6) {
-            cohortFetcher.fetch(any())
+            targetFetcher.fetch(any())
         }
     }
 
@@ -721,7 +725,9 @@ class UserManagerTest {
             .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
             .put(UserCohort(Identifier("\$deviceId", "hackle_device_id"), listOf(Cohort(43))))
             .build()
-        every { cohortFetcher.fetch(any()) } returns userCohorts
+        val userTargetEvents = UserTargetEvents.builder()
+            .build()
+        every { targetFetcher.fetch(any()) } returns UserTarget(userCohorts, userTargetEvents)
 
         sut.initialize(null)
         sut.sync()

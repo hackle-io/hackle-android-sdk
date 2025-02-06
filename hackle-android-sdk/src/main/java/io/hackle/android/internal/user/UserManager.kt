@@ -24,7 +24,7 @@ import io.hackle.sdk.core.user.IdentifierType
 internal class UserManager(
     private val device: Device,
     private val repository: KeyValueRepository,
-    private val cohortFetcher: UserCohortFetcher,
+    private val targetFetcher: UserTargetFetcher,
 ) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
@@ -70,30 +70,38 @@ internal class UserManager(
             .properties(context.user.properties)
             .hackleProperties(device.properties)
             .cohorts(context.cohorts.rawCohorts())
-            .targetEvents(context.targetEvents.rawTargetEvents())
+            .targetEvents(context.targetEvents.rawEvents())
             .build()
     }
 
     // Sync
 
     override fun sync() {
-        val cohorts = try {
-            cohortFetcher.fetch(currentUser)
+        val userTarget = try {
+            targetFetcher.fetch(currentUser)
         } catch (e: Exception) {
-            log.error { "Failed to fetch cohorts: $e" }
+            log.error { "Failed to fetch userTarget: $e" }
             return
         }
         synchronized(LOCK) {
-            context = context.update(cohorts, UserTargetEvents.empty()) // TODO: update target events
+            context = context.update(userTarget)
         }
     }
 
+    /**
+     * 사용자 정보가 변경되었을 때 동기화가 필요한지 확인하고 필요하다면 동기화를 수행한다.
+     * @param updated 변경된 사용자 정보
+     */
     fun syncIfNeeded(updated: Updated<User>) {
         if (hasNewIdentifiers(updated.previous, updated.current)) {
             sync()
         }
     }
 
+    /**
+     * 사용자 식별자가 변경되었는지 확인한다.
+     * @return 변경되었으면 true, 아니면 false
+     */
     private fun hasNewIdentifiers(previousUser: User, currentUser: User): Boolean {
         val previousIdentifiers = previousUser.resolvedIdentifiers
         val currentIdentifiers = currentUser.resolvedIdentifiers.asList()

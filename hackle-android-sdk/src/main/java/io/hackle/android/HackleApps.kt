@@ -43,6 +43,7 @@ import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.UserCohortFetcher
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.UserTargetFetcher
 import io.hackle.android.internal.utils.concurrent.ThrottleLimiter
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.HttpWorkspaceFetcher
@@ -123,11 +124,11 @@ internal object HackleApps {
 
         // UserManager
 
-        val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
+        val targetFetcher = UserTargetFetcher(config.sdkUri, httpClient)
         val userManager = UserManager(
             device = device,
             repository = keyValueRepositoryBySdkKey,
-            cohortFetcher = cohortFetcher
+            targetFetcher = targetFetcher
         )
         compositeSynchronizer.add(userManager)
 

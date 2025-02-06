@@ -10,13 +10,13 @@ internal class UserContext private constructor(
 
     fun with(user: User): UserContext {
         val filteredCohorts = this.cohorts.filterBy(user)
-        val filteredTargetEvents = this.targetEvents.filterBy(user)
+        val filteredTargetEvents = this.targetEvents
         return of(user, filteredCohorts, filteredTargetEvents)
     }
 
-    fun update(cohorts: UserCohorts, targetEvents: UserTargetEvents): UserContext {
-        val filteredCohorts = cohorts.filterBy(this.user)
-        val filteredTargetEvents = targetEvents.filterBy(this.user)
+    fun update(userTarget: UserTarget): UserContext {
+        val filteredCohorts = userTarget.cohorts.filterBy(this.user)
+        val filteredTargetEvents = userTarget.targetEvents
         val newCohorts = this.cohorts.toBuilder()
             .putAll(filteredCohorts)
             .build()
@@ -31,7 +31,7 @@ internal class UserContext private constructor(
             return UserContext(
                 user = user,
                 cohorts = cohorts.filterBy(user),
-                targetEvents = targetEvents.filterBy(user)
+                targetEvents = targetEvents
             )
         }
     }
