@@ -15,11 +15,11 @@ import okhttp3.Response
 import kotlin.text.Charsets.UTF_8
 
 /**
- * UserTargetFetcher
+ * UserTargetEventsFetcher
  * @property sdkUri SDK URI
  * @property httpClient OkHttpClient
  */
-internal class UserTargetFetcher(
+internal class UserTargetEventsFetcher(
     sdkUri: String,
     private val httpClient: OkHttpClient,
 ) {
@@ -29,7 +29,7 @@ internal class UserTargetFetcher(
      * 사용자의 타겟팅 정보를 가져온다.
      * @param user 사용자 정보
      */
-    fun fetch(user: User): UserTarget {
+    fun fetch(user: User): UserTargetEvents {
         val request = createRequest(user)
         val response = execute(request)
         return response.use { handleResponse(it) }
@@ -50,11 +50,11 @@ internal class UserTargetFetcher(
         }
     }
 
-    private fun handleResponse(response: Response): UserTarget {
+    private fun handleResponse(response: Response): UserTargetEvents {
         check(response.isSuccessful) { "Http status code: ${response.code()}" }
         val responseBody = checkNotNull(response.body()) { "Response body is null" }
         val dto = responseBody.parse<UserTargetResponseDto>()
-        return UserTarget.Companion.from(dto)
+        return UserTargetEvents.Companion.from(dto)
     }
 
     companion object {
@@ -73,17 +73,5 @@ internal fun UserTargetRequestDto.encodeBase64Url(): String {
 }
 
 internal class UserTargetResponseDto(
-    val cohorts: List<UserCohortDto>,
     val events: List<TargetEvent>
 )
-
-internal class UserCohortDto(
-    val identifier: IdentifierDto,
-    val cohorts: List<Long>
-)
-
-internal class IdentifierDto(
-    val type: String,
-    val value: String
-)
-

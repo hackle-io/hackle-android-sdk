@@ -13,14 +13,20 @@ internal class UserContext private constructor(
         return of(user, filteredCohorts, this.targetEvents)
     }
 
-    fun update(userTarget: UserTarget): UserContext {
-        val filteredCohorts = userTarget.cohorts.filterBy(this.user)
-        val newCohorts = this.cohorts.toBuilder()
-            .putAll(filteredCohorts)
-            .build()
-        val newTargetEvents = this.targetEvents.toBuilder()
-            .putAll(userTarget.targetEvents)
-            .build()
+    fun update(userCohorts: UserCohorts?, userTargetEvents: UserTargetEvents?): UserContext {
+        val newCohorts = userCohorts?.let {
+            val filteredCohorts = userCohorts.filterBy(this.user)
+            this.cohorts.toBuilder()
+                .putAll(filteredCohorts)
+                .build()
+        } ?: this.cohorts
+
+        val newTargetEvents = userTargetEvents?.let {
+            this.targetEvents.toBuilder()
+                .putAll(userTargetEvents)
+                .build()
+        } ?: this.targetEvents
+
         return of(this.user, newCohorts, newTargetEvents)
     }
 

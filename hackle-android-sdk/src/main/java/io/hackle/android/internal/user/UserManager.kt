@@ -24,7 +24,8 @@ import io.hackle.sdk.core.user.IdentifierType
 internal class UserManager(
     private val device: Device,
     private val repository: KeyValueRepository,
-    private val targetFetcher: UserTargetFetcher,
+    private val cohortFetcher: UserCohortFetcher,
+    private val targetEventsFetcher: UserTargetEventsFetcher,
 ) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
@@ -77,24 +78,56 @@ internal class UserManager(
     // Sync
 
     override fun sync() {
-        val userTarget = try {
-            targetFetcher.fetch(currentUser)
-        } catch (e: Exception) {
-            log.error { "Failed to fetch userTarget: $e" }
-            return
-        }
+        val cohort = fetchCohort()
+        val targetEvents = fetchTargetEvent()
         synchronized(LOCK) {
-            context = context.update(userTarget)
+            context = context.update(cohort, targetEvents)
         }
     }
 
     /**
-     * 사용자 정보가 변경되었을 때 동기화가 필요한지 확인하고 필요하다면 동기화를 수행한다.
+     * 사용자 정보가 변경되었을 때 필요한 경우 동기화를 수행한다
+     *
+     * cohort 는 사용자 새로운 식별자가 설정되었을 때만 동기화한다.
+     * target event 는 항상 때 동기화한다.
      * @param updated 변경된 사용자 정보
      */
     fun syncIfNeeded(updated: Updated<User>) {
-        if (hasNewIdentifiers(updated.previous, updated.current)) {
-            sync()
+        val cohort = if(hasNewIdentifiers(updated.previous, updated.current)) {
+            fetchCohort()
+        } else {
+            null
+        }
+
+        val targetEvents = fetchTargetEvent()
+        synchronized(LOCK) {
+            context = context.update(cohort, targetEvents)
+        }
+    }
+
+    /**
+     * cohort 정보를 조회한다.
+     * @return cohorts
+     */
+    private fun fetchCohort(): UserCohorts? {
+        return try {
+            cohortFetcher.fetch(currentUser)
+        } catch (e: Exception) {
+            log.error { "Failed to fetch cohort: $e" }
+            return null
+        }
+    }
+
+    /**
+     * target event 정보를 조회한다.
+     * @return targetEvents
+     */
+    private fun fetchTargetEvent(): UserTargetEvents? {
+        return try {
+            targetEventsFetcher.fetch(currentUser)
+        } catch (e: Exception) {
+            log.error { "Failed to fetch userTargetEvent: $e" }
+            return null
         }
     }
 

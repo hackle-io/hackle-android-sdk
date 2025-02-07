@@ -78,13 +78,6 @@ internal data class UserCohorts internal constructor(private val cohorts: Map<Id
                 .fold(builder(), Builder::put)
                 .build()
         }
-
-        fun from(dto: UserTargetResponseDto): UserCohorts {
-            return dto.cohorts.asSequence()
-                .map { it.toUserCohort() }
-                .fold(builder(), Builder::put)
-                .build()
-        }
     }
 }
 

@@ -24,14 +24,14 @@ import strikt.assertions.isNotNull
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class UserTargetFetcherTest {
+class UserTargetEventsFetcherTest {
     private lateinit var httpClient: OkHttpClient
-    private lateinit var sut: UserTargetFetcher
+    private lateinit var sut: UserTargetEventsFetcher
 
     @Before
     fun before() {
         httpClient = mockk()
-        sut = UserTargetFetcher("http://localhost", httpClient)
+        sut = UserTargetEventsFetcher("http://localhost", httpClient)
 
         mockkStatic(Base64::class)
         every { Base64.encodeToString(any(), any()) } answers {
@@ -93,12 +93,6 @@ class UserTargetFetcherTest {
         // when
         val actual = sut.fetch(User.builder().id("42").build())
 
-        // then
-        val cohorts = UserCohorts.builder()
-            .put(UserCohort(Identifier("\$id", "id"), listOf(Cohort(1), Cohort(2))))
-            .put(UserCohort(Identifier("\$userId", "user_id"), listOf()))
-            .build()
-
         val events = UserTargetEvents.builder()
             .put(
                 TargetEvent(
@@ -124,12 +118,7 @@ class UserTargetFetcherTest {
                 null))
             .build()
 
-        val userTarget = UserTarget(
-            cohorts = cohorts,
-            targetEvents = events,
-        )
-
-        expectThat(actual).isEqualTo(userTarget)
+        expectThat(actual).isEqualTo(events)
     }
 
     @Test

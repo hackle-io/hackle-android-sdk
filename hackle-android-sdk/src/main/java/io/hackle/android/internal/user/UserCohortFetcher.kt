@@ -13,7 +13,6 @@ import okhttp3.Request
 import okhttp3.Response
 import kotlin.text.Charsets.UTF_8
 
-@Deprecated("This class is deprecated. Please use UserTargetFetcher instead.")
 internal class UserCohortFetcher(
     sdkUri: String,
     private val httpClient: OkHttpClient,
@@ -65,4 +64,14 @@ internal fun UserCohortsRequestDto.encodeBase64Url(): String {
 
 internal class UserCohortsResponseDto(
     val cohorts: List<UserCohortDto>
+)
+
+internal class UserCohortDto(
+    val identifier: IdentifierDto,
+    val cohorts: List<Long>
+)
+
+internal class IdentifierDto(
+    val type: String,
+    val value: String
 )
