@@ -93,15 +93,20 @@ internal class UserManager(
      * @param updated 변경된 사용자 정보
      */
     fun syncIfNeeded(updated: Updated<User>) {
-        val cohort = if(hasNewIdentifiers(updated.previous, updated.current)) {
-            fetchCohort()
+        if(hasNewIdentifiers(updated.previous, updated.current)) {
+            sync()
         } else {
-            null
+            syncTargetEvents()
         }
+    }
 
-        val targetEvents = fetchTargetEvent()
+    /**
+     * target event 정보를 동기화한다.
+     */
+    private fun syncTargetEvents() {
+        val targetEvents = fetchTargetEvent() ?: return
         synchronized(LOCK) {
-            context = context.update(cohort, targetEvents)
+            context.update(targetEvents)
         }
     }
 
