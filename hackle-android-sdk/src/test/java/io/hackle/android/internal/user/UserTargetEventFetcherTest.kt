@@ -3,8 +3,6 @@ package io.hackle.android.internal.user
 import android.util.Base64
 import io.hackle.android.support.assertThrows
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.model.Cohort
-import io.hackle.sdk.core.model.Identifier
 import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.TargetEvent
 import io.mockk.MockKStubScope
@@ -24,14 +22,14 @@ import strikt.assertions.isNotNull
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class UserTargetEventsFetcherTest {
+class UserTargetEventFetcherTest {
     private lateinit var httpClient: OkHttpClient
-    private lateinit var sut: UserTargetEventsFetcher
+    private lateinit var sut: UserTargetEventFetcher
 
     @Before
     fun before() {
         httpClient = mockk()
-        sut = UserTargetEventsFetcher("http://localhost", httpClient)
+        sut = UserTargetEventFetcher("http://localhost", httpClient)
 
         mockkStatic(Base64::class)
         every { Base64.encodeToString(any(), any()) } answers {

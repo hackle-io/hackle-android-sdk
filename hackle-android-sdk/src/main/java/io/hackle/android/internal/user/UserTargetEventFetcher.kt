@@ -15,11 +15,11 @@ import okhttp3.Response
 import kotlin.text.Charsets.UTF_8
 
 /**
- * UserTargetEventsFetcher
+ * UserTargetEventFetcher
  * @property sdkUri SDK URI
  * @property httpClient OkHttpClient
  */
-internal class UserTargetEventsFetcher(
+internal class UserTargetEventFetcher(
     sdkUri: String,
     private val httpClient: OkHttpClient,
 ) {

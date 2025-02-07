@@ -25,7 +25,7 @@ internal class UserManager(
     private val device: Device,
     private val repository: KeyValueRepository,
     private val cohortFetcher: UserCohortFetcher,
-    private val targetEventsFetcher: UserTargetEventsFetcher,
+    private val targetEventFetcher: UserTargetEventFetcher,
 ) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
@@ -124,7 +124,7 @@ internal class UserManager(
      */
     private fun fetchTargetEvent(): UserTargetEvents? {
         return try {
-            targetEventsFetcher.fetch(currentUser)
+            targetEventFetcher.fetch(currentUser)
         } catch (e: Exception) {
             log.error { "Failed to fetch userTargetEvent: $e" }
             return null
