@@ -10,6 +10,7 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifier
+import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.TargetEvent
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
@@ -343,6 +344,54 @@ class UserManagerTest {
             cohortFetcher.fetch(any())
             targetEventFetcher.fetch(any())
         }
+    }
+
+    @Test
+    fun `when sync target event, overwrite`() {
+        val targetEvent = TargetEvent(
+            "purchase",
+            listOf(
+                TargetEvent.Stat(1737361789000, 10),
+                TargetEvent.Stat(1737361790000, 20),
+                TargetEvent.Stat(1737361793000, 30)
+            ),
+            TargetEvent.Property(
+                "product_name",
+                Target.Key.Type.EVENT_PROPERTY,
+                "shampoo"
+            )
+        )
+        val targetEvent2 = TargetEvent(
+            "login",
+            listOf(
+                TargetEvent.Stat(1737361789000, 1),
+                TargetEvent.Stat(1737361790000, 2),
+                TargetEvent.Stat(1737361793000, 3)
+            ),
+            TargetEvent.Property(
+                "grade",
+                Target.Key.Type.EVENT_PROPERTY,
+                "silver"
+            )
+        )
+        val userTargetEvents = UserTargetEvents.builder()
+            .put(targetEvent)
+            .put(targetEvent2)
+            .build()
+        every { targetEventFetcher.fetch(any()) } returns userTargetEvents
+        sut.initialize(null)
+        sut.sync()
+
+        expectThat(sut.resolve(null).targetEvents).isEqualTo(userTargetEvents.rawEvents())
+
+        val newTargetEvents = UserTargetEvents.builder()
+            .put(targetEvent)
+            .build()
+        every { targetEventFetcher.fetch(any()) } returns newTargetEvents
+        sut.sync()
+        
+        expectThat(sut.resolve(null).targetEvents).isNotEqualTo(userTargetEvents.rawEvents())
+        expectThat(sut.resolve(null).targetEvents).isEqualTo(newTargetEvents.rawEvents())
     }
 
     @Test

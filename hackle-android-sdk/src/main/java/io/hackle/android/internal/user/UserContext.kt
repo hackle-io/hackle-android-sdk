@@ -13,6 +13,13 @@ internal class UserContext private constructor(
         return of(user, filteredCohorts, this.targetEvents)
     }
 
+    /**
+     * 코호트를 업데이트한다.
+     *
+     * 현재 캐싱된 코호트에 새로운 코호트를 추가하거나 업데이트한다.
+     * @param userCohorts 업데이트할 코호트
+     * @return 업데이트된 UserContext
+     */
     fun update(userCohorts: UserCohorts): UserContext {
         val filteredCohorts = userCohorts.filterBy(this.user)
         val newCohort = this.cohorts.toBuilder()
@@ -21,28 +28,15 @@ internal class UserContext private constructor(
         return of(this.user, newCohort, this.targetEvents)
     }
 
+    /**
+     * 타겟 이벤트를 업데이트한다.
+     *
+     * 타겟 이벤트는 서버에서 최신의 데이터만 내려오기에 기존 것을 항상 replace 합니다.
+     * @param userTargetEvents 업데이트할 타겟 이벤트
+     * @return 업데이트된 UserContext
+     */
     fun update(userTargetEvents: UserTargetEvents): UserContext {
-        val newTargetEvents = this.targetEvents.toBuilder()
-            .putAll(userTargetEvents)
-            .build()
-        return of(this.user, this.cohorts, newTargetEvents)
-    }
-
-    fun update(userCohorts: UserCohorts?, userTargetEvents: UserTargetEvents?): UserContext {
-        val newCohorts = userCohorts?.let {
-            val filteredCohorts = userCohorts.filterBy(this.user)
-            this.cohorts.toBuilder()
-                .putAll(filteredCohorts)
-                .build()
-        } ?: this.cohorts
-
-        val newTargetEvents = userTargetEvents?.let {
-            this.targetEvents.toBuilder()
-                .putAll(userTargetEvents)
-                .build()
-        } ?: this.targetEvents
-
-        return of(this.user, newCohorts, newTargetEvents)
+        return of(this.user, this.cohorts, userTargetEvents)
     }
 
     companion object {

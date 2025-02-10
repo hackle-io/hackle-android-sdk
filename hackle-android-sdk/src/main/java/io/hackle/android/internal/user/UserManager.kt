@@ -78,11 +78,8 @@ internal class UserManager(
     // Sync
 
     override fun sync() {
-        val cohort = fetchCohort()
-        val targetEvents = fetchTargetEvent()
-        synchronized(LOCK) {
-            context = context.update(cohort, targetEvents)
-        }
+        syncCohort()
+        syncTargetEvents()
     }
 
     /**
@@ -101,12 +98,22 @@ internal class UserManager(
     }
 
     /**
+     * cohort 정보를 동기화한다.
+     */
+    private fun syncCohort() {
+        val cohort = fetchCohort() ?: return
+        synchronized(LOCK) {
+            context = context.update(cohort)
+        }
+    }
+
+    /**
      * target event 정보를 동기화한다.
      */
     private fun syncTargetEvents() {
         val targetEvents = fetchTargetEvent() ?: return
         synchronized(LOCK) {
-            context.update(targetEvents)
+            context = context.update(targetEvents)
         }
     }
 
