@@ -9,10 +9,6 @@ internal data class UserTargetEvents internal constructor(private val targetEven
         return targetEvents
     }
 
-    fun toBuilder(): Builder {
-        return Builder(this)
-    }
-
     class Builder internal constructor() {
 
         private val targetEvents = mutableListOf<TargetEvent>()
