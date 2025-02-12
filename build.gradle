@@ -2,6 +2,13 @@
 buildscript {
     ext.kotlin_version = "1.4.10"
     repositories {
+        // NOTE: when use snapshot version, you need to add this repository
+        // maven {
+        //     url "https://oss.sonatype.org/content/repositories/snapshots/"
+        //     content {
+        //         includeGroup "io.hackle"
+        //     }
+        // }
         mavenCentral()
         google()
     }
@@ -21,17 +28,24 @@ plugins {
 group = 'io.hackle'
 version = sdk_version
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            username = System.getenv("SONATYPE_USERNAME")
-            password = System.getenv("SONATYPE_PASSWORD")
-        }
-    }
-}
+// NOTE: when use snapshot version, you need to add this repository
+// nexusPublishing {
+//     repositories {
+//         sonatype {
+//             username = System.getenv("SONATYPE_USERNAME")
+//             password = System.getenv("SONATYPE_PASSWORD")
+//         }
+//     }
+// }
 
 allprojects {
     repositories {
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+            content {
+                includeGroup "io.hackle"
+            }
+        }
         mavenCentral()
         google()
     }
