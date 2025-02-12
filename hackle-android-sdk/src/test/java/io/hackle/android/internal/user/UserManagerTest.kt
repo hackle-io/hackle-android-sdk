@@ -309,36 +309,42 @@ class UserManagerTest {
 
     @Test
     fun `syncIfNeeded - when has new identifier then sync cohort and target event`() {
+        // sync cohort and not sync target event
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().build(),
                 current = User.builder().id("new_id").build()
             )
         )
+        // sync cohort and not sync target event
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").build(),
                 current = User.builder().id("new_id").build()
             )
         )
+        // sync cohort and sync target event
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").build(),
                 current = User.builder().id("id").deviceId("new_device_id").build()
             )
         )
+        // sync cohort and sync target event
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").build(),
                 current = User.builder().id("id").deviceId("new_device_id").build()
             )
         )
+        // sync cohort and not sync target event
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").build(),
                 current = User.builder().id("id").deviceId("device_id").identifier("custom", "new_custom_id").build()
             )
         )
+        // sync cohort and not sync target event
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build(),
@@ -348,6 +354,8 @@ class UserManagerTest {
 
         verify(exactly = 6) {
             cohortFetcher.fetch(any())
+        }
+        verify(exactly = 2) {
             targetEventFetcher.fetch(any())
         }
     }

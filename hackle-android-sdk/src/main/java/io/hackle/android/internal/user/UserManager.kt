@@ -91,8 +91,10 @@ internal class UserManager(
      */
     fun syncIfNeeded(updated: Updated<User>) {
         if(hasNewIdentifiers(updated.previous, updated.current)) {
-            sync()
-        } else if(!updated.previous.identifierEquals(updated.current)) {
+            syncCohort()
+        }
+
+        if(!updated.previous.identifierEquals(updated.current)) {
             syncTargetEvents()
         }
     }
