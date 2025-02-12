@@ -251,43 +251,49 @@ class UserManagerTest {
 
     @Test
     fun `syncIfNeeded - when no new identifier then do not sync cohort and sync target event`() {
+        // cohort not sync and target event not sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().build(),
                 current = User.builder().build()
             )
         )
+        // cohort not sync and target event not sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").build(),
                 current = User.builder().build()
             )
         )
+        // cohort not sync and target event not sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").build(),
                 current = User.builder().id("id").build()
             )
         )
+        // cohort not sync and target sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").build(),
                 current = User.builder().id("id").build()
             )
         )
+        // cohort not sync and target event not sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").build(),
                 current = User.builder().id("id").deviceId("device_id").build()
             )
         )
-
+        // cohort not sync and target event not sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build(),
                 current = User.builder().id("id").deviceId("device_id").build()
             )
         )
+        // cohort not sync and target event not sync
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().id("id").deviceId("device_id").identifier("custom", "custom_id").build(),
@@ -296,7 +302,7 @@ class UserManagerTest {
         )
 
         verify { cohortFetcher wasNot Called }
-        verify(exactly = 7) {
+        verify(exactly = 1) {
             targetEventFetcher.fetch(any())
         }
     }
