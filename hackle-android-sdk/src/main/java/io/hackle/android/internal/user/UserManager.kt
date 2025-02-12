@@ -25,17 +25,18 @@ internal class UserManager(
     private val device: Device,
     private val repository: KeyValueRepository,
     private val cohortFetcher: UserCohortFetcher,
+    private val targetEventFetcher: UserTargetEventFetcher,
 ) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
-    private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty())
+    private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty(), UserTargetEvents.empty())
     private val currentContext: UserContext get() = synchronized(LOCK) { context }
     val currentUser: User get() = currentContext.user
 
     fun initialize(user: User?) {
         synchronized(LOCK) {
             val initUser = user ?: loadUser() ?: defaultUser
-            context = UserContext.of(initUser.with(device), UserCohorts.empty())
+            context = UserContext.of(initUser.with(device), UserCohorts.empty(), UserTargetEvents.empty())
             log.debug { "UserManager initialized [$context]" }
         }
     }
@@ -70,29 +71,82 @@ internal class UserManager(
             .properties(context.user.properties)
             .hackleProperties(device.properties)
             .cohorts(context.cohorts.rawCohorts())
+            .targetEvents(context.targetEvents.rawEvents())
             .build()
     }
 
     // Sync
 
     override fun sync() {
-        val cohorts = try {
+        syncCohort()
+        syncTargetEvents()
+    }
+
+    /**
+     * 사용자 정보가 변경되었을 때 필요한 경우 동기화를 수행한다
+     *
+     * cohort 는 사용자 새로운 식별자가 설정되었을 때만 동기화한다.
+     * target event 는 항상 때 동기화한다.
+     * @param updated 변경된 사용자 정보
+     */
+    fun syncIfNeeded(updated: Updated<User>) {
+        if(hasNewIdentifiers(updated.previous, updated.current)) {
+            sync()
+        } else {
+            syncTargetEvents()
+        }
+    }
+
+    /**
+     * cohort 정보를 동기화한다.
+     */
+    private fun syncCohort() {
+        val cohort = fetchCohort() ?: return
+        synchronized(LOCK) {
+            context = context.update(cohort)
+        }
+    }
+
+    /**
+     * target event 정보를 동기화한다.
+     */
+    private fun syncTargetEvents() {
+        val targetEvents = fetchTargetEvent() ?: return
+        synchronized(LOCK) {
+            context = context.update(targetEvents)
+        }
+    }
+
+    /**
+     * cohort 정보를 조회한다.
+     * @return cohorts
+     */
+    private fun fetchCohort(): UserCohorts? {
+        return try {
             cohortFetcher.fetch(currentUser)
         } catch (e: Exception) {
-            log.error { "Failed to fetch cohorts: $e" }
-            return
-        }
-        synchronized(LOCK) {
-            context = context.update(cohorts)
+            log.error { "Failed to fetch cohort: $e" }
+            return null
         }
     }
 
-    fun syncIfNeeded(updated: Updated<User>) {
-        if (hasNewIdentifiers(updated.previous, updated.current)) {
-            sync()
+    /**
+     * target event 정보를 조회한다.
+     * @return targetEvents
+     */
+    private fun fetchTargetEvent(): UserTargetEvents? {
+        return try {
+            targetEventFetcher.fetch(currentUser)
+        } catch (e: Exception) {
+            log.error { "Failed to fetch userTargetEvent: $e" }
+            return null
         }
     }
 
+    /**
+     * 사용자 식별자가 변경되었는지 확인한다.
+     * @return 변경되었으면 true, 아니면 false
+     */
     private fun hasNewIdentifiers(previousUser: User, currentUser: User): Boolean {
         val previousIdentifiers = previousUser.resolvedIdentifiers
         val currentIdentifiers = currentUser.resolvedIdentifiers.asList()

@@ -22,7 +22,7 @@ class SessionEventTrackerTest {
     fun `onSessionStarted`() {
         // given
         val userManager =
-            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk())
+            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk(), mockk())
         val core = mockk<HackleCore>(relaxed = true)
         val sut = SessionEventTracker(userManager, core)
 
@@ -53,7 +53,7 @@ class SessionEventTrackerTest {
     fun `onSessionEnded`() {
         // given
         val userManager =
-            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk())
+            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk(), mockk())
         val core = mockk<HackleCore>(relaxed = true)
         val sut = SessionEventTracker(userManager, core)
 

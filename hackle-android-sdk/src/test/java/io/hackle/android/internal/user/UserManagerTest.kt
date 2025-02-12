@@ -10,6 +10,8 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifier
+import io.hackle.sdk.core.model.Target
+import io.hackle.sdk.core.model.TargetEvent
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import io.mockk.Called
@@ -25,6 +27,7 @@ class UserManagerTest {
 
     private lateinit var repository: KeyValueRepository
     private lateinit var cohortFetcher: UserCohortFetcher
+    private lateinit var targetEventFetcher: UserTargetEventFetcher
     private lateinit var sut: UserManager
 
     private lateinit var listener: UserListener
@@ -33,7 +36,8 @@ class UserManagerTest {
     fun before() {
         repository = MapKeyValueRepository()
         cohortFetcher = mockk()
-        sut = UserManager(MockDevice("hackle_device_id", emptyMap()), repository, cohortFetcher)
+        targetEventFetcher = mockk()
+        sut = UserManager(MockDevice("hackle_device_id", emptyMap()), repository, cohortFetcher, targetEventFetcher)
 
         listener = mockk(relaxed = true)
         sut.addListener(listener)
@@ -141,7 +145,10 @@ class UserManagerTest {
                 )
             )
             .build()
-        every { cohortFetcher.fetch(any()) } returns userCohorts
+        val userTargetEvents = UserTargetEvents.builder()
+            .build()
+        every { cohortFetcher.fetch(any()) } returns  userCohorts
+        every { targetEventFetcher.fetch(any()) } returns  userTargetEvents
 
         // when
         sut.initialize(User.builder().id("id").property("a", "a").build())
@@ -202,39 +209,48 @@ class UserManagerTest {
         val sut = UserManager(
             MockDevice("hackle_device_id", mapOf("age" to 42)),
             repository,
-            cohortFetcher
+            cohortFetcher,
+            targetEventFetcher
         )
         val hackleUser = sut.toHackleUser(User.builder().build())
         expectThat(hackleUser.hackleProperties.size).isGreaterThan(0)
     }
 
     @Test
-    fun `sync - update userCohorts`() {
+    fun `sync - update userTarget`() {
         val userCohorts = UserCohorts.builder()
             .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
             .build()
+        val userTargetEvents = UserTargetEvents.builder()
+            .put(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null))
+            .build()
         every { cohortFetcher.fetch(any()) } returns userCohorts
+        every { targetEventFetcher.fetch(any()) } returns userTargetEvents
 
         sut.initialize(null)
         expectThat(sut.resolve(null).cohorts).hasSize(0)
+        expectThat(sut.resolve(null).targetEvents).hasSize(0)
 
         sut.sync()
         expectThat(sut.resolve(null).cohorts).isEqualTo(listOf(Cohort(42)))
+        expectThat(sut.resolve(null).targetEvents).isEqualTo(listOf(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null)))
     }
 
     @Test
-    fun `sync - when error on fetch cohort then do not update cohort`() {
-        every { cohortFetcher.fetch(any()) } throws IllegalArgumentException("fail")
+    fun `sync - when error on fetch userTarget then do not update userTarget`() {
+        every { targetEventFetcher.fetch(any()) } throws IllegalArgumentException("fail")
 
         sut.initialize(null)
         expectThat(sut.resolve(null).cohorts).hasSize(0)
+        expectThat(sut.resolve(null).targetEvents).hasSize(0)
 
         sut.sync()
         expectThat(sut.resolve(null).cohorts).hasSize(0)
+        expectThat(sut.resolve(null).targetEvents).hasSize(0)
     }
 
     @Test
-    fun `syncIfNeeded - when no new identifier then do not sync`() {
+    fun `syncIfNeeded - when no new identifier then do not sync cohort and sync target event`() {
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().build(),
@@ -280,10 +296,13 @@ class UserManagerTest {
         )
 
         verify { cohortFetcher wasNot Called }
+        verify(exactly = 7) {
+            targetEventFetcher.fetch(any())
+        }
     }
 
     @Test
-    fun `syncIfNeeded - when has new identifier then sync`() {
+    fun `syncIfNeeded - when has new identifier then sync cohort and target event`() {
         sut.syncIfNeeded(
             Updated(
                 previous = User.builder().build(),
@@ -323,7 +342,56 @@ class UserManagerTest {
 
         verify(exactly = 6) {
             cohortFetcher.fetch(any())
+            targetEventFetcher.fetch(any())
         }
+    }
+
+    @Test
+    fun `when sync target event, overwrite`() {
+        val targetEvent = TargetEvent(
+            "purchase",
+            listOf(
+                TargetEvent.Stat(1737361789000, 10),
+                TargetEvent.Stat(1737361790000, 20),
+                TargetEvent.Stat(1737361793000, 30)
+            ),
+            TargetEvent.Property(
+                "product_name",
+                Target.Key.Type.EVENT_PROPERTY,
+                "shampoo"
+            )
+        )
+        val targetEvent2 = TargetEvent(
+            "login",
+            listOf(
+                TargetEvent.Stat(1737361789000, 1),
+                TargetEvent.Stat(1737361790000, 2),
+                TargetEvent.Stat(1737361793000, 3)
+            ),
+            TargetEvent.Property(
+                "grade",
+                Target.Key.Type.EVENT_PROPERTY,
+                "silver"
+            )
+        )
+        val userTargetEvents = UserTargetEvents.builder()
+            .put(targetEvent)
+            .put(targetEvent2)
+            .build()
+        every { targetEventFetcher.fetch(any()) } returns userTargetEvents
+        sut.initialize(null)
+        sut.sync()
+
+        expectThat(sut.resolve(null).targetEvents).isEqualTo(userTargetEvents.rawEvents())
+
+        val newTargetEvents = UserTargetEvents.builder()
+            .put(targetEvent)
+            .build()
+        every { targetEventFetcher.fetch(any()) } returns newTargetEvents
+        sut.sync()
+        
+        expectThat(sut.resolve(null).targetEvents).isNotEqualTo(userTargetEvents.rawEvents())
+        expectThat(sut.resolve(null).targetEvents).isEqualTo(newTargetEvents.rawEvents())
     }
 
     @Test
@@ -721,7 +789,10 @@ class UserManagerTest {
             .put(UserCohort(Identifier("\$id", "hackle_device_id"), listOf(Cohort(42))))
             .put(UserCohort(Identifier("\$deviceId", "hackle_device_id"), listOf(Cohort(43))))
             .build()
+        val userTargetEvents = UserTargetEvents.builder()
+            .build()
         every { cohortFetcher.fetch(any()) } returns userCohorts
+        every { targetEventFetcher.fetch(any()) } returns userTargetEvents
 
         sut.initialize(null)
         sut.sync()
@@ -739,6 +810,36 @@ class UserManagerTest {
                 .identifier(IdentifierType.DEVICE, "device_id")
                 .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
                 .cohort(Cohort(42))
+                .build()
+        )
+    }
+
+    @Test
+    fun `setUser - update targetEvent`() {
+        val userCohorts = UserCohorts.builder()
+            .build()
+        val userTargetEvents = UserTargetEvents.builder()
+            .put(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null))
+            .build()
+        every { cohortFetcher.fetch(any()) } returns userCohorts
+        every { targetEventFetcher.fetch(any()) } returns userTargetEvents
+
+        sut.initialize(null)
+        sut.sync()
+
+        sut.setUser(User.builder().deviceId("device_id").build())
+        expectThat(sut.currentUser).isEqualTo(
+            User.builder()
+                .id("hackle_device_id")
+                .deviceId("device_id")
+                .build()
+        )
+        expectThat(sut.resolve(null)).isEqualTo(
+            HackleUser.builder()
+                .identifier(IdentifierType.ID, "hackle_device_id")
+                .identifier(IdentifierType.DEVICE, "device_id")
+                .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device_id")
+                .targetEvent(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null))
                 .build()
         )
     }
