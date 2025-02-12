@@ -86,13 +86,15 @@ internal class UserManager(
      * 사용자 정보가 변경되었을 때 필요한 경우 동기화를 수행한다
      *
      * cohort 는 사용자 새로운 식별자가 설정되었을 때만 동기화한다.
-     * target event 는 항상 때 동기화한다.
+     * target event 는 userId or deviceId 가 변경되었을 때 동기화한다.
      * @param updated 변경된 사용자 정보
      */
     fun syncIfNeeded(updated: Updated<User>) {
         if(hasNewIdentifiers(updated.previous, updated.current)) {
-            sync()
-        } else {
+            syncCohort()
+        }
+
+        if(!updated.previous.identifierEquals(updated.current)) {
             syncTargetEvents()
         }
     }
