@@ -60,7 +60,6 @@ class PollingSynchronizerTest {
         }
     }
 
-    @Ignore
     @Test
     fun `start - once`() {
         // given
