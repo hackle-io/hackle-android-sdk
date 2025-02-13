@@ -7,7 +7,10 @@ import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.User
+import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.TargetEvent
+import io.hackle.sdk.core.model.TargetEvent.Property
+import io.hackle.sdk.core.model.TargetEvent.Stat
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -73,5 +76,22 @@ internal fun UserTargetRequestDto.encodeBase64Url(): String {
 }
 
 internal class UserTargetResponseDto(
-    val events: List<TargetEvent>
+    val events: List<TargetEventDto>
+)
+
+internal class TargetEventDto(
+    val eventKey: String,
+    val stats: List<StatDto>,
+    val property: PropertyDto?
+)
+
+internal class StatDto(
+    val date: Long,
+    val count: Int
+)
+
+internal class PropertyDto(
+    val key: String,
+    val type: Target.Key.Type,
+    val value: String
 )

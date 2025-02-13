@@ -53,8 +53,32 @@ internal data class UserTargetEvents internal constructor(private val targetEven
 
         fun from(dto: UserTargetResponseDto): UserTargetEvents {
             return dto.events
+                .map { it.toTargetEvent() }
                 .fold(builder(), Builder::put)
                 .build()
         }
     }
+}
+
+internal fun TargetEventDto.toTargetEvent(): TargetEvent {
+    return TargetEvent(
+        eventKey = eventKey,
+        stats = stats.map { it.toStat() },
+        property = property?.toProperty()
+    )
+}
+
+internal fun StatDto.toStat(): TargetEvent.Stat {
+    return TargetEvent.Stat(
+        date = date,
+        count = count
+    )
+}
+
+internal fun PropertyDto.toProperty(): TargetEvent.Property {
+    return TargetEvent.Property(
+        key = key,
+        type = type,
+        value = value
+    )
 }
