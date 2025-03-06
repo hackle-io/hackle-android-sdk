@@ -13,6 +13,10 @@ internal class NotificationHistoryEntity(
     val pushMessageExecutionId: Long?,
     val pushMessageDeliveryId: Long?,
     val timestamp: Long,
+    val journeyId: Long?,
+    val journeyKey: Long?,
+    val journeyNodeId: Long?,
+    val campaignType: String?,
     val debug: Boolean
 ) {
 
@@ -28,6 +32,10 @@ internal class NotificationHistoryEntity(
         const val COLUMN_PUSH_MESSAGE_EXECUTION_ID = "push_message_execution_id"
         const val COLUMN_PUSH_MESSAGE_DELIVERY_ID = "push_message_delivery_id"
         const val COLUMN_TIMESTAMP = "timestamp"
+        const val COLUMN_JOURNEY_ID = "journey_id"
+        const val COLUMN_JOURNEY_KEY = "journey_key"
+        const val COLUMN_JOURNEY_NODE_ID = "journey_node_id"
+        const val COLUMN_CAMPAIGN_TYPE = "campaign_type"
         const val COLUMN_DEBUG = "debug"
 
         const val CREATE_TABLE =
@@ -40,6 +48,10 @@ internal class NotificationHistoryEntity(
                 "$COLUMN_PUSH_MESSAGE_EXECUTION_ID INTEGER," +
                 "$COLUMN_PUSH_MESSAGE_DELIVERY_ID INTEGER," +
                 "$COLUMN_TIMESTAMP INTEGER," +
+                "$COLUMN_JOURNEY_ID INTEGER," +
+                "$COLUMN_JOURNEY_KEY INTEGER," +
+                "$COLUMN_JOURNEY_NODE_ID INTEGER," +
+                "$COLUMN_CAMPAIGN_TYPE TEXT," +
                 "$COLUMN_DEBUG INTEGER" +
             ")"
 
@@ -53,6 +65,10 @@ internal class NotificationHistoryEntity(
                 pushMessageExecutionId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID)),
                 pushMessageDeliveryId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID)),
                 timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)) ?: 0L,
+                journeyId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_ID)),
+                journeyKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_KEY)),
+                journeyNodeId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_NODE_ID)),
+                campaignType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_TYPE)),
                 debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG))
             )
         }

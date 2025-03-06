@@ -3,11 +3,15 @@ package io.hackle.android.ui.notification
 import android.content.Intent
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.ui.notification.Constants.KEY_BODY
+import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_TYPE
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_DEBUG
 import io.hackle.android.ui.notification.Constants.KEY_ENVIRONMENT_ID
 import io.hackle.android.ui.notification.Constants.KEY_HACKLE
+import io.hackle.android.ui.notification.Constants.KEY_JOURNEY_ID
+import io.hackle.android.ui.notification.Constants.KEY_JOURNEY_KEY
+import io.hackle.android.ui.notification.Constants.KEY_JOURNEY_NODE_ID
 import io.hackle.android.ui.notification.Constants.KEY_LARGE_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_LINK
 import io.hackle.android.ui.notification.Constants.KEY_MESSAGE_ID
@@ -36,6 +40,10 @@ internal data class NotificationData(
     val largeImageUrl: String?,
     val clickAction: NotificationClickAction,
     val link: String?,
+    val journeyId: Long?,
+    val journeyKey: Long?,
+    val journeyNodeId: Long?,
+    val campaignType: String?,
     val debug: Boolean,
 ) {
 
@@ -68,6 +76,10 @@ internal data class NotificationData(
                             ?: NotificationClickAction.APP_OPEN.name
                     ),
                     link = hackle[KEY_LINK] as? String,
+                    journeyId = (hackle[KEY_JOURNEY_ID] as? Number)?.toLong(),
+                    journeyKey = (hackle[KEY_JOURNEY_KEY] as? Number)?.toLong(),
+                    journeyNodeId = (hackle[KEY_JOURNEY_NODE_ID] as? Number)?.toLong(),
+                    campaignType = hackle[KEY_CAMPAIGN_TYPE] as? String,
                     debug = hackle[KEY_DEBUG] as? Boolean ?: false
                 )
             } catch (_: Exception) {
