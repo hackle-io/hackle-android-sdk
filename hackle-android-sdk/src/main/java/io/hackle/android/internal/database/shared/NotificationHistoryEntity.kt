@@ -12,11 +12,11 @@ internal class NotificationHistoryEntity(
     val pushMessageKey: Long?,
     val pushMessageExecutionId: Long?,
     val pushMessageDeliveryId: Long?,
-    val timestamp: Long,
     val journeyId: Long?,
     val journeyKey: Long?,
     val journeyNodeId: Long?,
     val campaignType: String?,
+    val timestamp: Long,
     val debug: Boolean
 ) {
 
@@ -47,11 +47,11 @@ internal class NotificationHistoryEntity(
                 "$COLUMN_PUSH_MESSAGE_KEY INTEGER," +
                 "$COLUMN_PUSH_MESSAGE_EXECUTION_ID INTEGER," +
                 "$COLUMN_PUSH_MESSAGE_DELIVERY_ID INTEGER," +
-                "$COLUMN_TIMESTAMP INTEGER," +
                 "$COLUMN_JOURNEY_ID INTEGER," +
                 "$COLUMN_JOURNEY_KEY INTEGER," +
                 "$COLUMN_JOURNEY_NODE_ID INTEGER," +
                 "$COLUMN_CAMPAIGN_TYPE TEXT," +
+                "$COLUMN_TIMESTAMP INTEGER," +
                 "$COLUMN_DEBUG INTEGER" +
             ")"
 
@@ -64,11 +64,11 @@ internal class NotificationHistoryEntity(
                 pushMessageKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_KEY)),
                 pushMessageExecutionId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID)),
                 pushMessageDeliveryId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID)),
-                timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)) ?: 0L,
                 journeyId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_ID)),
                 journeyKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_KEY)),
                 journeyNodeId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_NODE_ID)),
                 campaignType = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_TYPE)),
+                timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)) ?: 0L,
                 debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG))
             )
         }
