@@ -27,6 +27,10 @@ class NotificationEventTest {
             largeImageUrl = "https://foo.foo",
             clickAction = NotificationClickAction.APP_OPEN,
             link = "foo://bar",
+            journeyId = 5555L,
+            journeyKey = 6666L,
+            journeyNodeId = 7777L,
+            campaignType = "JOURNEY",
             debug = true
         )
         val to = from.toTrackEvent()
@@ -48,6 +52,10 @@ class NotificationEventTest {
             pushMessageKey = 2222L,
             pushMessageExecutionId = 3333L,
             pushMessageDeliveryId = 4444L,
+            journeyId = 5555L,
+            journeyKey = 6666L,
+            journeyNodeId = 7777L,
+            campaignType = "JOURNEY",
             timestamp = 987654321L,
             debug = true,
         )
@@ -57,6 +65,10 @@ class NotificationEventTest {
         assertThat(to.properties["push_message_key"], `is`(2222L))
         assertThat(to.properties["push_message_execution_id"], `is`(3333L))
         assertThat(to.properties["push_message_delivery_id"], `is`(4444L))
+        assertThat(to.properties["journey_id"], `is`(5555L))
+        assertThat(to.properties["journey_key"], `is`(6666L))
+        assertThat(to.properties["journey_node_id"], `is`(7777L))
+        assertThat(to.properties["campaign_type"], `is`("JOURNEY"))
         assertThat(to.properties["debug"], `is`(true))
     }
 }
