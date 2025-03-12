@@ -22,13 +22,13 @@ internal class SharedDatabase(
             when (oldVersion) {
                 1 -> {
                     // migration v1 -> v2
-                    migrationNotificationTableFrom1To2(db)
+                    migrationTableFrom1To2(db)
                 }
             }
         }
     }
 
-    private fun migrationNotificationTableFrom1To2(db: SQLiteDatabase) {
+    private fun migrationTableFrom1To2(db: SQLiteDatabase) {
         try {
             db.execSQL(NotificationHistoryEntity.ADD_JOURNEY_ID)
             db.execSQL(NotificationHistoryEntity.ADD_JOURNEY_KEY)
