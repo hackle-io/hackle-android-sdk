@@ -55,6 +55,19 @@ internal class NotificationHistoryEntity(
                 "$COLUMN_DEBUG INTEGER" +
             ")"
 
+        const val ADD_JOURNEY_ID =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_JOURNEY_ID INTEGER"
+
+        const val ADD_JOURNEY_KEY =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_JOURNEY_KEY INTEGER"
+
+        const val ADD_JOURNEY_NODE_ID =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_JOURNEY_NODE_ID INTEGER"
+
+        const val ADD_CAMPAIGN_TYPE =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CAMPAIGN_TYPE TEXT"
+
+
         fun from(cursor: Cursor): NotificationHistoryEntity {
             return NotificationHistoryEntity(
                 historyId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_HISTORY_ID)),
