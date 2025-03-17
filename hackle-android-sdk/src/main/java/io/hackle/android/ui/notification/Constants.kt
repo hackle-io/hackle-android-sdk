@@ -22,5 +22,9 @@ internal object Constants {
     const val KEY_LARGE_IMAGE_URL = "largeImageUrl"
     const val KEY_CLICK_ACTION = "clickAction"
     const val KEY_LINK = "link"
+    const val KEY_JOURNEY_ID = "journeyId"
+    const val KEY_JOURNEY_KEY = "journeyKey"
+    const val KEY_JOURNEY_NODE_ID = "journeyNodeId"
+    const val KEY_CAMPAIGN_TYPE = "campaignType"
     const val KEY_DEBUG = "debug"
 }
