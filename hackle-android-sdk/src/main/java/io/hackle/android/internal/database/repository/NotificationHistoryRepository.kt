@@ -57,6 +57,10 @@ internal class NotificationHistoryRepositoryImpl(
         values.put(NotificationHistoryEntity.COLUMN_PUSH_MESSAGE_DELIVERY_ID, data.pushMessageDeliveryId)
         values.put(NotificationHistoryEntity.COLUMN_TIMESTAMP, timestamp)
         values.put(NotificationHistoryEntity.COLUMN_DEBUG, data.debug)
+        values.put(NotificationHistoryEntity.COLUMN_JOURNEY_ID, data.journeyId)
+        values.put(NotificationHistoryEntity.COLUMN_JOURNEY_KEY, data.journeyKey)
+        values.put(NotificationHistoryEntity.COLUMN_JOURNEY_NODE_ID, data.journeyNodeId)
+        values.put(NotificationHistoryEntity.COLUMN_CAMPAIGN_TYPE, data.campaignType)
         db.insert(NotificationHistoryEntity.TABLE_NAME, null, values)
     }
 
