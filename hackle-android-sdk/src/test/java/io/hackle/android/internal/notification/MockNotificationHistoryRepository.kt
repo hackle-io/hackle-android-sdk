@@ -30,6 +30,10 @@ internal class MockNotificationHistoryRepository : NotificationHistoryRepository
             pushMessageExecutionId = data.pushMessageExecutionId,
             pushMessageDeliveryId = data.pushMessageDeliveryId,
             timestamp = timestamp,
+            journeyId = data.journeyId,
+            journeyKey = data.journeyKey,
+            journeyNodeId = data.journeyNodeId,
+            campaignType = data.campaignType,
             debug = data.debug
         )
         map[entity.historyId] = entity
