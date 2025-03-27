@@ -1,0 +1,75 @@
+name: update core sdk
+on:
+  workflow_dispatch:
+    inputs:
+      core_version:
+        description: 'Core SDK Version'
+        required: true
+
+jobs:
+  update-sdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Settings Version
+        id: version
+        env:
+          CORE_VER: ${{ github.event.inputs.core_version }}
+        run: |
+          CURRENT_VERSION=$(grep 'sdk_version=' gradle.properties | sed -E 's/sdk_version=([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          IFS='.' read -ra V <<< "${CURRENT_VERSION%%-*}"
+          NEW_MINOR=$((V[1] + 1))
+          NEW_VERSION="${V[0]}.$NEW_MINOR.0"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "branch_name=dev-$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "core_sdk_name=hackle-java-sdk-$CORE_VER" >> $GITHUB_OUTPUT
+
+      - name: Check Dev Branch Exist
+        id: branch-check
+        uses: GuillaumeFalourd/branch-exists@v1.1
+        with:
+          branch: ${{ steps.version.outputs.branch_name }}
+
+      - name: Set SDK Version
+        id: set-version
+        if: steps.branch-check.outputs.exists == 'false'
+        run: |
+          sed -i "s/sdk_version=.*/sdk_version=${{ steps.version.outputs.new_version }}/" gradle.properties
+
+      - name: Create new branch
+        if: steps.branch-check.outputs.exists == 'false'
+        run: |
+          git checkout -b ${{ steps.version.outputs.branch_name }}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: initialize dev branch"
+          git push origin ${{ steps.version.outputs.branch_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Core SDK
+        run: |
+          # hackle-sdk-common 의존성 업데이트 
+          sed -i -E "s/releaseApi \"io\.hackle:hackle-sdk-common:[0-9]+\.[0-9]+\.[0-9]+\"/releaseApi \"io.hackle:hackle-sdk-common:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
+          sed -i -E "s/api \"io\.hackle:hackle-sdk-common:[0-9]+\.[0-9]+\.[0-9]+\"/api \"io.hackle:hackle-sdk-common:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
+
+          # hackle-sdk-core 의존성 업데이트
+          sed -i -E "s/releaseImplementation \"io\.hackle:hackle-sdk-core:[0-9]+\.[0-9]+\.[0-9]+\"/releaseImplementation \"io.hackle:hackle-sdk-core:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
+          sed -i -E "s/implementation \"io\.hackle:hackle-sdk-core:[0-9]+\.[0-9]+\.[0-9]+\"/implementation \"io.hackle:hackle-sdk-core:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "update ${{ steps.version.outputs.core_sdk_name }}"
+          title: '[Automation] Update ${{ steps.version.outputs.core_sdk_name }}'
+          branch: "feature/update-${{ steps.version.outputs.core_sdk_name }}"
+          base: ${{ steps.version.outputs.branch_name }}
+          body: |
+            ## Description
+            - Update hackle-sdk-common:${{ github.event.inputs.core_version }}
+            - Update hackle-sdk-core:${{ github.event.inputs.core_version }}
