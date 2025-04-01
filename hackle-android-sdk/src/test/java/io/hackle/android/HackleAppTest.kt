@@ -6,6 +6,7 @@ import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
@@ -70,6 +71,9 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
+    
+    @RelaxedMockK
+    private lateinit var piiEventManager: PIIEventManager
 
     @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
@@ -101,6 +105,7 @@ class HackleAppTest {
             eventProcessor,
             pushTokenManager,
             notificationManager,
+            piiEventManager,
             fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
             userExplorer,
@@ -422,7 +427,22 @@ class HackleAppTest {
     }
 
     @Test
-    fun `variation`() {
+    fun setPhoneNumber() {
+        val phoneNumber = "+821012345678"
+        sut.setPhoneNumber(phoneNumber)
+
+        verify(exactly = 1) { piiEventManager.setPhoneNumber(phoneNumber, any(), any()) }
+    }
+
+    @Test
+    fun unsetPhoneNumber() {
+        sut.unsetPhoneNumber()
+
+        verify(exactly = 1) { piiEventManager.unsetPhoneNumber(any(), any()) }
+    }
+
+    @Test
+    fun variation() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
         every { userManager.resolve(any()) } returns hackleUser

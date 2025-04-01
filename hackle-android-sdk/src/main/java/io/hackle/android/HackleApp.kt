@@ -17,6 +17,7 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
@@ -57,6 +58,7 @@ class HackleApp internal constructor(
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
+    private val piiEventManager: PIIEventManager,
     private val fetchThrottler: Throttler,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
@@ -145,6 +147,14 @@ class HackleApp internal constructor(
             log.error { "Unexpected exception while reset user: $e" }
             callback?.run()
         }
+    }
+
+    fun setPhoneNumber(phoneNumber: String) {
+        piiEventManager.setPhoneNumber(phoneNumber, user, clock.currentMillis())
+    }
+
+    fun unsetPhoneNumber() {
+        piiEventManager.unsetPhoneNumber(user, clock.currentMillis())
     }
 
     private fun syncIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
