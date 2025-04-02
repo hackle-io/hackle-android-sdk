@@ -149,12 +149,26 @@ class HackleApp internal constructor(
         }
     }
 
-    fun setPhoneNumber(phoneNumber: String) {
-        piiEventManager.setPhoneNumber(phoneNumber, user, clock.currentMillis())
+    fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
+        try {
+            piiEventManager.setPhoneNumber(phoneNumber, user, clock.currentMillis())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set phoneNumber: $e" }
+        } finally {
+            callback?.run()
+        }
     }
 
-    fun unsetPhoneNumber() {
-        piiEventManager.unsetPhoneNumber(user, clock.currentMillis())
+    fun unsetPhoneNumber(callback: Runnable? = null) {
+        try {
+            piiEventManager.unsetPhoneNumber(user, clock.currentMillis())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while unset phoneNumber: $e" }
+        } finally {
+            callback?.run()
+        }
     }
 
     private fun syncIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {

@@ -39,11 +39,11 @@ internal class PIIEventManager(
     }
 }
 
-enum class PIIProperty(val key: String) {
+internal enum class PIIProperty(val key: String) {
     PHONE_NUMBER("\$phone_number")
 }
 
-fun PropertyOperations.toSecuredEvent(): Event {
+private fun PropertyOperations.toSecuredEvent(): Event {
     val builder = Event.builder("\$secured_properties")
     for ((operation, properties) in asMap()) {
         builder.property(operation.key, properties)

@@ -1,6 +1,6 @@
 package io.hackle.android.internal.pii.phonenumber
 
-class PhoneNumber {
+internal class PhoneNumber {
     companion object {
         fun filtered(phoneNumber: String): String {
             return phoneNumber
