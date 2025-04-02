@@ -6,7 +6,6 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
-import io.hackle.sdk.core.internal.log.Logger
 
 internal class PIIEventManager(
     private val userManager: UserManager,
@@ -32,10 +31,6 @@ internal class PIIEventManager(
     private fun track(event: Event, user: User, timestamp: Long) {
         val hackleUser = userManager.toHackleUser(user)
         core.track(event, hackleUser, timestamp)
-    }
-
-    companion object {
-        private val log = Logger<PIIEventManager>()
     }
 }
 
