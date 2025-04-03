@@ -17,6 +17,7 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
@@ -57,6 +58,7 @@ class HackleApp internal constructor(
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
+    private val piiEventManager: PIIEventManager,
     private val fetchThrottler: Throttler,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
@@ -143,6 +145,30 @@ class HackleApp internal constructor(
             syncIfNeeded(updated, callback)
         } catch (e: Exception) {
             log.error { "Unexpected exception while reset user: $e" }
+            callback?.run()
+        }
+    }
+
+    @JvmOverloads
+    fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
+        try {
+            piiEventManager.setPhoneNumber(phoneNumber, user, clock.currentMillis())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set phoneNumber: $e" }
+        } finally {
+            callback?.run()
+        }
+    }
+
+    @JvmOverloads
+    fun unsetPhoneNumber(callback: Runnable? = null) {
+        try {
+            piiEventManager.unsetPhoneNumber(user, clock.currentMillis())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while unset phoneNumber: $e" }
+        } finally {
             callback?.run()
         }
     }
