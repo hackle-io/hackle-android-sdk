@@ -149,6 +149,7 @@ class HackleApp internal constructor(
         }
     }
 
+    @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
         try {
             piiEventManager.setPhoneNumber(phoneNumber, user, clock.currentMillis())
@@ -160,6 +161,7 @@ class HackleApp internal constructor(
         }
     }
 
+    @JvmOverloads
     fun unsetPhoneNumber(callback: Runnable? = null) {
         try {
             piiEventManager.unsetPhoneNumber(user, clock.currentMillis())
