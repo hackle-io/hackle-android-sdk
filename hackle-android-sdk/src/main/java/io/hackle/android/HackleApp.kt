@@ -18,6 +18,7 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIEventManager
+import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.SessionManager
@@ -152,7 +153,7 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
         try {
-            piiEventManager.setPhoneNumber(phoneNumber, user, clock.currentMillis())
+            piiEventManager.setPhoneNumber(PhoneNumber(phoneNumber), clock.currentMillis())
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while set phoneNumber: $e" }
@@ -164,7 +165,7 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun unsetPhoneNumber(callback: Runnable? = null) {
         try {
-            piiEventManager.unsetPhoneNumber(user, clock.currentMillis())
+            piiEventManager.unsetPhoneNumber(clock.currentMillis())
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while unset phoneNumber: $e" }

@@ -7,6 +7,7 @@ import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIEventManager
+import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
@@ -428,17 +429,16 @@ class HackleAppTest {
 
     @Test
     fun setPhoneNumber() {
-        val phoneNumber = "+821012345678"
-        sut.setPhoneNumber(phoneNumber)
+        sut.setPhoneNumber("")
 
-        verify(exactly = 1) { piiEventManager.setPhoneNumber(phoneNumber, any(), any()) }
+        verify(exactly = 1) { piiEventManager.setPhoneNumber(any(), any()) }
     }
 
     @Test
     fun unsetPhoneNumber() {
         sut.unsetPhoneNumber()
 
-        verify(exactly = 1) { piiEventManager.unsetPhoneNumber(any(), any()) }
+        verify(exactly = 1) { piiEventManager.unsetPhoneNumber(any()) }
     }
 
     @Test

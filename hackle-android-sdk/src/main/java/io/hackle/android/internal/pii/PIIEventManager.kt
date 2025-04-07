@@ -4,32 +4,30 @@ import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.PropertyOperations
-import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
 
 internal class PIIEventManager(
     private val userManager: UserManager,
     private val core: HackleCore,
 ) {
-    fun setPhoneNumber(phoneNumber: String, user: User, timestamp: Long) {
-        val filteredPhoneNumber = PhoneNumber.filtered(phoneNumber)
+    fun setPhoneNumber(phoneNumber: PhoneNumber, timestamp: Long) {
         val properties = PropertyOperations.builder()
-            .set(PIIProperty.PHONE_NUMBER.key, filteredPhoneNumber)
+            .set(PIIProperty.PHONE_NUMBER.key, phoneNumber.value)
             .build()
         val event = properties.toSecuredEvent()
-        track(event, user, timestamp)
+        track(event, timestamp)
     }
 
-    fun unsetPhoneNumber(user: User, timestamp: Long) {
+    fun unsetPhoneNumber(timestamp: Long) {
         val properties = PropertyOperations.builder()
             .unset(PIIProperty.PHONE_NUMBER.key)
             .build()
         val event = properties.toSecuredEvent()
-        track(event, user, timestamp)
+        track(event, timestamp)
     }
 
-    private fun track(event: Event, user: User, timestamp: Long) {
-        val hackleUser = userManager.toHackleUser(user)
+    private fun track(event: Event, timestamp: Long) {
+        val hackleUser = userManager.resolve(null)
         core.track(event, hackleUser, timestamp)
     }
 }

@@ -1,6 +1,7 @@
 
 package io.hackle.android.internal.pii
 
+import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -29,12 +30,11 @@ class PIIEventManagerTest {
     @Test
     fun `set phone number`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
-        val user = User.builder().deviceId("device_id").build()
+        every { userManager.resolve(any()) } returns mockk()
         val phoneNumber = "0101234567890"
 
         // when
-        sut.setPhoneNumber(phoneNumber, user, 42)
+        sut.setPhoneNumber(PhoneNumber(phoneNumber), 42)
 
         // then
         verify(exactly = 1) {
@@ -55,11 +55,10 @@ class PIIEventManagerTest {
     @Test
     fun `unset phone number`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
-        val user = User.builder().deviceId("device_id").build()
+        every { userManager.resolve(any()) } returns mockk()
 
         // when
-        sut.unsetPhoneNumber(user, 42)
+        sut.unsetPhoneNumber(42)
 
         // then
         verify(exactly = 1) {
