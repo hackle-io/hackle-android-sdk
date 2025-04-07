@@ -1,7 +1,7 @@
 package io.hackle.android.internal.pii.phonenumber
 
-internal class PhoneNumber(originalValue: String) {
-    val value = filtered(originalValue)
+internal class PhoneNumber(value: String) {
+    val value = filtered(value)
 
     companion object {
         fun filtered(phoneNumber: String): String {
