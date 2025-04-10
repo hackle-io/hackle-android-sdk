@@ -22,10 +22,10 @@ class PhoneNumberTest {
 
         for (phoneNumber in phoneNumbers) {
             // When
-            val result = PhoneNumber.filtered(phoneNumber)
+            val result = PhoneNumber.create(phoneNumber)
 
             // Then
-            assertEquals(result, expected)
+            assertEquals(result.value, expected)
         }
     }
 
@@ -47,10 +47,10 @@ class PhoneNumberTest {
 
         for (phoneNumber in phoneNumbers) {
             // When
-            val result = PhoneNumber.filtered(phoneNumber)
+            val result = PhoneNumber.create(phoneNumber)
 
             // Then
-            assertEquals(result, expected)
+            assertEquals(result.value, expected)
         }
     }
 }

@@ -153,7 +153,7 @@ class HackleApp internal constructor(
     @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
         try {
-            piiEventManager.setPhoneNumber(PhoneNumber(phoneNumber), clock.currentMillis())
+            piiEventManager.setPhoneNumber(PhoneNumber.create(phoneNumber), clock.currentMillis())
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while set phoneNumber: $e" }

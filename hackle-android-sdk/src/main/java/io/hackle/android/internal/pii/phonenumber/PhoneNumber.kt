@@ -1,13 +1,12 @@
 package io.hackle.android.internal.pii.phonenumber
 
-internal class PhoneNumber(value: String) {
-    val value = filtered(value)
-
+internal data class PhoneNumber(val value: String) {
     companion object {
-        fun filtered(phoneNumber: String): String {
-            return phoneNumber
+        fun create(value: String): PhoneNumber {
+            val filteredValue = value
                 .filter { it.isDigit() || it == '+' }
                 .take(16)
+            return PhoneNumber(filteredValue)
         }
     }
 }
