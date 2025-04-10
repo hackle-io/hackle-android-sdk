@@ -13,6 +13,8 @@ internal class BridgeInvocation(string: String) {
         SET_USER_PROPERTY("setUserProperty"),
         UPDATE_USER_PROPERTY("updateUserProperties"),
         RESET_USER("resetUser"),
+        SET_PHONE_NUMBER("setPhoneNumber"),
+        UNSET_PHONE_NUMBER("unsetPhoneNumber"),
         VARIATION("variation"),
         VARIATION_DETAIL("variationDetail"),
         IS_FEATURE_ON("isFeatureOn"),
