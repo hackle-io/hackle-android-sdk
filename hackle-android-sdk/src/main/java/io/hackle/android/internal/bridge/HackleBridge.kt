@@ -59,6 +59,16 @@ internal class HackleBridge(val app: HackleApp) {
                 BridgeResponse.success()
             }
 
+            SET_PHONE_NUMBER -> {
+                setPhoneNumber(parameters)
+                BridgeResponse.success()
+            }
+
+            UNSET_PHONE_NUMBER -> {
+                app.unsetPhoneNumber()
+                BridgeResponse.success()
+            }
+
             VARIATION -> {
                 val data = variation(parameters)
                 BridgeResponse.success(data)
@@ -125,6 +135,11 @@ internal class HackleBridge(val app: HackleApp) {
         val dto = checkNotNull(parameters["operations"] as? PropertyOperationsDto)
         val operations = PropertyOperations.from(dto)
         app.updateUserProperties(operations)
+    }
+
+    private fun setPhoneNumber(parameters: Map<String, Any>) {
+        val phoneNumber = checkNotNull(parameters["phoneNumber"] as? String)
+        app.setPhoneNumber(phoneNumber)
     }
 
     private fun variation(parameters: Map<String, Any>): String {

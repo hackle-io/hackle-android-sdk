@@ -2,6 +2,12 @@ name: Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      snapshot:
+        type: boolean
+        required: true
+        default: false
+        description: snapshot publish
 
 jobs:
   publish:
@@ -12,10 +18,20 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.2
+
+      - name: Set up Snapshot version
+        if: ${{ inputs.snapshot }}
+        run: |
+          CURRENT_VERSION=$(grep 'sdk_version=' gradle.properties | sed -E 's/sdk_version=([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          SNAPSHOT_VERSION="$CURRENT_VERSION-$SHORT_SHA-SNAPSHOT"
+          sed -i "s/sdk_version=.*/sdk_version=$SNAPSHOT_VERSION/" gradle.properties
+
       - name: Set up secrets
         env:
           SDKKEY: ${{secrets.SDKKEY}}
@@ -27,6 +43,7 @@ jobs:
             echo "eventUri=\"$EVENTURI\"" >> ./local.properties
             echo "sdkUri=\"$SDKURI\"" >> ./local.properties
             echo "monitoringUri=\"$MONITORINGURI\"" >> ./local.properties
+
       - name: Publish
         run: gradle :hackle-android-sdk:clean :hackle-android-sdk:build :hackle-android-sdk:publishToSonatype --info
         env:

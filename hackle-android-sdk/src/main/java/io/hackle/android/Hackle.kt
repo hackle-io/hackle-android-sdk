@@ -52,6 +52,9 @@ fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
 fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
 fun Hackle.resetUser() = app.resetUser()
 
+fun Hackle.setPhoneNumber(phoneNumber: String) = app.setPhoneNumber(phoneNumber)
+fun Hackle.unsetPhoneNumber() = app.unsetPhoneNumber()
+
 fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
 
 @Deprecated(
