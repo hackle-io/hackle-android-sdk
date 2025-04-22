@@ -137,10 +137,13 @@ internal class DefaultEventProcessor(
                     return
                 }
 
-                val newEvent = decorateSession(event)
+                val filteredEvent =
+                    filters.fold(event) { userEvent, eventFilter -> eventFilter.filter(userEvent) }
 
-                save(newEvent)
-                eventPublisher.publish(newEvent)
+                val decoratedEvent = decorateSession(filteredEvent)
+
+                save(decoratedEvent)
+                eventPublisher.publish(decoratedEvent)
             } catch (e: Exception) {
                 log.error { "Failed to add event: $e" }
             }

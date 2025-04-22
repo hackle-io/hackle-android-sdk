@@ -2,6 +2,7 @@ package io.hackle.android.internal.event.dedup
 
 import io.hackle.android.internal.event.UserEventFilter
 import io.hackle.android.internal.event.UserEvents
+import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Test
@@ -37,5 +38,23 @@ class DedupUserEventFilterTest {
 
         // then
         expectThat(actual).isEqualTo(UserEventFilter.Result.PASS)
+    }
+
+    @Test
+    fun `filter should return the same UserEvent instance`() {
+        // given
+        val eventDedupDeterminer = mockk<UserEventDedupDeterminer>()
+        val sut = DedupUserEventFilter(eventDedupDeterminer)
+        val user = HackleUser
+            .builder()
+            .properties(mapOf("key" to "value"))
+            .build()
+        val event = UserEvents.track("test", user)
+
+        // when
+        val filteredEvent = sut.filter(event)
+
+        // then
+        expectThat(filteredEvent).isEqualTo(event)
     }
 }
