@@ -10,6 +10,7 @@ import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.screen.ScreenManager
+import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -45,16 +46,25 @@ internal class DefaultEventProcessor(
     private var flushingJob: ScheduledJob? = null
 
     private val filters = CopyOnWriteArrayList<UserEventFilter>()
+    private val decorators = CopyOnWriteArrayList<UserEventDecorator>()
+    private val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
     fun addFilter(filter: UserEventFilter) {
         filters.add(filter)
         log.debug { "UserEventFilter added [${filter.javaClass.simpleName}]" }
     }
 
+    fun addDecorator(decorator: UserEventDecorator) {
+        decorators.add(decorator)
+        log.debug { "UserEventDecorator added [${decorator.javaClass.simpleName}]" }
+    }
+
     override fun process(event: UserEvent) {
         try {
-            val newEvent = decorateScreenName(event)
-            eventExecutor.execute(AddEventTask(newEvent))
+            // NOTE: screen decorator는 task에 들어가기 전에 추가해야 한다.
+            //  task에 들어간 후 처리되기 전에 screen이 바뀔 수 있기 때문
+            val decoratedEvent = screenUserEventDecorator.decorate(event)
+            eventExecutor.execute(AddEventTask(decoratedEvent))
         } catch (e: Exception) {
             log.error { "Failed to process event: $e" }
         }
@@ -137,10 +147,8 @@ internal class DefaultEventProcessor(
                     return
                 }
 
-                val filteredEvent =
-                    filters.fold(event) { userEvent, eventFilter -> eventFilter.filter(userEvent) }
-
-                val decoratedEvent = decorateSession(filteredEvent)
+                val decoratedEvent =
+                    decorators.fold(event) { userEvent, decorator -> decorator.decorate(userEvent) }
 
                 save(decoratedEvent)
                 eventPublisher.publish(decoratedEvent)
@@ -200,17 +208,6 @@ internal class DefaultEventProcessor(
                 log.error { "Failed to flush events: $e" }
             }
         }
-    }
-
-    private fun decorateScreenName(event: UserEvent): UserEvent {
-        val screen = screenManager.currentScreen ?: return event
-
-        val newUser = event.user.toBuilder()
-            .hackleProperty("screenName", screen.name)
-            .hackleProperty("screenClass", screen.className)
-            .build()
-
-        return event.with(newUser)
     }
 
     companion object {

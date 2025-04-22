@@ -12,6 +12,7 @@ import io.hackle.android.internal.screen.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.session.SessionUserEventDecorator
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
@@ -234,6 +235,7 @@ class DefaultEventProcessorTest {
     fun `process - currentSession 의 sessionId 를 추가한다`() {
         // given
         val sut = processor()
+        sut.addDecorator(SessionUserEventDecorator(sessionManager))
         var savedEvent: UserEvent? = null
         every { eventRepository.save(any()) } answers { savedEvent = firstArg() }
         every { sessionManager.currentSession } returns Session("42.session")

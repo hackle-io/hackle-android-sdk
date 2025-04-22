@@ -17,13 +17,4 @@ internal class WebViewWrapperUserEventFilter : UserEventFilter {
 
         return UserEventFilter.Result.PASS
     }
-
-    override fun filter(event: UserEvent): UserEvent {
-        return event.with(
-            event.user
-                .toBuilder()
-                .clearProperties()
-                .build()
-        )
-    }
 }

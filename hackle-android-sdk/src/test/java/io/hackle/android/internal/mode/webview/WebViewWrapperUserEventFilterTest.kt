@@ -43,30 +43,4 @@ class WebViewWrapperUserEventFilterTest {
         val actual = sut.check(UserEvents.track("\$push_token", user))
         expectThat(actual).isEqualTo(UserEventFilter.Result.PASS)
     }
-
-    @Test
-    fun `filter clears user properties`() {
-        val sut = WebViewWrapperUserEventFilter()
-        val user = HackleUser.builder()
-            .identifier(IdentifierType.DEVICE, "device")
-            .hackleProperty("key1", "value1")
-            .properties(mapOf("key2" to "value2"))
-            .build()
-
-
-        val track = UserEvents.track("\$push_token", user)
-
-        every {
-            track.with(any())
-        } returns UserEvents.track(
-            "\$push_token", user
-                .toBuilder()
-                .clearProperties()
-                .build()
-        )
-
-        val filteredEvent = sut.filter(track)
-
-        expectThat(filteredEvent.user.properties).isEqualTo(emptyMap())
-    }
 }

@@ -12,6 +12,4 @@ internal class DedupUserEventFilter(
         val isDedupTarget = eventDedupDeterminer.isDedupTarget(event)
         return if (isDedupTarget) BLOCK else PASS
     }
-
-    override fun filter(event: UserEvent): UserEvent  = event
 }

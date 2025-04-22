@@ -39,22 +39,4 @@ class DedupUserEventFilterTest {
         // then
         expectThat(actual).isEqualTo(UserEventFilter.Result.PASS)
     }
-
-    @Test
-    fun `filter should return the same UserEvent instance`() {
-        // given
-        val eventDedupDeterminer = mockk<UserEventDedupDeterminer>()
-        val sut = DedupUserEventFilter(eventDedupDeterminer)
-        val user = HackleUser
-            .builder()
-            .properties(mapOf("key" to "value"))
-            .build()
-        val event = UserEvents.track("test", user)
-
-        // when
-        val filteredEvent = sut.filter(event)
-
-        // then
-        expectThat(filteredEvent).isEqualTo(event)
-    }
 }
