@@ -25,6 +25,7 @@ import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
+import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
@@ -36,8 +37,10 @@ import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.screen.ScreenEventTracker
 import io.hackle.android.internal.screen.ScreenManager
+import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.session.SessionUserEventDecorator
 import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -83,7 +86,8 @@ internal object HackleApps {
         loggerConfiguration(config)
 
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
-        val keyValueRepositoryBySdkKey = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
+        val keyValueRepositoryBySdkKey =
+            AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         val device = Device.create(context, globalKeyValueRepository)
 
         val httpClient = createHttpClient(context, sdk)
@@ -176,6 +180,7 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
+        val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
@@ -190,13 +195,16 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            screenManager = screenManager
+            screenUserEventDecorator = screenUserEventDecorator
         )
 
         val rcEventDedupRepository =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
         val exposureEventDedupRepository =
-            AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey")
+            AndroidKeyValueRepository.create(
+                context,
+                "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey"
+            )
 
         val rcEventDedupDeterminer = RemoteConfigEventDedupDeterminer(
             rcEventDedupRepository,
@@ -221,8 +229,12 @@ internal object HackleApps {
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
         eventProcessor.addFilter(dedupUserEventFilter)
 
+        val sessionUserEventDecorator = SessionUserEventDecorator(sessionManager)
+        eventProcessor.addDecorator(sessionUserEventDecorator)
+
         if (config.mode == HackleAppMode.WEB_VIEW_WRAPPER) {
             eventProcessor.addFilter(WebViewWrapperUserEventFilter())
+            eventProcessor.addDecorator(WebViewWrapperUserEventDecorator())
         }
 
         // Core
