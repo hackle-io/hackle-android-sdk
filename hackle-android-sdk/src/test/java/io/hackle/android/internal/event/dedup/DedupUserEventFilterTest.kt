@@ -2,6 +2,7 @@ package io.hackle.android.internal.event.dedup
 
 import io.hackle.android.internal.event.UserEventFilter
 import io.hackle.android.internal.event.UserEvents
+import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Test
