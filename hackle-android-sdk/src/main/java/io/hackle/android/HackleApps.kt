@@ -37,6 +37,7 @@ import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.screen.ScreenEventTracker
 import io.hackle.android.internal.screen.ScreenManager
+import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserEventDecorator
@@ -85,7 +86,8 @@ internal object HackleApps {
         loggerConfiguration(config)
 
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
-        val keyValueRepositoryBySdkKey = AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
+        val keyValueRepositoryBySdkKey =
+            AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         val device = Device.create(context, globalKeyValueRepository)
 
         val httpClient = createHttpClient(context, sdk)
@@ -178,6 +180,7 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
+        val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
@@ -192,13 +195,16 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            screenManager = screenManager
+            screenUserEventDecorator = screenUserEventDecorator
         )
 
         val rcEventDedupRepository =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
         val exposureEventDedupRepository =
-            AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey")
+            AndroidKeyValueRepository.create(
+                context,
+                "${PREFERENCES_NAME}_exposure_event_dedup_$sdkKey"
+            )
 
         val rcEventDedupDeterminer = RemoteConfigEventDedupDeterminer(
             rcEventDedupRepository,

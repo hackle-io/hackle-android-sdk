@@ -40,14 +40,14 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
-    private val screenManager: ScreenManager,
+    private val screenUserEventDecorator: UserEventDecorator
 ) : EventProcessor, AppStateListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
     private val filters = CopyOnWriteArrayList<UserEventFilter>()
     private val decorators = CopyOnWriteArrayList<UserEventDecorator>()
-    private val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
+
 
     fun addFilter(filter: UserEventFilter) {
         filters.add(filter)

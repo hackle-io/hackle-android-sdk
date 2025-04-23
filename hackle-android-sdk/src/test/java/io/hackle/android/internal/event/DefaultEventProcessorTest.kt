@@ -10,6 +10,7 @@ import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.screen.Screen
 import io.hackle.android.internal.screen.ScreenManager
+import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserEventDecorator
@@ -103,7 +104,7 @@ class DefaultEventProcessorTest {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            screenManager = screenManager
+            screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
         )
     }
 
