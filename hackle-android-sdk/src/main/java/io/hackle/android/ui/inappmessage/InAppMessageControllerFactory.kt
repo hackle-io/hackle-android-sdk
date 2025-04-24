@@ -53,8 +53,8 @@ internal class InAppMessageControllerFactory(
                         bottomMargin += navigationBarHeight
                     }
                 }
-
-
+                // 마진 적용 후 리스너 해제
+                ViewCompat.setOnApplyWindowInsetsListener(v, null)
 
                 windowInsets
             }
