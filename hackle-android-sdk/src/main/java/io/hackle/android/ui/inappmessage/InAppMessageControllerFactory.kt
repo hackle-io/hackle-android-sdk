@@ -10,6 +10,7 @@ import androidx.core.view.updateLayoutParams
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.DisplayType.*
 
 internal class InAppMessageControllerFactory(
@@ -39,11 +40,21 @@ internal class InAppMessageControllerFactory(
         // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
         if(controller.context.message.layout.displayType == BANNER || controller.context.message.layout.displayType == BOTTOM_SHEET) {
             ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-                val navigationBarHeight = getNavigationBarHeight(activity)
+                val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
 
-                v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    bottomMargin += navigationBarHeight
+                if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+                    v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        val statusBarHeight = getStatusBarHeight(activity)
+                        topMargin += statusBarHeight
+                    }
+                } else if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+                    v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                        val navigationBarHeight = getNavigationBarHeight(activity)
+                        bottomMargin += navigationBarHeight
+                    }
                 }
+
+
 
                 windowInsets
             }
@@ -62,6 +73,23 @@ internal class InAppMessageControllerFactory(
             val resourceId =
                 activity.resources.getIdentifier("navigation_bar_height", "dimen", "android")
             return if (resourceId > 0) {
+                activity.resources.getDimensionPixelSize(resourceId)
+            } else {
+                0
+            }
+        }
+    }
+
+    @SuppressLint("InternalInsetResource")
+    private fun getStatusBarHeight(activity: Activity): Int {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val insets = activity.window.decorView.rootWindowInsets
+            insets?.getInsets(WindowInsets.Type.statusBars())?.top ?: 0
+        } else {
+            val resourceId = activity.resources.getIdentifier(
+                "status_bar_height", "dimen", "android"
+            )
+            if (resourceId > 0) {
                 activity.resources.getDimensionPixelSize(resourceId)
             } else {
                 0
