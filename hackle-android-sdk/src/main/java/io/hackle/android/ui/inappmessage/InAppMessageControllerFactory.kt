@@ -36,7 +36,7 @@ internal class InAppMessageControllerFactory(
         val controller = InAppMessageViewController(view, context, ui)
         view.setController(controller)
 
-        // add bottom margin when enableEdgeToEdge
+        // add margin when enableEdgeToEdge
         // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
         if(controller.context.message.layout.displayType == BANNER || controller.context.message.layout.displayType == BOTTOM_SHEET) {
             ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
