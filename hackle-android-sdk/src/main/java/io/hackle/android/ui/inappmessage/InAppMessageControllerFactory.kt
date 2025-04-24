@@ -1,6 +1,12 @@
 package io.hackle.android.ui.inappmessage
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.os.Build
+import android.view.ViewGroup
+import android.view.WindowInsets
+import androidx.core.view.ViewCompat
+import androidx.core.view.updateLayoutParams
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
@@ -28,7 +34,38 @@ internal class InAppMessageControllerFactory(
         val view = viewFactory.create(context, activity)
         val controller = InAppMessageViewController(view, context, ui)
         view.setController(controller)
+
+        // add bottom margin when enableEdgeToEdge
+        // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
+        if(controller.context.message.layout.displayType == BANNER || controller.context.message.layout.displayType == BOTTOM_SHEET) {
+            ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
+                val navigationBarHeight = getNavigationBarHeight(activity)
+
+                v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    bottomMargin += navigationBarHeight
+                }
+
+                windowInsets
+            }
+        }
+
         view.configure()
         return controller
+    }
+
+    @SuppressLint("InternalInsetResource")
+    private fun getNavigationBarHeight(activity: Activity): Int {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val insets = activity.window.decorView.rootWindowInsets
+            return insets?.getInsets(WindowInsets.Type.navigationBars())?.bottom ?: 0
+        } else {
+            val resourceId =
+                activity.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            return if (resourceId > 0) {
+                activity.resources.getDimensionPixelSize(resourceId)
+            } else {
+                0
+            }
+        }
     }
 }
