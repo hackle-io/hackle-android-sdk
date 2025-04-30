@@ -5,34 +5,27 @@ import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.internal.utils.json.toJson
+import io.hackle.sdk.core.evaluation.target.InAppMessageImpression
+import io.hackle.sdk.core.evaluation.target.InAppMessageImpressionStorage
 import io.hackle.sdk.core.model.InAppMessage
 
-/**
- * This class is serialized and deserialized to JSON.
- * Please be careful of field changes.
- */
-internal data class InAppMessageImpression(
-    val identifiers: Map<String, String>,
-    val timestamp: Long
-)
 
-
-internal class InAppMessageImpressionStorage(
+internal class AndroidInAppMessageImpressionStorage(
     private val keyValueRepository: KeyValueRepository
-) {
+): InAppMessageImpressionStorage {
 
-    fun get(inAppMessage: InAppMessage): List<InAppMessageImpression> {
+    override fun get(inAppMessage: InAppMessage): List<InAppMessageImpression> {
         val impressions = keyValueRepository.getString(inAppMessage.id.toString()) ?: return emptyList()
         return impressions.parseJson()
     }
 
-    fun set(inAppMessage: InAppMessage, impressions: List<InAppMessageImpression>) {
+    override fun set(inAppMessage: InAppMessage, impressions: List<InAppMessageImpression>) {
         keyValueRepository.putString(inAppMessage.id.toString(), impressions.toJson())
     }
 
     companion object {
-        fun create(context: Context, name: String): InAppMessageImpressionStorage {
-            return InAppMessageImpressionStorage(AndroidKeyValueRepository.create(context, name))
+        fun create(context: Context, name: String): AndroidInAppMessageImpressionStorage {
+            return AndroidInAppMessageImpressionStorage(AndroidKeyValueRepository.create(context, name))
         }
     }
 }

@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
+import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.core.user.HackleUser
@@ -17,12 +17,12 @@ import strikt.assertions.isTrue
 
 internal class InAppMessageImpressionEventProcessorTest {
 
-    private lateinit var impressionStorage: InAppMessageImpressionStorage
+    private lateinit var impressionStorage: AndroidInAppMessageImpressionStorage
     private lateinit var sut: InAppMessageImpressionEventProcessor
 
     @Before
     fun before() {
-        impressionStorage = InAppMessageImpressionStorage(MapKeyValueRepository())
+        impressionStorage = AndroidInAppMessageImpressionStorage(MapKeyValueRepository())
         sut = InAppMessageImpressionEventProcessor(impressionStorage)
     }
 

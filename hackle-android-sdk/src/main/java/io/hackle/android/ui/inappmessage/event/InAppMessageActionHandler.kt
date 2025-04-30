@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
@@ -88,6 +89,11 @@ internal class InAppMessageHideActionHandler(
     }
 
     override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
+        if(layout.context.decisionReason == DecisionReason.OVERRIDDEN) {
+            layout.close()
+            return
+        }
+
         val expireAt = clock.currentMillis() + DEFAULT_HIDDEN_DURATION_MILLIS
         storage.put(layout.context.inAppMessage, expireAt)
         layout.close()
