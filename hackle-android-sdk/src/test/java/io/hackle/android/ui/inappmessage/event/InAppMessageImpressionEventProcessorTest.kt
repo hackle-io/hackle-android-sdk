@@ -4,9 +4,11 @@ import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -74,6 +76,26 @@ internal class InAppMessageImpressionEventProcessorTest {
             hasSize(100)
             get { first().timestamp } isEqualTo 1
             get { last().timestamp } isEqualTo 320
+        }
+    }
+
+    @Test
+    fun `process - override`() {
+        val user = HackleUser.builder()
+            .identifier("a", "1")
+            .identifier("b", "2")
+            .build()
+        val inAppMessage = InAppMessages.create(id = 42)
+        val context = InAppMessages.context(inAppMessage = inAppMessage, user = user, decisionReason = DecisionReason.OVERRIDDEN)
+        val view = mockk<InAppMessageLayout>(relaxUnitFun = true) {
+            every { this@mockk.context } returns context
+        }
+
+        sut.process(view, InAppMessageEvent.Impression, 320)
+
+        val impressions = impressionStorage.get(inAppMessage)
+        expectThat(impressions) {
+            hasSize(0)
         }
     }
 }
