@@ -134,10 +134,18 @@ class HackleAppTest {
     }
 
     @Test
-    fun `showUserExplorer`() {
+    fun showUserExplorer() {
         sut.showUserExplorer()
         verify(exactly = 1) {
             userExplorer.show()
+        }
+    }
+
+    @Test
+    fun hideUserExplorer() {
+        sut.hideUserExplorer()
+        verify(exactly = 1) {
+            userExplorer.hide()
         }
     }
 
