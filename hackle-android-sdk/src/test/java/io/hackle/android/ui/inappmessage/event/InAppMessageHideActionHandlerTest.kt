@@ -3,6 +3,7 @@ package io.hackle.android.ui.inappmessage.event
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.MockKAnnotations
@@ -58,6 +59,29 @@ internal class InAppMessageHideActionHandlerTest {
         // then
         verify(exactly = 1) {
             storage.put(any(), (1000 * 60 * 60 * 24) + 42)
+        }
+        verify(exactly = 1) {
+            view.close()
+        }
+    }
+
+    @Test
+    fun `handle - override`() {
+        // given
+        val context = InAppMessages.context(decisionReason = DecisionReason.OVERRIDDEN)
+        val view = mockk<InAppMessageLayout>(relaxUnitFun = true) {
+            every { this@mockk.context } returns context
+        }
+        val action = InAppMessages.action(type = InAppMessage.ActionType.HIDDEN)
+
+        every { clock.currentMillis() } returns 42
+
+        // when
+        sut.handle(view, action)
+
+        // then
+        verify(exactly = 0) {
+            storage.put(any(), any())
         }
         verify(exactly = 1) {
             view.close()
