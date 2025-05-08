@@ -28,9 +28,13 @@ internal class InAppMessageImpressionEventProcessor(
         return event is InAppMessageEvent.Impression
     }
 
-    override fun process(layout: InAppMessageLayout, event: InAppMessageEvent.Impression, timestamp: Long) {
+    override fun process(
+        layout: InAppMessageLayout,
+        event: InAppMessageEvent.Impression,
+        timestamp: Long
+    ) {
         try {
-            if(layout.context.decisionReason == DecisionReason.OVERRIDDEN) {
+            if (layout.context.decisionReason == DecisionReason.OVERRIDDEN) {
                 return
             }
 
@@ -67,8 +71,13 @@ internal class InAppMessageActionEventProcessor(
         return event is InAppMessageEvent.Action
     }
 
-    override fun process(layout: InAppMessageLayout, event: InAppMessageEvent.Action, timestamp: Long) {
-        val isProcessed = layout.listener.onInAppMessageClick(layout.context.inAppMessage, layout, event.action)
+    override fun process(
+        layout: InAppMessageLayout,
+        event: InAppMessageEvent.Action,
+        timestamp: Long
+    ) {
+        val isProcessed =
+            layout.listener.onInAppMessageClick(layout.context.inAppMessage, layout, event.action)
         if (isProcessed) {
             return
         }
@@ -82,12 +91,17 @@ internal class InAppMessageActionEventProcessor(
     }
 }
 
-internal class InAppMessageCloseEventProcessor : InAppMessageEventProcessor<InAppMessageEvent.Close> {
+internal class InAppMessageCloseEventProcessor :
+    InAppMessageEventProcessor<InAppMessageEvent.Close> {
     override fun supports(event: InAppMessageEvent): Boolean {
         return event is InAppMessageEvent.Close
     }
 
-    override fun process(layout: InAppMessageLayout, event: InAppMessageEvent.Close, timestamp: Long) {
+    override fun process(
+        layout: InAppMessageLayout,
+        event: InAppMessageEvent.Close,
+        timestamp: Long
+    ) {
         // Do nothing. This method is called after the layout is closed.
     }
 }

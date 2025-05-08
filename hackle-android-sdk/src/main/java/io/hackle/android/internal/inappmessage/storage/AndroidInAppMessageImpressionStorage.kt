@@ -12,10 +12,11 @@ import io.hackle.sdk.core.model.InAppMessage
 
 internal class AndroidInAppMessageImpressionStorage(
     private val keyValueRepository: KeyValueRepository
-): InAppMessageImpressionStorage {
+) : InAppMessageImpressionStorage {
 
     override fun get(inAppMessage: InAppMessage): List<InAppMessageImpression> {
-        val impressions = keyValueRepository.getString(inAppMessage.id.toString()) ?: return emptyList()
+        val impressions =
+            keyValueRepository.getString(inAppMessage.id.toString()) ?: return emptyList()
         return impressions.parseJson()
     }
 
@@ -25,7 +26,12 @@ internal class AndroidInAppMessageImpressionStorage(
 
     companion object {
         fun create(context: Context, name: String): AndroidInAppMessageImpressionStorage {
-            return AndroidInAppMessageImpressionStorage(AndroidKeyValueRepository.create(context, name))
+            return AndroidInAppMessageImpressionStorage(
+                AndroidKeyValueRepository.create(
+                    context,
+                    name
+                )
+            )
         }
     }
 }

@@ -31,7 +31,8 @@ internal class InAppMessageCloseActionHandler : InAppMessageActionHandler {
     }
 }
 
-internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler) : InAppMessageActionHandler {
+internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler) :
+    InAppMessageActionHandler {
 
     private val log = Logger<InAppMessageLinkActionHandler>()
 
@@ -55,7 +56,8 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
     }
 }
 
-internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: UriHandler) : InAppMessageActionHandler {
+internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: UriHandler) :
+    InAppMessageActionHandler {
 
     private val log = Logger<InAppMessageLinkActionHandler>()
 
@@ -89,7 +91,7 @@ internal class InAppMessageHideActionHandler(
     }
 
     override fun handle(layout: InAppMessageLayout, action: InAppMessage.Action) {
-        if(layout.context.decisionReason == DecisionReason.OVERRIDDEN) {
+        if (layout.context.decisionReason == DecisionReason.OVERRIDDEN) {
             layout.close()
             return
         }
