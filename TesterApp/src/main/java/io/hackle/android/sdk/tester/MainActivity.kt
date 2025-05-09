@@ -1,13 +1,20 @@
 package io.hackle.android.sdk.tester
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import io.hackle.android.Hackle
 import io.hackle.android.HackleApp
+import io.hackle.android.HackleAppMode
 import io.hackle.android.HackleConfig
 import io.hackle.android.app
 import io.hackle.sdk.common.HackleInAppMessage
@@ -17,7 +24,6 @@ import io.hackle.sdk.common.HackleInAppMessageView
 import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
-//import io.hackle.android.explorer.HackleUserExplorerHandler
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,26 +50,23 @@ class MainActivity : AppCompatActivity() {
         Log.i("HackleSdk", "##### onResume")
     }
 
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         userService = UserService(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        (applicationContext as? Application)?.registerActivityLifecycleCallbacks(TestCallback())
-
         val config = HackleConfig.builder()
-//            .eventUri(eventUri)
-//            .sdkUri(sdkUri)
-//            .monitoringUri(monitoringUri)
-//            .logLevel(Log.DEBUG)
-//            .pollingIntervalMillis(10000)
-//            .sessionTimeoutMillis(10000)
-//            .add("\$disable_inappmessage", "true")
+            //.eventUri(eventUri)
+            //.sdkUri(sdkUri)
+            //.monitoringUri(monitoringUri)
+            .logLevel(Log.DEBUG)
+            .mode(HackleAppMode.NATIVE)
             .build()
 
         HackleApp.initializeApp(this, sdkKey, config) {
             findViewById<TextView>(R.id.sdk_status).also { it.text = "INITIALIZED" }
-            Hackle.app.showUserExplorer()
         }
 
         Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
@@ -98,11 +101,9 @@ class MainActivity : AppCompatActivity() {
         })
 
         findViewById<TextView>(R.id.sdk_status).setOnClickListener {
-//            startActivity(Intent(this, WebViewActivity::class.java))
-            startActivity(Intent(this, SubActivity::class.java))
+            Hackle.app.showUserExplorer()
         }
 
-        Hackle.app.showUserExplorer(this)
         findViewById<Button>(R.id.ab_text_btn).setOnClickListener {
             longOrNull(R.id.experiment_key)?.let { experimentKey ->
                 if (isChecked(R.id.experiment_with_user)) {
@@ -145,6 +146,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<EditText>(R.id.event_key).setOnKeyListener { _, keyCode, event ->
+            if (event.action == android.view.KeyEvent.ACTION_DOWN && keyCode == android.view.KeyEvent.KEYCODE_ENTER) {
+                findViewById<Button>(R.id.track_btn).performClick()
+                true
+            } else {
+                false
+            }
+        }
+
         findViewById<Button>(R.id.track_btn).setOnClickListener {
             textOrNull(R.id.event_key)?.let { eventKey ->
                 if (isChecked(R.id.track_with_user)) {
@@ -184,11 +194,6 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-//        ArrayAdapter(this, )
-//        findViewById<Spinner>(R.id.hackle_spinner).apply {
-//
-//        }
-
         findViewById<Button>(R.id.pushSubscription_btn).setOnClickListener {
             Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
         }
@@ -198,7 +203,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.secondPage_btn).setOnClickListener {
-            startActivity(Intent(this, SecondPageActivity::class.java))
+            startActivity(Intent(this, WebViewActivity::class.java))
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.content)) { v, insets ->
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomPadding = imeInsets.bottom
+            v.setPadding(0, 0, 0, bottomPadding)
+            insets
         }
     }
 
@@ -209,11 +221,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-    val close = if (1 > 2) {
-        "1"
-    } else {
-        null
     }
 }
