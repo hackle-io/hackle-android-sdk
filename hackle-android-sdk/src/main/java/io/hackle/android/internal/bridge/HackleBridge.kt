@@ -103,6 +103,11 @@ internal class HackleBridge(val app: HackleApp) {
                 app.showUserExplorer()
                 BridgeResponse.success()
             }
+
+            HIDE_USER_EXPLORER -> {
+                app.hideUserExplorer()
+                BridgeResponse.success()
+            }
         }
     }
 

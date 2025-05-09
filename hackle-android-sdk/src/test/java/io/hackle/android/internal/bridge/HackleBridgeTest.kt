@@ -1303,6 +1303,20 @@ class HackleBridgeTest {
         }
     }
 
+    @Test
+    fun `invoke with hide user explorer`() {
+        every { app.hideUserExplorer() } answers { }
+        val jsonString = createJsonString("hideUserExplorer")
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.hideUserExplorer()
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+        }
+    }
+
     private fun createJsonString(command: String, parameters: Map<String, Any>? = null): String
         = mapOf<String, Any>(
             "_hackle" to mapOf(
