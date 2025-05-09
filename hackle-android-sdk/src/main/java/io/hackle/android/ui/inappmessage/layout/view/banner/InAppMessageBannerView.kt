@@ -7,9 +7,14 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowInsets
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView.ScaleType.FIT_CENTER
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import io.hackle.android.R
 import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.core.CornerRadii
@@ -83,7 +88,20 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
         }
     }
 
-    // Configuration
+    override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
+        val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
+
+        if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+            updateLayoutParams<MarginLayoutParams> {
+                topMargin = this@InAppMessageBannerView.topMargin + insets.systemWindowInsetTop
+            }
+
+        } else if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+            updateLayoutParams<MarginLayoutParams> {
+                bottomMargin = this@InAppMessageBannerView.bottomMargin + insets.systemWindowInsetBottom
+            }
+        }
+    }
 
     private val messageLayoutParams: FrameLayout.LayoutParams
         get() {

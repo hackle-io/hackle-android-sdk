@@ -3,8 +3,11 @@ package io.hackle.android.ui.inappmessage.layout.view
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
 import io.hackle.android.ui.inappmessage.*
@@ -13,6 +16,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.model.InAppMessage
 import java.util.concurrent.atomic.AtomicReference
 
 
@@ -27,6 +31,12 @@ internal class InAppMessageViewController(
 
     private val _state = AtomicReference(State.CLOSED)
     val state: State get() = _state.get()
+
+    init {
+        if(context.message.layout.displayType == InAppMessage.DisplayType.BOTTOM_SHEET) {
+
+        }
+    }
 
     override fun open(activity: Activity) {
         if (!_state.compareAndSet(State.CLOSED, State.OPENED)) {

@@ -4,7 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View.OnClickListener
+import android.view.WindowInsets
 import android.widget.RelativeLayout
+import androidx.core.graphics.Insets
+import androidx.core.view.WindowInsetsCompat
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
@@ -53,6 +56,20 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
     abstract val closeAnimator: InAppMessageAnimator?
 
     abstract fun configure()
+
+    /**
+     * Called to apply window insets to the view.
+     * This function is a placeholder and does not perform any operation by default.
+     * Subclasses can override this method to customize how window insets are handled.
+     *
+     * @param insets The window insets provided by the system, encapsulated in a
+     * [WindowInsetsCompat] object. This contains information about areas such as
+     * system bars that should not overlap with the content.
+     */
+    open fun onApplyWindowInsets(insets: WindowInsetsCompat)
+    {
+        // nothing to do
+    }
 }
 
 internal fun InAppMessageView.createCloseListener(): OnClickListener {
