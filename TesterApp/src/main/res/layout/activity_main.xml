@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -10,6 +11,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -307,8 +309,7 @@
             <Spinner
                 android:id="@+id/hackle_spinner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </Spinner>
+                android:layout_height="wrap_content"></Spinner>
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -320,16 +321,16 @@
                     android:id="@+id/pushSubscription_btn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/push_subscribed"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:text="@string/push_subscribed" />
 
                 <Button
                     android:id="@+id/pushUnsubscription_btn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/push_unsubscribed"
+                    android:layout_marginLeft="16dp"
                     android:layout_weight="1"
-                    android:layout_marginLeft="16dp"/>
+                    android:text="@string/push_unsubscribed" />
 
             </LinearLayout>
 

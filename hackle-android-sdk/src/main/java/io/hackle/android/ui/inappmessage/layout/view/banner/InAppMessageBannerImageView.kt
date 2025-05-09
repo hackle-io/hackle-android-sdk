@@ -8,6 +8,8 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView.ScaleType.FIT_CENTER
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import io.hackle.android.R
 import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.inappmessage.image
@@ -16,6 +18,7 @@ import io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView.AspectRatio
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView
 import io.hackle.android.ui.inappmessage.layout.view.createMessageClickListener
 import io.hackle.android.ui.inappmessage.requiredOrientation
 import io.hackle.sdk.core.model.InAppMessage
@@ -69,6 +72,21 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
             closeButtonView.configure(this, closeButton)
         } else {
             closeButtonView.visibility = View.GONE
+        }
+    }
+
+    override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
+        val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
+
+        if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+            updateLayoutParams<MarginLayoutParams> {
+                topMargin = this@InAppMessageBannerImageView.topMargin + insets.systemWindowInsetTop
+            }
+
+        } else if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+            updateLayoutParams<MarginLayoutParams> {
+                bottomMargin = this@InAppMessageBannerImageView.bottomMargin + insets.systemWindowInsetBottom
+            }
         }
     }
 

@@ -7,6 +7,8 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.RelativeLayout
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import io.hackle.android.R
 import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.core.CornerRadii
@@ -86,6 +88,12 @@ internal class InAppMessageBottomSheetView @JvmOverloads constructor(
             closeButtonView.configure(this, closeButton)
         } else {
             closeButtonView.visibility = View.GONE
+        }
+    }
+
+    override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
+        updateLayoutParams<MarginLayoutParams> {
+            bottomMargin = insets.systemWindowInsetBottom
         }
     }
 
