@@ -91,12 +91,12 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
         val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
 
-        if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+        if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
             updateLayoutParams<MarginLayoutParams> {
                 topMargin = this@InAppMessageBannerView.topMargin + insets.systemWindowInsetTop
             }
 
-        } else if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+        } else if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
             updateLayoutParams<MarginLayoutParams> {
                 bottomMargin = this@InAppMessageBannerView.bottomMargin + insets.systemWindowInsetBottom
             }

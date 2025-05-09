@@ -78,12 +78,12 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
         val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
 
-        if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+        if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
             updateLayoutParams<MarginLayoutParams> {
                 topMargin = this@InAppMessageBannerImageView.topMargin + insets.systemWindowInsetTop
             }
 
-        } else if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+        } else if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
             updateLayoutParams<MarginLayoutParams> {
                 bottomMargin = this@InAppMessageBannerImageView.bottomMargin + insets.systemWindowInsetBottom
             }

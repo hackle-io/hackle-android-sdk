@@ -32,12 +32,6 @@ internal class InAppMessageViewController(
     private val _state = AtomicReference(State.CLOSED)
     val state: State get() = _state.get()
 
-    init {
-        if(context.message.layout.displayType == InAppMessage.DisplayType.BOTTOM_SHEET) {
-
-        }
-    }
-
     override fun open(activity: Activity) {
         if (!_state.compareAndSet(State.CLOSED, State.OPENED)) {
             log.debug { "InAppMessage is already open (key=${context.inAppMessage.key})" }
