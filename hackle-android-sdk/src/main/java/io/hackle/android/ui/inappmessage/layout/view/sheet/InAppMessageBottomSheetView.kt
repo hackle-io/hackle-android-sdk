@@ -97,24 +97,10 @@ internal class InAppMessageBottomSheetView @JvmOverloads constructor(
         }
     }
 
-    private val cornerRadii: CornerRadii
-        get() = CornerRadii.of(
-            cornerRadius.toFloat(),
-            cornerRadius.toFloat(),
-            0f,
-            0f
-        )
-    private val messageBackground: Drawable
-        get() = Drawables.of(
-            radii = cornerRadii,
-            color = message.backgroundColor
-        )
+    private val cornerRadii: CornerRadii get() = CornerRadii.of(cornerRadius.toFloat(), cornerRadius.toFloat(), 0f, 0f)
+    private val messageBackground: Drawable get() = Drawables.of(radii = cornerRadii, color = message.backgroundColor)
 
-    private val imageAspectRatio
-        get() = InAppMessageImageView.AspectRatio(
-            width = 300f,
-            height = 200f
-        )
+    private val imageAspectRatio get() = InAppMessageImageView.AspectRatio(width = 300f, height = 200f)
 
     companion object {
         fun create(activity: Activity): InAppMessageBottomSheetView {

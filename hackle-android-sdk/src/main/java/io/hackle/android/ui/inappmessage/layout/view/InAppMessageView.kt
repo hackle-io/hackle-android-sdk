@@ -66,7 +66,8 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
      * [WindowInsetsCompat] object. This contains information about areas such as
      * system bars that should not overlap with the content.
      */
-    open fun onApplyWindowInsets(insets: WindowInsetsCompat) {
+    open fun onApplyWindowInsets(insets: WindowInsetsCompat)
+    {
         // nothing to do
     }
 }
