@@ -52,8 +52,16 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
     private val messageText: InAppMessage.Message.Text get() = requireNotNull(message.text) { "Not found Text in banner in-app message [${inAppMessage.id}]" }
 
     // Animation
-    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(50))
-    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(50))
+    override val openAnimator: InAppMessageAnimator
+        get() = InAppMessageAnimator.of(
+            this,
+            Animations.fadeIn(50)
+        )
+    override val closeAnimator: InAppMessageAnimator
+        get() = InAppMessageAnimator.of(
+            this,
+            Animations.fadeOut(50)
+        )
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -91,14 +99,15 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
         val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
 
-        if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+        if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
             updateLayoutParams<MarginLayoutParams> {
                 topMargin = this@InAppMessageBannerView.topMargin + insets.systemWindowInsetTop
             }
 
-        } else if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+        } else if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
             updateLayoutParams<MarginLayoutParams> {
-                bottomMargin = this@InAppMessageBannerView.bottomMargin + insets.systemWindowInsetBottom
+                bottomMargin =
+                    this@InAppMessageBannerView.bottomMargin + insets.systemWindowInsetBottom
             }
         }
     }
@@ -114,7 +123,10 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
 
     private val messageBackground: Drawable
         get() {
-            return Drawables.of(radii = CornerRadii.of(cornerRadius.toFloat()), color = message.backgroundColor)
+            return Drawables.of(
+                radii = CornerRadii.of(cornerRadius.toFloat()),
+                color = message.backgroundColor
+            )
         }
 
     companion object {

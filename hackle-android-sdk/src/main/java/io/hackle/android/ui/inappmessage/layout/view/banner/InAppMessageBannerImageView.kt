@@ -45,8 +45,16 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
     private val messageAlignment: InAppMessage.Message.Alignment get() = requireNotNull(message.layout.alignment) { "Not found Alignment in banner in-app message [${inAppMessage.id}]" }
 
     // Animation
-    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(50))
-    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(50))
+    override val openAnimator: InAppMessageAnimator
+        get() = InAppMessageAnimator.of(
+            this,
+            Animations.fadeIn(50)
+        )
+    override val closeAnimator: InAppMessageAnimator
+        get() = InAppMessageAnimator.of(
+            this,
+            Animations.fadeOut(50)
+        )
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -78,14 +86,15 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
         val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
 
-        if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
+        if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
             updateLayoutParams<MarginLayoutParams> {
                 topMargin = this@InAppMessageBannerImageView.topMargin + insets.systemWindowInsetTop
             }
 
-        } else if(inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
+        } else if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.BOTTOM) {
             updateLayoutParams<MarginLayoutParams> {
-                bottomMargin = this@InAppMessageBannerImageView.bottomMargin + insets.systemWindowInsetBottom
+                bottomMargin =
+                    this@InAppMessageBannerImageView.bottomMargin + insets.systemWindowInsetBottom
             }
         }
     }

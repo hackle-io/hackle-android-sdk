@@ -54,8 +54,16 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     private val outerButtonViews get() = listOf(leftBottomButtonView, rightBottomButtonView)
 
     // Animation
-    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(100))
-    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(100))
+    override val openAnimator: InAppMessageAnimator
+        get() = InAppMessageAnimator.of(
+            this,
+            Animations.fadeIn(100)
+        )
+    override val closeAnimator: InAppMessageAnimator
+        get() = InAppMessageAnimator.of(
+            this,
+            Animations.fadeOut(100)
+        )
 
     // Configuration
     override fun configure() {
@@ -78,7 +86,8 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
         // Text
         if (configuration.text) {
-            val messageText = requireNotNull(message.text) { "Not found in-app message text [${inAppMessage.id}]" }
+            val messageText =
+                requireNotNull(message.text) { "Not found in-app message text [${inAppMessage.id}]" }
             titleTextView.configure(messageText.title)
             bodyTextView.configure(messageText.body)
         } else {
@@ -104,7 +113,11 @@ internal class InAppMessageModalView @JvmOverloads constructor(
             for (outerButtonView in outerButtonViews) {
                 val outerButton = message.outerButtonOrNull(outerButtonView.alignment)
                 if (outerButton != null) {
-                    outerButtonView.configure(this, outerButton.button, ColorDrawable(Color.TRANSPARENT))
+                    outerButtonView.configure(
+                        this,
+                        outerButton.button,
+                        ColorDrawable(Color.TRANSPARENT)
+                    )
                 } else {
                     outerButtonView.visibility = View.GONE
                 }
@@ -140,9 +153,27 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     private val configuration: Configuration
         get() = when (message.layout.layoutType) {
             NONE -> Configuration(image = false, text = false, button = false, outerButton = false)
-            IMAGE_ONLY -> Configuration(image = true, text = false, button = true, outerButton = false)
-            IMAGE_TEXT -> Configuration(image = true, text = true, button = true, outerButton = false)
-            TEXT_ONLY -> Configuration(image = false, text = true, button = true, outerButton = false)
+            IMAGE_ONLY -> Configuration(
+                image = true,
+                text = false,
+                button = true,
+                outerButton = false
+            )
+
+            IMAGE_TEXT -> Configuration(
+                image = true,
+                text = true,
+                button = true,
+                outerButton = false
+            )
+
+            TEXT_ONLY -> Configuration(
+                image = false,
+                text = true,
+                button = true,
+                outerButton = false
+            )
+
             IMAGE -> Configuration(image = true, text = false, button = false, outerButton = true)
         }
 
@@ -152,7 +183,10 @@ internal class InAppMessageModalView @JvmOverloads constructor(
             return when (message.layout.layoutType) {
                 NONE -> Drawables.transparent()
                 IMAGE -> Drawables.transparent()
-                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> Drawables.of(radii = cornerRadii, color = message.backgroundColor)
+                IMAGE_ONLY, IMAGE_TEXT, TEXT_ONLY -> Drawables.of(
+                    radii = cornerRadii,
+                    color = message.backgroundColor
+                )
             }
         }
 
@@ -173,7 +207,10 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
     private val InAppMessage.Message.Button.backgroundDrawable: Drawable
         get() {
-            val background = Drawables.of(radii = CornerRadii.of(buttonCornerRadius.toFloat()), color = backgroundColor)
+            val background = Drawables.of(
+                radii = CornerRadii.of(buttonCornerRadius.toFloat()),
+                color = backgroundColor
+            )
             background.setStroke(buttonStrokeWith, borderColor)
             return background
         }
