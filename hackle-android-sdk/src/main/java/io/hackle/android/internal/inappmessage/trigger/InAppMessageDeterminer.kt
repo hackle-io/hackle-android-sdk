@@ -1,8 +1,10 @@
 package io.hackle.android.internal.inappmessage.trigger
 
+import android.util.Log
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageDeterminer.Companion.log
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
+import io.hackle.android.ui.explorer.activity.experiment.model.isManualOverridable
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
@@ -37,11 +39,14 @@ internal class InAppMessageDeterminer(
             .add(decision.properties)
             .add("decision_reason", decision.reason.name)
             .build()
+
+        log.debug { "InAppMessage [${inAppMessage.key}]: ${decision.reason}" }
         return InAppMessagePresentationContext(
             inAppMessage = decision.inAppMessage ?: return null,
             message = decision.message ?: return null,
             user = event.user,
-            properties = properties
+            properties = properties,
+            decisionReason = decision.reason
         )
     }
 

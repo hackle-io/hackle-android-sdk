@@ -3,6 +3,7 @@ package io.hackle.android.internal.inappmessage.storage
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.support.InAppMessages
+import io.hackle.sdk.core.evaluation.target.InAppMessageImpression
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -11,15 +12,15 @@ import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 
-internal class InAppMessageImpressionStorageTest {
+internal class AndroidInAppMessageImpressionStorageTest {
 
     private lateinit var repository: KeyValueRepository
-    private lateinit var sut: InAppMessageImpressionStorage
+    private lateinit var sut: AndroidInAppMessageImpressionStorage
 
     @Before
     fun before() {
         repository = MapKeyValueRepository()
-        sut = InAppMessageImpressionStorage(repository)
+        sut = AndroidInAppMessageImpressionStorage(repository)
     }
 
     @Test
