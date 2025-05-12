@@ -1,6 +1,7 @@
 package io.hackle.android.ui.explorer
 
 import android.app.Activity
+import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
@@ -28,6 +29,15 @@ internal class HackleUserExplorer(
         }
     }
 
+    fun hide() {
+        isShow = false
+        val activity = activityProvider.currentActivity ?: return
+        runOnUiThread {
+            detach(activity)
+        }
+
+    }
+
     private fun attach(activity: Activity) {
         try {
             if (activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view) != null) {
@@ -43,6 +53,16 @@ internal class HackleUserExplorer(
             activity.addContentView(view, LayoutParams(MATCH_PARENT, MATCH_PARENT))
         } catch (e: Throwable) {
             log.error { "Failed to attach HackleUserExplorer: $e" }
+        }
+    }
+
+    private fun detach(activity: Activity) {
+        activity.findViewById<FrameLayout>(R.id.hackle_user_explorer_view)?.let { view ->
+            try {
+                (view.parent as? ViewGroup)?.removeView(view)
+            } catch (e: Throwable) {
+                log.error { "Failed to detach HackleUserExplorer: $e" }
+            }
         }
     }
 
