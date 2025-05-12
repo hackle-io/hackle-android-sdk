@@ -26,7 +26,9 @@ internal val DecisionReason.isManualOverridable
         IN_APP_MESSAGE_TARGET,
         NOT_IN_IN_APP_MESSAGE_PERIOD,
         NOT_IN_IN_APP_MESSAGE_TARGET,
-        -> false
+        IN_APP_MESSAGE_FREQUENCY_CAPPED,
+        EXPERIMENT_CONTROL_GROUP
+            -> false
 
         EXPERIMENT_DRAFT,
         EXPERIMENT_PAUSED,
@@ -41,5 +43,5 @@ internal val DecisionReason.isManualOverridable
         INDIVIDUAL_TARGET_MATCH,
         TARGET_RULE_MATCH,
         DEFAULT_RULE,
-        -> true
+            -> true
     }

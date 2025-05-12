@@ -20,7 +20,7 @@ import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
-import io.hackle.android.internal.inappmessage.storage.InAppMessageImpressionStorage
+import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
@@ -245,12 +245,13 @@ internal object HackleApps {
             context, "${PREFERENCES_NAME}_in_app_message_$sdkKey"
         )
         val inAppMessageImpressionStorage =
-            InAppMessageImpressionStorage.create(
+            AndroidInAppMessageImpressionStorage.create(
                 context,
                 "${PREFERENCES_NAME}_iam_impression_$sdkKey"
             )
 
         EvaluationContext.GLOBAL.register(inAppMessageHiddenStorage)
+        EvaluationContext.GLOBAL.register(inAppMessageImpressionStorage)
 
         val core = HackleCore.create(
             context = EvaluationContext.GLOBAL,
@@ -329,9 +330,6 @@ internal object HackleApps {
         )
         val inAppMessageEventMatcher = InAppMessageEventMatcher(
             ruleDeterminer = InAppMessageEventTriggerRuleDeterminer(EvaluationContext.GLOBAL.get()),
-            frequencyCapDeterminer = InAppMessageEventTriggerFrequencyCapDeterminer(
-                inAppMessageImpressionStorage
-            )
         )
         val inAppMessageDeterminer = InAppMessageDeterminer(
             workspaceFetcher = workspaceManager,
