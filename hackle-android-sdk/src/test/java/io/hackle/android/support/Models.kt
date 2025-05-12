@@ -1,6 +1,7 @@
 package io.hackle.android.support
 
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.ValueType
@@ -217,8 +218,9 @@ internal object InAppMessages {
         inAppMessage: InAppMessage = create(),
         message: InAppMessage.Message = message(),
         user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
-        properties: Map<String, Any> = mapOf()
+        properties: Map<String, Any> = mapOf(),
+        decisionReason: DecisionReason = DecisionReason.DEFAULT_RULE
     ): InAppMessagePresentationContext {
-        return InAppMessagePresentationContext(inAppMessage, message, user, properties)
+        return InAppMessagePresentationContext(inAppMessage, message, user, properties, decisionReason)
     }
 }

@@ -84,6 +84,10 @@ class HackleApp internal constructor(
         Metrics.counter("user.explorer.show").increment()
     }
 
+    fun hideUserExplorer() {
+        userExplorer.hide()
+    }
+
     @JvmOverloads
     fun setUser(user: User, callback: Runnable? = null) {
         try {
