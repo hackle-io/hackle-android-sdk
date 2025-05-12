@@ -1,14 +1,17 @@
 package io.hackle.android.sdk.tester
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
+import io.hackle.android.HackleApp
 
 class WebViewActivity : AppCompatActivity() {
     private lateinit var webView: WebView
 
+    @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_webview)
@@ -26,7 +29,7 @@ class WebViewActivity : AppCompatActivity() {
         webView.settings.setSupportMultipleWindows(true)
         webView.settings.domStorageEnabled = true
         WebView.setWebContentsDebuggingEnabled(true)
-
-        webView.loadUrl("file:///android_asset/sample.html")
+        HackleApp.getInstance().setWebViewBridge(webView)
+        webView.loadUrl("")
     }
 }
