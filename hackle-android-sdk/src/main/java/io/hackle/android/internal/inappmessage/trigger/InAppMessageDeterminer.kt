@@ -1,10 +1,8 @@
 package io.hackle.android.internal.inappmessage.trigger
 
-import android.util.Log
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageDeterminer.Companion.log
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
-import io.hackle.android.ui.explorer.activity.experiment.model.isManualOverridable
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
@@ -38,6 +36,7 @@ internal class InAppMessageDeterminer(
         val properties = PropertiesBuilder()
             .add(decision.properties)
             .add("decision_reason", decision.reason.name)
+            .add("trigger_event_insert_id", event.insertId)
             .build()
 
         log.debug { "InAppMessage [${inAppMessage.key}]: ${decision.reason}" }

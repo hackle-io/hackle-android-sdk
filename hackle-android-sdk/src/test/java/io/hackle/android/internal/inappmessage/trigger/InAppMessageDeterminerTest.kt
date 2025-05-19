@@ -100,7 +100,7 @@ class InAppMessageDeterminerTest {
             decision(true, inAppMessage, message, DecisionReason.IN_APP_MESSAGE_TARGET, mapOf("a" to 42)),
             decision(false),
         )
-        val event = UserEvents.track("test")
+        val event = UserEvents.track("test", insertId = "insert")
 
         // when
         val actual = sut.determineOrNull(event)
@@ -111,6 +111,7 @@ class InAppMessageDeterminerTest {
             get { this.message } isSameInstanceAs message
             get { this.properties } isEqualTo mapOf(
                 "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                "trigger_event_insert_id" to "insert",
                 "a" to 42
             )
         }
