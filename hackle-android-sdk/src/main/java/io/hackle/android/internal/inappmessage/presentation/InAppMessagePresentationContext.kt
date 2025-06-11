@@ -9,5 +9,6 @@ internal data class InAppMessagePresentationContext(
     val message: InAppMessage.Message,
     val user: HackleUser,
     val properties: Map<String, Any>,
+    val triggerEventId: String,
     var decisionReason: DecisionReason
 )

@@ -53,7 +53,8 @@ class RemoteConfigEventDedupDeterminerTest {
             ),
             valueId = 320,
             decisionReason = DecisionReason.DEFAULT_RULE,
-            properties = emptyMap()
+            properties = emptyMap(),
+            internalProperties = emptyMap(),
         )
         val key = sut.cacheKey(event)
         expectThat(key).isEqualTo("42-320-DEFAULT_RULE")

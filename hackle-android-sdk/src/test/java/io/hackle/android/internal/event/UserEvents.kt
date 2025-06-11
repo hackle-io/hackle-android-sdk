@@ -7,6 +7,7 @@ import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import io.mockk.every
 import io.mockk.mockk
+import java.util.UUID
 
 object UserEvents {
 
@@ -16,6 +17,7 @@ object UserEvents {
         timestamp: Long = System.currentTimeMillis()
     ): UserEvent.Track {
         return mockk {
+            every { this@mockk.insertId } returns UUID.randomUUID().toString()
             every { this@mockk.eventType } returns EventType.Custom(1, eventKey)
             every { this@mockk.event } returns Event.builder(eventKey).build()
             every { this@mockk.user } returns user

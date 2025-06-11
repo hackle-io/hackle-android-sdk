@@ -17,6 +17,7 @@ import io.hackle.android.HackleApp
 import io.hackle.android.HackleAppMode
 import io.hackle.android.HackleConfig
 import io.hackle.android.app
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleInAppMessage
 import io.hackle.sdk.common.HackleInAppMessageAction
 import io.hackle.sdk.common.HackleInAppMessageListener
@@ -163,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 } else {
                     executor.submit {
-                        Hackle.app.track(eventKey)
+                        Hackle.app.track(Event.builder(eventKey).property("key", "value").build())
                     }
                 }
                 result(eventKey)
@@ -192,7 +193,6 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
-
 
         findViewById<Button>(R.id.pushSubscription_btn).setOnClickListener {
             Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)

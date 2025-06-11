@@ -46,6 +46,7 @@ internal class InAppMessageDeterminer(
             message = decision.message ?: return null,
             user = event.user,
             properties = properties,
+            triggerEventId = event.insertId,
             decisionReason = decision.reason
         )
     }

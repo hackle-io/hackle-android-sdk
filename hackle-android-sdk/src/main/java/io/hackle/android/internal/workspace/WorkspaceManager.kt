@@ -12,7 +12,11 @@ internal class WorkspaceManager(
     private val repository: WorkspaceConfigRepository
 ) : WorkspaceFetcher, Synchronizer {
 
-    private val lastModified: AtomicReference<String?> = AtomicReference()
+    override val lastModified: String?
+        get() {
+            return atomicLastModified.get()
+        }
+    private val atomicLastModified: AtomicReference<String?> = AtomicReference()
     private val workspace: AtomicReference<Workspace?> = AtomicReference()
 
     fun initialize() {
@@ -25,7 +29,7 @@ internal class WorkspaceManager(
 
     override fun sync() {
         try {
-            val config = httpWorkspaceFetcher.fetchIfModified(lastModified.get())
+            val config = httpWorkspaceFetcher.fetchIfModified(atomicLastModified.get())
             if (config != null) {
                 setWorkspaceConfig(config)
                 repository.set(config)
@@ -36,7 +40,7 @@ internal class WorkspaceManager(
     }
 
     private fun setWorkspaceConfig(config: WorkspaceConfig) {
-        lastModified.set(config.lastModified)
+        atomicLastModified.set(config.lastModified)
         workspace.set(WorkspaceImpl.from(config.config))
     }
 

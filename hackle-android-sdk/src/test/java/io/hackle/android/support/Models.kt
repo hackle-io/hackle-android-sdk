@@ -7,6 +7,7 @@ import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.ValueType
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
+import java.util.UUID
 
 internal object Targets {
 
@@ -219,8 +220,9 @@ internal object InAppMessages {
         message: InAppMessage.Message = message(),
         user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
         properties: Map<String, Any> = mapOf(),
+        triggerEventId: String = UUID.randomUUID().toString(),
         decisionReason: DecisionReason = DecisionReason.DEFAULT_RULE
     ): InAppMessagePresentationContext {
-        return InAppMessagePresentationContext(inAppMessage, message, user, properties, decisionReason)
+        return InAppMessagePresentationContext(inAppMessage, message, user, properties, triggerEventId, decisionReason)
     }
 }

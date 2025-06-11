@@ -41,6 +41,7 @@ internal data class ExposureEventDto(
     val variationKey: String,
     val decisionReason: String,
     val properties: Map<String, Any>,
+    val internalProperties: Map<String, Any>
 )
 
 internal data class TrackEventDto(
@@ -56,6 +57,7 @@ internal data class TrackEventDto(
     val eventTypeKey: String,
     val value: Double?,
     val properties: Map<String, Any>,
+    val internalProperties: Map<String, Any>
 )
 
 internal data class RemoteConfigEventDto(
@@ -73,6 +75,7 @@ internal data class RemoteConfigEventDto(
     val decisionReason: String,
     val valueId: Long?,
     val properties: Map<String, Any>,
+    val internalProperties: Map<String, Any>
 )
 
 internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
@@ -92,6 +95,7 @@ internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
     variationKey = variationKey,
     decisionReason = decisionReason.name,
     properties = properties,
+    internalProperties = internalProperties
 )
 
 internal fun UserEvent.Track.toDto() = TrackEventDto(
@@ -106,7 +110,8 @@ internal fun UserEvent.Track.toDto() = TrackEventDto(
     eventTypeId = eventType.id,
     eventTypeKey = eventType.key,
     value = event.value,
-    properties = event.properties
+    properties = event.properties,
+    internalProperties = event.internalProperties ?: emptyMap()
 )
 
 internal fun UserEvent.RemoteConfig.toDto() = RemoteConfigEventDto(
@@ -123,5 +128,6 @@ internal fun UserEvent.RemoteConfig.toDto() = RemoteConfigEventDto(
     parameterType = parameter.type.name,
     valueId = valueId,
     decisionReason = decisionReason.name,
-    properties = properties
+    properties = properties,
+    internalProperties = internalProperties
 )

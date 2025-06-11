@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
+import io.hackle.android.internal.event.InternalEvent
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
-import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
 
 internal class InAppMessageEventTracker(private val core: HackleCore) {
@@ -12,10 +12,10 @@ internal class InAppMessageEventTracker(private val core: HackleCore) {
     }
 }
 
-internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationContext): Event {
+internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationContext): InternalEvent {
     return when (this) {
         is InAppMessageEvent.Impression ->
-            Event.builder("\$in_app_impression")
+            InternalEvent.builder("\$in_app_impression")
                 .properties(context)
                 .property("title_text", context.message.text?.title?.text)
                 .property("body_text", context.message.text?.body?.text)
@@ -24,17 +24,17 @@ internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationCon
                 .build()
 
         is InAppMessageEvent.ImageImpression ->
-            Event.builder("\$in_app_image_impression")
+            InternalEvent.builder("\$in_app_image_impression")
                 .properties(context)
                 .property("image_url", image.imagePath)
                 .property("image_order", order)
                 .build()
 
-        is InAppMessageEvent.Close -> Event.builder("\$in_app_close")
+        is InAppMessageEvent.Close -> InternalEvent.builder("\$in_app_close")
             .properties(context)
             .build()
 
-        is InAppMessageEvent.Action -> Event.builder("\$in_app_action")
+        is InAppMessageEvent.Action -> InternalEvent.builder("\$in_app_action")
             .properties(context)
             .property("action_type", action.actionType.name)
             .property("action_area", area.name)
@@ -46,9 +46,10 @@ internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationCon
     }
 }
 
-private fun Event.Builder.properties(context: InAppMessagePresentationContext) = apply {
+private fun InternalEvent.Builder.properties(context: InAppMessagePresentationContext) = apply {
     properties(context.properties)
     property("in_app_message_id", context.inAppMessage.id)
     property("in_app_message_key", context.inAppMessage.key)
     property("in_app_message_display_type", context.message.layout.displayType.name)
+    internalProperty("\$trigger_event_insert_id", context.triggerEventId)
 }

@@ -10,6 +10,7 @@ import java.nio.file.Paths
 
 internal class ResourcesWorkspaceFetcher(fileName: String) : WorkspaceFetcher {
 
+    override val lastModified: String? = ""
     private val workspace: Workspace
 
     init {

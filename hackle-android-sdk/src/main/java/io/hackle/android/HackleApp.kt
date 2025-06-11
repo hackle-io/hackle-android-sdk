@@ -10,6 +10,7 @@ import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.event.InternalEvent
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
@@ -317,7 +318,7 @@ class HackleApp internal constructor(
         trackInternal(event, null)
     }
 
-    private fun trackInternal(event: Event, user: User?) {
+    private fun trackInternal(event: HackleCommonEvent, user: User?) {
         try {
             val hackleUser = userManager.resolve(user)
             core.track(event, hackleUser, clock.currentMillis())
