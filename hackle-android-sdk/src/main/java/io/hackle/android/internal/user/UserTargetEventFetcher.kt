@@ -1,18 +1,12 @@
 package io.hackle.android.internal.user
 
-import android.util.Base64
-import android.util.Base64.NO_WRAP
-import android.util.Base64.URL_SAFE
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.model.TargetEvent
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import kotlin.text.Charsets.UTF_8
 
 /**
  * UserTargetEventFetcher
