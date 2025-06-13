@@ -64,14 +64,3 @@ internal class UserTargetEventFetcher(
     }
 }
 
-internal class UserTargetRequestDto(
-    val identifiers: Map<String, String>
-)
-
-internal fun UserTargetRequestDto.encodeBase64Url(): String {
-    return Base64.encodeToString(toJson().toByteArray(UTF_8), URL_SAFE or NO_WRAP)
-}
-
-internal class UserTargetResponseDto(
-    val events: List<TargetEvent>
-)
