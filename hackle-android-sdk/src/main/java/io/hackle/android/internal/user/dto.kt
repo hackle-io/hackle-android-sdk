@@ -4,7 +4,6 @@ import android.util.Base64
 import android.util.Base64.NO_WRAP
 import android.util.Base64.URL_SAFE
 import io.hackle.android.internal.utils.json.toJson
-import io.hackle.sdk.core.model.TargetEvent
 import kotlin.text.Charsets.UTF_8
 
 internal class UserCohortsRequestDto(
@@ -38,5 +37,22 @@ internal fun UserTargetRequestDto.encodeBase64Url(): String {
 }
 
 internal class UserTargetResponseDto(
-    val events: List<TargetEvent>
+    val events: List<TargetEventDto>
+)
+
+internal class TargetEventDto(
+    val eventKey: String,
+    val stats: List<TargetEventStatDto>,
+    val property: TargetEventPropertyDto? = null
+)
+
+internal class TargetEventStatDto(
+    val date: Long,
+    val count: Int
+)
+
+internal class TargetEventPropertyDto(
+    val key: String,
+    val type: String,
+    val value: Any
 )

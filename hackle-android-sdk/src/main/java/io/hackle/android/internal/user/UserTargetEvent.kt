@@ -1,7 +1,9 @@
 package io.hackle.android.internal.user
 
+import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.TargetEvent
-
+import io.hackle.sdk.core.model.TargetKeyTypeDto
 
 internal data class UserTargetEvents internal constructor(private val targetEvents: List<TargetEvent>) {
 
@@ -53,8 +55,34 @@ internal data class UserTargetEvents internal constructor(private val targetEven
 
         fun from(dto: UserTargetResponseDto): UserTargetEvents {
             return dto.events
+                .map { it.toTargetEvent() }
                 .fold(builder(), Builder::put)
                 .build()
         }
+
+        internal val log = Logger<UserTargetEvents>()
     }
+}
+
+internal fun TargetEventDto.toTargetEvent(): TargetEvent {
+    return TargetEvent(
+        eventKey = eventKey,
+        stats = stats.map { it.toStat() },
+        property = property?.toProperty()
+    )
+}
+
+internal fun TargetEventStatDto.toStat(): TargetEvent.Stat {
+    return TargetEvent.Stat(
+        date = date,
+        count = count
+    )
+}
+
+internal fun TargetEventPropertyDto.toProperty(): TargetEvent.Property? {
+    return TargetEvent.Property(
+        key = key,
+        type = TargetKeyTypeDto.from(type)?.type ?: return null,
+        value = value
+    )
 }
