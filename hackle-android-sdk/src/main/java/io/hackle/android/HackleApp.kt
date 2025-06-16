@@ -68,16 +68,27 @@ class HackleApp internal constructor(
 ) : Closeable {
 
     /**
-     * The user's Device Id.
+     * Current user's Device Id.
      */
     val deviceId: String get() = device.id
 
     /**
-     * Current Session Id. If session is unavailable, returns "0.ffffffff"
+     * Current user's Session Id. If session is unavailable, returns "0.ffffffff"
      */
     val sessionId: String get() = sessionManager.requiredSession.id
 
+    /**
+     * Current User
+     */
     val user: User get() = userManager.currentUser
+
+    /**
+     * Current Push Token
+     *
+     * In cases where the app's push notification settings are not enabled or the user has not provided consent for push notifications,
+     * the value will be `null`.
+     */
+    val pushToken: String? get() = pushTokenManager.currentPushToken?.value
 
     fun showUserExplorer() {
         userExplorer.show()
