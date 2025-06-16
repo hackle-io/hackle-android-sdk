@@ -359,9 +359,9 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
 
-    fun updatePushSubscriptionStatus(status: HackleMarketingSubscriptionStatus) {
+    fun updatePushSubscriptionStatus(globalStatus: HackleMarketingSubscriptionStatus) {
         val operations = HackleMarketingSubscriptionOperations.builder()
-            .global(status)
+            .global(globalStatus)
             .build()
         try {
             track(operations.toPushSubscriptionEvent())
@@ -371,9 +371,9 @@ class HackleApp internal constructor(
         }
     }
 
-    fun updateSmsSubscriptionStatus(status: HackleMarketingSubscriptionStatus) {
+    fun updateSmsSubscriptionStatus(globalStatus: HackleMarketingSubscriptionStatus) {
         val operations = HackleMarketingSubscriptionOperations.builder()
-            .global(status)
+            .global(globalStatus)
             .build()
         try {
             track(operations.toSmsSubscriptionEvent())
@@ -383,9 +383,9 @@ class HackleApp internal constructor(
         }
     }
 
-    fun updateKakaoSubscriptionStatus(status: HackleMarketingSubscriptionStatus) {
+    fun updateKakaoSubscriptionStatus(globalStatus: HackleMarketingSubscriptionStatus) {
         val operations = HackleMarketingSubscriptionOperations.builder()
-            .global(status)
+            .global(globalStatus)
             .build()
         try {
             track(operations.toKakaoSubscriptionEvent())
