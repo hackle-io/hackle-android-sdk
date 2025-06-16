@@ -30,6 +30,7 @@ import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
+import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
@@ -41,6 +42,9 @@ import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.model.toEvent
+import io.hackle.sdk.core.model.toKakaoSubscriptionEvent
+import io.hackle.sdk.core.model.toPushSubscriptionEvent
+import io.hackle.sdk.core.model.toSmsSubscriptionEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
 
@@ -355,15 +359,39 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
 
-    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
-        val operations = HacklePushSubscriptionOperations.builder()
+    fun updatePushSubscriptionStatus(status: HackleMarketingSubscriptionStatus) {
+        val operations = HackleMarketingSubscriptionOperations.builder()
             .global(status)
             .build()
         try {
-            track(operations.toEvent())
+            track(operations.toPushSubscriptionEvent())
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while update push subscription properties: $e" }
+        }
+    }
+
+    fun updateSmsSubscriptionStatus(status: HackleMarketingSubscriptionStatus) {
+        val operations = HackleMarketingSubscriptionOperations.builder()
+            .global(status)
+            .build()
+        try {
+            track(operations.toSmsSubscriptionEvent())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update sms subscription status: $e" }
+        }
+    }
+
+    fun updateKakaoSubscriptionStatus(status: HackleMarketingSubscriptionStatus) {
+        val operations = HackleMarketingSubscriptionOperations.builder()
+            .global(status)
+            .build()
+        try {
+            track(operations.toKakaoSubscriptionEvent())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update kakao subscription status: $e" }
         }
     }
 
