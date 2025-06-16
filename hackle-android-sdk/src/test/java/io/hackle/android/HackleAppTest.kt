@@ -749,7 +749,7 @@ class HackleAppTest {
 
     @Test
     fun `updatePushSubscriptionStatus - set subscribed`() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
+        sut.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -770,7 +770,7 @@ class HackleAppTest {
 
     @Test
     fun `updatePushSubscriptionStatus - set unsubscribed`() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNSUBSCRIBED)
+        sut.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -788,12 +788,125 @@ class HackleAppTest {
 
     @Test
     fun `updatePushSubscriptionStatus - set unknown`() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNKNOWN)
+        sut.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.UNKNOWN)
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$push_subscriptions")
+                            .property("\$global", "UNKNOWN")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `updateSmsSubscriptionStatus - set subscribed`() {
+        sut.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$sms_subscriptions")
+                            .property("\$global", "SUBSCRIBED")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+        verify(exactly = 1) {
+            eventProcessor.flush()
+        }
+    }
+
+    @Test
+    fun `updateSmsSubscriptionStatus - set unsubscribed`() {
+        sut.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$sms_subscriptions")
+                            .property("\$global", "UNSUBSCRIBED")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `updateSmsSubscriptionStatus - set unknown`() {
+        sut.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.UNKNOWN)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$sms_subscriptions")
+                            .property("\$global", "UNKNOWN")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+    }
+    @Test
+    fun `updateKakaoSubscriptionStatus - set subscribed`() {
+        sut.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$kakao_subscriptions")
+                            .property("\$global", "SUBSCRIBED")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+        verify(exactly = 1) {
+            eventProcessor.flush()
+        }
+    }
+
+    @Test
+    fun `updateKakaoSubscriptionStatus - set unsubscribed`() {
+        sut.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$kakao_subscriptions")
+                            .property("\$global", "UNSUBSCRIBED")
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+    }
+
+    @Test
+    fun `updateKakaoSubscriptionStatus - set unknown`() {
+        sut.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.UNKNOWN)
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$kakao_subscriptions")
                             .property("\$global", "UNKNOWN")
                             .build()
                     )
