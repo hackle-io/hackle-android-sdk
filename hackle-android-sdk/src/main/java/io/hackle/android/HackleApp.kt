@@ -347,7 +347,7 @@ class HackleApp internal constructor(
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                    "JavaScript can use reflection to manipulate application"
+                        "JavaScript can use reflection to manipulate application"
             )
         }
         val bridge = HackleBridge(this)
@@ -359,10 +359,16 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
 
-    fun updatePushSubscriptionStatus(globalStatus: HackleMarketingSubscriptionStatus) {
-        val operations = HackleMarketingSubscriptionOperations.builder()
-            .global(globalStatus)
-            .build()
+    fun updatePushSubscription(globalStatus: HackleMarketingSubscriptionStatus) {
+        updatePushSubscriptions(
+            HackleMarketingSubscriptionOperations
+                .builder()
+                .global(globalStatus)
+                .build()
+        )
+    }
+
+    fun updatePushSubscriptions(operations: HackleMarketingSubscriptionOperations) {
         try {
             track(operations.toPushSubscriptionEvent())
             eventProcessor.flush()
@@ -371,10 +377,15 @@ class HackleApp internal constructor(
         }
     }
 
-    fun updateSmsSubscriptionStatus(globalStatus: HackleMarketingSubscriptionStatus) {
-        val operations = HackleMarketingSubscriptionOperations.builder()
-            .global(globalStatus)
-            .build()
+    fun updateSmsSubscription(globalStatus: HackleMarketingSubscriptionStatus) {
+        updateSmsSubscriptions(
+            HackleMarketingSubscriptionOperations.builder()
+                .global(globalStatus)
+                .build()
+        )
+    }
+
+    fun updateSmsSubscriptions(operations: HackleMarketingSubscriptionOperations) {
         try {
             track(operations.toSmsSubscriptionEvent())
             eventProcessor.flush()
@@ -383,10 +394,15 @@ class HackleApp internal constructor(
         }
     }
 
-    fun updateKakaoSubscriptionStatus(globalStatus: HackleMarketingSubscriptionStatus) {
-        val operations = HackleMarketingSubscriptionOperations.builder()
-            .global(globalStatus)
-            .build()
+    fun updateKakaoSubscription(globalStatus: HackleMarketingSubscriptionStatus) {
+        updateKakaoSubscriptions(
+            HackleMarketingSubscriptionOperations.builder()
+                .global(globalStatus)
+                .build()
+        )
+    }
+
+    fun updateKakaoSubscriptions(operations: HackleMarketingSubscriptionOperations) {
         try {
             track(operations.toKakaoSubscriptionEvent())
             eventProcessor.flush()
@@ -536,7 +552,7 @@ class HackleApp internal constructor(
         log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
-    @Deprecated("use updatePushSubscriptionStatus(status: HackleMarketingSubscriptionStatus) instead.")
+    @Deprecated("use updatePushSubscription(globalStatus) instead.")
     fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
         val marketingSubscriptionStatus = if (status == HacklePushSubscriptionStatus.SUBSCRIBED) {
             HackleMarketingSubscriptionStatus.SUBSCRIBED
@@ -545,7 +561,7 @@ class HackleApp internal constructor(
         } else {
             HackleMarketingSubscriptionStatus.UNKNOWN
         }
-        updatePushSubscriptionStatus(marketingSubscriptionStatus)
+        updatePushSubscription(marketingSubscriptionStatus)
     }
 
     companion object {

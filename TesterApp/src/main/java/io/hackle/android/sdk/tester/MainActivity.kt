@@ -23,7 +23,6 @@ import io.hackle.sdk.common.HackleInAppMessageAction
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HackleInAppMessageView
 import io.hackle.sdk.common.HackleMarketingSubscriptionStatus
-import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
@@ -178,25 +177,25 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Switch>(R.id.push_switch).setOnCheckedChangeListener { _, isChecked ->
             if(isChecked) {
-                Hackle.app.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+                Hackle.app.updatePushSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
             } else {
-                Hackle.app.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+                Hackle.app.updatePushSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
             }
         }
 
         findViewById<Switch>(R.id.sms_switch).setOnCheckedChangeListener { _, isChecked ->
             if(isChecked) {
-                Hackle.app.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+                Hackle.app.updateSmsSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
             } else {
-                Hackle.app.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+                Hackle.app.updateSmsSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
             }
         }
 
         findViewById<Switch>(R.id.kakao_switch).setOnCheckedChangeListener { _, isChecked ->
             if(isChecked) {
-                Hackle.app.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+                Hackle.app.updateKakaoSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
             } else {
-                Hackle.app.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+                Hackle.app.updateKakaoSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
             }
         }
 

@@ -7,7 +7,6 @@ import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIEventManager
-import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
@@ -72,7 +71,7 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
-    
+
     @RelaxedMockK
     private lateinit var piiEventManager: PIIEventManager
 
@@ -748,8 +747,8 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updatePushSubscriptionStatus - set subscribed`() {
-        sut.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+    fun `updatePushSubscription - set subscribed`() {
+        sut.updatePushSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -769,8 +768,8 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updatePushSubscriptionStatus - set unsubscribed`() {
-        sut.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+    fun `updatePushSubscription - set unsubscribed`() {
+        sut.updatePushSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -787,8 +786,13 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updatePushSubscriptionStatus - set unknown`() {
-        sut.updatePushSubscriptionStatus(HackleMarketingSubscriptionStatus.UNKNOWN)
+    fun `updatePushSubscriptions - set unknown`() {
+        sut.updatePushSubscriptions(
+            HackleMarketingSubscriptionOperations
+                .builder()
+                .global(HackleMarketingSubscriptionStatus.UNKNOWN)
+                .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -805,8 +809,8 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updateSmsSubscriptionStatus - set subscribed`() {
-        sut.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+    fun `updateSmsSubscription - set subscribed`() {
+        sut.updateSmsSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -826,8 +830,8 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updateSmsSubscriptionStatus - set unsubscribed`() {
-        sut.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+    fun `updateSmsSubscription - set unsubscribed`() {
+        sut.updateSmsSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -844,8 +848,13 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updateSmsSubscriptionStatus - set unknown`() {
-        sut.updateSmsSubscriptionStatus(HackleMarketingSubscriptionStatus.UNKNOWN)
+    fun `updateSmsSubscriptions - set unknown`() {
+        sut.updateSmsSubscriptions(
+            HackleMarketingSubscriptionOperations
+                .builder()
+                .global(HackleMarketingSubscriptionStatus.UNKNOWN)
+                .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -860,9 +869,10 @@ class HackleAppTest {
             )
         }
     }
+
     @Test
-    fun `updateKakaoSubscriptionStatus - set subscribed`() {
-        sut.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+    fun `updateKakaoSubscription - set subscribed`() {
+        sut.updateKakaoSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -882,8 +892,8 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updateKakaoSubscriptionStatus - set unsubscribed`() {
-        sut.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+    fun `updateKakaoSubscription - set unsubscribed`() {
+        sut.updateKakaoSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -900,8 +910,13 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updateKakaoSubscriptionStatus - set unknown`() {
-        sut.updateKakaoSubscriptionStatus(HackleMarketingSubscriptionStatus.UNKNOWN)
+    fun `updateKakaoSubscriptions - set unknown`() {
+        sut.updateKakaoSubscriptions(
+            HackleMarketingSubscriptionOperations
+                .builder()
+                .global(HackleMarketingSubscriptionStatus.UNKNOWN)
+                .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
