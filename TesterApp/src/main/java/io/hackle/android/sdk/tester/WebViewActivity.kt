@@ -11,7 +11,7 @@ import io.hackle.android.HackleApp
 class WebViewActivity : AppCompatActivity() {
     private lateinit var webView: WebView
 
-    @SuppressLint("NewApi")
+    @SuppressLint("NewApi", "SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_webview)
