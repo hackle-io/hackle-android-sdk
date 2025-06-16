@@ -536,6 +536,28 @@ class HackleApp internal constructor(
         log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
+    @Deprecated("user updatePushSubscriptionStatus(status: HackleMarketingSubscriptionStatus) instead.")
+    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
+        val operations = HacklePushSubscriptionOperations.builder()
+            .global(status)
+            .build()
+        try {
+            track(operations.toEvent())
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription properties: $e" }
+        }
+
+        val marketingSubscriptionStatus = if (status == HacklePushSubscriptionStatus.SUBSCRIBED) {
+            HackleMarketingSubscriptionStatus.SUBSCRIBED
+        } else if (status == HacklePushSubscriptionStatus.UNSUBSCRIBED) {
+            HackleMarketingSubscriptionStatus.UNSUBSCRIBED
+        } else {
+            HackleMarketingSubscriptionStatus.UNKNOWN
+        }
+        updatePushSubscriptionStatus(marketingSubscriptionStatus)
+    }
+
     companion object {
 
         private val log = Logger<HackleApp>()
