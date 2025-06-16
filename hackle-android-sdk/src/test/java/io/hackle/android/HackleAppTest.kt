@@ -8,6 +8,9 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.pii.phonenumber.PhoneNumber
+import io.hackle.android.internal.push.PushPlatformType
+import io.hackle.android.internal.push.PushProviderType
+import io.hackle.android.internal.push.token.PushToken
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.session.Session
@@ -124,6 +127,12 @@ class HackleAppTest {
     fun `sessionId`() {
         every { sessionManager.requiredSession } returns Session("42")
         expectThat(sut.sessionId).isEqualTo("42")
+    }
+
+    @Test
+    fun `pushToken`() {
+        every { pushTokenManager.currentPushToken } returns PushToken.of("current_push_token_string")
+        expectThat(sut.pushToken).equals(PushToken.of("current_push_token_string"))
     }
 
     @Test

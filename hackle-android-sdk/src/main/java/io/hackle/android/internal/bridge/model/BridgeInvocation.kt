@@ -22,7 +22,8 @@ internal class BridgeInvocation(string: String) {
         TRACK("track"),
         REMOTE_CONFIG("remoteConfig"),
         SHOW_USER_EXPLORER("showUserExplorer"),
-        HIDE_USER_EXPLORER("hideUserExplorer");
+        HIDE_USER_EXPLORER("hideUserExplorer"),
+        GET_PUSH_TOKEN("getPushToken");
 
         companion object {
             private val ALL = values().associateBy { it.text }

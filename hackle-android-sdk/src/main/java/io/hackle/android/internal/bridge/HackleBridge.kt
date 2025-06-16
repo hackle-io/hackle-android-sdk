@@ -108,6 +108,11 @@ internal class HackleBridge(val app: HackleApp) {
                 app.hideUserExplorer()
                 BridgeResponse.success()
             }
+
+            GET_PUSH_TOKEN -> {
+                val data = app.pushToken
+                BridgeResponse.success(data)
+            }
         }
     }
 
