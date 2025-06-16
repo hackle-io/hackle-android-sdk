@@ -536,7 +536,7 @@ class HackleApp internal constructor(
         log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
-    @Deprecated("user updatePushSubscriptionStatus(status: HackleMarketingSubscriptionStatus) instead.")
+    @Deprecated("use updatePushSubscriptionStatus(status: HackleMarketingSubscriptionStatus) instead.")
     fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
         val marketingSubscriptionStatus = if (status == HacklePushSubscriptionStatus.SUBSCRIBED) {
             HackleMarketingSubscriptionStatus.SUBSCRIBED
