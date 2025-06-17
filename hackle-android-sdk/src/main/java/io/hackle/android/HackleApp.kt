@@ -35,6 +35,9 @@ import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.marketing.HackleMarketingChannel
+import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionOperations
+import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionStatus
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Metrics
@@ -42,9 +45,7 @@ import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.model.toEvent
-import io.hackle.sdk.core.model.toKakaoSubscriptionEvent
-import io.hackle.sdk.core.model.toPushSubscriptionEvent
-import io.hackle.sdk.core.model.toSmsSubscriptionEvent
+import io.hackle.sdk.core.model.toSubscriptionEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
 
@@ -359,55 +360,25 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
 
-    fun updatePushSubscription(globalStatus: HackleMarketingSubscriptionStatus) {
-        updatePushSubscriptions(
+    fun updateMarketingSubscription(channel: HackleMarketingChannel, status: HackleMarketingSubscriptionStatus) {
+        updateMarketingSubscriptions(
+            channel,
             HackleMarketingSubscriptionOperations
                 .builder()
-                .global(globalStatus)
+                .global(status)
                 .build()
         )
     }
 
-    fun updatePushSubscriptions(operations: HackleMarketingSubscriptionOperations) {
+    fun updateMarketingSubscriptions(
+        channel: HackleMarketingChannel,
+        operations: HackleMarketingSubscriptionOperations
+    ) {
         try {
-            track(operations.toPushSubscriptionEvent())
+            track(operations.toSubscriptionEvent(channel))
             eventProcessor.flush()
         } catch (e: Exception) {
-            log.error { "Unexpected exception while update push subscription properties: $e" }
-        }
-    }
-
-    fun updateSmsSubscription(globalStatus: HackleMarketingSubscriptionStatus) {
-        updateSmsSubscriptions(
-            HackleMarketingSubscriptionOperations.builder()
-                .global(globalStatus)
-                .build()
-        )
-    }
-
-    fun updateSmsSubscriptions(operations: HackleMarketingSubscriptionOperations) {
-        try {
-            track(operations.toSmsSubscriptionEvent())
-            eventProcessor.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update sms subscription status: $e" }
-        }
-    }
-
-    fun updateKakaoSubscription(globalStatus: HackleMarketingSubscriptionStatus) {
-        updateKakaoSubscriptions(
-            HackleMarketingSubscriptionOperations.builder()
-                .global(globalStatus)
-                .build()
-        )
-    }
-
-    fun updateKakaoSubscriptions(operations: HackleMarketingSubscriptionOperations) {
-        try {
-            track(operations.toKakaoSubscriptionEvent())
-            eventProcessor.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update kakao subscription status: $e" }
+            log.error { "Unexpected exception while update marketing subscription properties: $e" }
         }
     }
 
@@ -561,7 +532,7 @@ class HackleApp internal constructor(
         } else {
             HackleMarketingSubscriptionStatus.UNKNOWN
         }
-        updatePushSubscription(marketingSubscriptionStatus)
+        updateMarketingSubscription(HackleMarketingChannel.PUSH, marketingSubscriptionStatus)
     }
 
     companion object {

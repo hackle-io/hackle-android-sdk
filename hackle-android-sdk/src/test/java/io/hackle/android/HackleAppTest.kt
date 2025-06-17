@@ -22,6 +22,9 @@ import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.marketing.HackleMarketingChannel
+import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionOperations
+import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionStatus
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.Experiment
@@ -748,7 +751,7 @@ class HackleAppTest {
 
     @Test
     fun `updatePushSubscription - set subscribed`() {
-        sut.updatePushSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+        sut.updateMarketingSubscription(HackleMarketingChannel.PUSH, HackleMarketingSubscriptionStatus.SUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -767,71 +770,10 @@ class HackleAppTest {
         }
     }
 
-    @Test
-    fun `updatePushSubscription - set unsubscribed`() {
-        sut.updatePushSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$push_subscriptions")
-                            .property("\$global", "UNSUBSCRIBED")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
-    }
-
-    @Test
-    fun `updatePushSubscriptions - set unknown`() {
-        sut.updatePushSubscriptions(
-            HackleMarketingSubscriptionOperations
-                .builder()
-                .global(HackleMarketingSubscriptionStatus.UNKNOWN)
-                .build()
-        )
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$push_subscriptions")
-                            .property("\$global", "UNKNOWN")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
-    }
 
     @Test
     fun `updateSmsSubscription - set subscribed`() {
-        sut.updateSmsSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$sms_subscriptions")
-                            .property("\$global", "SUBSCRIBED")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
-        verify(exactly = 1) {
-            eventProcessor.flush()
-        }
-    }
-
-    @Test
-    fun `updateSmsSubscription - set unsubscribed`() {
-        sut.updateSmsSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+        sut.updateMarketingSubscription(HackleMarketingChannel.SMS, HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
         verify(exactly = 1) {
             core.track(
                 withArg {
@@ -845,40 +787,20 @@ class HackleAppTest {
                 any()
             )
         }
-    }
-
-    @Test
-    fun `updateSmsSubscriptions - set unknown`() {
-        sut.updateSmsSubscriptions(
-            HackleMarketingSubscriptionOperations
-                .builder()
-                .global(HackleMarketingSubscriptionStatus.UNKNOWN)
-                .build()
-        )
         verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$sms_subscriptions")
-                            .property("\$global", "UNKNOWN")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
+            eventProcessor.flush()
         }
     }
 
     @Test
     fun `updateKakaoSubscription - set subscribed`() {
-        sut.updateKakaoSubscription(HackleMarketingSubscriptionStatus.SUBSCRIBED)
+        sut.updateMarketingSubscription(HackleMarketingChannel.KAKAO, HackleMarketingSubscriptionStatus.UNKNOWN)
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$kakao_subscriptions")
-                            .property("\$global", "SUBSCRIBED")
+                            .property("\$global", "UNKNOWN")
                             .build()
                     )
                 },
@@ -892,29 +814,12 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updateKakaoSubscription - set unsubscribed`() {
-        sut.updateKakaoSubscription(HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$kakao_subscriptions")
-                            .property("\$global", "UNSUBSCRIBED")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
-    }
-
-    @Test
-    fun `updateKakaoSubscriptions - set unknown`() {
-        sut.updateKakaoSubscriptions(
-            HackleMarketingSubscriptionOperations
+    fun `updateMarketingSubscription - custom`() {
+        sut.updateMarketingSubscriptions(
+            HackleMarketingChannel.KAKAO, HackleMarketingSubscriptionOperations
                 .builder()
-                .global(HackleMarketingSubscriptionStatus.UNKNOWN)
+                .set("advertise", HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+                .set("info", HackleMarketingSubscriptionStatus.SUBSCRIBED)
                 .build()
         )
         verify(exactly = 1) {
@@ -922,13 +827,17 @@ class HackleAppTest {
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$kakao_subscriptions")
-                            .property("\$global", "UNKNOWN")
+                            .property("advertise", "UNSUBSCRIBED")
+                            .property("info", "SUBSCRIBED")
                             .build()
                     )
                 },
                 any(),
                 any()
             )
+        }
+        verify(exactly = 1) {
+            eventProcessor.flush()
         }
     }
 }
