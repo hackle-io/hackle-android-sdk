@@ -19,12 +19,11 @@ import io.hackle.android.mock.MockDevice
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.*
+import io.hackle.sdk.common.channel.HackleSubscriptionOperations
+import io.hackle.sdk.common.channel.HackleSubscriptionStatus
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
-import io.hackle.sdk.common.marketing.HackleMarketingChannel
-import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionOperations
-import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionStatus
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.Experiment
@@ -750,14 +749,23 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updatePushSubscription - set subscribed`() {
-        sut.updateMarketingSubscription(HackleMarketingChannel.PUSH, HackleMarketingSubscriptionStatus.SUBSCRIBED)
+    fun updatePushSubscriptions() {
+        sut.updatePushSubscriptions(HackleSubscriptionOperations.builder()
+            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+            .information(HackleSubscriptionStatus.SUBSCRIBED)
+            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+            .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$push_subscriptions")
-                            .property("\$global", "SUBSCRIBED")
+                            .properties(mapOf(
+                                "\$marketing" to "UNSUBSCRIBED",
+                                "\$information" to "SUBSCRIBED",
+                                "chat" to "UNKNOWN"
+                            ))
                             .build()
                     )
                 },
@@ -766,20 +774,29 @@ class HackleAppTest {
             )
         }
         verify(exactly = 1) {
-            eventProcessor.flush()
+            core.flush()
         }
     }
 
 
     @Test
-    fun `updateSmsSubscription - set subscribed`() {
-        sut.updateMarketingSubscription(HackleMarketingChannel.SMS, HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
+    fun updateSmsSubscriptions() {
+        sut.updateSmsSubscriptions(HackleSubscriptionOperations.builder()
+            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+            .information(HackleSubscriptionStatus.SUBSCRIBED)
+            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+            .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$sms_subscriptions")
-                            .property("\$global", "UNSUBSCRIBED")
+                            .properties(mapOf(
+                                "\$marketing" to "UNSUBSCRIBED",
+                                "\$information" to "SUBSCRIBED",
+                                "chat" to "UNKNOWN"
+                            ))
                             .build()
                     )
                 },
@@ -788,47 +805,28 @@ class HackleAppTest {
             )
         }
         verify(exactly = 1) {
-            eventProcessor.flush()
+            core.flush()
         }
     }
 
     @Test
-    fun `updateKakaoSubscription - set subscribed`() {
-        sut.updateMarketingSubscription(HackleMarketingChannel.KAKAO, HackleMarketingSubscriptionStatus.UNKNOWN)
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$kakao_subscriptions")
-                            .property("\$global", "UNKNOWN")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
-        verify(exactly = 1) {
-            eventProcessor.flush()
-        }
-    }
-
-    @Test
-    fun `updateMarketingSubscription - custom`() {
-        sut.updateMarketingSubscriptions(
-            HackleMarketingChannel.KAKAO, HackleMarketingSubscriptionOperations
-                .builder()
-                .set("advertise", HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
-                .set("info", HackleMarketingSubscriptionStatus.SUBSCRIBED)
-                .build()
+    fun updateKakaoSubscriptions() {
+        sut.updateKakaoSubscriptions(HackleSubscriptionOperations.builder()
+            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+            .information(HackleSubscriptionStatus.SUBSCRIBED)
+            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+            .build()
         )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$kakao_subscriptions")
-                            .property("advertise", "UNSUBSCRIBED")
-                            .property("info", "SUBSCRIBED")
+                            .properties(mapOf(
+                                "\$marketing" to "UNSUBSCRIBED",
+                                "\$information" to "SUBSCRIBED",
+                                "chat" to "UNKNOWN"
+                            ))
                             .build()
                     )
                 },
@@ -837,7 +835,7 @@ class HackleAppTest {
             )
         }
         verify(exactly = 1) {
-            eventProcessor.flush()
+            core.flush()
         }
     }
 }

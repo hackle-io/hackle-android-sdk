@@ -32,12 +32,10 @@ import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.sdk.common.Variation.Companion.CONTROL
+import io.hackle.sdk.common.channel.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
-import io.hackle.sdk.common.marketing.HackleMarketingChannel
-import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionOperations
-import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionStatus
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Metrics
@@ -45,7 +43,6 @@ import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.model.toEvent
-import io.hackle.sdk.core.model.toSubscriptionEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
 
@@ -360,25 +357,33 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
 
-    fun updateMarketingSubscription(channel: HackleMarketingChannel, status: HackleMarketingSubscriptionStatus) {
-        updateMarketingSubscriptions(
-            channel,
-            HackleMarketingSubscriptionOperations
-                .builder()
-                .global(status)
-                .build()
-        )
+    fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$push_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription status: $e" }
+        }
     }
 
-    fun updateMarketingSubscriptions(
-        channel: HackleMarketingChannel,
-        operations: HackleMarketingSubscriptionOperations
-    ) {
+    fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
         try {
-            track(operations.toSubscriptionEvent(channel))
-            eventProcessor.flush()
+            val event = operations.toEvent("\$sms_subscriptions")
+            track(event)
+            core.flush()
         } catch (e: Exception) {
-            log.error { "Unexpected exception while update marketing subscription properties: $e" }
+            log.error { "Unexpected exception while update sms subscription status: $e" }
+        }
+    }
+
+    fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$kakao_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update kakao subscription status: $e" }
         }
     }
 
@@ -523,16 +528,11 @@ class HackleApp internal constructor(
         log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
-    @Deprecated("use updatePushSubscription(globalStatus) instead.")
+    @Deprecated("Do not use this method because it does nothing. Use `updatePushSubscription(operations)` instead.")
     fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
-        val marketingSubscriptionStatus = if (status == HacklePushSubscriptionStatus.SUBSCRIBED) {
-            HackleMarketingSubscriptionStatus.SUBSCRIBED
-        } else if (status == HacklePushSubscriptionStatus.UNSUBSCRIBED) {
-            HackleMarketingSubscriptionStatus.UNSUBSCRIBED
-        } else {
-            HackleMarketingSubscriptionStatus.UNKNOWN
+        log.error {
+            "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
         }
-        updateMarketingSubscription(HackleMarketingChannel.PUSH, marketingSubscriptionStatus)
     }
 
     companion object {
