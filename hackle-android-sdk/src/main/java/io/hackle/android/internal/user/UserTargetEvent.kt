@@ -1,9 +1,9 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.workspace.parseEnumOrNull
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.TargetEvent
-import io.hackle.sdk.core.model.TargetKeyTypeDto
 
 internal data class UserTargetEvents internal constructor(private val targetEvents: List<TargetEvent>) {
 
@@ -82,7 +82,7 @@ internal fun TargetEventStatDto.toStat(): TargetEvent.Stat {
 internal fun TargetEventPropertyDto.toProperty(): TargetEvent.Property? {
     return TargetEvent.Property(
         key = key,
-        type = TargetKeyTypeDto.from(type)?.type ?: return null,
+        type = parseEnumOrNull<Target.Key.Type>(type) ?: return null,
         value = value
     )
 }
