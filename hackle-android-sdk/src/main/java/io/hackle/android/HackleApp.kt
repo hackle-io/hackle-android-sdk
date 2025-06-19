@@ -144,6 +144,36 @@ class HackleApp internal constructor(
         }
     }
 
+    fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$push_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription status: $e" }
+        }
+    }
+
+    fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$sms_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update sms subscription status: $e" }
+        }
+    }
+
+    fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$kakao_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update kakao subscription status: $e" }
+        }
+    }
+
     @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
         try {
@@ -355,36 +385,6 @@ class HackleApp internal constructor(
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
         InAppMessageUi.instance.setListener(listener)
-    }
-
-    fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
-        try {
-            val event = operations.toEvent("\$push_subscriptions")
-            track(event)
-            core.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update push subscription status: $e" }
-        }
-    }
-
-    fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
-        try {
-            val event = operations.toEvent("\$sms_subscriptions")
-            track(event)
-            core.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update sms subscription status: $e" }
-        }
-    }
-
-    fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
-        try {
-            val event = operations.toEvent("\$kakao_subscriptions")
-            track(event)
-            core.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update kakao subscription status: $e" }
-        }
     }
 
     @JvmOverloads

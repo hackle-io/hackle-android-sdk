@@ -4,6 +4,7 @@ import io.hackle.android.HackleApp
 import io.hackle.android.internal.bridge.model.*
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
 import io.hackle.sdk.common.*
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 
 @Suppress("DEPRECATION")
 internal class HackleBridge(val app: HackleApp) {
@@ -51,6 +52,21 @@ internal class HackleBridge(val app: HackleApp) {
 
             UPDATE_USER_PROPERTY -> {
                 updateUserProperties(parameters)
+                BridgeResponse.success()
+            }
+
+            UPDATE_PUSH_SUBSCRIPTIONS -> {
+                updatePushSubscriptions(parameters)
+                BridgeResponse.success()
+            }
+
+            UPDATE_SMS_SUBSCRIPTIONS -> {
+                updateSmsSubscriptions(parameters)
+                BridgeResponse.success()
+            }
+
+            UPDATE_KAKAO_SUBSCRIPTIONS -> {
+                updateKakaoSubscriptions(parameters)
                 BridgeResponse.success()
             }
 
@@ -140,6 +156,27 @@ internal class HackleBridge(val app: HackleApp) {
         val dto = checkNotNull(parameters["operations"] as? PropertyOperationsDto)
         val operations = PropertyOperations.from(dto)
         app.updateUserProperties(operations)
+    }
+
+    private fun updatePushSubscriptions(parameters: Map<String, Any>) {
+        @Suppress("UNCHECKED_CAST")
+        val dto = checkNotNull(parameters["operations"] as? HackleSubscriptionOperationsDto)
+        val operations = HackleSubscriptionOperations.from(dto)
+        app.updatePushSubscriptions(operations)
+    }
+
+    private fun updateSmsSubscriptions(parameters: Map<String, Any>) {
+        @Suppress("UNCHECKED_CAST")
+        val dto = checkNotNull(parameters["operations"] as? HackleSubscriptionOperationsDto)
+        val operations = HackleSubscriptionOperations.from(dto)
+        app.updateSmsSubscriptions(operations)
+    }
+
+    private fun updateKakaoSubscriptions(parameters: Map<String, Any>) {
+        @Suppress("UNCHECKED_CAST")
+        val dto = checkNotNull(parameters["operations"] as? HackleSubscriptionOperationsDto)
+        val operations = HackleSubscriptionOperations.from(dto)
+        app.updateKakaoSubscriptions(operations)
     }
 
     private fun setPhoneNumber(parameters: Map<String, Any>) {
