@@ -22,8 +22,9 @@ import io.hackle.sdk.common.HackleInAppMessage
 import io.hackle.sdk.common.HackleInAppMessageAction
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HackleInAppMessageView
-import io.hackle.sdk.common.marketing.HackleMarketingChannel
-import io.hackle.sdk.common.marketing.HackleMarketingSubscriptionStatus
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
+
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
@@ -177,27 +178,33 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Switch>(R.id.push_switch).setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked) {
-                Hackle.app.updateMarketingSubscription(HackleMarketingChannel.PUSH, HackleMarketingSubscriptionStatus.SUBSCRIBED)
-            } else {
-                Hackle.app.updateMarketingSubscription(HackleMarketingChannel.PUSH, HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
-            }
+            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updatePushSubscriptions(HackleSubscriptionOperations.builder()
+                .marketing(status)
+                .information(status)
+                .custom("chat", status)
+                .build()
+            )
         }
 
         findViewById<Switch>(R.id.sms_switch).setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked) {
-                Hackle.app.updateMarketingSubscription(HackleMarketingChannel.SMS, HackleMarketingSubscriptionStatus.SUBSCRIBED)
-            } else {
-                Hackle.app.updateMarketingSubscription(HackleMarketingChannel.SMS, HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
-            }
+            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updateSmsSubscriptions(HackleSubscriptionOperations.builder()
+                .marketing(status)
+                .information(status)
+                .custom("chat", status)
+                .build()
+            )
         }
 
         findViewById<Switch>(R.id.kakao_switch).setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked) {
-                Hackle.app.updateMarketingSubscription(HackleMarketingChannel.KAKAO, HackleMarketingSubscriptionStatus.SUBSCRIBED)
-            } else {
-                Hackle.app.updateMarketingSubscription(HackleMarketingChannel.KAKAO, HackleMarketingSubscriptionStatus.UNSUBSCRIBED)
-            }
+            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updateKakaoSubscriptions(HackleSubscriptionOperations.builder()
+                .marketing(status)
+                .information(status)
+                .custom("chat", status)
+                .build()
+            )
         }
 
         findViewById<Button>(R.id.secondPage_btn).setOnClickListener {
