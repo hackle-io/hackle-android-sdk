@@ -19,8 +19,8 @@ import io.hackle.android.mock.MockDevice
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.*
-import io.hackle.sdk.common.channel.HackleSubscriptionOperations
-import io.hackle.sdk.common.channel.HackleSubscriptionStatus
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision

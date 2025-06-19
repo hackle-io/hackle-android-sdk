@@ -32,7 +32,7 @@ import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.sdk.common.Variation.Companion.CONTROL
-import io.hackle.sdk.common.channel.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
@@ -528,7 +528,7 @@ class HackleApp internal constructor(
         log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
     }
 
-    @Deprecated("Do not use this method because it does nothing. Use `updatePushSubscription(operations)` instead.")
+    @Deprecated("Do not use this method because it does nothing. Use `updatePushSubscriptions(operations)` instead.")
     fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
         log.error {
             "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
