@@ -386,8 +386,8 @@ class HackleApp internal constructor(
         )
     }
 
-    fun setCurrentScreen(name: String, className: String) {
-        screenManager.setCurrentScreen(Screen.from(name, className), clock.currentMillis())
+    fun setCurrentScreen(screenName: String, className: String) {
+        screenManager.setCurrentScreen(Screen.from(screenName, className), clock.currentMillis())
     }
 
     override fun close() {
