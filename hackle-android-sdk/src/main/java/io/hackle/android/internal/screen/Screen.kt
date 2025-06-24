@@ -12,9 +12,5 @@ internal data class Screen(
             val name = activity::class.java.simpleName
             return Screen(name, name)
         }
-
-        fun from(name: String, className: String): Screen {
-            return Screen(name, className)
-        }
     }
 }

@@ -13,11 +13,5 @@ class ScreenTest {
         expectThat(screen).isEqualTo(Screen("ScreenActivity", "ScreenActivity"))
     }
 
-    @Test
-    fun `create from custom`() {
-        val screen = Screen.from("custom", "custom")
-        expectThat(screen).isEqualTo(Screen("custom", "custom"))
-    }
-
     private class ScreenActivity : Activity()
 }

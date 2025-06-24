@@ -814,7 +814,7 @@ class HackleAppTest {
     fun `setCurrentScreen`() {
         sut.setCurrentScreen("current_screen", "current_class")
         verify(exactly = 1) {
-            screenManager.setCurrentScreen(Screen.from("current_screen", "current_class"), any())
+            screenManager.setCurrentScreen(Screen("current_screen", "current_class"), any())
         }
     }
 }
