@@ -21,7 +21,7 @@ import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
-import io.hackle.android.internal.screen.Screen
+import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -386,8 +386,8 @@ class HackleApp internal constructor(
         )
     }
 
-    fun setCurrentScreen(screenName: String, className: String) {
-        screenManager.setCurrentScreen(Screen(screenName, className), clock.currentMillis())
+    fun setCurrentScreen(screen: Screen) {
+        screenManager.setCurrentScreen(screen, clock.currentMillis())
     }
 
     override fun close() {

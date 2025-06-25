@@ -5,7 +5,7 @@ import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.lifecycle.Lifecycle
 import io.hackle.android.internal.lifecycle.Lifecycle.*
 import io.hackle.android.internal.lifecycle.LifecycleListener
-import io.hackle.android.internal.screen.Screen
+import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenListener
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.user.UserManager

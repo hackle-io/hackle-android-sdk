@@ -372,7 +372,7 @@ internal class HackleBridge(val app: HackleApp) {
         if (parameters["screenName"] is String && parameters["className"] is String) {
             val screenName = parameters["screenName"] as String
             val className = parameters["className"] as String
-            app.setCurrentScreen(screenName, className)
+            app.setCurrentScreen(Screen(screenName, className))
         } else {
             throw IllegalArgumentException("Valid parameter must be provided.")
         }

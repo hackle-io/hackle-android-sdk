@@ -10,7 +10,7 @@ import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
-import io.hackle.android.internal.screen.Screen
+import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
@@ -811,8 +811,8 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setCurrentScreen`() {
-        sut.setCurrentScreen("current_screen", "current_class")
+    fun setCurrentScreen() {
+        sut.setCurrentScreen(Screen("current_screen", "current_class"))
         verify(exactly = 1) {
             screenManager.setCurrentScreen(Screen("current_screen", "current_class"), any())
         }
