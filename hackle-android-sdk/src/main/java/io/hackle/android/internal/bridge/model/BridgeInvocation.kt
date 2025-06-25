@@ -21,6 +21,7 @@ internal class BridgeInvocation(string: String) {
         FEATURE_FLAG_DETAIL("featureFlagDetail"),
         TRACK("track"),
         REMOTE_CONFIG("remoteConfig"),
+        SET_CURRENT_SCREEN("setCurrentScreen"),
         SHOW_USER_EXPLORER("showUserExplorer"),
         HIDE_USER_EXPLORER("hideUserExplorer");
 

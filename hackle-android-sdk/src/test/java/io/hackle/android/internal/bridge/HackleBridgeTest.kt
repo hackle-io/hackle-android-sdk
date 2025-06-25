@@ -1287,6 +1287,27 @@ class HackleBridgeTest {
             assertNull(data)
         }
     }
+    
+    @Test
+    fun `invoke set current screen with parameters`() {
+        every { app.setCurrentScreen(any(), any()) } answers { }
+        val parameters = mapOf(
+            "screenName" to "mainActivity",
+            "className" to "mainActivityClass",
+        )
+        val jsonString = createJsonString("setCurrentScreen", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.setCurrentScreen(
+                withArg { assertThat(it, `is`("mainActivity")) },
+                withArg { assertThat(it, `is`("mainActivityClass")) }
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+        }
+    }
 
     @Test
     fun `invoke with show user explorer`() {
