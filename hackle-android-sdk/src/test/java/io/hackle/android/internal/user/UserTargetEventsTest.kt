@@ -125,10 +125,10 @@ class UserTargetEventsTest {
 
         // then
         expectThat(targetEvent) {
-            get { eventKey }.isEqualTo("purchase")
-            get { stats }.hasSize(1)
-            get { stats.first().count }.isEqualTo(1)
-            get { property }.isNotNull().and {
+            get { this!!.eventKey }.isEqualTo("purchase")
+            get { this!!.stats }.hasSize(1)
+            get { this!!.stats.first().count }.isEqualTo(1)
+            get { this!!.property }.isNotNull().and {
                 get { key }.isEqualTo("price")
                 get { type }.isEqualTo(Target.Key.Type.EVENT_PROPERTY)
                 get { value }.isEqualTo(50000)
@@ -150,10 +150,23 @@ class UserTargetEventsTest {
 
         // then
         expectThat(targetEvent) {
-            get { eventKey }.isEqualTo("login")
-            get { stats }.hasSize(1)
-            get { property }.isNull()
+            get { this!!.eventKey }.isEqualTo("login")
+            get { this!!.stats }.hasSize(1)
+            get { this!!.property }.isNull()
         }
+    }
+
+    @Test
+    fun `toTargetEvent - property는 있으나 존재하지 않는 값이면 null을 반환한다`() {
+        val dto = TargetEventDto(
+            eventKey = "purchase",
+            stats = listOf(TargetEventStatDto(date = 20250613L, count = 1)),
+            property = TargetEventPropertyDto(key = "price", type = "UNKNOWN_PROEPRTY", value = 50000)
+        )
+
+        // when
+        val targetEvent = dto.toTargetEvent()
+        expectThat(targetEvent).isNull()
     }
 
     @Test
@@ -170,9 +183,9 @@ class UserTargetEventsTest {
 
         // then
         expectThat(targetEvent) {
-            get { eventKey }.isEqualTo("app_open")
-            get { stats }.isEmpty()
-            get { property }.isNull()
+            get { this!!.eventKey }.isEqualTo("app_open")
+            get { this!!.stats }.isEmpty()
+            get { this!!.property }.isNull()
         }
     }
 }
