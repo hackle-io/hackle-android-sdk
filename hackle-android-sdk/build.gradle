@@ -51,8 +51,8 @@ dependencies {
         releaseApi "io.hackle:hackle-sdk-common:2.28.0"
         releaseImplementation "io.hackle:hackle-sdk-core:2.28.0"
     } else {
-        api "io.hackle:hackle-sdk-common:2.28.0"
-        implementation "io.hackle:hackle-sdk-core:2.28.0"
+        api "io.hackle:hackle-sdk-common:2.29.0-196c638-SNAPSHOT"
+        implementation "io.hackle:hackle-sdk-core:2.29.0-196c638-SNAPSHOT"
     }
 
 

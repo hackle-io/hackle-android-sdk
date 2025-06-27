@@ -2,13 +2,6 @@
 buildscript {
     ext.kotlin_version = "1.4.10"
     repositories {
-        // NOTE: when use snapshot version, you need to add this repository
-        // maven {
-        //     url "https://oss.sonatype.org/content/repositories/snapshots/"
-        //     content {
-        //         includeGroup "io.hackle"
-        //     }
-        // }
         mavenCentral()
         google()
     }
@@ -40,12 +33,12 @@ nexusPublishing {
 allprojects {
     repositories {
         // NOTE: when use snapshot version, you need to add this repository
-        // maven {
-        //     url "https://oss.sonatype.org/content/repositories/snapshots/"
-        //     content {
-        //         includeGroup "io.hackle"
-        //     }
-        // }
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+            content {
+                includeGroup "io.hackle"
+            }
+        }
         mavenCentral()
         google()
     }
