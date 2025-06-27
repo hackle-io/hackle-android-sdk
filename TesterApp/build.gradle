@@ -22,7 +22,7 @@ android {
         buildConfigField "String", "YOUR_EVENT_URI", properties['eventUri']
         buildConfigField "String", "YOUR_SDK_URI", properties['sdkUri']
         buildConfigField "String", "YOUR_MONITORING_URI", properties['monitoringUri']
-        buildConfigField "String", "YOUR_WEB_URI", properties['webviewUri']
+        buildConfigField "String", "YOUR_WEB_URI", "${properties['webviewUri'] ?: '\"\"'}"
     }
 
     buildTypes {
