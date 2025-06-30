@@ -8,6 +8,7 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.ParameterConfig
 import io.hackle.sdk.common.PropertyOperation
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.decision.Decision
@@ -1285,6 +1286,26 @@ class HackleBridgeTest {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
+        }
+    }
+    
+    @Test
+    fun `invoke set current screen with parameters`() {
+        every { app.setCurrentScreen(any()) } answers { }
+        val parameters = mapOf(
+            "screenName" to "mainActivity",
+            "className" to "mainActivityClass",
+        )
+        val jsonString = createJsonString("setCurrentScreen", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.setCurrentScreen(
+                withArg { assertThat(it, `is`(Screen("mainActivity", "mainActivityClass"))) },
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
         }
     }
 

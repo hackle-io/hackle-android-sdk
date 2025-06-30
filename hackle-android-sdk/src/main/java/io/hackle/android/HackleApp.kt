@@ -21,6 +21,8 @@ import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.sdk.common.Screen
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.user.UserManager
@@ -56,6 +58,7 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
     private val sessionManager: SessionManager,
+    private val screenManager: ScreenManager,
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
@@ -381,6 +384,10 @@ class HackleApp internal constructor(
                 callback?.run()
             }
         )
+    }
+
+    fun setCurrentScreen(screen: Screen) {
+        screenManager.setCurrentScreen(screen, clock.currentMillis())
     }
 
     override fun close() {

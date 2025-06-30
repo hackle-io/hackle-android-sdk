@@ -10,6 +10,8 @@ import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.sdk.common.Screen
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -65,6 +67,9 @@ class HackleAppTest {
     private lateinit var sessionManager: SessionManager
 
     @RelaxedMockK
+    private lateinit var screenManager: ScreenManager
+
+    @RelaxedMockK
     private lateinit var eventProcessor: DefaultEventProcessor
 
     @RelaxedMockK
@@ -103,6 +108,7 @@ class HackleAppTest {
             userManager,
             workspaceManager,
             sessionManager,
+            screenManager,
             eventProcessor,
             pushTokenManager,
             notificationManager,
@@ -801,6 +807,14 @@ class HackleAppTest {
                 any(),
                 any()
             )
+        }
+    }
+
+    @Test
+    fun setCurrentScreen() {
+        sut.setCurrentScreen(Screen("current_screen", "current_class"))
+        verify(exactly = 1) {
+            screenManager.setCurrentScreen(Screen("current_screen", "current_class"), any())
         }
     }
 }

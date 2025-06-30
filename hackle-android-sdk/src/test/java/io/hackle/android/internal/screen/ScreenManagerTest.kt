@@ -5,6 +5,7 @@ import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.ActivityState
 import io.hackle.android.internal.lifecycle.Lifecycle
 import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.mockk.every
 import io.mockk.mockk

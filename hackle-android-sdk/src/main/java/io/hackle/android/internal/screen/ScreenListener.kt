@@ -1,6 +1,7 @@
 package io.hackle.android.internal.screen
 
 import io.hackle.android.internal.core.listener.ApplicationListener
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 
 internal interface ScreenListener : ApplicationListener {
