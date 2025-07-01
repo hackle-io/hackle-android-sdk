@@ -8,6 +8,7 @@ import io.hackle.android.internal.lifecycle.Lifecycle.*
 import io.hackle.android.internal.lifecycle.LifecycleListener
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicReference

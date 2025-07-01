@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Switch
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +22,9 @@ import io.hackle.sdk.common.HackleInAppMessage
 import io.hackle.sdk.common.HackleInAppMessageAction
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HackleInAppMessageView
-import io.hackle.sdk.common.HacklePushSubscriptionStatus
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
+
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
@@ -45,6 +48,9 @@ class MainActivity : AppCompatActivity() {
 
     private val executor = Executors.newScheduledThreadPool(4)
     private lateinit var userService: UserService
+
+    private var isShowUserExplorer = false
+
     override fun onResume() {
         super.onResume()
         Log.i("HackleSdk", "##### onResume")
@@ -68,8 +74,6 @@ class MainActivity : AppCompatActivity() {
         HackleApp.initializeApp(this, sdkKey, config) {
             findViewById<TextView>(R.id.sdk_status).also { it.text = "INITIALIZED" }
         }
-
-        Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
 
         Log.i("HackleSdk", "##### app_launch")
 
@@ -101,23 +105,18 @@ class MainActivity : AppCompatActivity() {
         })
 
         findViewById<TextView>(R.id.sdk_status).setOnClickListener {
-            Hackle.app.showUserExplorer()
+            if(isShowUserExplorer) {
+                Hackle.app.hideUserExplorer()
+            } else {
+                Hackle.app.showUserExplorer()
+            }
+            isShowUserExplorer = !isShowUserExplorer
         }
 
         findViewById<Button>(R.id.ab_text_btn).setOnClickListener {
             longOrNull(R.id.experiment_key)?.let { experimentKey ->
-                if (isChecked(R.id.experiment_with_user)) {
-                    executor.submit {
-                        result(
-                            Hackle.app.variationDetail(experimentKey, userService.user()).toString()
-                        )
-                    }
-
-                } else {
-                    thread {
-                        result(Hackle.app.variationDetail(experimentKey).toString())
-                    }
-
+                thread {
+                    result(Hackle.app.variationDetail(experimentKey).toString())
                 }
             }
 
@@ -125,23 +124,14 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.feature_flag_btn).setOnClickListener {
             longOrNull(R.id.feature_key)?.let { featureKey ->
-                val decision = if (isChecked(R.id.feature_flag_with_user)) {
-                    Hackle.app.featureFlagDetail(featureKey, userService.user())
-                } else {
-                    Hackle.app.featureFlagDetail(featureKey)
-                }
+                val decision = Hackle.app.featureFlagDetail(featureKey)
                 result(decision.toString())
             }
         }
 
         findViewById<Button>(R.id.rc_btn).setOnClickListener {
             textOrNull(R.id.rc_key)?.let { parameterKey ->
-                val value = if (isChecked(R.id.rc_with_user)) {
-                    Hackle.app.remoteConfig(userService.user())
-                        .getString(parameterKey, "Input Default")
-                } else {
-                    Hackle.app.remoteConfig().getString(parameterKey, "Input default")
-                }
+                val value = Hackle.app.remoteConfig().getString(parameterKey, "Input default")
                 result(value)
             }
         }
@@ -157,14 +147,8 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.track_btn).setOnClickListener {
             textOrNull(R.id.event_key)?.let { eventKey ->
-                if (isChecked(R.id.track_with_user)) {
-                    executor.submit {
-                        Hackle.app.track(eventKey, userService.user())
-                    }
-                } else {
-                    executor.submit {
-                        Hackle.app.track(eventKey)
-                    }
+                executor.submit {
+                    Hackle.app.track(eventKey)
                 }
                 result(eventKey)
             }
@@ -193,13 +177,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
-        findViewById<Button>(R.id.pushSubscription_btn).setOnClickListener {
-            Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
+        findViewById<Switch>(R.id.push_switch).setOnCheckedChangeListener { _, isChecked ->
+            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updatePushSubscriptions(HackleSubscriptionOperations.builder()
+                .marketing(status)
+                .information(status)
+                .custom("chat", status)
+                .build()
+            )
         }
 
-        findViewById<Button>(R.id.pushUnsubscription_btn).setOnClickListener {
-            Hackle.app.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNSUBSCRIBED)
+        findViewById<Switch>(R.id.sms_switch).setOnCheckedChangeListener { _, isChecked ->
+            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updateSmsSubscriptions(HackleSubscriptionOperations.builder()
+                .marketing(status)
+                .information(status)
+                .custom("chat", status)
+                .build()
+            )
+        }
+
+        findViewById<Switch>(R.id.kakao_switch).setOnCheckedChangeListener { _, isChecked ->
+            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updateKakaoSubscriptions(HackleSubscriptionOperations.builder()
+                .marketing(status)
+                .information(status)
+                .custom("chat", status)
+                .build()
+            )
         }
 
         findViewById<Button>(R.id.secondPage_btn).setOnClickListener {
