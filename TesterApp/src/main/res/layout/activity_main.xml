@@ -211,11 +211,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <CheckBox
-                    android:id="@+id/experiment_with_user"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
                 <EditText
                     android:id="@+id/experiment_key"
                     android:layout_width="match_parent"
@@ -236,11 +231,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <CheckBox
-                    android:id="@+id/feature_flag_with_user"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
                 <EditText
                     android:id="@+id/feature_key"
                     android:layout_width="match_parent"
@@ -260,11 +250,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
-                <CheckBox
-                    android:id="@+id/rc_with_user"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
 
                 <EditText
                     android:id="@+id/rc_key"
@@ -287,11 +272,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <CheckBox
-                    android:id="@+id/track_with_user"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
                 <EditText
                     android:id="@+id/event_key"
                     android:layout_width="match_parent"
@@ -306,10 +286,19 @@
                     android:text="@string/track" />
             </LinearLayout>
 
-            <Spinner
-                android:id="@+id/hackle_spinner"
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/materialDivider"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"></Spinner>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/marketing_subscription_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Marketing Subscription" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -317,21 +306,26 @@
                 android:orientation="horizontal"
                 android:weightSum="2">
 
-                <Button
-                    android:id="@+id/pushSubscription_btn"
-                    android:layout_width="match_parent"
+                <Switch
+                    android:id="@+id/push_switch"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/push_subscribed" />
+                    android:text="Push" />
 
-                <Button
-                    android:id="@+id/pushUnsubscription_btn"
-                    android:layout_width="match_parent"
+                <Switch
+                    android:id="@+id/sms_switch"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
                     android:layout_weight="1"
-                    android:text="@string/push_unsubscribed" />
+                    android:text="SMS" />
 
+                <Switch
+                    android:id="@+id/kakao_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Kakao" />
             </LinearLayout>
 
             <Button

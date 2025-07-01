@@ -2,6 +2,7 @@ package io.hackle.android.internal.screen
 
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
 

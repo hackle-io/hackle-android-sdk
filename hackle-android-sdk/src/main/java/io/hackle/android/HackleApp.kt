@@ -21,6 +21,8 @@ import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.sdk.common.Screen
+import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.user.UserManager
@@ -30,7 +32,9 @@ import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
+import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.sdk.common.Variation.Companion.CONTROL
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
@@ -56,6 +60,7 @@ class HackleApp internal constructor(
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
     private val sessionManager: SessionManager,
+    private val screenManager: ScreenManager,
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
@@ -139,6 +144,36 @@ class HackleApp internal constructor(
             log.error { "Unexpected exception while update user properties: $e" }
         } finally {
             callback?.run()
+        }
+    }
+
+    fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$push_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription status: $e" }
+        }
+    }
+
+    fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$sms_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update sms subscription status: $e" }
+        }
+    }
+
+    fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$kakao_subscriptions")
+            track(event)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update kakao subscription status: $e" }
         }
     }
 
@@ -343,7 +378,7 @@ class HackleApp internal constructor(
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                    "JavaScript can use reflection to manipulate application"
+                        "JavaScript can use reflection to manipulate application"
             )
         }
         val bridge = HackleBridge(this)
@@ -353,18 +388,6 @@ class HackleApp internal constructor(
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
         InAppMessageUi.instance.setListener(listener)
-    }
-
-    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
-        val operations = HacklePushSubscriptionOperations.builder()
-            .global(status)
-            .build()
-        try {
-            track(operations.toEvent())
-            eventProcessor.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update push subscription properties: $e" }
-        }
     }
 
     @JvmOverloads
@@ -381,6 +404,10 @@ class HackleApp internal constructor(
                 callback?.run()
             }
         )
+    }
+
+    fun setCurrentScreen(screen: Screen) {
+        screenManager.setCurrentScreen(screen, clock.currentMillis())
     }
 
     override fun close() {
@@ -506,6 +533,13 @@ class HackleApp internal constructor(
     @Deprecated("Do not use the method because Hackle SDK will register push token by self. (Will remove v2.38.0)")
     fun setPushToken(token: String) {
         log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
+    }
+
+    @Deprecated("Do not use this method because it does nothing. Use `updatePushSubscriptions(operations)` instead.")
+    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
+        log.error {
+            "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
+        }
     }
 
     companion object {

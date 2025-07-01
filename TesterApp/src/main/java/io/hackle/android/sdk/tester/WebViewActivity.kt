@@ -10,8 +10,9 @@ import io.hackle.android.HackleApp
 
 class WebViewActivity : AppCompatActivity() {
     private lateinit var webView: WebView
+    private val webUri = BuildConfig.YOUR_WEB_URI
 
-    @SuppressLint("NewApi")
+    @SuppressLint("NewApi", "SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_webview)
@@ -30,6 +31,6 @@ class WebViewActivity : AppCompatActivity() {
         webView.settings.domStorageEnabled = true
         WebView.setWebContentsDebuggingEnabled(true)
         HackleApp.getInstance().setWebViewBridge(webView)
-        webView.loadUrl("")
+        webView.loadUrl(webUri)
     }
 }
