@@ -7,7 +7,6 @@ import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIEventManager
-import io.hackle.android.internal.pii.phonenumber.PhoneNumber
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
@@ -22,6 +21,8 @@ import io.hackle.android.mock.MockDevice
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.sdk.common.*
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
@@ -77,7 +78,7 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
-    
+
     @RelaxedMockK
     private lateinit var piiEventManager: PIIEventManager
 
@@ -754,14 +755,23 @@ class HackleAppTest {
     }
 
     @Test
-    fun `updatePushSubscriptionStatus - set subscribed`() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
+    fun updatePushSubscriptions() {
+        sut.updatePushSubscriptions(HackleSubscriptionOperations.builder()
+            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+            .information(HackleSubscriptionStatus.SUBSCRIBED)
+            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+            .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$push_subscriptions")
-                            .property("\$global", "SUBSCRIBED")
+                            .properties(mapOf(
+                                "\$marketing" to "UNSUBSCRIBED",
+                                "\$information" to "SUBSCRIBED",
+                                "chat" to "UNKNOWN"
+                            ))
                             .build()
                     )
                 },
@@ -770,19 +780,59 @@ class HackleAppTest {
             )
         }
         verify(exactly = 1) {
-            eventProcessor.flush()
+            core.flush()
+        }
+    }
+
+
+    @Test
+    fun updateSmsSubscriptions() {
+        sut.updateSmsSubscriptions(HackleSubscriptionOperations.builder()
+            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+            .information(HackleSubscriptionStatus.SUBSCRIBED)
+            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+            .build()
+        )
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it).isEqualTo(
+                        Event.builder("\$sms_subscriptions")
+                            .properties(mapOf(
+                                "\$marketing" to "UNSUBSCRIBED",
+                                "\$information" to "SUBSCRIBED",
+                                "chat" to "UNKNOWN"
+                            ))
+                            .build()
+                    )
+                },
+                any(),
+                any()
+            )
+        }
+        verify(exactly = 1) {
+            core.flush()
         }
     }
 
     @Test
-    fun `updatePushSubscriptionStatus - set unsubscribed`() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNSUBSCRIBED)
+    fun updateKakaoSubscriptions() {
+        sut.updateKakaoSubscriptions(HackleSubscriptionOperations.builder()
+            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+            .information(HackleSubscriptionStatus.SUBSCRIBED)
+            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+            .build()
+        )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
-                        Event.builder("\$push_subscriptions")
-                            .property("\$global", "UNSUBSCRIBED")
+                        Event.builder("\$kakao_subscriptions")
+                            .properties(mapOf(
+                                "\$marketing" to "UNSUBSCRIBED",
+                                "\$information" to "SUBSCRIBED",
+                                "chat" to "UNKNOWN"
+                            ))
                             .build()
                     )
                 },
@@ -790,23 +840,8 @@ class HackleAppTest {
                 any()
             )
         }
-    }
-
-    @Test
-    fun `updatePushSubscriptionStatus - set unknown`() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.UNKNOWN)
         verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$push_subscriptions")
-                            .property("\$global", "UNKNOWN")
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
+            core.flush()
         }
     }
 

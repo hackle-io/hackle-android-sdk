@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 
 object Hackle
 
@@ -54,6 +55,10 @@ fun Hackle.resetUser() = app.resetUser()
 
 fun Hackle.setPhoneNumber(phoneNumber: String) = app.setPhoneNumber(phoneNumber)
 fun Hackle.unsetPhoneNumber() = app.unsetPhoneNumber()
+
+fun Hackle.updatePushSubscriptions(operations: HackleSubscriptionOperations) = app.updatePushSubscriptions(operations)
+fun Hackle.updateSmsSubscriptions(operations: HackleSubscriptionOperations) = app.updateSmsSubscriptions(operations)
+fun Hackle.updateKakaoSubscriptions(operations: HackleSubscriptionOperations) = app.updateKakaoSubscriptions(operations)
 
 fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
 
