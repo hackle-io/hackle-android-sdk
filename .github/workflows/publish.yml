@@ -57,7 +57,7 @@ jobs:
             echo "monitoringUri=\"$MONITORINGURI\"" >> ./local.properties
 
       - name: Publish
-        run: gradle :hackle-android-sdk:clean :hackle-android-sdk:build :hackle-android-sdk:publishToSonatype --info
+        run: gradle :hackle-android-sdk:clean :hackle-android-sdk:build publishToSonatype closeAndReleaseSonatypeStagingRepository --info --configure-on-demand
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
