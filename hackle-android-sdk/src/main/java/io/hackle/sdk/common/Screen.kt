@@ -1,14 +1,14 @@
-package io.hackle.android.internal.screen
+package io.hackle.sdk.common
 
 import android.app.Activity
 
-internal data class Screen(
+data class Screen(
     val name: String,
-    val className: String, // ScreenClass
+    val className: String,
 ) {
 
     companion object {
-        fun from(activity: Activity): Screen {
+        internal fun from(activity: Activity): Screen {
             val name = activity::class.java.simpleName
             return Screen(name, name)
         }

@@ -115,6 +115,11 @@ internal class HackleBridge(val app: HackleApp) {
                 BridgeResponse.success(data)
             }
 
+            SET_CURRENT_SCREEN -> {
+                setCurrentScreen(parameters)
+                BridgeResponse.success()
+            }
+
             SHOW_USER_EXPLORER -> {
                 app.showUserExplorer()
                 BridgeResponse.success()
@@ -397,6 +402,16 @@ internal class HackleBridge(val app: HackleApp) {
             else -> {
                 throw IllegalArgumentException("Valid parameter must be provided.")
             }
+        }
+    }
+
+    private fun setCurrentScreen(parameters: Map<String, Any>) {
+        if (parameters["screenName"] is String && parameters["className"] is String) {
+            val screenName = parameters["screenName"] as String
+            val className = parameters["className"] as String
+            app.setCurrentScreen(Screen(screenName, className))
+        } else {
+            throw IllegalArgumentException("Valid parameter must be provided.")
         }
     }
 }

@@ -9,8 +9,6 @@ import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.push.PushEventTracker
-import io.hackle.android.internal.screen.ScreenManager
-import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
