@@ -8,11 +8,13 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.ParameterConfig
 import io.hackle.sdk.common.PropertyOperation
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
@@ -284,6 +286,102 @@ class HackleBridgeTest {
     }
 
     @Test
+    fun `invoke with update user push subscriptions`() {
+        val operations = mapOf(
+            "\$marketing" to "UNSUBSCRIBED",
+            "\$information" to "SUBSCRIBED",
+            "chat" to "UNKNOWN"
+        )
+        val parameters = mapOf("operations" to operations)
+        val jsonString = createJsonString("updatePushSubscriptions", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.updatePushSubscriptions(withArg {
+                val map = it.asMap()
+                assertThat(map.size, `is`(3))
+
+                val marketing = map["\$marketing"]
+                assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
+
+                val information = map["\$information"]
+                assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
+
+                val chat = map["chat"]
+                assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
+            })
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with update user sms subscriptions`() {
+        val operations = mapOf(
+            "\$marketing" to "UNSUBSCRIBED",
+            "\$information" to "SUBSCRIBED",
+            "chat" to "UNKNOWN"
+        )
+        val parameters = mapOf("operations" to operations)
+        val jsonString = createJsonString("updateSmsSubscriptions", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.updateSmsSubscriptions(withArg {
+                val map = it.asMap()
+                assertThat(map.size, `is`(3))
+
+                val marketing = map["\$marketing"]
+                assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
+
+                val information = map["\$information"]
+                assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
+
+                val chat = map["chat"]
+                assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
+            })
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with update user kakao subscriptions`() {
+        val operations = mapOf(
+            "\$marketing" to "UNSUBSCRIBED",
+            "\$information" to "SUBSCRIBED",
+            "chat" to "UNKNOWN"
+        )
+        val parameters = mapOf("operations" to operations)
+        val jsonString = createJsonString("updateKakaoSubscriptions", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.updateKakaoSubscriptions(withArg {
+                val map = it.asMap()
+                assertThat(map.size, `is`(3))
+
+                val marketing = map["\$marketing"]
+                assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
+
+                val information = map["\$information"]
+                assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
+
+                val chat = map["chat"]
+                assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
+            })
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
     fun `invoke with update user properties with invalid parameters`() {
         val parameters = mapOf<String, Any>()
         val jsonString = createJsonString("updateUserProperties", parameters)
@@ -307,6 +405,34 @@ class HackleBridgeTest {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
             assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with setPhoneNumber`() {
+        val parameters = mapOf("phoneNumber" to "+8210-1234-5678")
+        val jsonString = createJsonString("setPhoneNumber", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.setPhoneNumber("+8210-1234-5678")
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with unsetPhoneNumber`() {
+        val jsonString = createJsonString("unsetPhoneNumber")
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.unsetPhoneNumber()
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
         }
     }
 
@@ -1285,6 +1411,26 @@ class HackleBridgeTest {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
             assertNull(data)
+        }
+    }
+    
+    @Test
+    fun `invoke set current screen with parameters`() {
+        every { app.setCurrentScreen(any()) } answers { }
+        val parameters = mapOf(
+            "screenName" to "mainActivity",
+            "className" to "mainActivityClass",
+        )
+        val jsonString = createJsonString("setCurrentScreen", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.setCurrentScreen(
+                withArg { assertThat(it, `is`(Screen("mainActivity", "mainActivityClass"))) },
+            )
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
         }
     }
 

@@ -429,6 +429,7 @@ internal object HackleApps {
             userManager = userManager,
             workspaceManager = workspaceManager,
             sessionManager = sessionManager,
+            screenManager = screenManager,
             eventProcessor = eventProcessor,
             pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,

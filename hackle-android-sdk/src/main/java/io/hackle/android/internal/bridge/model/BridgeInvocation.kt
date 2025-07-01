@@ -12,6 +12,9 @@ internal class BridgeInvocation(string: String) {
         SET_DEVICE_ID("setDeviceId"),
         SET_USER_PROPERTY("setUserProperty"),
         UPDATE_USER_PROPERTY("updateUserProperties"),
+        UPDATE_PUSH_SUBSCRIPTIONS("updatePushSubscriptions"),
+        UPDATE_SMS_SUBSCRIPTIONS("updateSmsSubscriptions"),
+        UPDATE_KAKAO_SUBSCRIPTIONS("updateKakaoSubscriptions"),
         RESET_USER("resetUser"),
         SET_PHONE_NUMBER("setPhoneNumber"),
         UNSET_PHONE_NUMBER("unsetPhoneNumber"),
@@ -21,6 +24,7 @@ internal class BridgeInvocation(string: String) {
         FEATURE_FLAG_DETAIL("featureFlagDetail"),
         TRACK("track"),
         REMOTE_CONFIG("remoteConfig"),
+        SET_CURRENT_SCREEN("setCurrentScreen"),
         SHOW_USER_EXPLORER("showUserExplorer"),
         HIDE_USER_EXPLORER("hideUserExplorer");
 

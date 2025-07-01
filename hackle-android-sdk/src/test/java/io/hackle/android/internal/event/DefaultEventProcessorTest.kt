@@ -8,7 +8,7 @@ import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.android.internal.screen.Screen
+import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session

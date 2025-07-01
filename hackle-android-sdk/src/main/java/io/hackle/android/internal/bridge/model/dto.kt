@@ -7,6 +7,9 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
+import io.hackle.sdk.core.internal.utils.enumValueOfOrNull
 
 internal data class UserDto(
     @SerializedName(KEY_ID)
@@ -86,6 +89,7 @@ internal data class EventDto(
 }
 
 typealias PropertyOperationsDto = Map<String, Map<String, Any>>
+typealias HackleSubscriptionOperationsDto = Map<String, String>
 
 internal fun User.Companion.from(dto: UserDto): User {
     val builder = builder()
@@ -141,6 +145,17 @@ internal fun PropertyOperations.Companion.from(dto: PropertyOperationsDto): Prop
                 PropertyOperation.CLEAR_ALL -> properties.forEach { (_, _) -> builder.clearAll() }
             }
         } catch (_: Throwable) { }
+    }
+    return builder.build()
+}
+
+internal fun HackleSubscriptionOperations.Companion.from(dto: HackleSubscriptionOperationsDto): HackleSubscriptionOperations {
+    val builder = builder()
+    for((key, value) in dto) {
+        try {
+            val status = enumValueOfOrNull<HackleSubscriptionStatus>(value) ?: continue
+            builder.custom(key, status)
+        } catch(_: Throwable) { }
     }
     return builder.build()
 }
