@@ -38,7 +38,8 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
-    private val screenUserEventDecorator: UserEventDecorator
+    private val screenUserEventDecorator: UserEventDecorator,
+    private val eventBackoffController: UserEventBackoffController,
 ) : EventProcessor, AppStateListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
@@ -193,7 +194,7 @@ internal class DefaultEventProcessor(
 
             val pendingCount = eventRepository.count(PENDING)
             if (pendingCount >= eventFlushThreshold && pendingCount % eventFlushThreshold == 0L) {
-                dispatch(eventFlushMaxBatchSize)
+                flush()
             }
         }
     }
@@ -201,6 +202,9 @@ internal class DefaultEventProcessor(
     inner class FlushTask : Runnable {
         override fun run() {
             try {
+                if (!eventBackoffController.isAllowNextFlush()) {
+                    return
+                }
                 dispatch(eventFlushMaxBatchSize)
             } catch (e: Exception) {
                 log.error { "Failed to flush events: $e" }

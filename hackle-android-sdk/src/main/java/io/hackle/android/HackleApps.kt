@@ -11,6 +11,7 @@ import io.hackle.android.internal.devtools.DevToolsApi
 import io.hackle.android.internal.engagement.EngagementEventTracker
 import io.hackle.android.internal.engagement.EngagementManager
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.event.DefaultUserEventBackoffController
 import io.hackle.android.internal.event.EventDispatcher
 import io.hackle.android.internal.event.UserEventPublisher
 import io.hackle.android.internal.event.dedup.DedupUserEventFilter
@@ -170,13 +171,15 @@ internal object HackleApps {
         val eventRepository = EventRepository(workspaceDatabase)
         val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
         val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")
+        val eventBackoffController = DefaultUserEventBackoffController(Clock.SYSTEM)
 
         val eventDispatcher = EventDispatcher(
             baseEventUri = config.eventUri,
             eventExecutor = eventExecutor,
             eventRepository = eventRepository,
             httpExecutor = httpExecutor,
-            httpClient = httpClient
+            httpClient = httpClient,
+            eventBackoffController = eventBackoffController
         )
 
         val eventPublisher = UserEventPublisher()
@@ -195,7 +198,8 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            screenUserEventDecorator = screenUserEventDecorator
+            screenUserEventDecorator = screenUserEventDecorator,
+            eventBackoffController = eventBackoffController
         )
 
         val rcEventDedupRepository =
