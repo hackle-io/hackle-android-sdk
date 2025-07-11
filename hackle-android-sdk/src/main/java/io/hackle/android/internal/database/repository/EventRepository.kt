@@ -14,6 +14,9 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.workspace.WorkspaceDatabase
 import io.hackle.android.internal.database.workspace.toBody
 import io.hackle.android.internal.database.workspace.type
+import io.hackle.android.internal.event.Constants
+import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 
@@ -141,6 +144,21 @@ internal class EventRepository(
             database.execute(transaction = true) { db -> deleteOldEvents(db, count) }
         } catch (e: Exception) {
             log.error { "Failed to delete events: $e" }
+        }
+    }
+
+    fun deleteExpiredEvents(currentMillis: Long) {
+        val expirationThreshold = currentMillis - Constants.USER_EVENT_EXPIRED_INTERVAL
+        val expiredEvents = findAllBy(PENDING).filter {
+            val userEvent = it.body.parseJson<Map<String, Any>>()
+            (userEvent["timestamp"] as? Long)?.let { timestamp ->
+                timestamp < expirationThreshold
+            } ?: false
+        }
+
+        if (expiredEvents.isNotEmpty()) {
+            delete(expiredEvents)
+            log.debug { "Deleted ${expiredEvents.size} expired events." }
         }
     }
 

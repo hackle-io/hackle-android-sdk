@@ -17,6 +17,7 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.user.IdentifierType
@@ -84,6 +85,7 @@ internal class DefaultEventProcessor(
             if (events.isNotEmpty()) {
                 eventRepository.update(events, PENDING)
             }
+            eventRepository.deleteExpiredEvents(Clock.SYSTEM.currentMillis())
             log.debug { "DefaultEventProcessor initialized." }
         } catch (e: Exception) {
             log.error { "Fail to initialize: $e" }
