@@ -6,19 +6,15 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
 import kotlin.math.pow
 
-interface UserEventBackoffController {
-    fun checkResponse(isSuccess: Boolean)
-    fun isAllowNextFlush(): Boolean
-}
 
-internal class DefaultUserEventBackoffController(
+internal class UserEventBackoffController(
     private val userEventRetryIntervalMillis: Int,
     private val clock: Clock
-) : UserEventBackoffController {
+) {
     private var nextFlushAllowDate: Long? = 0
     private var failureCount: AtomicInteger = AtomicInteger(0)
 
-    override fun checkResponse(isSuccess: Boolean) {
+    fun checkResponse(isSuccess: Boolean) {
         val count = if (isSuccess) {
             failureCount.set(0)
             0
@@ -29,7 +25,7 @@ internal class DefaultUserEventBackoffController(
         calculateNextFlushDate(count)
     }
 
-    override fun isAllowNextFlush(): Boolean {
+    fun isAllowNextFlush(): Boolean {
         return nextFlushAllowDate?.run {
             val now = clock.currentMillis()
             if (now < this) {
@@ -52,6 +48,6 @@ internal class DefaultUserEventBackoffController(
     }
 
     companion object {
-        private val log = Logger<DefaultUserEventBackoffController>()
+        private val log = Logger<UserEventBackoffController>()
     }
 }

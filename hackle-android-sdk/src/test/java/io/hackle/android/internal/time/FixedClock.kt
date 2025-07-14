@@ -11,7 +11,7 @@ class FixedClock(private var time: Long) : Clock {
         return time
     }
 
-    fun fastForward(seconds: Int) {
-        time = time + seconds * 1000L
+    fun fastForward(millis: Int) {
+        time = time + millis
     }
 }
