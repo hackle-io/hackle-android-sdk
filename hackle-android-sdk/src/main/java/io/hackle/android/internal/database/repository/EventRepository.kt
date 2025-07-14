@@ -151,7 +151,7 @@ internal class EventRepository(
         val expirationThreshold = currentMillis - Constants.USER_EVENT_EXPIRED_INTERVAL
         val expiredEvents = findAllBy(PENDING).filter {
             val userEvent = it.body.parseJson<Map<String, Any>>()
-            (userEvent["timestamp"] as? Long)?.let { timestamp ->
+            (userEvent["timestamp"] as? Number)?.toLong()?.let { timestamp ->
                 timestamp < expirationThreshold
             } ?: false
         }
