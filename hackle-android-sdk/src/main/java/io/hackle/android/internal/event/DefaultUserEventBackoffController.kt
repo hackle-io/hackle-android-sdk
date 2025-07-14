@@ -2,6 +2,7 @@ package io.hackle.android.internal.event
 
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -10,13 +11,22 @@ interface UserEventBackoffController {
     fun isAllowNextFlush(): Boolean
 }
 
-internal class DefaultUserEventBackoffController(private val clock: Clock) : UserEventBackoffController {
+internal class DefaultUserEventBackoffController(
+    private val userEventRetryIntervalMillis: Int,
+    private val clock: Clock
+) : UserEventBackoffController {
     private var nextFlushAllowDate: Long? = 0
-    private var failureCount: Int = 0
+    private var failureCount: AtomicInteger = AtomicInteger(0)
 
     override fun checkResponse(isSuccess: Boolean) {
-        failureCount = if (isSuccess) 0 else failureCount + 1
-        calculateNextFlushDate()
+        val count = if (isSuccess) {
+            failureCount.set(0)
+            0
+        } else {
+            failureCount.addAndGet(1)
+        }
+
+        calculateNextFlushDate(count)
     }
 
     override fun isAllowNextFlush(): Boolean {
@@ -31,12 +41,12 @@ internal class DefaultUserEventBackoffController(private val clock: Clock) : Use
         } ?: true
     }
 
-    private fun calculateNextFlushDate() {
+    private fun calculateNextFlushDate(failureCount: Int) {
         nextFlushAllowDate = if (failureCount == 0) {
             null
         } else {
-            val interval = 2.0.pow(failureCount.toDouble() - 1).toInt()
-            val intervalMillis = min(interval * Constants.USER_EVENT_RETRY_INTERVAL, Constants.USER_EVENT_RETRY_MAX_INTERVAL)
+            val exponential = 2.0.pow(failureCount.toDouble() - 1).toInt()
+            val intervalMillis = min(exponential * userEventRetryIntervalMillis, Constants.USER_EVENT_RETRY_MAX_INTERVAL)
             clock.currentMillis() + intervalMillis
         }
     }

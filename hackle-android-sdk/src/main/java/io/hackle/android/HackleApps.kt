@@ -171,7 +171,7 @@ internal object HackleApps {
         val eventRepository = EventRepository(workspaceDatabase)
         val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
         val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")
-        val eventBackoffController = DefaultUserEventBackoffController(Clock.SYSTEM)
+        val eventBackoffController = DefaultUserEventBackoffController(config.eventFlushIntervalMillis, Clock.SYSTEM)
 
         val eventDispatcher = EventDispatcher(
             baseEventUri = config.eventUri,

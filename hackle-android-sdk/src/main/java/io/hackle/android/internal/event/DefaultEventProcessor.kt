@@ -85,7 +85,9 @@ internal class DefaultEventProcessor(
             if (events.isNotEmpty()) {
                 eventRepository.update(events, PENDING)
             }
-            eventRepository.deleteExpiredEvents(Clock.SYSTEM.currentMillis())
+
+            val expirationThresholdMillis = Clock.SYSTEM.currentMillis() - Constants.USER_EVENT_EXPIRED_INTERVAL
+            eventRepository.deleteExpiredEvents(expirationThresholdMillis)
             log.debug { "DefaultEventProcessor initialized." }
         } catch (e: Exception) {
             log.error { "Fail to initialize: $e" }
@@ -138,6 +140,13 @@ internal class DefaultEventProcessor(
     override fun close() {
         eventFlushScheduler.tryClose()
         stop()
+    }
+
+    private fun flushInternal() {
+        if (!eventBackoffController.isAllowNextFlush()) {
+            return
+        }
+        dispatch(eventFlushMaxBatchSize)
     }
 
     inner class AddEventTask(private val event: UserEvent) : Runnable {
@@ -196,7 +205,7 @@ internal class DefaultEventProcessor(
 
             val pendingCount = eventRepository.count(PENDING)
             if (pendingCount >= eventFlushThreshold && pendingCount % eventFlushThreshold == 0L) {
-                flush()
+                flushInternal()
             }
         }
     }
@@ -204,10 +213,7 @@ internal class DefaultEventProcessor(
     inner class FlushTask : Runnable {
         override fun run() {
             try {
-                if (!eventBackoffController.isAllowNextFlush()) {
-                    return
-                }
-                dispatch(eventFlushMaxBatchSize)
+                flushInternal()
             } catch (e: Exception) {
                 log.error { "Failed to flush events: $e" }
             }

@@ -317,7 +317,8 @@ internal class EventRepositoryTest {
         every { db.rawQuery(any(), any()) } returns cursor
 
         // when
-        sut.deleteExpiredEvents(now)
+        val expirationThresholdMillis = now - Constants.USER_EVENT_EXPIRED_INTERVAL
+        sut.deleteExpiredEvents(expirationThresholdMillis)
 
         // then
         val expectedDeletedIds = expiredIds.joinToString(separator = ",")
@@ -330,5 +331,4 @@ internal class EventRepositoryTest {
         verify(exactly = 1) { database.execute(readOnly = false, transaction = false, any()) }
         verify(exactly = 1) { db.delete("events", "$ID_COLUMN_NAME IN ($expectedDeletedIds)", null) }
     }
-
 }
