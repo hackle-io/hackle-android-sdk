@@ -2,7 +2,6 @@ package io.hackle.android.internal.event
 
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -12,32 +11,35 @@ internal class UserEventBackoffController(
     private val clock: Clock
 ) {
     private var nextFlushAllowDate: Long? = 0
-    private var failureCount: AtomicInteger = AtomicInteger(0)
+    private var failureCount: Int = 0
 
     fun checkResponse(isSuccess: Boolean) {
-        val count = if (isSuccess) {
-            failureCount.set(0)
-            0
-        } else {
-            failureCount.addAndGet(1)
-        }
+        synchronized(LOCK) {
+            failureCount = if (isSuccess) {
+                0
+            } else {
+                failureCount + 1
+            }
 
-        calculateNextFlushDate(count)
+            calculateNextFlushDate()
+        }
     }
 
     fun isAllowNextFlush(): Boolean {
-        return nextFlushAllowDate?.run {
-            val now = clock.currentMillis()
-            if (now < this) {
-                log.debug { "Skipping flush. Next flush date: $this, current time: $now" }
-                false
-            } else {
-                true
-            }
-        } ?: true
+        synchronized(LOCK) {
+            return nextFlushAllowDate?.run {
+                val now = clock.currentMillis()
+                if (now < this) {
+                    log.debug { "Skipping flush. Next flush date: $this, current time: $now" }
+                    false
+                } else {
+                    true
+                }
+            } ?: true
+        }
     }
 
-    private fun calculateNextFlushDate(failureCount: Int) {
+    private fun calculateNextFlushDate() {
         nextFlushAllowDate = if (failureCount == 0) {
             null
         } else {
@@ -49,5 +51,6 @@ internal class UserEventBackoffController(
 
     companion object {
         private val log = Logger<UserEventBackoffController>()
+        private val LOCK = Any()
     }
 }
