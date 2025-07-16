@@ -3,7 +3,6 @@ package io.hackle.android.internal.database.repository
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
-import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Companion.ID_COLUMN_NAME
 import io.hackle.android.internal.database.workspace.EventEntity.Companion.TABLE_NAME
@@ -13,10 +12,7 @@ import io.hackle.android.internal.database.workspace.EventEntity.Type.EXPOSURE
 import io.hackle.android.internal.database.workspace.EventEntity.Type.TRACK
 import io.hackle.android.internal.database.workspace.WorkspaceDatabase
 import io.hackle.android.internal.event.Constants
-import io.hackle.android.internal.event.UserEvents
-import io.hackle.android.internal.time.FixedClock
 import io.hackle.sdk.core.event.UserEvent
-import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -305,7 +301,7 @@ internal class EventRepositoryTest {
         // given
         val rows: MutableList<List<Any>> = mutableListOf()
         val now = System.currentTimeMillis()
-        val expiredTimestamp = now - Constants.USER_EVENT_EXPIRED_INTERVAL - 10000
+        val expiredTimestamp = now - Constants.USER_EVENT_EXPIRED_INTERVAL_MILLIS - 10000
 
         val expiredIds = 0..1000L
         for (id in expiredIds) {
@@ -317,7 +313,7 @@ internal class EventRepositoryTest {
         every { db.rawQuery(any(), any()) } returns cursor
 
         // when
-        val expirationThresholdMillis = now - Constants.USER_EVENT_EXPIRED_INTERVAL
+        val expirationThresholdMillis = now - Constants.USER_EVENT_EXPIRED_INTERVAL_MILLIS
         sut.deleteExpiredEvents(expirationThresholdMillis)
 
         // then

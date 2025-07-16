@@ -10,7 +10,7 @@ internal class UserEventBackoffController(
     private val userEventRetryIntervalMillis: Int,
     private val clock: Clock
 ) {
-    private var nextFlushAllowDate: Long? = 0
+    private var nextFlushAllowDateMillis: Long? = 0
     private var failureCount: Int = 0
 
     fun checkResponse(isSuccess: Boolean) {
@@ -27,7 +27,7 @@ internal class UserEventBackoffController(
 
     fun isAllowNextFlush(): Boolean {
         synchronized(LOCK) {
-            return nextFlushAllowDate?.run {
+            return nextFlushAllowDateMillis?.run {
                 val now = clock.currentMillis()
                 if (now < this) {
                     log.debug { "Skipping flush. Next flush date: $this, current time: $now" }
@@ -40,11 +40,12 @@ internal class UserEventBackoffController(
     }
 
     private fun calculateNextFlushDate() {
-        nextFlushAllowDate = if (failureCount == 0) {
+        nextFlushAllowDateMillis = if (failureCount == 0) {
             null
         } else {
             val exponential = 2.0.pow(failureCount.toDouble() - 1).toInt()
-            val intervalMillis = min(exponential * userEventRetryIntervalMillis, Constants.USER_EVENT_RETRY_MAX_INTERVAL)
+            val intervalMillis =
+                min(exponential * userEventRetryIntervalMillis, Constants.USER_EVENT_RETRY_MAX_INTERVAL_MILLIS)
             clock.currentMillis() + intervalMillis
         }
     }

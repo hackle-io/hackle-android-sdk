@@ -86,7 +86,7 @@ internal class DefaultEventProcessor(
                 eventRepository.update(events, PENDING)
             }
 
-            val expirationThresholdMillis = Clock.SYSTEM.currentMillis() - Constants.USER_EVENT_EXPIRED_INTERVAL
+            val expirationThresholdMillis = Clock.SYSTEM.currentMillis() - Constants.USER_EVENT_EXPIRED_INTERVAL_MILLIS
             eventRepository.deleteExpiredEvents(expirationThresholdMillis)
             log.debug { "DefaultEventProcessor initialized." }
         } catch (e: Exception) {
