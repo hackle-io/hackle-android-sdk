@@ -17,6 +17,8 @@ import com.bumptech.glide.Glide
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_NAME
 import io.hackle.sdk.core.internal.log.Logger
+import androidx.core.net.toUri
+import androidx.core.graphics.toColorInt
 
 internal object NotificationFactory {
 
@@ -66,20 +68,32 @@ internal object NotificationFactory {
     private fun setSmallIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val metadata = context.packageManager
             .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-        builder.setSmallIcon(metadata.icon)
+        // MARK:
+        //  1. manifest
+        //  2. app icon
+        val smallIcon = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_SMALL_ICON) ?: metadata.icon
+
+        builder.setSmallIcon(smallIcon)
 
         if (!data.iconColorFilter.isNullOrEmpty()) {
             try {
-                builder.color = Color.parseColor(data.iconColorFilter)
+                builder.color = data.iconColorFilter.toColorInt()
             } catch (_: Exception) {
                 log.debug { "Hex color parsing error: ${data.iconColorFilter}" }
             }
         }
     }
 
+    // thumbnail icon == large icon
     private fun setThumbnailIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
-        val imageUrl = data.thumbnailImageUrl ?: return
-        val image = loadImageFromUrl(context, imageUrl) ?: return
+        val imageUrl = data.thumbnailImageUrl
+        val largeIconId = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_LARGE_ICON)
+        // MARK:
+        //  1. remote
+        //  2. manifest
+        //  3. not set
+        val image = loadImageFromUrl(context, imageUrl) ?: loadImageFromResource(context, largeIconId) ?: return
+
         builder.setLargeIcon(image)
     }
 
@@ -98,11 +112,16 @@ internal object NotificationFactory {
         builder.setStyle(NotificationCompat.BigTextStyle().bigText(body))
     }
 
-    private fun setContentIntent(context: Context, builder: NotificationCompat.Builder, extras: Bundle, data: NotificationData) {
+    private fun setContentIntent(
+        context: Context,
+        builder: NotificationCompat.Builder,
+        extras: Bundle,
+        data: NotificationData
+    ) {
         val notificationIntent = Intent(context, NotificationTrampolineActivity::class.java)
         notificationIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         data.link?.apply {
-            notificationIntent.data = Uri.parse(this)
+            notificationIntent.data = this.toUri()
         }
         notificationIntent.putExtras(extras)
         val pendingIntent = PendingIntent.getActivity(
@@ -125,27 +144,78 @@ internal object NotificationFactory {
         builder.setStyle(bigPictureStyle)
     }
 
-    private fun setBigThumbnailIcon(context: Context, bigPictureStyle: NotificationCompat.BigPictureStyle, data: NotificationData) {
+    private fun setBigThumbnailIcon(
+        context: Context,
+        bigPictureStyle: NotificationCompat.BigPictureStyle,
+        data: NotificationData
+    ) {
         val imageUrl = data.thumbnailImageUrl ?: return
         val image = loadImageFromUrl(context, imageUrl) ?: return
         bigPictureStyle.bigLargeIcon(image)
     }
 
-    private fun setBigPicture(context: Context, bigPictureStyle: NotificationCompat.BigPictureStyle, data: NotificationData) {
+    private fun setBigPicture(
+        context: Context,
+        bigPictureStyle: NotificationCompat.BigPictureStyle,
+        data: NotificationData
+    ) {
         val imageUrl = data.largeImageUrl ?: return
         val image = loadImageFromUrl(context, imageUrl) ?: return
         bigPictureStyle.bigPicture(image)
     }
 
-    private fun loadImageFromUrl(context: Context, url: String): Bitmap? {
+    private fun getResourceIdFromManifest(context: Context, key: String): Int? {
         try {
+            val appInfo = context.packageManager.getApplicationInfo(
+                context.packageName,
+                PackageManager.GET_META_DATA
+            )
+
+            val metaData = appInfo.metaData
+            if (metaData != null && metaData.containsKey(key)) {
+                val resourceId = metaData.getInt(key)
+                if (resourceId != 0) {
+                    return resourceId
+                }
+            }
+        } catch (_: Exception) {
+            log.debug { "Failed to get resource ID from manifest: $key" }
+        }
+
+        return null
+
+    }
+
+    private fun loadImageFromUrl(context: Context, url: String?): Bitmap? {
+        try {
+            if (url.isNullOrEmpty()) {
+                return null
+            }
+
             return Glide.with(context)
                 .asBitmap()
                 .load(url)
                 .submit()
                 .get()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             log.debug { "Failed to load image: $url" }
+        }
+        return null
+    }
+
+    private fun loadImageFromResource(context: Context, resourceId: Int?): Bitmap? {
+        try {
+            if (resourceId == null || resourceId == 0) {
+                return null
+            }
+
+            return Glide.with(context)
+                .asBitmap()
+                .load(resourceId)
+                .submit()
+                .get()
+        } catch (_: Exception) {
+            log.debug { "Failed to load image resource: $resourceId" }
         }
         return null
     }
