@@ -149,10 +149,7 @@ internal class EventRepository(
 
     fun deleteExpiredEvents(expirationThresholdMillis: Long) {
         val expiredEvents = findAllBy(PENDING).filter {
-            val userEvent = it.body.parseJson<Map<String, Any>>()
-            (userEvent["timestamp"] as? Number)?.toLong()?.let { timestamp ->
-                timestamp < expirationThresholdMillis
-            } ?: false
+            isExpired(it, expirationThresholdMillis)
         }
 
         if (expiredEvents.isNotEmpty()) {
@@ -166,6 +163,17 @@ internal class EventRepository(
         val id = db.compileStatement(query)
             .use { statement -> statement.simpleQueryForLong() }
         db.delete(TABLE_NAME, "$ID_COLUMN_NAME <= $id", null)
+    }
+
+    private fun isExpired(event: EventEntity, expirationThresholdMillis: Long): Boolean {
+        return try {
+            val userEvent = event.body.parseJson<Map<String, Any>>()
+            val timestamp = (userEvent["timestamp"] as? Number)?.toLong()
+            timestamp != null && timestamp < expirationThresholdMillis
+        } catch (e: Exception) {
+            log.warn { "Failed to check event expiration: ${event.id}, error: $e" }
+            false
+        }
     }
 
     companion object {
