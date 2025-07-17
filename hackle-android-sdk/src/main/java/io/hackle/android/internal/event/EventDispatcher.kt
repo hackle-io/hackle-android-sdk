@@ -19,6 +19,7 @@ internal class EventDispatcher(
     private val eventRepository: EventRepository,
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
+    private val eventBackoffController: UserEventBackoffController,
 ) {
     private val dispatchEndpoint = HttpUrl.get(baseEventUri + EVENT_DISPATCH_PATH)
 
@@ -73,6 +74,8 @@ internal class EventDispatcher(
         }
 
         private fun handleResponse(response: Response) {
+            eventBackoffController.checkResponse(response.isSuccessful)
+
             when (response.code()) {
                 in 200..299 -> delete(events)
                 in 400..499 -> delete(events)
