@@ -8,11 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Color
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_NAME
@@ -34,6 +33,7 @@ internal object NotificationFactory {
         setThumbnailIcon(context, builder, data)
         setContentTitle(builder, data)
         setContentText(builder, data)
+        setColor(context, builder, data)
         setBigTextStyle(builder, data)
         setContentIntent(context, builder, extras, data)
         setBigPictureStyle(context, builder, data)
@@ -74,14 +74,6 @@ internal object NotificationFactory {
         val smallIcon = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_SMALL_ICON) ?: metadata.icon
 
         builder.setSmallIcon(smallIcon)
-
-        if (!data.iconColorFilter.isNullOrEmpty()) {
-            try {
-                builder.color = data.iconColorFilter.toColorInt()
-            } catch (_: Exception) {
-                log.debug { "Hex color parsing error: ${data.iconColorFilter}" }
-            }
-        }
     }
 
     // thumbnail icon == large icon
@@ -95,6 +87,18 @@ internal object NotificationFactory {
         val image = loadImageFromUrl(context, imageUrl) ?: loadImageFromResource(context, largeIconId) ?: return
 
         builder.setLargeIcon(image)
+    }
+
+    private fun setColor(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
+        val colorFilter = data.iconColorFilter
+        val colorId = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_COLOR)
+        // MARK:
+        //  1. remote
+        //  2. manifest
+        //  3. not set
+        val color = colorFilter?.toColorInt() ?: loadColorFromResource(context, colorId) ?: return
+
+        builder.color = color
     }
 
     private fun setContentTitle(builder: NotificationCompat.Builder, data: NotificationData) {
@@ -216,6 +220,19 @@ internal object NotificationFactory {
                 .get()
         } catch (_: Exception) {
             log.debug { "Failed to load image resource: $resourceId" }
+        }
+        return null
+    }
+
+    private fun loadColorFromResource(context: Context, resourceId: Int?): Int? {
+        try {
+            if (resourceId == null || resourceId == 0) {
+                return null
+            }
+
+            return ContextCompat.getColor(context, resourceId)
+        } catch (_: Exception) {
+            log.debug { "Failed to load color resource: $resourceId" }
         }
         return null
     }
