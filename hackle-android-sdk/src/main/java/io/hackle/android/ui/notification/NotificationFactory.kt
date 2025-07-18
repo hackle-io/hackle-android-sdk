@@ -65,6 +65,12 @@ internal object NotificationFactory {
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
     }
 
+    /**
+     * set small icon
+     *
+     * On Galaxy devices, only status bar icon is changed. App icon is shown in notification center
+     * For other devices, changed icon is shown in both status bar and notification center
+     */
     private fun setSmallIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val metadata = context.packageManager
             .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
@@ -76,7 +82,11 @@ internal object NotificationFactory {
         builder.setSmallIcon(smallIcon)
     }
 
-    // thumbnail icon == large icon
+    /**
+     * set large icon
+     * 
+     * thumbnail icon == large icon
+     */
     private fun setThumbnailIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val imageUrl = data.thumbnailImageUrl
         val largeIconId = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_LARGE_ICON)
@@ -89,6 +99,13 @@ internal object NotificationFactory {
         builder.setLargeIcon(image)
     }
 
+    /**
+     * set small icon background color
+     *
+     * It is not changed in status bar.
+     * It is not changed on Galaxy devices.
+     * For other devices, the color behind small icon is changed in notification center.
+     */
     private fun setColor(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val colorFilter = data.iconColorFilter
         val colorId = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_COLOR)
