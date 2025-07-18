@@ -15,6 +15,7 @@ internal class BridgeInvocation(string: String) {
         UPDATE_PUSH_SUBSCRIPTIONS("updatePushSubscriptions"),
         UPDATE_SMS_SUBSCRIPTIONS("updateSmsSubscriptions"),
         UPDATE_KAKAO_SUBSCRIPTIONS("updateKakaoSubscriptions"),
+        LOGOUT("logout"),
         RESET_USER("resetUser"),
         SET_PHONE_NUMBER("setPhoneNumber"),
         UNSET_PHONE_NUMBER("unsetPhoneNumber"),

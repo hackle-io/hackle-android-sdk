@@ -70,6 +70,11 @@ internal class HackleBridge(val app: HackleApp) {
                 BridgeResponse.success()
             }
 
+            LOGOUT -> {
+                app.logout()
+                BridgeResponse.success()
+            }
+
             RESET_USER -> {
                 app.resetUser()
                 BridgeResponse.success()

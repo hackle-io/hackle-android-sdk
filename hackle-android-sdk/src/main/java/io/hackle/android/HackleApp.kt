@@ -178,6 +178,11 @@ class HackleApp internal constructor(
     }
 
     @JvmOverloads
+    fun logout(callback: Runnable? = null) {
+        setUserId(null, callback)
+    }
+
+    @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
         try {
             val updated = userManager.resetUser()
