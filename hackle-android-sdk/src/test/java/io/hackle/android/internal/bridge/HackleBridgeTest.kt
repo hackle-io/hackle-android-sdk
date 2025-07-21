@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder
 import io.hackle.android.HackleApp
 import io.hackle.android.internal.bridge.model.BridgeResponse
 import io.hackle.android.internal.utils.json.parseJson
-import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.ParameterConfig
@@ -1482,7 +1481,7 @@ class HackleBridgeTest {
         }
     }
 
-    private fun createJsonString(command: String, parameters: BridgeParameters? = null): String {
+    private fun createJsonString(command: String, parameters: HackleBridgeParameters? = null): String {
         val map = mapOf<String, Any>(
             "_hackle" to mapOf(
                 "command" to command,

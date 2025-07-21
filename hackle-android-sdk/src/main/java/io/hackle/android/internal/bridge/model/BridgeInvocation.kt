@@ -1,6 +1,6 @@
 package io.hackle.android.internal.bridge.model
 
-import io.hackle.android.internal.bridge.BridgeParameters
+import io.hackle.android.internal.bridge.HackleBridgeParameters
 import io.hackle.android.internal.utils.json.parseJson
 
 internal class BridgeInvocation(string: String) {
@@ -38,7 +38,7 @@ internal class BridgeInvocation(string: String) {
     }
 
     val command: Command
-    val parameters: BridgeParameters
+    val parameters: HackleBridgeParameters
 
     init {
         val data = string.parseJson<Map<String, Any>>()
@@ -54,7 +54,7 @@ internal class BridgeInvocation(string: String) {
             throw IllegalArgumentException("Unsupported command string received.")
         }
         @Suppress("UNCHECKED_CAST")
-        this.parameters = invocation[KEY_PARAMETERS] as? BridgeParameters ?: HashMap()
+        this.parameters = invocation[KEY_PARAMETERS] as? HackleBridgeParameters ?: HashMap()
     }
 
     companion object {
