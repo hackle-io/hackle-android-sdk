@@ -30,10 +30,8 @@ internal class EventRepositoryTest {
 
     @RelaxedMockK
     private lateinit var database: WorkspaceDatabase
-
     @MockK
     private lateinit var db: SQLiteDatabase
-
     private lateinit var sut: EventRepository
 
     @Before
@@ -117,7 +115,7 @@ internal class EventRepositoryTest {
 
         try {
             sut.save(event)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fail()
         }
     }
@@ -262,7 +260,7 @@ internal class EventRepositoryTest {
         // when
         try {
             sut.update(events, FLUSHING)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fail()
         }
     }
@@ -291,7 +289,7 @@ internal class EventRepositoryTest {
         // when
         try {
             sut.deleteOldEvents(42)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fail()
         }
     }

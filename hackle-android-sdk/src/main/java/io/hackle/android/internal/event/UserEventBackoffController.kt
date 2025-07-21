@@ -27,15 +27,19 @@ internal class UserEventBackoffController(
 
     fun isAllowNextFlush(): Boolean {
         synchronized(LOCK) {
-            return nextFlushAllowDateMillis?.run {
-                val now = clock.currentMillis()
-                if (now < this) {
-                    log.debug { "Skipping flush. Next flush date: $this, current time: $now" }
-                    false
-                } else {
-                    true
-                }
-            } ?: true
+            if (nextFlushAllowDateMillis == null) {
+                return true
+            }
+
+            val now = clock.currentMillis()
+            val nextFlushTime = nextFlushAllowDateMillis!!
+
+            if (now < nextFlushTime) {
+                log.debug { "Skipping flush. Next flush date: $nextFlushTime, current time: $now" }
+                return false
+            }
+
+            return true
         }
     }
 
