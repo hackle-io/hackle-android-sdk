@@ -443,6 +443,20 @@ class HackleAppTest {
     }
 
     @Test
+    fun `logout - set userid null`() {
+        val callback = mockk<Runnable>(relaxed = true)
+
+        sut.logout(callback)
+
+        verify(exactly = 1) {
+            userManager.setUserId(null)
+        }
+        verify(exactly = 1) {
+            callback.run()
+        }
+    }
+
+    @Test
     fun setPhoneNumber() {
         sut.setPhoneNumber("")
 
