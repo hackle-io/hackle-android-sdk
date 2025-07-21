@@ -27,12 +27,8 @@ internal class UserEventBackoffController(
 
     fun isAllowNextFlush(): Boolean {
         synchronized(LOCK) {
-            if (nextFlushAllowDateMillis == null) {
-                return true
-            }
-
+            val nextFlushTime = nextFlushAllowDateMillis ?: return true
             val now = clock.currentMillis()
-            val nextFlushTime = nextFlushAllowDateMillis!!
 
             if (now < nextFlushTime) {
                 log.debug { "Skipping flush. Next flush date: $nextFlushTime, current time: $now" }
