@@ -409,6 +409,20 @@ class HackleBridgeTest {
     }
 
     @Test
+    fun `invoke with logout`() {
+        val jsonString = createJsonString("logout")
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.logout()
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
     fun `invoke with setPhoneNumber`() {
         val parameters = mapOf("phoneNumber" to "+8210-1234-5678")
         val jsonString = createJsonString("setPhoneNumber", parameters)
