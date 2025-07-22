@@ -64,23 +64,28 @@ internal class EventDispatcher(
                 .url(dispatchEndpoint)
                 .post(requestBody)
                 .build()
-
-            val response = ApiCallMetrics.record("post.events") {
-                httpClient.newCall(request).execute()
-            }
-            response.use {
-                handleResponse(it)
+            var isSuccess = false
+            try {
+                val response = ApiCallMetrics.record("post.events") {
+                    httpClient.newCall(request).execute()
+                }
+                response.use {
+                    isSuccess = handleResponse(it)
+                }
+            } catch (e: Exception) {
+                throw e
+            } finally {
+                eventBackoffController.checkResponse(isSuccess)
             }
         }
 
-        private fun handleResponse(response: Response) {
-            eventBackoffController.checkResponse(response.isSuccessful)
-
+        private fun handleResponse(response: Response): Boolean {
             when (response.code()) {
                 in 200..299 -> delete(events)
                 in 400..499 -> delete(events)
                 else -> throw IllegalStateException("Http status code: ${response.code()}")
             }
+            return response.isSuccessful
         }
     }
 
