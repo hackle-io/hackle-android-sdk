@@ -1,6 +1,7 @@
 package io.hackle.android.internal.event
 
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.time.Clock
 import kotlin.math.min
 import kotlin.math.pow
@@ -18,7 +19,9 @@ internal class UserEventBackoffController(
             failureCount = if (isSuccess) {
                 0
             } else {
-                failureCount + 1
+                val count = failureCount + 1
+                Metrics.counter("user.event.backoff", mapOf("count" to "$count")).increment()
+                count
             }
 
             calculateNextFlushDate()
