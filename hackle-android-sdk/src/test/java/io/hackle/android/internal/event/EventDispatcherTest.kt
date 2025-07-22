@@ -189,7 +189,7 @@ class EventDispatcherTest {
         sut.dispatch(events)
 
         // then
-        val timer = registry.timer("api.call", "operation" to "post.events", "success" to "true")
+        val timer = registry.timer("api.call", "operation" to "post.events", "success" to "true", "status" to "202", "exception" to "NONE")
         expectThat(timer.count()).isEqualTo(1)
     }
 
@@ -206,7 +206,7 @@ class EventDispatcherTest {
         sut.dispatch(events)
 
         // then
-        val timer = registry.timer("api.call", "operation" to "post.events", "success" to "false")
+        val timer = registry.timer("api.call", "operation" to "post.events", "success" to "false", "status" to "500", "exception" to "NONE")
         expectThat(timer.count()).isEqualTo(1)
     }
 
