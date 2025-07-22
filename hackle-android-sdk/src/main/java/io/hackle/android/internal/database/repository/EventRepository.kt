@@ -14,6 +14,7 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.workspace.WorkspaceDatabase
 import io.hackle.android.internal.database.workspace.toBody
 import io.hackle.android.internal.database.workspace.type
+import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 
@@ -144,11 +145,33 @@ internal class EventRepository(
         }
     }
 
+    fun deleteExpiredEvents(expirationThresholdTimestamp: Long) {
+        val expiredEvents = findAllBy(PENDING).filter {
+            isExpired(it, expirationThresholdTimestamp)
+        }
+
+        if (expiredEvents.isNotEmpty()) {
+            delete(expiredEvents)
+            log.debug { "Deleted ${expiredEvents.size} expired events." }
+        }
+    }
+
     private fun deleteOldEvents(db: SQLiteDatabase, count: Int) {
         val query = "SELECT $ID_COLUMN_NAME FROM $TABLE_NAME LIMIT 1 OFFSET ${count - 1}"
         val id = db.compileStatement(query)
             .use { statement -> statement.simpleQueryForLong() }
         db.delete(TABLE_NAME, "$ID_COLUMN_NAME <= $id", null)
+    }
+
+    private fun isExpired(event: EventEntity, expirationThresholdTimestamp: Long): Boolean {
+        return try {
+            val userEvent = event.body.parseJson<Map<String, Any>>()
+            val timestamp = (userEvent["timestamp"] as? Number)?.toLong()
+            timestamp != null && timestamp < expirationThresholdTimestamp
+        } catch (e: Exception) {
+            log.warn { "Failed to check event expiration: ${event.id}, error: $e" }
+            false
+        }
     }
 
     companion object {
