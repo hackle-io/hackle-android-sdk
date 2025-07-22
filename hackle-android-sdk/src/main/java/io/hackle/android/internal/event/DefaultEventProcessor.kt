@@ -17,6 +17,7 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.user.IdentifierType
@@ -38,7 +39,8 @@ internal class DefaultEventProcessor(
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
     private val appStateManager: AppStateManager,
-    private val screenUserEventDecorator: UserEventDecorator
+    private val screenUserEventDecorator: UserEventDecorator,
+    private val eventBackoffController: UserEventBackoffController,
 ) : EventProcessor, AppStateListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
@@ -83,6 +85,10 @@ internal class DefaultEventProcessor(
             if (events.isNotEmpty()) {
                 eventRepository.update(events, PENDING)
             }
+
+            val expirationThresholdTimestamp =
+                Clock.SYSTEM.currentMillis() - Constants.USER_EVENT_EXPIRED_INTERVAL_MILLIS
+            eventRepository.deleteExpiredEvents(expirationThresholdTimestamp)
             log.debug { "DefaultEventProcessor initialized." }
         } catch (e: Exception) {
             log.error { "Fail to initialize: $e" }
@@ -135,6 +141,13 @@ internal class DefaultEventProcessor(
     override fun close() {
         eventFlushScheduler.tryClose()
         stop()
+    }
+
+    private fun flushInternal() {
+        if (!eventBackoffController.isAllowNextFlush()) {
+            return
+        }
+        dispatch(eventFlushMaxBatchSize)
     }
 
     inner class AddEventTask(private val event: UserEvent) : Runnable {
@@ -193,7 +206,7 @@ internal class DefaultEventProcessor(
 
             val pendingCount = eventRepository.count(PENDING)
             if (pendingCount >= eventFlushThreshold && pendingCount % eventFlushThreshold == 0L) {
-                dispatch(eventFlushMaxBatchSize)
+                flushInternal()
             }
         }
     }
@@ -201,7 +214,7 @@ internal class DefaultEventProcessor(
     inner class FlushTask : Runnable {
         override fun run() {
             try {
-                dispatch(eventFlushMaxBatchSize)
+                flushInternal()
             } catch (e: Exception) {
                 log.error { "Failed to flush events: $e" }
             }
