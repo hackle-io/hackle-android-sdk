@@ -39,6 +39,9 @@ class EventDispatcherTest {
     @MockK
     private lateinit var httpClient: OkHttpClient
 
+    @MockK
+    private lateinit var eventBackoffController: UserEventBackoffController
+
     private lateinit var sut: EventDispatcher
 
     @Before
@@ -51,7 +54,8 @@ class EventDispatcherTest {
             eventExecutor,
             eventRepository,
             httpExecutor,
-            httpClient
+            httpClient,
+            eventBackoffController
         )
     }
 
