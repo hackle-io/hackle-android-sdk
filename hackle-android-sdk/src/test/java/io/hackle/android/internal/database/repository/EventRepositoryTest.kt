@@ -3,14 +3,15 @@ package io.hackle.android.internal.database.repository
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
-import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.internal.database.workspace.EventEntity.Companion.ID_COLUMN_NAME
 import io.hackle.android.internal.database.workspace.EventEntity.Companion.TABLE_NAME
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.workspace.EventEntity.Type.EXPOSURE
 import io.hackle.android.internal.database.workspace.EventEntity.Type.TRACK
 import io.hackle.android.internal.database.workspace.WorkspaceDatabase
+import io.hackle.android.internal.event.Constants
 import io.hackle.sdk.core.event.UserEvent
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -29,10 +30,8 @@ internal class EventRepositoryTest {
 
     @RelaxedMockK
     private lateinit var database: WorkspaceDatabase
-
     @MockK
     private lateinit var db: SQLiteDatabase
-
     private lateinit var sut: EventRepository
 
     @Before
@@ -116,7 +115,7 @@ internal class EventRepositoryTest {
 
         try {
             sut.save(event)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fail()
         }
     }
@@ -261,7 +260,7 @@ internal class EventRepositoryTest {
         // when
         try {
             sut.update(events, FLUSHING)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fail()
         }
     }
@@ -290,8 +289,40 @@ internal class EventRepositoryTest {
         // when
         try {
             sut.deleteOldEvents(42)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             fail()
         }
+    }
+
+    @Test
+    fun `deleteExpiredEvents - 만료된 이벤트는 모두 삭제한다`() {
+        // given
+        val rows: MutableList<List<Any>> = mutableListOf()
+        val now = System.currentTimeMillis()
+        val expiredTimestamp = now - Constants.USER_EVENT_EXPIRED_INTERVAL_MILLIS - 10000
+
+        val expiredIds = 0..1000L
+        for (id in expiredIds) {
+            rows.add(listOf(id, 0, 0, "{\"timestamp\": $expiredTimestamp}"))
+        }
+        rows.add(listOf(1001L, 0, 0, "{\"timestamp\": $now}"))
+        val cursor = cursor(*rows.toTypedArray())
+
+        every { db.rawQuery(any(), any()) } returns cursor
+
+        // when
+        val expirationThresholdMillis = now - Constants.USER_EVENT_EXPIRED_INTERVAL_MILLIS
+        sut.deleteExpiredEvents(expirationThresholdMillis)
+
+        // then
+        val expectedDeletedIds = expiredIds.joinToString(separator = ",")
+
+        // findAllBy에 대한 verify
+        verify(exactly = 1) { database.execute(readOnly = true, transaction = false, any()) }
+        verify(exactly = 1) { db.rawQuery("SELECT * FROM events WHERE status = 0", null) }
+
+        // delete에 대한 verify
+        verify(exactly = 1) { database.execute(readOnly = false, transaction = false, any()) }
+        verify(exactly = 1) { db.delete("events", "$ID_COLUMN_NAME IN ($expectedDeletedIds)", null) }
     }
 }
