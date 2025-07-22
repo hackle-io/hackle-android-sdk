@@ -64,6 +64,9 @@ class DefaultEventProcessorTest {
     @RelaxedMockK
     private lateinit var screenManager: ScreenManager
 
+    @RelaxedMockK
+    private lateinit var eventBackoffController: UserEventBackoffController
+
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
@@ -89,7 +92,8 @@ class DefaultEventProcessorTest {
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
         appStateManager: AppStateManager = this.appStateManager,
-        screenManager: ScreenManager = this.screenManager
+        screenManager: ScreenManager = this.screenManager,
+        eventBackoffController: UserEventBackoffController = this.eventBackoffController,
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             eventPublisher = eventPublisher,
@@ -104,7 +108,8 @@ class DefaultEventProcessorTest {
             sessionManager = sessionManager,
             userManager = userManager,
             appStateManager = appStateManager,
-            screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
+            screenUserEventDecorator = ScreenUserEventDecorator(screenManager),
+            eventBackoffController = eventBackoffController
         )
     }
 
@@ -315,6 +320,7 @@ class DefaultEventProcessorTest {
         )
         every { eventRepository.count(null) } returns 100
         every { eventRepository.count(PENDING) } returns 15 // threshold 만큼 이벤트가 있는경우
+        every { eventBackoffController.isAllowNextFlush() } returns true
 
         val events = listOf<EventEntity>(mockk())
         every { eventRepository.getEventsToFlush(42) } returns events
@@ -338,6 +344,7 @@ class DefaultEventProcessorTest {
         )
         every { eventRepository.count(null) } returns 100
         every { eventRepository.count(PENDING) } returns 30 // threshold 의 배수만큼 이벤트가 있는경우
+        every { eventBackoffController.isAllowNextFlush() } returns true
 
         val events = listOf<EventEntity>(mockk())
         every { eventRepository.getEventsToFlush(42) } returns events
@@ -531,6 +538,7 @@ class DefaultEventProcessorTest {
         val sut = processor(eventRepositoryMaxSize = 1).FlushTask()
         val events = listOf<EventEntity>(mockk())
         every { eventRepository.getEventsToFlush(any()) } returns events
+        every { eventBackoffController.isAllowNextFlush() } returns true
 
         // when
         sut.run()
