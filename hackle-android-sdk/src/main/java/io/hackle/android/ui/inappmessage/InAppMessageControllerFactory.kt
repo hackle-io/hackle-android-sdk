@@ -1,7 +1,9 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
+import android.os.Build
 import androidx.core.view.ViewCompat
+import androidx.core.view.doOnLayout
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
@@ -39,9 +41,18 @@ internal class InAppMessageControllerFactory(
     // add margin when enableEdgeToEdge
     // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
     private fun setOnApplyWindowInsetsListener(view: InAppMessageView) {
-        ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-            (v as? InAppMessageView)?.onApplyWindowInsets(windowInsets)
-            windowInsets
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
+                (v as? InAppMessageView)?.onApplyWindowInsets(windowInsets)
+                windowInsets
+            }
+        } else {
+            view.doOnLayout {
+                val rootInsets = ViewCompat.getRootWindowInsets(view)
+                if (rootInsets != null) {
+                    view.onApplyWindowInsets(rootInsets)
+                }
+            }
         }
     }
 }
