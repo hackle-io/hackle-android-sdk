@@ -83,12 +83,8 @@ task sourceJar(type: Jar) {
 
 task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
     reports {
-        xml {
-            enabled = true
-        }
-        html {
-            enabled = true
-        }
+        xml.required.set(true)
+        html.required.set(true)
     }
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']

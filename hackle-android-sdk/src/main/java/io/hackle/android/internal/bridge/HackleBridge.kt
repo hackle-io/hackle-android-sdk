@@ -6,7 +6,8 @@ import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 
-@Suppress("DEPRECATION")
+internal typealias HackleBridgeParameters = Map<String, Any?>
+
 internal class HackleBridge(val app: HackleApp) {
 
     fun invoke(string: String): String {
@@ -19,7 +20,7 @@ internal class HackleBridge(val app: HackleApp) {
         return response.toJsonString()
     }
 
-    private fun invoke(command: BridgeInvocation.Command, parameters: Map<String, Any>): BridgeResponse {
+    private fun invoke(command: BridgeInvocation.Command, parameters: HackleBridgeParameters): BridgeResponse {
         return when (command) {
             GET_SESSION_ID -> {
                 BridgeResponse.success(app.sessionId)
@@ -132,7 +133,7 @@ internal class HackleBridge(val app: HackleApp) {
         }
     }
 
-    private fun setUser(parameters: Map<String, Any>) {
+    private fun setUser(parameters: HackleBridgeParameters) {
         @Suppress("UNCHECKED_CAST")
         val data = checkNotNull(parameters["user"] as? Map<String, Any>)
         val dto = UserDto.from(data)
@@ -140,56 +141,57 @@ internal class HackleBridge(val app: HackleApp) {
         app.setUser(user)
     }
 
-    private fun setUserId(parameters: Map<String, Any>) {
-        val userId = checkNotNull(parameters["userId"] as? String)
+    private fun setUserId(parameters: HackleBridgeParameters) {
+        check(parameters.containsKey("userId"))
+        val userId = parameters["userId"] as? String
         app.setUserId(userId)
     }
 
-    private fun setDeviceId(parameters: Map<String, Any>) {
+    private fun setDeviceId(parameters: HackleBridgeParameters) {
         val deviceId = checkNotNull(parameters["deviceId"] as? String)
         app.setDeviceId(deviceId)
     }
 
-    private fun setUserProperty(parameters: Map<String, Any>) {
+    private fun setUserProperty(parameters: HackleBridgeParameters) {
         val key = checkNotNull(parameters["key"] as? String)
         val value = parameters["value"]
         app.setUserProperty(key, value)
     }
 
-    private fun updateUserProperties(parameters: Map<String, Any>) {
+    private fun updateUserProperties(parameters: HackleBridgeParameters) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters["operations"] as? PropertyOperationsDto)
         val operations = PropertyOperations.from(dto)
         app.updateUserProperties(operations)
     }
 
-    private fun updatePushSubscriptions(parameters: Map<String, Any>) {
+    private fun updatePushSubscriptions(parameters: HackleBridgeParameters) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters["operations"] as? HackleSubscriptionOperationsDto)
         val operations = HackleSubscriptionOperations.from(dto)
         app.updatePushSubscriptions(operations)
     }
 
-    private fun updateSmsSubscriptions(parameters: Map<String, Any>) {
+    private fun updateSmsSubscriptions(parameters: HackleBridgeParameters) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters["operations"] as? HackleSubscriptionOperationsDto)
         val operations = HackleSubscriptionOperations.from(dto)
         app.updateSmsSubscriptions(operations)
     }
 
-    private fun updateKakaoSubscriptions(parameters: Map<String, Any>) {
+    private fun updateKakaoSubscriptions(parameters: HackleBridgeParameters) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters["operations"] as? HackleSubscriptionOperationsDto)
         val operations = HackleSubscriptionOperations.from(dto)
         app.updateKakaoSubscriptions(operations)
     }
 
-    private fun setPhoneNumber(parameters: Map<String, Any>) {
+    private fun setPhoneNumber(parameters: HackleBridgeParameters) {
         val phoneNumber = checkNotNull(parameters["phoneNumber"] as? String)
         app.setPhoneNumber(phoneNumber)
     }
 
-    private fun variation(parameters: Map<String, Any>): String {
+    private fun variation(parameters: HackleBridgeParameters): String {
         val experimentKey = checkNotNull(parameters["experimentKey"] as? Number)
         val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
@@ -221,7 +223,7 @@ internal class HackleBridge(val app: HackleApp) {
         ).name
     }
 
-    private fun variationDetail(parameters: Map<String, Any>): DecisionDto {
+    private fun variationDetail(parameters: HackleBridgeParameters): DecisionDto {
         val experimentKey = parameters["experimentKey"] as? Number
             ?: throw IllegalArgumentException("Valid 'experimentKey' parameter must be provided.")
         val defaultVariationKey = parameters["defaultVariation"] as? String ?: ""
@@ -255,7 +257,7 @@ internal class HackleBridge(val app: HackleApp) {
         ).toDto()
     }
 
-    private fun isFeatureOn(parameters: Map<String, Any>): Boolean {
+    private fun isFeatureOn(parameters: HackleBridgeParameters): Boolean {
         val featureKey = checkNotNull(parameters["featureKey"] as? Number)
         if (parameters["user"] is String) {
             val userId = parameters["user"] as? String
@@ -281,7 +283,7 @@ internal class HackleBridge(val app: HackleApp) {
         return app.isFeatureOn(featureKey = featureKey.toLong())
     }
 
-    private fun featureFlagDetail(parameters: Map<String, Any>): FeatureFlagDecisionDto {
+    private fun featureFlagDetail(parameters: HackleBridgeParameters): FeatureFlagDecisionDto {
         val featureKey = checkNotNull(parameters["featureKey"] as? Number)
         if (parameters["user"] is String) {
             val userId = parameters["user"] as? String
@@ -307,7 +309,7 @@ internal class HackleBridge(val app: HackleApp) {
         return app.featureFlagDetail(featureKey = featureKey.toLong()).toDto()
     }
 
-    private fun track(parameters: Map<String, Any>) {
+    private fun track(parameters: HackleBridgeParameters) {
         if (parameters["event"] is String) {
             val eventKey = parameters["event"] as String
             track(eventKey = eventKey, parameters = parameters)
@@ -322,7 +324,7 @@ internal class HackleBridge(val app: HackleApp) {
         }
     }
 
-    private fun track(eventKey: String, parameters: Map<String, Any>) {
+    private fun track(eventKey: String, parameters: HackleBridgeParameters) {
         if (parameters["user"] is String) {
             val userId = parameters["user"] as? String
             if (userId != null) {
@@ -341,7 +343,7 @@ internal class HackleBridge(val app: HackleApp) {
         app.track(eventKey = eventKey)
     }
 
-    private fun track(event: Event, parameters: Map<String, Any>) {
+    private fun track(event: Event, parameters: HackleBridgeParameters) {
         if (parameters["user"] is String) {
             val userId = parameters["user"] as? String
             if (userId != null) {
@@ -360,7 +362,7 @@ internal class HackleBridge(val app: HackleApp) {
         app.track(event)
     }
 
-    private fun remoteConfig(parameters: Map<String, Any>): String {
+    private fun remoteConfig(parameters: HackleBridgeParameters): String {
         var user: User? = null
         if (parameters["user"] is String) {
             val userId = parameters["user"] as String
@@ -405,7 +407,7 @@ internal class HackleBridge(val app: HackleApp) {
         }
     }
 
-    private fun setCurrentScreen(parameters: Map<String, Any>) {
+    private fun setCurrentScreen(parameters: HackleBridgeParameters) {
         if (parameters["screenName"] is String && parameters["className"] is String) {
             val screenName = parameters["screenName"] as String
             val className = parameters["className"] as String
