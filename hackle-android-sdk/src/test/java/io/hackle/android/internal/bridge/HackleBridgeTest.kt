@@ -1,9 +1,9 @@
 package io.hackle.android.internal.bridge
 
+import com.google.gson.GsonBuilder
 import io.hackle.android.HackleApp
 import io.hackle.android.internal.bridge.model.BridgeResponse
 import io.hackle.android.internal.utils.json.parseJson
-import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.ParameterConfig
@@ -31,6 +31,9 @@ class HackleBridgeTest {
 
     private lateinit var app: HackleApp
     private lateinit var bridge: HackleBridge
+    private val gson = GsonBuilder()
+        .serializeNulls()  // null 값도 직렬화
+        .create()
 
     @Before
     fun setup() {
@@ -163,6 +166,21 @@ class HackleBridgeTest {
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
             app.setUserId(withArg { assertThat(it, `is`(userId)) })
+        }
+        result.parseJson<BridgeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(message, `is`("OK"))
+            assertNull(data)
+        }
+    }
+
+    @Test
+    fun `invoke with set user id with null`() {
+        val parameters: Map<String, Any?> = mapOf("userId" to null)
+        val jsonString = createJsonString("setUserId", parameters)
+        val result = bridge.invoke(jsonString)
+        verify(exactly = 1) {
+            app.setUserId(null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1463,11 +1481,14 @@ class HackleBridgeTest {
         }
     }
 
-    private fun createJsonString(command: String, parameters: Map<String, Any>? = null): String
-        = mapOf<String, Any>(
+    private fun createJsonString(command: String, parameters: HackleBridgeParameters? = null): String {
+        val map = mapOf<String, Any>(
             "_hackle" to mapOf(
                 "command" to command,
                 "parameters" to parameters
             )
-        ).toJson()
+        )
+
+        return gson.toJson(map)
+    }
 }
