@@ -2,6 +2,7 @@ package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
 import android.os.Build
+import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnLayout
 import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
@@ -48,6 +49,7 @@ internal class InAppMessageControllerFactory(
             }
         } else {
             view.doOnLayout {
+                if (!isEdgeToEdgeEnabled(view)) return@doOnLayout
                 val rootInsets = ViewCompat.getRootWindowInsets(view)
                 if (rootInsets != null) {
                     view.onApplyWindowInsets(rootInsets)
@@ -55,4 +57,14 @@ internal class InAppMessageControllerFactory(
             }
         }
     }
+
+    private fun isEdgeToEdgeEnabled(view: InAppMessageView): Boolean {
+        val activity = view.activity ?: return false
+        val flags = activity.window.decorView.systemUiVisibility
+        return (flags and View.SYSTEM_UI_FLAG_LAYOUT_STABLE) != 0 &&
+                (flags and View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION) != 0 &&
+                (flags and View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) != 0
+
+    }
+
 }
