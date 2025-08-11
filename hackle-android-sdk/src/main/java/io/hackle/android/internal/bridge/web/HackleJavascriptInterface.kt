@@ -7,7 +7,7 @@ internal class HackleJavascriptInterface(private val bridge: HackleBridge) {
 
     @JavascriptInterface
     fun getAppSdkKey(): String {
-        return bridge.app.sdk.key
+        return bridge.sdk.key
     }
 
     @JavascriptInterface
@@ -17,7 +17,7 @@ internal class HackleJavascriptInterface(private val bridge: HackleBridge) {
 
     @JavascriptInterface
     fun getAppMode(): String {
-        return bridge.app.mode.name
+        return bridge.mode.name
     }
 
     @JavascriptInterface

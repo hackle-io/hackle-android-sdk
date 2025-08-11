@@ -1,0 +1,311 @@
+package io.hackle.android.internal
+
+import io.hackle.android.internal.core.Updated
+import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.monitoring.metric.DecisionMetrics
+import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.pii.PIIEventManager
+import io.hackle.android.internal.pii.phonenumber.PhoneNumber
+import io.hackle.android.internal.push.token.PushTokenManager
+import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.sdk.common.Screen
+import io.hackle.android.internal.screen.ScreenManager
+import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.utils.concurrent.Throttler
+import io.hackle.android.internal.workspace.WorkspaceManager
+import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.sdk.common.*
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.decision.Decision
+import io.hackle.sdk.common.decision.DecisionReason
+import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.core.HackleCore
+import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.metrics.Metrics
+import io.hackle.sdk.core.internal.metrics.Timer
+import io.hackle.sdk.core.internal.time.Clock
+import io.hackle.sdk.core.internal.utils.tryClose
+import io.hackle.sdk.core.model.toEvent
+import java.io.Closeable
+import java.util.concurrent.Executor
+
+internal class HackleAppInternal(
+    private val clock: Clock,
+    private val core: HackleCore,
+    private val eventExecutor: Executor,
+    private val backgroundExecutor: Executor,
+    private val synchronizer: PollingSynchronizer,
+    private val userManager: UserManager,
+    private val workspaceManager: WorkspaceManager,
+    private val sessionManager: SessionManager,
+    private val screenManager: ScreenManager,
+    private val eventProcessor: DefaultEventProcessor,
+    private val pushTokenManager: PushTokenManager,
+    private val notificationManager: NotificationManager,
+    private val piiEventManager: PIIEventManager,
+    private val fetchThrottler: Throttler,
+    private val device: Device,
+    internal val userExplorer: HackleUserExplorer,
+) : Closeable {
+
+    val deviceId: String get() = device.id
+    val sessionId: String get() = sessionManager.requiredSession.id
+    val user: User get() = userManager.currentUser
+    
+    private val browserPropertiesContext = ThreadLocal<Map<String, Any>?>()
+
+    internal fun initialize(user: User?, onReady: Runnable) = apply {
+        userManager.initialize(user)
+        eventExecutor.execute {
+            try {
+                workspaceManager.initialize()
+                pushTokenManager.initialize()
+                sessionManager.initialize()
+                eventProcessor.initialize()
+                synchronizer.sync()
+                notificationManager.flush()
+                log.debug { "HackleApp initialized" }
+            } catch (e: Throwable) {
+                log.error { "Failed to initialize HackleApp: $e" }
+            } finally {
+                onReady.run()
+            }
+        }
+    }
+
+    fun showUserExplorer() {
+        userExplorer.show()
+        Metrics.counter("user.explorer.show").increment()
+    }
+
+    fun hideUserExplorer() {
+        userExplorer.hide()
+    }
+    
+    fun setUser(user: User, callback: Runnable? = null) {
+        try {
+            val updated = userManager.setUser(user)
+            syncIfNeeded(updated, callback)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set user: $e" }
+            callback?.run()
+        }
+    }
+
+    fun setUserId(userId: String?, callback: Runnable? = null) {
+        try {
+            val updated = userManager.setUserId(userId)
+            syncIfNeeded(updated, callback)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set userId: $e" }
+            callback?.run()
+        }
+    }
+
+    fun setDeviceId(deviceId: String, callback: Runnable? = null) {
+        try {
+            val updated = userManager.setDeviceId(deviceId)
+            syncIfNeeded(updated, callback)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set deviceId: $e" }
+            callback?.run()
+        }
+    }
+
+    fun updateUserProperties(
+        operations: PropertyOperations,
+        callback: Runnable?
+    ) {
+        try {
+            val event = operations.toEvent()
+            track(event, null)
+            eventProcessor.flush()
+            userManager.updateProperties(operations)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update user properties: $e" }
+        } finally {
+            callback?.run()
+        }
+    }
+
+    fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$push_subscriptions")
+            track(event, null)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update push subscription status: $e" }
+        }
+    }
+
+    fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$sms_subscriptions")
+            track(event, null)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update sms subscription status: $e" }
+        }
+    }
+
+    fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
+        try {
+            val event = operations.toEvent("\$kakao_subscriptions")
+            track(event, null)
+            core.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while update kakao subscription status: $e" }
+        }
+    }
+
+    fun resetUser(callback: Runnable? = null) {
+        try {
+            val updated = userManager.resetUser()
+            track(PropertyOperations.clearAll().toEvent(), null)
+            syncIfNeeded(updated, callback)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while reset user: $e" }
+            callback?.run()
+        }
+    }
+    
+    fun setPhoneNumber(
+        phoneNumber: String,
+        callback: Runnable?
+    ) {
+        try {
+            val event = piiEventManager.setPhoneNumber(PhoneNumber.create(phoneNumber))
+            track(event, null)
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while set phoneNumber: $e" }
+        } finally {
+            callback?.run()
+        }
+    }
+
+    fun unsetPhoneNumber(callback: Runnable?) {
+        try {
+            val event = piiEventManager.unsetPhoneNumber()
+            track(event, null)
+            eventProcessor.flush()
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while unset phoneNumber: $e" }
+        } finally {
+            callback?.run()
+        }
+    }
+
+    fun variationDetail(
+        experimentKey: Long,
+        user: User?,
+        defaultVariation: Variation
+    ): Decision {
+        val sample = Timer.start()
+        return try {
+            val hackleUser = userManager.resolve(user, browserPropertiesContext.get())
+            core.experiment(experimentKey, hackleUser, defaultVariation)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
+            Decision.of(defaultVariation, DecisionReason.EXCEPTION)
+        }.also {
+            DecisionMetrics.experiment(sample, experimentKey, it)
+        }
+    }
+
+    fun allVariationDetails(user: User? = null): Map<Long, Decision> {
+        return try {
+            val hackleUser = userManager.resolve(user)
+            core.experiments(hackleUser)
+                .mapKeysTo(hashMapOf()) { (experiment, _) -> experiment.key }
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding variations for all experiments: $t" }
+            hashMapOf()
+        }
+    }
+
+    fun featureFlagDetail(
+        featureKey: Long,
+        user: User?
+    ): FeatureFlagDecision {
+        val sample = Timer.start()
+        return try {
+            val hackleUser = userManager.resolve(user, browserPropertiesContext.get())
+            core.featureFlag(featureKey, hackleUser)
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
+            FeatureFlagDecision.off(DecisionReason.EXCEPTION)
+        }.also {
+            DecisionMetrics.featureFlag(sample, featureKey, it)
+        }
+    }
+
+    fun track(event: Event, user: User?) {
+        try {
+            val hackleUser = userManager.resolve(user, browserPropertiesContext.get())
+            core.track(event, hackleUser, clock.currentMillis())
+        } catch (t: Throwable) {
+            log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
+        }
+    }
+
+    fun remoteConfig(user: User?): HackleRemoteConfig {
+        return HackleRemoteConfigImpl(user, core, userManager, browserPropertiesContext.get())
+    }
+    
+    fun fetch(callback: Runnable? = null) {
+        fetchThrottler.execute(
+            accept = {
+                backgroundExecutor.execute {
+                    synchronizer.sync()
+                    callback?.run()
+                }
+            },
+            reject = {
+                log.debug { "Too many quick fetch requests." }
+                callback?.run()
+            }
+        )
+    }
+
+    fun setCurrentScreen(screen: Screen) {
+        screenManager.setCurrentScreen(screen, clock.currentMillis())
+    }
+
+    fun <T> withBrowserProperties(browserProperties: Map<String, Any>, block: () -> T): T {
+        try {
+            browserPropertiesContext.set(browserProperties)
+            return block()
+        } finally {
+            browserPropertiesContext.set(null)
+        }
+    }
+
+    private fun syncIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
+        try {
+            backgroundExecutor.execute {
+                try {
+                    userManager.syncIfNeeded(userUpdated)
+                } catch (e: Exception) {
+                    log.error { "Failed to sync: $e" }
+                } finally {
+                    callback?.run()
+                }
+            }
+        } catch (e: Exception) {
+            log.error { "Failed to submit sync task: $e" }
+            callback?.run()
+        }
+    }
+
+    override fun close() {
+        core.tryClose()
+    }
+
+    companion object {
+        private val log = Logger<HackleAppInternal>()
+    }
+}

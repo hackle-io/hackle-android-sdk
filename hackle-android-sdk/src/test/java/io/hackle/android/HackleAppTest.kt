@@ -1,6 +1,7 @@
 package io.hackle.android
 
 import android.webkit.WebView
+import io.hackle.android.internal.HackleAppInternal
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
@@ -101,22 +102,24 @@ class HackleAppTest {
         }
 
         sut = HackleApp(
-            Clock.SYSTEM,
-            core,
-            eventExecutor,
-            backgroundExecutor,
-            synchronizer,
-            userManager,
-            workspaceManager,
-            sessionManager,
-            screenManager,
-            eventProcessor,
-            pushTokenManager,
-            notificationManager,
-            piiEventManager,
-            fetchThrottler,
-            MockDevice("hackle_device_id", emptyMap()),
-            userExplorer,
+            HackleAppInternal(
+                Clock.SYSTEM,
+                core,
+                eventExecutor,
+                backgroundExecutor,
+                synchronizer,
+                userManager,
+                workspaceManager,
+                sessionManager,
+                screenManager,
+                eventProcessor,
+                pushTokenManager,
+                notificationManager,
+                piiEventManager,
+                fetchThrottler,
+                MockDevice("hackle_device_id", emptyMap()),
+                userExplorer,
+            ),
             Sdk.of("", HackleConfig.DEFAULT),
             HackleAppMode.NATIVE
         )

@@ -1,7 +1,7 @@
 package io.hackle.android.internal.bridge.web
 
-import io.hackle.android.HackleApp
 import io.hackle.android.HackleAppMode
+import io.hackle.android.internal.HackleAppInternal
 import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.model.Sdk
 import io.mockk.every
@@ -20,19 +20,19 @@ class HackleJavascriptInterfaceTest {
 
     @Test
     fun `getAppSdkKey`() {
-        val sut = HackleJavascriptInterface(HackleBridge(app("SDK_KEY", HackleAppMode.NATIVE)))
+        val sut = HackleJavascriptInterface(hackleBridge("SDK_KEY", HackleAppMode.NATIVE))
         expectThat(sut.getAppSdkKey()).isEqualTo("SDK_KEY")
     }
 
     @Test
     fun `getInvocationType`() {
-        val sut = HackleJavascriptInterface(HackleBridge(app("SDK_KEY", HackleAppMode.NATIVE)))
+        val sut = HackleJavascriptInterface(hackleBridge("SDK_KEY", HackleAppMode.NATIVE))
         expectThat(sut.getInvocationType()).isEqualTo("function")
     }
 
     @Test
     fun `getAppMode`() {
-        val sut = HackleJavascriptInterface(HackleBridge(app("SDK_KEY", HackleAppMode.WEB_VIEW_WRAPPER)))
+        val sut = HackleJavascriptInterface(hackleBridge("SDK_KEY", HackleAppMode.WEB_VIEW_WRAPPER))
         expectThat(sut.getAppMode()).isEqualTo("WEB_VIEW_WRAPPER")
     }
 
@@ -52,11 +52,12 @@ class HackleJavascriptInterfaceTest {
             bridge.invoke("42")
         }
     }
-
-    private fun app(sdkKey: String, mode: HackleAppMode): HackleApp {
-        val app = mockk<HackleApp>()
-        every { app.sdk } returns Sdk(sdkKey, "name", "version")
-        every { app.mode } returns mode
-        return app
+    
+    private fun hackleBridge(sdkKey: String, mode: HackleAppMode): HackleBridge {
+        return HackleBridge(
+            mockk<HackleAppInternal>(),
+            Sdk(sdkKey, "name", "version"),
+            mode
+        )
     }
 }
