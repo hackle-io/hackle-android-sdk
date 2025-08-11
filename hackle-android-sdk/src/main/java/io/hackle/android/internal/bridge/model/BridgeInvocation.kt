@@ -39,6 +39,7 @@ internal class BridgeInvocation(string: String) {
 
     val command: Command
     val parameters: HackleBridgeParameters
+    val browserProperties: HackleBrowserProperties
 
     init {
         val data = string.parseJson<Map<String, Any>>()
@@ -55,11 +56,16 @@ internal class BridgeInvocation(string: String) {
         }
         @Suppress("UNCHECKED_CAST")
         this.parameters = invocation[KEY_PARAMETERS] as? HackleBridgeParameters ?: HashMap()
+        @Suppress("UNCHECKED_CAST")
+        this.browserProperties = invocation[KEY_BROWSER_PROPERTIES] as? HackleBrowserProperties ?: HashMap()
     }
 
     companion object {
         private const val KEY_HACKLE = "_hackle"
         private const val KEY_COMMAND = "command"
         private const val KEY_PARAMETERS = "parameters"
+        private const val KEY_BROWSER_PROPERTIES = "browserProperties"
     }
 }
+
+internal typealias HackleBrowserProperties = Map<String, Any>

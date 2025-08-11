@@ -17,7 +17,7 @@ internal class HackleBridge(
     fun invoke(string: String): String {
         val response: BridgeResponse = try {
             val invocation = BridgeInvocation(string)
-            app.withBrowserProperties(emptyMap()) {
+            app.withBrowserProperties(invocation.browserProperties) {
                 invoke(invocation.command, invocation.parameters)
             }
         } catch (throwable: Throwable) {

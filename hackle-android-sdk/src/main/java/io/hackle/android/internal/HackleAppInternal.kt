@@ -280,7 +280,7 @@ internal class HackleAppInternal(
             browserPropertiesContext.set(browserProperties)
             return block()
         } finally {
-            browserPropertiesContext.set(null)
+            browserPropertiesContext.remove()
         }
     }
 
