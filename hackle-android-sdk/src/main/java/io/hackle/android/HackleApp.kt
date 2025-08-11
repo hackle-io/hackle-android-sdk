@@ -241,7 +241,7 @@ class HackleApp internal constructor(
     }
 
     // Deprecated
-
+    //<editor-fold desc="Deprecated function">
     @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
     @JvmOverloads
     fun variation(
@@ -348,6 +348,7 @@ class HackleApp internal constructor(
             "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
         }
     }
+    //</editor-fold>
 
     companion object {
 
