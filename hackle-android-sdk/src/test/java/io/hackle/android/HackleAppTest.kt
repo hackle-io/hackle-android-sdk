@@ -446,14 +446,16 @@ class HackleAppTest {
     fun setPhoneNumber() {
         sut.setPhoneNumber("")
 
-        verify(exactly = 1) { piiEventManager.setPhoneNumber(any(), any()) }
+        verify(exactly = 1) { piiEventManager.setPhoneNumber(any()) }
+        verify(exactly = 1) { core.track(any(), any(), any()) }
     }
 
     @Test
     fun unsetPhoneNumber() {
         sut.unsetPhoneNumber()
 
-        verify(exactly = 1) { piiEventManager.unsetPhoneNumber(any()) }
+        verify(exactly = 1) { piiEventManager.unsetPhoneNumber() }
+        verify(exactly = 1) { core.track(any(), any(), any()) }
     }
 
     @Test

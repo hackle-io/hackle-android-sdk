@@ -378,10 +378,7 @@ internal object HackleApps {
             .setNotificationDataReceiver(notificationManager)
 
         // PII
-        val piiEventManager = PIIEventManager(
-            core = core,
-            userManager = userManager
-        )
+        val piiEventManager = PIIEventManager()
 
         // UserExplorer
         val devToolsApi = DevToolsApi(

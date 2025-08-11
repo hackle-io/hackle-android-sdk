@@ -24,55 +24,35 @@ class PIIEventManagerTest {
     fun before() {
         userManager = mockk()
         core = mockk(relaxed = true)
-        sut = PIIEventManager(userManager, core)
+        sut = PIIEventManager()
     }
 
     @Test
     fun `set phone number`() {
         // given
-        every { userManager.resolve(any()) } returns mockk()
+        every { userManager.resolve(null) } returns mockk()
         val phoneNumber = "0101234567890"
 
         // when
-        sut.setPhoneNumber(PhoneNumber(phoneNumber), 42)
+        val event = sut.setPhoneNumber(PhoneNumber(phoneNumber))
 
         // then
-        verify(exactly = 1) {
-            core.track(
-                event = withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$secured_properties")
-                            .property("\$set", mapOf("\$phone_number" to phoneNumber))
-                            .build()
-                    )
-                },
-                user = any(),
-                timestamp = 42
-            )
-        }
+        expectThat(event).isEqualTo(Event.builder("\$secured_properties")
+            .property("\$set", mapOf("\$phone_number" to phoneNumber))
+            .build())
     }
 
     @Test
     fun `unset phone number`() {
         // given
-        every { userManager.resolve(any()) } returns mockk()
+        every { userManager.resolve(null) } returns mockk()
 
         // when
-        sut.unsetPhoneNumber(42)
-
+        val event = sut.unsetPhoneNumber()
+        
         // then
-        verify(exactly = 1) {
-            core.track(
-                event = withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$secured_properties")
-                            .property("\$unset", mapOf("\$phone_number" to "-"))
-                            .build()
-                    )
-                },
-                user = any(),
-                timestamp = 42
-            )
-        }
+        expectThat(event).isEqualTo(Event.builder("\$secured_properties")
+            .property("\$unset", mapOf("\$phone_number" to "-"))
+            .build())
     }
 }

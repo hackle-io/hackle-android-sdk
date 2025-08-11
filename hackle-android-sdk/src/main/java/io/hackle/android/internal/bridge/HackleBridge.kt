@@ -80,7 +80,7 @@ internal class HackleBridge(val app: HackleApp) {
             }
 
             UNSET_PHONE_NUMBER -> {
-                app.unsetPhoneNumber()
+                app.unsetPhoneNumberInternal()
                 BridgeResponse.success()
             }
 
@@ -186,7 +186,7 @@ internal class HackleBridge(val app: HackleApp) {
 
     private fun setPhoneNumber(parameters: HackleBridgeParameters) {
         val phoneNumber = checkNotNull(parameters.phoneNumber())
-        app.setPhoneNumber(phoneNumber)
+        app.setPhoneNumberInternal(phoneNumber)
     }
 
     private fun variation(parameters: HackleBridgeParameters): String {

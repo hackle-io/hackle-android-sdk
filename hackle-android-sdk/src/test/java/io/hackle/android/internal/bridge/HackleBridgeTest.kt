@@ -436,7 +436,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("setPhoneNumber", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.setPhoneNumber("+8210-1234-5678")
+            app.setPhoneNumberInternal("+8210-1234-5678")
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -450,7 +450,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("unsetPhoneNumber")
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.unsetPhoneNumber()
+            app.unsetPhoneNumberInternal()
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))

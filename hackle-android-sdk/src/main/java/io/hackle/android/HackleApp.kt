@@ -191,8 +191,18 @@ class HackleApp internal constructor(
 
     @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
+        setPhoneNumberInternal(phoneNumber, null, callback)
+    }
+
+    @JvmOverloads
+    fun unsetPhoneNumber(callback: Runnable? = null) {
+        unsetPhoneNumberInternal(null, callback)
+    }
+    
+    internal fun setPhoneNumberInternal(phoneNumber: String, browserProperties: Map<String, Any>? = null, callback: Runnable? = null) {
         try {
-            piiEventManager.setPhoneNumber(PhoneNumber.create(phoneNumber), clock.currentMillis())
+            val event = piiEventManager.setPhoneNumber(PhoneNumber.create(phoneNumber))
+            trackInternal(event, null, browserProperties)
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while set phoneNumber: $e" }
@@ -200,11 +210,11 @@ class HackleApp internal constructor(
             callback?.run()
         }
     }
-
-    @JvmOverloads
-    fun unsetPhoneNumber(callback: Runnable? = null) {
+    
+    internal fun unsetPhoneNumberInternal(browserProperties: Map<String, Any>? = null, callback: Runnable? = null) {
         try {
-            piiEventManager.unsetPhoneNumber(clock.currentMillis())
+            val event = piiEventManager.unsetPhoneNumber()
+            trackInternal(event, null, browserProperties)
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while unset phoneNumber: $e" }
