@@ -196,9 +196,9 @@ internal class HackleBridge(val app: HackleApp) {
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.variation(experimentKey, defaultVariation).name },
-            onUserId = { userId -> app.variation(experimentKey, userId, defaultVariation).name },
-            onUser = { user -> app.variation(experimentKey, user, defaultVariation).name}
+            onDefault = { app.variationDetailInternal(experimentKey, null, defaultVariation).variation.name },
+            onUserId = { userId -> app.variationDetailInternal(experimentKey, User.of(userId), defaultVariation).variation.name },
+            onUser = { user -> app.variationDetailInternal(experimentKey, user, defaultVariation).variation.name }
         )
     }
 
@@ -209,9 +209,9 @@ internal class HackleBridge(val app: HackleApp) {
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.variationDetail(experimentKey, defaultVariation).toDto() },
-            onUserId = { userId -> app.variationDetail(experimentKey, userId, defaultVariation).toDto() },
-            onUser = { user -> app.variationDetail(experimentKey, user, defaultVariation).toDto() }
+            onDefault = { app.variationDetailInternal(experimentKey, null, defaultVariation).toDto() },
+            onUserId = { userId -> app.variationDetailInternal(experimentKey, User.of(userId), defaultVariation).toDto() },
+            onUser = { user -> app.variationDetailInternal(experimentKey, user, defaultVariation).toDto() }
         )
     }
 
@@ -264,14 +264,14 @@ internal class HackleBridge(val app: HackleApp) {
     private fun remoteConfig(parameters: HackleBridgeParameters): String {
         val remoteConfig = withUserContext(
             parameters = parameters,
-            onDefault = { app.remoteConfig() },
+            onDefault = { app.remoteConfigInternal(null) },
             onUserId = { userId -> 
                 val user = User.builder()
                     .userId(userId)
                     .build()
-                app.remoteConfig(user)
+                app.remoteConfigInternal(user)
             },
-            onUser = { user -> app.remoteConfig(user)}
+            onUser = { user -> app.remoteConfigInternal(user)}
         )
 
         val key = checkNotNull(parameters.key())

@@ -257,14 +257,15 @@ class HackleApp internal constructor(
         return variationDetailInternal(experimentKey, null, defaultVariation)
     }
 
-    private fun variationDetailInternal(
+    internal fun variationDetailInternal(
         experimentKey: Long,
         user: User?,
         defaultVariation: Variation,
+        browserProperties: Map<String, Any>? = null,
     ): Decision {
         val sample = Timer.start()
         return try {
-            val hackleUser = userManager.resolve(user)
+            val hackleUser = userManager.resolve(user, browserProperties)
             core.experiment(experimentKey, hackleUser, defaultVariation)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
@@ -365,7 +366,11 @@ class HackleApp internal constructor(
      * Returns a instance of Hackle Remote Config.
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(null, core, userManager)
+        return remoteConfigInternal(null)
+    }
+    
+    internal fun remoteConfigInternal(user: User?, browserProperties: Map<String, Any>? = null): HackleRemoteConfig {
+        return HackleRemoteConfigImpl(user, core, userManager, browserProperties)
     }
 
     /**
@@ -522,7 +527,7 @@ class HackleApp internal constructor(
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, core, userManager)
+        return remoteConfigInternal(user)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))

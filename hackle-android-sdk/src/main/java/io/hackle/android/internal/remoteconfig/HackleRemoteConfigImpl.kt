@@ -15,6 +15,7 @@ internal class HackleRemoteConfigImpl(
     private val user: User?,
     private val core: HackleCore,
     private val userManager: UserManager,
+    private val browserProperties: Map<String, Any>? = null
 ) : HackleRemoteConfig {
 
     override fun getString(key: String, defaultValue: String): String {
@@ -44,7 +45,7 @@ internal class HackleRemoteConfigImpl(
     ): RemoteConfigDecision<T> {
         val sample = Timer.start()
         return try {
-            val hackleUser = userManager.resolve(user)
+            val hackleUser = userManager.resolve(user, browserProperties)
             core.remoteConfig(key, hackleUser, requiredType, defaultValue)
         } catch (e: Exception) {
             log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }

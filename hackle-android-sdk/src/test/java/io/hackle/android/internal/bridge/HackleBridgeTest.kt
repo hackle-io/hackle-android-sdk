@@ -460,13 +460,17 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation`() {
-        every { app.variation(any(), any<Variation>()) } returns Variation.B
+        every { app.variationDetailInternal(any(), any(), any<Variation>()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variation(
+            app.variationDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
+                null,
                 withArg<Variation> { assertThat(it.name, `is`("D")) }
             )
         }
@@ -479,7 +483,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation with user string`() {
-        every { app.variation(any(), any<String>(), any()) } returns Variation.B
+        every { app.variationDetailInternal(any(), any(), any<Variation>()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf(
             "experimentKey" to 1,
             "defaultVariation" to "D",
@@ -488,9 +495,9 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variation(
+            app.variationDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) },
+                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
                 withArg { assertThat(it.name, `is`("D")) }
             )
         }
@@ -503,7 +510,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation with user object`() {
-        every { app.variation(any(), any<User>(), any()) } returns Variation.B
+        every { app.variationDetailInternal(any(), any<User>(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -523,7 +533,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variation(
+            app.variationDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -564,7 +574,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail`() {
-        every { app.variationDetail(any(), any<Variation>()) } returns Decision.of(
+        every { app.variationDetailInternal(any(), any(), any<Variation>()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
@@ -572,8 +582,9 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variationDetail(
+            app.variationDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
+                null,
                 withArg<Variation> { assertThat(it.name, `is`("D")) }
             )
         }
@@ -594,7 +605,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail with user string`() {
-        every { app.variationDetail(any(), any<String>(), any()) } returns Decision.of(
+        every { app.variationDetailInternal(any(), any(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
@@ -606,9 +617,9 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variationDetail(
+            app.variationDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) },
+                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
                 withArg { assertThat(it.name, `is`("D")) }
             )
         }
@@ -629,7 +640,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail with user object`() {
-        every { app.variationDetail(any(), any<User>(), any()) } returns Decision.of(
+        every { app.variationDetailInternal(any(), any<User>(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
@@ -652,7 +663,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variationDetail(
+            app.variationDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -1157,7 +1168,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - string`() {
-        every { app.remoteConfig().getString(any(), any()) } returns "foo"
+        every { app.remoteConfigInternal(null).getString(any(), any()) } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1166,8 +1177,8 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig()
-            app.remoteConfig().getString(
+            app.remoteConfigInternal(null)
+            app.remoteConfigInternal(null).getString(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`("abc")) }
             )
@@ -1181,7 +1192,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - string`() {
-        every { app.remoteConfig(any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfigInternal(any()).getString(any(), any()) } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1191,7 +1202,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(
+            app.remoteConfigInternal(
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 }
@@ -1209,7 +1220,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - string`() {
-        every { app.remoteConfig(any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfigInternal(any()).getString(any(), any()) } returns "foo"
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1230,7 +1241,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(
+            app.remoteConfigInternal(
                 withArg {
                     assertThat(it.id, `is`("foo"))
                     assertThat(it.userId, `is`("bar"))
@@ -1259,7 +1270,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - number`() {
-        every { app.remoteConfig().getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfigInternal(null).getDouble(any(), any()) } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1268,8 +1279,8 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig()
-            app.remoteConfig().getDouble(
+            app.remoteConfigInternal(null)
+            app.remoteConfigInternal(null).getDouble(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`(1000.0)) }
             )
@@ -1283,7 +1294,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - number`() {
-        every { app.remoteConfig(any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfigInternal(any()).getDouble(any(), any()) } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1293,7 +1304,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(
+            app.remoteConfigInternal(
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 }
@@ -1311,7 +1322,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - number`() {
-        every { app.remoteConfig(any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfigInternal(any()).getDouble(any(), any()) } returns 123.0
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1332,7 +1343,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(
+            app.remoteConfigInternal(
                 withArg {
                     assertThat(it.id, `is`("foo"))
                     assertThat(it.userId, `is`("bar"))
@@ -1361,7 +1372,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - boolean`() {
-        every { app.remoteConfig().getBoolean(any(), any()) } returns true
+        every { app.remoteConfigInternal(null).getBoolean(any(), any()) } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1370,8 +1381,8 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig()
-            app.remoteConfig().getBoolean(
+            app.remoteConfigInternal(null)
+            app.remoteConfigInternal(null).getBoolean(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`(false)) }
             )
@@ -1385,7 +1396,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - boolean`() {
-        every { app.remoteConfig(any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfigInternal(any()).getBoolean(any(), any()) } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1395,7 +1406,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(
+            app.remoteConfigInternal(
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 }
@@ -1413,7 +1424,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - boolean`() {
-        every { app.remoteConfig(any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfigInternal(any()).getBoolean(any(), any()) } returns true
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1434,7 +1445,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(
+            app.remoteConfigInternal(
                 withArg {
                     assertThat(it.id, `is`("foo"))
                     assertThat(it.userId, `is`("bar"))
