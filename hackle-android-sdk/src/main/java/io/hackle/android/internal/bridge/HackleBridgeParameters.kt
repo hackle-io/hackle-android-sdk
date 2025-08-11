@@ -112,3 +112,10 @@ internal fun HackleBridgeParameters.screenName(): String? = this["screenName"] a
  * @return 클래스 이름 또는 `null`
  */
 internal fun HackleBridgeParameters.className(): String? = this["className"] as? String
+
+/**
+ * 웹앱에서 전달하는 브라우저 관련 속성을 반환합니다.
+ * @return [Map] 객체 혹은 `null`
+ */
+@Suppress("UNCHECKED_CAST")
+internal fun HackleBridgeParameters.browserProperties(): Map<String, Any?>? = this["browserProperties"] as? Map<String, Any?>

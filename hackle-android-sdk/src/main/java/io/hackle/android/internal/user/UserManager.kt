@@ -44,14 +44,14 @@ internal class UserManager(
 
     // HackleUser resolve
 
-    fun resolve(user: User?): HackleUser {
+    fun resolve(user: User?, browserProperties: Map<String, Any>? = null): HackleUser {
         if (user == null) {
-            return toHackleUser(currentContext)
+            return toHackleUser(currentContext, browserProperties)
         }
         val context = synchronized(LOCK) {
             updateUser(user)
         }
-        return toHackleUser(context.current)
+        return toHackleUser(context.current, browserProperties)
     }
 
     fun toHackleUser(user: User): HackleUser {
@@ -59,7 +59,7 @@ internal class UserManager(
         return toHackleUser(context)
     }
 
-    private fun toHackleUser(context: UserContext): HackleUser {
+    private fun toHackleUser(context: UserContext, browserProperties: Map<String, Any>? = null): HackleUser {
         return HackleUser.builder()
             .identifiers(context.user.identifiers)
             .identifier(IdentifierType.ID, context.user.id)
@@ -69,6 +69,7 @@ internal class UserManager(
             .identifier(IdentifierType.DEVICE, device.id, overwrite = false)
             .identifier(IdentifierType.HACKLE_DEVICE_ID, device.id)
             .properties(context.user.properties)
+            .hackleProperties(browserProperties ?: emptyMap())
             .hackleProperties(device.properties)
             .cohorts(context.cohorts.rawCohorts())
             .targetEvents(context.targetEvents.rawEvents())

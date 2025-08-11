@@ -78,7 +78,7 @@ internal data class EventDto(
         private const val KEY_PROPERTIES = "properties"
 
         @Suppress("UNCHECKED_CAST")
-        fun from(map: Map<String, Any>): EventDto {
+        fun from(map: Map<*, *>): EventDto {
             return EventDto(
                 key = checkNotNull(map[KEY_KEY] as? String),
                 value = (map[KEY_VALUE] as? Number)?.toDouble(),

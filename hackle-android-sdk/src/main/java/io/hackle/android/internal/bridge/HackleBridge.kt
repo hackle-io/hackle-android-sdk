@@ -197,8 +197,8 @@ internal class HackleBridge(val app: HackleApp) {
         return withUserContext(
             parameters = parameters,
             onDefault = { app.variation(experimentKey, defaultVariation).name },
-            onUserById = { userId -> app.variation(experimentKey, userId, defaultVariation).name },
-            onUserByUser = { user -> app.variation(experimentKey, user, defaultVariation).name}
+            onUserId = { userId -> app.variation(experimentKey, userId, defaultVariation).name },
+            onUser = { user -> app.variation(experimentKey, user, defaultVariation).name}
         )
     }
 
@@ -210,19 +210,19 @@ internal class HackleBridge(val app: HackleApp) {
         return withUserContext(
             parameters = parameters,
             onDefault = { app.variationDetail(experimentKey, defaultVariation).toDto() },
-            onUserById = { userId -> app.variationDetail(experimentKey, userId, defaultVariation).toDto() },
-            onUserByUser = { user -> app.variationDetail(experimentKey, user, defaultVariation).toDto() }
+            onUserId = { userId -> app.variationDetail(experimentKey, userId, defaultVariation).toDto() },
+            onUser = { user -> app.variationDetail(experimentKey, user, defaultVariation).toDto() }
         )
     }
 
     private fun isFeatureOn(parameters: HackleBridgeParameters): Boolean {
         val featureKey = checkNotNull(parameters.featureKey())
-        
+
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.isFeatureOn(featureKey) },
-            onUserById = { userId -> app.isFeatureOn(featureKey, userId) },
-            onUserByUser = { user -> app.isFeatureOn(featureKey, user) }
+            onDefault = { app.featureFlagDetailInternal(featureKey, null).isOn },
+            onUserId = { userId -> app.featureFlagDetailInternal(featureKey, User.of(userId)).isOn },
+            onUser = { user -> app.featureFlagDetailInternal(featureKey, user).isOn }
         )
     }
 
@@ -231,47 +231,33 @@ internal class HackleBridge(val app: HackleApp) {
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.featureFlagDetail(featureKey).toDto() },
-            onUserById = { userId -> app.featureFlagDetail(featureKey, userId).toDto() },
-            onUserByUser = { user -> app.featureFlagDetail(featureKey, user).toDto() }
+            onDefault = { app.featureFlagDetailInternal(featureKey, null).toDto() },
+            onUserId = { userId -> app.featureFlagDetailInternal(featureKey, User.of(userId)).toDto() },
+            onUser = { user -> app.featureFlagDetailInternal(featureKey, user).toDto() }
         )
     }
 
     private fun track(parameters: HackleBridgeParameters) {
-        when(val eventParam = parameters.event()) {
+        val hackleEvent = when (val event = parameters.event()) {
             is String -> {
-                track(eventKey = eventParam, parameters = parameters)
-                return
+                Event.of(event)
             }
+
             is Map<*, *> -> {
-                @Suppress("UNCHECKED_CAST")
-                val data = eventParam as Map<String, Any>
-                val dto = EventDto.from(data)
-                val event = Event.from(dto)
-                track(event = event, parameters = parameters)
-                return
+                val dto = EventDto.from(event)
+                Event.from(dto)
             }
+
             else -> {
                 throw IllegalArgumentException("Valid parameter must be provided.")
             }
         }
-    }
-
-    private fun track(eventKey: String, parameters: HackleBridgeParameters) {
+        
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.track(eventKey = eventKey) },
-            onUserById = { userId -> app.track(eventKey = eventKey, userId = userId) },
-            onUserByUser = { user -> app.track(eventKey = eventKey, user = user) }
-        )
-    }
-
-    private fun track(event: Event, parameters: HackleBridgeParameters) {
-        return withUserContext(
-            parameters = parameters,
-            onDefault = { app.track(event = event) },
-            onUserById = { userId -> app.track(event = event, userId = userId) },
-            onUserByUser = { user -> app.track(event = event, user = user) }
+            onDefault = { app.trackInternal(hackleEvent, null) },
+            onUserId = { userId -> app.trackInternal(hackleEvent, User.of(userId)) },
+            onUser = { user -> app.trackInternal(hackleEvent, user)}
         )
     }
 
@@ -279,13 +265,13 @@ internal class HackleBridge(val app: HackleApp) {
         val remoteConfig = withUserContext(
             parameters = parameters,
             onDefault = { app.remoteConfig() },
-            onUserById = { userId -> 
+            onUserId = { userId -> 
                 val user = User.builder()
                     .userId(userId)
                     .build()
                 app.remoteConfig(user)
             },
-            onUserByUser = { user -> app.remoteConfig(user)}
+            onUser = { user -> app.remoteConfig(user)}
         )
 
         val key = checkNotNull(parameters.key())
@@ -323,25 +309,25 @@ internal class HackleBridge(val app: HackleApp) {
      * @param R 반환될 결과의 타입
      * @param parameters 원본 파라미터 맵
      * @param onDefault 사용자가 없는 경우 실행할 동작
-     * @param onUserById 사용자 ID가 있는 경우 실행할 동작
-     * @param onUserByUser 사용자 객체가 있는 경우 실행할 동작
+     * @param onUserId 사용자 ID가 있는 경우 실행할 동작
+     * @param onUser 사용자 객체가 있는 경우 실행할 동작
      * @return 각 람다에서 반환된 결과
      */
     private fun <R> withUserContext(
         parameters: HackleBridgeParameters,
         onDefault: () -> R,
-        onUserById: (userId: String) -> R,
-        onUserByUser: (user: User) -> R
+        onUserId: (userId: String) -> R,
+        onUser: (user: User) -> R
     ): R {
         return when (val userParam = parameters.user()) {
             is String -> {
-                onUserById(userParam)
+                onUserId(userParam)
             }
             is Map<*, *> -> {
                 val data = parameters.userAsMap()
                 if (data != null) {
                     val user = User.from(UserDto.from(data))
-                    onUserByUser(user)
+                    onUser(user)
                 } else {
                     onDefault() // Map이지만 User 객체로 변환 실패 시 기본 동작 실행
                 }

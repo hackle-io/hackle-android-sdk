@@ -321,10 +321,10 @@ class HackleApp internal constructor(
         return featureFlagDetailInternal(featureKey, null)
     }
 
-    private fun featureFlagDetailInternal(featureKey: Long, user: User?): FeatureFlagDecision {
+    internal fun featureFlagDetailInternal(featureKey: Long, user: User?, browserProperties: Map<String, Any>? = null): FeatureFlagDecision {
         val sample = Timer.start()
         return try {
-            val hackleUser = userManager.resolve(user)
+            val hackleUser = userManager.resolve(user, browserProperties)
             core.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
@@ -352,9 +352,9 @@ class HackleApp internal constructor(
         trackInternal(event, null)
     }
 
-    private fun trackInternal(event: Event, user: User?) {
+    internal fun trackInternal(event: Event, user: User?, browserProperties: Map<String, Any>? = null) {
         try {
-            val hackleUser = userManager.resolve(user)
+            val hackleUser = userManager.resolve(user, browserProperties)
             core.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }

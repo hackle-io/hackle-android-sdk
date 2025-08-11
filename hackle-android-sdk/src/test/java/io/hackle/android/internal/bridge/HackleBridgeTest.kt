@@ -51,7 +51,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data,`is`("abcd1234"))
+            assertThat(data, `is`("abcd1234"))
         }
     }
 
@@ -61,14 +61,18 @@ class HackleBridgeTest {
             .id("foo")
             .userId("bar")
             .deviceId("abcd1234")
-            .identifiers(mapOf(
-                "foo" to "bar"
-            ))
-            .properties(mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            ))
+            .identifiers(
+                mapOf(
+                    "foo" to "bar"
+                )
+            )
+            .properties(
+                mapOf(
+                    "number" to 123,
+                    "string" to "text",
+                    "array" to arrayOf(123, "123")
+                )
+            )
             .build()
         every { app.user } returns user
         val jsonString = createJsonString("getUser")
@@ -560,7 +564,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail`() {
-        every { app.variationDetail(any(), any<Variation>()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
+        every { app.variationDetail(any(), any<Variation>()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
@@ -587,7 +594,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail with user string`() {
-        every { app.variationDetail(any(), any<String>(), any()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
+        every { app.variationDetail(any(), any<String>(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf(
             "experimentKey" to 1,
             "defaultVariation" to "D",
@@ -619,7 +629,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail with user object`() {
-        every { app.variationDetail(any(), any<User>(), any()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
+        every { app.variationDetail(any(), any<User>(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -688,14 +701,20 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with is feature on`() {
-        every { app.isFeatureOn(any()) } returns true
+        every { app.featureFlagDetailInternal(any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1)
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.isFeatureOn(withArg {
-                assertThat(it, `is`(1))
-            })
+            app.featureFlagDetailInternal(
+                withArg {
+                    assertThat(it, `is`(1))
+                },
+                user = null
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -706,14 +725,19 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with is feature on with user string`() {
-        every { app.isFeatureOn(any(), any<String>()) } returns true
+        every { app.featureFlagDetailInternal(any(), any()) }  returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.isFeatureOn(
+            app.featureFlagDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) }
+                withArg<User> {
+                    assertThat(it, `is`(User.of("abcd1234")))
+                }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -725,7 +749,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with is feature on with user object`() {
-        every { app.isFeatureOn(any(), any<User>()) } returns true
+        every { app.featureFlagDetailInternal(any(), any<User>()) }  returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -741,7 +768,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.isFeatureOn(
+            app.featureFlagDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -781,14 +808,19 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with feature detail`() {
-        every { app.featureFlagDetail(any()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
+        every { app.featureFlagDetailInternal(any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1)
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.featureFlagDetail(withArg {
-                assertThat(it, `is`(1))
-            })
+            app.featureFlagDetailInternal(withArg {
+                    assertThat(it, `is`(1))
+                },
+                null
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -807,14 +839,17 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with feature flag detail with user string`() {
-        every { app.featureFlagDetail(any(), any<String>()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
+        every { app.featureFlagDetailInternal(any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE, 
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.featureFlagDetail(
+            app.featureFlagDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) }
+                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -834,7 +869,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with feature flag detail with user object`() {
-        every { app.featureFlagDetail(any(), any<User>()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
+        every { app.featureFlagDetailInternal(any(), any<User>()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -850,7 +888,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.featureFlagDetail(
+            app.featureFlagDetailInternal(
                 withArg { assertThat(it, `is`(1)) },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -902,9 +940,12 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(withArg<String> {
-                assertThat(it, `is`("foo"))
-            })
+            app.trackInternal(
+                withArg<Event> {
+                assertThat(it, `is`(Event.of("foo")))
+                },
+                null
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -922,12 +963,12 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(
-                withArg<String> {
-                    assertThat(it, `is`("foo"))
+            app.trackInternal(
+                withArg<Event> {
+                    assertThat(it, `is`(Event.of("foo")))
                 },
-                withArg<String> {
-                    assertThat(it, `is`("abcd1234"))
+                withArg<User> {
+                    assertThat(it, `is`(User.of("abcd1234")))
                 }
             )
         }
@@ -958,9 +999,9 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(
-                withArg<String> {
-                    assertThat(it, `is`("foo"))
+            app.trackInternal(
+                withArg<Event> {
+                    assertThat(it, `is`(Event.of("foo")))
                 },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -996,12 +1037,15 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(withArg<Event> {
-                assertThat(it.key, `is`("foo"))
-                assertThat(it.value, `is`(123.0))
-                assertThat(it.properties.size, `is`(1))
-                assertThat(it.properties["abc"], `is`("def"))
-            })
+            app.trackInternal(
+                withArg<Event> { 
+                    assertThat(it.key, `is`("foo"))
+                    assertThat(it.value, `is`(123.0))
+                    assertThat(it.properties.size, `is`(1))
+                    assertThat(it.properties["abc"], `is`("def")) 
+                },
+                null
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1024,15 +1068,15 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(
+            app.trackInternal(
                 withArg<Event> {
                     assertThat(it.key, `is`("foo"))
                     assertThat(it.value, `is`(123.0))
                     assertThat(it.properties.size, `is`(1))
                     assertThat(it.properties["abc"], `is`("def"))
                 },
-                withArg<String> {
-                    assertThat(it, `is`("abcd1234"))
+                withArg<User> {
+                    assertThat(it, `is`(User.of("abcd1234")))
                 }
             )
         }
@@ -1068,7 +1112,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(
+            app.trackInternal(
                 withArg<Event> {
                     assertThat(it.key, `is`("foo"))
                     assertThat(it.value, `is`(123.0))
@@ -1431,7 +1475,7 @@ class HackleBridgeTest {
             assertNull(data)
         }
     }
-    
+
     @Test
     fun `invoke set current screen with parameters`() {
         every { app.setCurrentScreen(any()) } answers { }
