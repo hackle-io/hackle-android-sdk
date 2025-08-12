@@ -1,9 +1,11 @@
 package io.hackle.android.internal.bridge
 
+import io.hackle.android.internal.bridge.model.EventDto
 import io.hackle.android.internal.bridge.model.HackleSubscriptionOperationsDto
 import io.hackle.android.internal.bridge.model.PropertyOperationsDto
 import io.hackle.android.internal.bridge.model.UserDto
 import io.hackle.android.internal.bridge.model.from
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 
 internal typealias HackleBridgeParameters = Map<String, Any?>
@@ -107,9 +109,24 @@ internal fun HackleBridgeParameters.featureKey(): Long? = (this["featureKey"] as
 
 /**
  * 트래킹할 이벤트를 반환합니다.
- * @return [String] 타입의 이벤트 키 또는 [Map] 타입의 이벤트 객체, 또는 `null`
+ * @return [Event] 객체 또는 `null`
  */
-internal fun HackleBridgeParameters.event(): Any? = this["event"]
+internal fun HackleBridgeParameters.event(): Event? {
+   return when (val event = this["event"]) {
+        is String -> {
+            Event.of(event)
+        }
+
+        is Map<*, *> -> {
+            val dto = EventDto.from(event)
+            Event.from(dto)
+        }
+
+        else -> {
+            null
+        }
+    }
+}
 
 /**
  * 원격 구성(Remote Config)에서 가져올 값의 타입("string", "number", "boolean")을 반환합니다.

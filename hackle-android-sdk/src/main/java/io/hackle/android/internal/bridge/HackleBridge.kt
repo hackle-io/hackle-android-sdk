@@ -218,8 +218,12 @@ internal class HackleBridge(
         val defaultVariationKey = parameters.defaultVariation()
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
 
-        return hackleAppCore.variationDetail(experimentKey, parameters.user(), defaultVariation, hackleAppContext)
-            .toDto()
+        return hackleAppCore.variationDetail(
+            experimentKey, 
+            parameters.user(), 
+            defaultVariation, 
+            hackleAppContext
+        ) .toDto()
     }
 
     private fun isFeatureOn(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): Boolean {
@@ -238,22 +242,8 @@ internal class HackleBridge(
     }
 
     private fun track(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
-        val hackleEvent = when (val event = parameters.event()) {
-            is String -> {
-                Event.of(event)
-            }
-
-            is Map<*, *> -> {
-                val dto = EventDto.from(event)
-                Event.from(dto)
-            }
-
-            else -> {
-                throw IllegalArgumentException("Valid parameter must be provided.")
-            }
-        }
-
-        return hackleAppCore.track(hackleEvent, parameters.user(), hackleAppContext)
+        val event = checkNotNull(parameters.event())
+        return hackleAppCore.track(event, parameters.user(), hackleAppContext)
     }
 
     private fun remoteConfig(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): String {
