@@ -92,11 +92,11 @@ internal class UserManager(
      * @param updated 변경된 사용자 정보
      */
     fun syncIfNeeded(updated: Updated<User>) {
-        if(hasNewIdentifiers(updated.previous, updated.current)) {
+        if (hasNewIdentifiers(updated.previous, updated.current)) {
             syncCohort()
         }
 
-        if(!updated.previous.identifierEquals(updated.current)) {
+        if (!updated.previous.identifierEquals(updated.current)) {
             syncTargetEvents()
         }
     }

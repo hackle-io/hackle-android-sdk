@@ -50,12 +50,12 @@ class HackleApp internal constructor(
      * Current User
      */
     val user: User get() = hackleAppCore.user
-    
+
     internal val userExplorer: HackleUserExplorer get() = hackleAppCore.userExplorer
 
     /**
      * Shows the user explorer UI button.
-     * 
+     *
      * This is typically used for debugging purposes to view the current user's state.
      */
     fun showUserExplorer() {
@@ -157,7 +157,7 @@ class HackleApp internal constructor(
 
     /**
      * Resets the current user.
-     * 
+     *
      * When reset user, the deviceId is set to hackleDeviceId
      * and id, userId, properties are set to null
      *
@@ -171,7 +171,7 @@ class HackleApp internal constructor(
     /**
      * Sets the phone number for the current user.
      *
-     * @param phoneNumber the phone number to set. 
+     * @param phoneNumber the phone number to set.
      * @param callback an optional callback to be executed when the operation is complete.
      */
     @JvmOverloads
@@ -215,7 +215,7 @@ class HackleApp internal constructor(
     fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
         return hackleAppCore.variationDetail(experimentKey, null, defaultVariation, HackleAppContext.default)
     }
-    
+
     /**
      * Decide the variations for all experiments and returns a map of decision results.
      *
@@ -251,7 +251,7 @@ class HackleApp internal constructor(
     fun featureFlagDetail(featureKey: Long): FeatureFlagDecision {
         return hackleAppCore.featureFlagDetail(featureKey, null, HackleAppContext.default)
     }
-    
+
 
     /**
      * Records the event that occurred by the user.
@@ -297,7 +297,7 @@ class HackleApp internal constructor(
         val jsInterface = HackleJavascriptInterface(bridge, this.sdk, this.mode)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
-    
+
     fun hackleAppBridge(): HackleAppBridge {
         return HackleBridge(this.hackleAppCore)
     }
@@ -332,7 +332,12 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        return hackleAppCore.variationDetail(experimentKey, User.of(userId), defaultVariation, HackleAppContext.default).variation
+        return hackleAppCore.variationDetail(
+            experimentKey,
+            User.of(userId),
+            defaultVariation,
+            HackleAppContext.default
+        ).variation
     }
 
     @Deprecated("Use variation(experimentKey) with setUser(user) instead.")

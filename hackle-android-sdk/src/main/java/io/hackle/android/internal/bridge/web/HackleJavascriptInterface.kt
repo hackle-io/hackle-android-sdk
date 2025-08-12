@@ -2,7 +2,6 @@ package io.hackle.android.internal.bridge.web
 
 import android.webkit.JavascriptInterface
 import io.hackle.android.HackleAppMode
-import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.model.Sdk
 import io.hackle.sdk.common.HackleAppBridge
 

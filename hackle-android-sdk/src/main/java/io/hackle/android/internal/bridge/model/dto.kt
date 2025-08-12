@@ -144,18 +144,20 @@ internal fun PropertyOperations.Companion.from(dto: PropertyOperationsDto): Prop
                 PropertyOperation.REMOVE -> properties.forEach { (key, value) -> builder.remove(key, value) }
                 PropertyOperation.CLEAR_ALL -> properties.forEach { (_, _) -> builder.clearAll() }
             }
-        } catch (_: Throwable) { }
+        } catch (_: Throwable) {
+        }
     }
     return builder.build()
 }
 
 internal fun HackleSubscriptionOperations.Companion.from(dto: HackleSubscriptionOperationsDto): HackleSubscriptionOperations {
     val builder = builder()
-    for((key, value) in dto) {
+    for ((key, value) in dto) {
         try {
             val status = enumValueOfOrNull<HackleSubscriptionStatus>(value) ?: continue
             builder.custom(key, status)
-        } catch(_: Throwable) { }
+        } catch (_: Throwable) {
+        }
     }
     return builder.build()
 }
