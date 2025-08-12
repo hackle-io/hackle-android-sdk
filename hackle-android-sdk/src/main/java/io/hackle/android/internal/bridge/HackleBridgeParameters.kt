@@ -99,7 +99,7 @@ internal fun HackleBridgeParameters.experimentKey(): Long? = (this["experimentKe
  * 파라미터가 없는 경우 기본값으로 빈 문자열("")을 반환합니다.
  * @return 기본 그룹 키. `null`이 아님.
  */
-internal fun HackleBridgeParameters.defaultVariation(): String = this["defaultVariation"] as? String ?: ""
+internal fun HackleBridgeParameters.defaultVariation(): String = this["defaultVariation"] as? String ?: "A"
 
 /**
  * 기능 플래그 키(Feature Key)를 [Long] 타입으로 반환합니다.
