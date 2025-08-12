@@ -46,33 +46,69 @@ class HackleApp internal constructor(
      */
     val sessionId: String get() = hackleAppCore.sessionId
 
+    /**
+     * Current User
+     */
     val user: User get() = hackleAppCore.user
     
     internal val userExplorer: HackleUserExplorer get() = hackleAppCore.userExplorer
 
+    /**
+     * Shows the user explorer UI button.
+     * 
+     * This is typically used for debugging purposes to view the current user's state.
+     */
     fun showUserExplorer() {
         hackleAppCore.showUserExplorer()
     }
 
+    /**
+     * Hides the user explorer UI button if it is currently visible.
+     */
     fun hideUserExplorer() {
         hackleAppCore.hideUserExplorer()
     }
 
+    /**
+     * Sets or replaces the current user.
+     *
+     * @param user the user to set.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setUser(user: User, callback: Runnable? = null) {
         hackleAppCore.setUser(user, callback)
     }
 
+    /**
+     * Sets the userId for the current user.
+     *
+     * @param userId the userId to set for the user. Can be null to identify an anonymous user.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setUserId(userId: String?, callback: Runnable? = null) {
         hackleAppCore.setUserId(userId, callback)
     }
 
+    /**
+     * Sets a custom device ID.
+     *
+     * @param deviceId the custom device ID to set.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setDeviceId(deviceId: String, callback: Runnable? = null) {
         hackleAppCore.setDeviceId(deviceId, callback)
     }
 
+    /**
+     * Sets a single user property.
+     *
+     * @param key the key of the property.
+     * @param value the value of the property.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
         val operations = PropertyOperations.builder()
@@ -81,33 +117,73 @@ class HackleApp internal constructor(
         hackleAppCore.updateUserProperties(operations, HackleAppContext.default, callback)
     }
 
+    /**
+     * Updates user properties with a set of operations.
+     *
+     * @param operations a set of operations to apply to user properties.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
         hackleAppCore.updateUserProperties(operations, HackleAppContext.default, callback)
     }
 
+    /**
+     * Updates push notification subscription status.
+     *
+     * @param operations a set of subscription operations to apply.
+     */
     fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
         hackleAppCore.updatePushSubscriptions(operations, HackleAppContext.default)
     }
 
+    /**
+     * Updates SMS subscription status.
+     *
+     * @param operations a set of subscription operations to apply.
+     */
     fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
         hackleAppCore.updateSmsSubscriptions(operations, HackleAppContext.default)
     }
 
+    /**
+     * Updates KakaoTalk subscription status.
+     *
+     * @param operations a set of subscription operations to apply.
+     */
     fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
         hackleAppCore.updateKakaoSubscriptions(operations, HackleAppContext.default)
     }
 
+    /**
+     * Resets the current user.
+     * 
+     * When reset user, the deviceId is set to hackleDeviceId
+     * and id, userId, properties are set to null
+     *
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
         hackleAppCore.resetUser(HackleAppContext.default, callback)
     }
 
+    /**
+     * Sets the phone number for the current user.
+     *
+     * @param phoneNumber the phone number to set. 
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
         hackleAppCore.setPhoneNumber(phoneNumber, HackleAppContext.default, callback)
     }
 
+    /**
+     * Removes the phone number from the current user.
+     *
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun unsetPhoneNumber(callback: Runnable? = null) {
         hackleAppCore.unsetPhoneNumber(HackleAppContext.default, callback)
