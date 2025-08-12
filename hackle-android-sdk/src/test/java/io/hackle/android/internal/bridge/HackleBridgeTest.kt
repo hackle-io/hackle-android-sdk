@@ -1229,11 +1229,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(null, withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-            app.remoteConfig(null, withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }).getString(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`("abc")) }
-            )
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+                .getString(
+                    withArg { assertThat(it, `is`("foo")) },
+                    withArg { assertThat(it, `is`("abc")) }
+                )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1333,11 +1338,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(null, withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-            app.remoteConfig(null, withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }).getDouble(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(1000.0)) }
-            )
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+                .getDouble(
+                    withArg { assertThat(it, `is`("foo")) },
+                    withArg { assertThat(it, `is`(1000.0)) }
+                )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1437,11 +1447,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig(null, withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-            app.remoteConfig(null, withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }).getBoolean(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(false)) }
-            )
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+                .getBoolean(
+                    withArg { assertThat(it, `is`("foo")) },
+                    withArg { assertThat(it, `is`(false)) }
+                )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))

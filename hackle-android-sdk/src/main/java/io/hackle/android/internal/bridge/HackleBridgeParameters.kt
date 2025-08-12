@@ -2,6 +2,9 @@ package io.hackle.android.internal.bridge
 
 import io.hackle.android.internal.bridge.model.HackleSubscriptionOperationsDto
 import io.hackle.android.internal.bridge.model.PropertyOperationsDto
+import io.hackle.android.internal.bridge.model.UserDto
+import io.hackle.android.internal.bridge.model.from
+import io.hackle.sdk.common.User
 
 internal typealias HackleBridgeParameters = Map<String, Any?>
 
@@ -16,7 +19,26 @@ internal fun HackleBridgeParameters.userAsMap(): Map<String, Any>? = this["user"
  * 사용자 식별자([String]), 사용자 객체([Map]), 또는 `null`을 반환합니다.
  * @return [String] 타입의 사용자 ID, [Map] 타입의 사용자 객체, 또는 `null`
  */
-internal fun HackleBridgeParameters.user(): Any? = this["user"]
+internal fun HackleBridgeParameters.user(): User? {
+    return when (val user = this["user"]) {
+        is String -> {
+            User.of(user)
+        }
+
+        is Map<*, *> -> {
+            val data = userAsMap()
+            if (data != null) {
+                User.from(UserDto.from(data))
+            } else {
+                null
+            }
+        }
+
+        else -> {
+            null
+        }
+    }
+}
 
 /**
  * 사용자 ID를 반환합니다.
@@ -55,7 +77,7 @@ internal fun HackleBridgeParameters.propertyOperationDto(): PropertyOperationsDt
  * @return HackleSubscriptionOperationsDto 객체 또는 `null`
  */
 @Suppress("UNCHECKED_CAST")
-internal fun HackleBridgeParameters.hackleSubscriptionOperationDto(): HackleSubscriptionOperationsDto? = 
+internal fun HackleBridgeParameters.hackleSubscriptionOperationDto(): HackleSubscriptionOperationsDto? =
     this["operations"] as? HackleSubscriptionOperationsDto
 
 /**
