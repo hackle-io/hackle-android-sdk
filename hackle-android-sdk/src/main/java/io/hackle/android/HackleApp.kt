@@ -293,9 +293,13 @@ class HackleApp internal constructor(
                         "JavaScript can use reflection to manipulate application"
             )
         }
-        val bridge = HackleBridge(this.hackleAppCore, this.sdk, this.mode)
-        val jsInterface = HackleJavascriptInterface(bridge)
+        val bridge = hackleAppBridge()
+        val jsInterface = HackleJavascriptInterface(bridge, this.sdk, this.mode)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
+    }
+    
+    fun hackleAppBridge(): HackleAppBridge {
+        return HackleBridge(this.hackleAppCore)
     }
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {

@@ -1,21 +1,17 @@
 package io.hackle.android.internal.bridge
 
-import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.bridge.model.*
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.model.Sdk
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 
 internal class HackleBridge(
-    private val hackleAppCore: HackleAppCore,
-    internal val sdk: Sdk,
-    internal val mode: HackleAppMode,
-) {
+    private val hackleAppCore: HackleAppCore
+) : HackleAppBridge {
 
-    fun invoke(string: String): String {
+    override fun invoke(string: String): String {
         val response: BridgeResponse = try {
             val invocation = BridgeInvocation(string)
             invoke(invocation.command, invocation.parameters, invocation.browserProperties)

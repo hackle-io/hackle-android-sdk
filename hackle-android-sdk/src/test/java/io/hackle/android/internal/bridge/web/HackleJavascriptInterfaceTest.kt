@@ -14,34 +14,35 @@ import strikt.assertions.isEqualTo
 class HackleJavascriptInterfaceTest {
 
     @Test
-    fun `name`() {
+    fun name() {
         expectThat(HackleJavascriptInterface.NAME).isEqualTo("_hackleApp")
     }
 
     @Test
-    fun `getAppSdkKey`() {
-        val sut = HackleJavascriptInterface(hackleBridge("SDK_KEY", HackleAppMode.NATIVE))
+    fun getAppSdkKey() {
+        val sut = HackleJavascriptInterface(hackleBridge(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
         expectThat(sut.getAppSdkKey()).isEqualTo("SDK_KEY")
     }
 
     @Test
-    fun `getInvocationType`() {
-        val sut = HackleJavascriptInterface(hackleBridge("SDK_KEY", HackleAppMode.NATIVE))
+    fun getInvocationType() {
+        val sut = HackleJavascriptInterface(hackleBridge(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
         expectThat(sut.getInvocationType()).isEqualTo("function")
     }
 
     @Test
-    fun `getAppMode`() {
-        val sut = HackleJavascriptInterface(hackleBridge("SDK_KEY", HackleAppMode.WEB_VIEW_WRAPPER))
+    fun getAppMode() {
+        val sut =
+            HackleJavascriptInterface(hackleBridge(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.WEB_VIEW_WRAPPER)
         expectThat(sut.getAppMode()).isEqualTo("WEB_VIEW_WRAPPER")
     }
 
     @Test
-    fun `invoke`() {
+    fun invoke() {
         // given
         val bridge = mockk<HackleBridge>()
         every { bridge.invoke(any()) } returns "result"
-        val sut = HackleJavascriptInterface(bridge)
+        val sut = HackleJavascriptInterface(bridge, Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
 
         // when
         val actual = sut.invoke("42")
@@ -52,12 +53,8 @@ class HackleJavascriptInterfaceTest {
             bridge.invoke("42")
         }
     }
-    
-    private fun hackleBridge(sdkKey: String, mode: HackleAppMode): HackleBridge {
-        return HackleBridge(
-            mockk<HackleAppCore>(),
-            Sdk(sdkKey, "name", "version"),
-            mode
-        )
+
+    private fun hackleBridge(): HackleBridge {
+        return HackleBridge(mockk<HackleAppCore>(),)
     }
 }

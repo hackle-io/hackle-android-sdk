@@ -46,7 +46,7 @@ class HackleBridgeTest {
     @Before
     fun setup() {
         app = spyk(mockk<HackleAppCore>())
-        bridge = HackleBridge(app, sdk = mockk<Sdk>(), mode = HackleAppMode.NATIVE)
+        bridge = HackleBridge(app)
     }
 
     @Test
