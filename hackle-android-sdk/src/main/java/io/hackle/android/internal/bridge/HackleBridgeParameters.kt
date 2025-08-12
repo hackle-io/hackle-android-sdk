@@ -18,13 +18,42 @@ internal typealias HackleBridgeParameters = Map<String, Any?>
 internal fun HackleBridgeParameters.userAsMap(): Map<String, Any>? = this["user"] as? Map<String, Any>
 
 /**
- * 사용자 식별자([String]), 사용자 객체([Map]), 또는 `null`을 반환합니다.
- * @return [String] 타입의 사용자 ID, [Map] 타입의 사용자 객체, 또는 `null`
+ * id를 사용하는 [User] 객체를 반환합니다.
+ * 
+ * id를 사용합니다
+ * @return [User] 객체, 또는 `null`
  */
 internal fun HackleBridgeParameters.user(): User? {
     return when (val user = this["user"]) {
         is String -> {
             User.of(user)
+        }
+
+        is Map<*, *> -> {
+            val data = userAsMap()
+            if (data != null) {
+                User.from(UserDto.from(data))
+            } else {
+                null
+            }
+        }
+
+        else -> {
+            null
+        }
+    }
+}
+
+/**
+ * userId를 사용하는 [User] 객체를 반환합니다.
+ * @return [User] 객체, 또는 `null`
+ */
+internal fun HackleBridgeParameters.userWithUserId(): User? {
+    return when (val user = this["user"]) {
+        is String -> {
+            User.builder()
+                .userId(user)
+                .build()
         }
 
         is Map<*, *> -> {
@@ -135,10 +164,23 @@ internal fun HackleBridgeParameters.event(): Event? {
 internal fun HackleBridgeParameters.valueType(): String? = this["valueType"] as? String
 
 /**
- * 원격 구성(Remote Config) 조회 시 사용할 기본값을 반환합니다.
- * @return 기본값 (`Any?`)
+ * 원격 구성(Remote Config) 조회 시 사용할 string 기본값을 반환합니다.
+ * @return 기본값 (`String?`)
  */
-internal fun HackleBridgeParameters.defaultValue(): Any? = this["defaultValue"]
+
+internal fun HackleBridgeParameters.defaultStringValue(): String? = this["defaultValue"] as? String
+/**
+ * 원격 구성(Remote Config) 조회 시 사용할 number 기본값을 반환합니다.
+ * @return 기본값 (`Number?`)
+ */
+
+internal fun HackleBridgeParameters.defaultNumberValue(): Number? = this["defaultValue"] as? Number
+
+/**
+ * 원격 구성(Remote Config) 조회 시 사용할 boolean 기본값을 반환합니다.
+ * @return 기본값 (`Boolean?`)
+ */
+internal fun HackleBridgeParameters.defaultBooleanValue(): Boolean? = this["defaultValue"] as? Boolean
 
 /**
  * 현재 화면의 이름을 반환합니다.

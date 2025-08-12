@@ -247,42 +247,22 @@ internal class HackleBridge(
     }
 
     private fun remoteConfig(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): String {
-        val user = when (val user = parameters["user"]) {
-            is String -> {
-                User.builder()
-                    .userId(user)
-                    .build()
-            }
-
-            is Map<*, *> -> {
-                val data = parameters.userAsMap()
-                if (data != null) {
-                    User.from(UserDto.from(data))
-                } else {
-                    null
-                }
-            }
-
-            else -> {
-                null
-            }
-        }
+        val user = parameters.userWithUserId()
         val remoteConfig = hackleAppCore.remoteConfig(user, hackleAppContext)
-
         val key = checkNotNull(parameters.key())
         when (checkNotNull(parameters.valueType())) {
             "string" -> {
-                val defaultValue = checkNotNull(parameters.defaultValue() as? String)
+                val defaultValue = checkNotNull(parameters.defaultStringValue())
                 return remoteConfig.getString(key, defaultValue)
             }
 
             "number" -> {
-                val defaultValue = checkNotNull(parameters.defaultValue() as? Number)
+                val defaultValue = checkNotNull(parameters.defaultNumberValue())
                 return remoteConfig.getDouble(key, defaultValue.toDouble()).toString()
             }
 
             "boolean" -> {
-                val defaultValue = checkNotNull(parameters.defaultValue() as? Boolean)
+                val defaultValue = checkNotNull(parameters.defaultBooleanValue())
                 return remoteConfig.getBoolean(key, defaultValue).toString()
             }
 
