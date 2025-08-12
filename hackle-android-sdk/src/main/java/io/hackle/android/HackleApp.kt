@@ -1,5 +1,6 @@
 package io.hackle.android
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
@@ -206,6 +207,7 @@ class HackleApp internal constructor(
      *
      * @param webView  Target WebView. MUST NOT be null.
      */
+    @SuppressLint("UseRequiresApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setWebViewBridge(webView: WebView) {
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
