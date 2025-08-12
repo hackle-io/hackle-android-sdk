@@ -4,6 +4,7 @@ import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.bridge.model.*
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
+import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.model.Sdk
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
@@ -17,16 +18,15 @@ internal class HackleBridge(
     fun invoke(string: String): String {
         val response: BridgeResponse = try {
             val invocation = BridgeInvocation(string)
-            app.withBrowserProperties(invocation.browserProperties) {
-                invoke(invocation.command, invocation.parameters)
-            }
+            invoke(invocation.command, invocation.parameters, invocation.browserProperties)
         } catch (throwable: Throwable) {
             BridgeResponse.error(throwable)
         }
         return response.toJsonString()
     }
 
-    private fun invoke(command: BridgeInvocation.Command, parameters: HackleBridgeParameters): BridgeResponse {
+    private fun invoke(command: BridgeInvocation.Command, parameters: HackleBridgeParameters, browserProperties: HackleBrowserProperties): BridgeResponse {
+        val hackleAppContext = HackleAppContext.create(browserProperties)
         return when (command) {
             GET_SESSION_ID -> {
                 BridgeResponse.success(app.sessionId)
@@ -53,72 +53,72 @@ internal class HackleBridge(
             }
 
             SET_USER_PROPERTY -> {
-                setUserProperty(parameters)
+                setUserProperty(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             UPDATE_USER_PROPERTY -> {
-                updateUserProperties(parameters)
+                updateUserProperties(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             UPDATE_PUSH_SUBSCRIPTIONS -> {
-                updatePushSubscriptions(parameters)
+                updatePushSubscriptions(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             UPDATE_SMS_SUBSCRIPTIONS -> {
-                updateSmsSubscriptions(parameters)
+                updateSmsSubscriptions(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             UPDATE_KAKAO_SUBSCRIPTIONS -> {
-                updateKakaoSubscriptions(parameters)
+                updateKakaoSubscriptions(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             RESET_USER -> {
-                app.resetUser()
+                app.resetUser(hackleAppContext, null)
                 BridgeResponse.success()
             }
 
             SET_PHONE_NUMBER -> {
-                setPhoneNumber(parameters)
+                setPhoneNumber(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             UNSET_PHONE_NUMBER -> {
-                app.unsetPhoneNumber(null)
+                app.unsetPhoneNumber(hackleAppContext, null)
                 BridgeResponse.success()
             }
 
             VARIATION -> {
-                val data = variation(parameters)
+                val data = variation(parameters, hackleAppContext)
                 BridgeResponse.success(data)
             }
 
             VARIATION_DETAIL -> {
-                val data = variationDetail(parameters)
+                val data = variationDetail(parameters, hackleAppContext)
                 BridgeResponse.success(data)
             }
 
             IS_FEATURE_ON -> {
-                val data = isFeatureOn(parameters)
+                val data = isFeatureOn(parameters, hackleAppContext)
                 BridgeResponse.success(data)
             }
 
             FEATURE_FLAG_DETAIL -> {
-                val data = featureFlagDetail(parameters)
+                val data = featureFlagDetail(parameters, hackleAppContext)
                 BridgeResponse.success(data)
             }
 
             TRACK -> {
-                track(parameters)
+                track(parameters, hackleAppContext)
                 BridgeResponse.success()
             }
 
             REMOTE_CONFIG -> {
-                val data = remoteConfig(parameters)
+                val data = remoteConfig(parameters, hackleAppContext)
                 BridgeResponse.success(data)
             }
 
@@ -144,111 +144,111 @@ internal class HackleBridge(
         val data = checkNotNull(parameters.userAsMap())
         val dto = UserDto.from(data)
         val user = User.from(dto)
-        app.setUser(user)
+        app.setUser(user, null)
     }
 
     private fun setUserId(parameters: HackleBridgeParameters) {
         check(parameters.containsKey("userId"))
         val userId = parameters.userId()
-        app.setUserId(userId)
+        app.setUserId(userId, null)
     }
 
     private fun setDeviceId(parameters: HackleBridgeParameters) {
         val deviceId = checkNotNull(parameters.deviceId())
-        app.setDeviceId(deviceId)
+        app.setDeviceId(deviceId, null)
     }
 
-    private fun setUserProperty(parameters: HackleBridgeParameters) {
+    private fun setUserProperty(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         val key = checkNotNull(parameters.key())
         val value = parameters.value()
         val operations = PropertyOperations.builder()
             .set(key, value)
             .build()
-        app.updateUserProperties(operations, null)
+        app.updateUserProperties(operations, hackleAppContext, null)
     }
 
-    private fun updateUserProperties(parameters: HackleBridgeParameters) {
+    private fun updateUserProperties(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters.propertyOperationDto())
         val operations = PropertyOperations.from(dto)
-        app.updateUserProperties(operations, null)
+        app.updateUserProperties(operations, hackleAppContext, null)
     }
 
-    private fun updatePushSubscriptions(parameters: HackleBridgeParameters) {
+    private fun updatePushSubscriptions(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters.hackleSubscriptionOperationDto())
         val operations = HackleSubscriptionOperations.from(dto)
-        app.updatePushSubscriptions(operations)
+        app.updatePushSubscriptions(operations, hackleAppContext)
     }
 
-    private fun updateSmsSubscriptions(parameters: HackleBridgeParameters) {
+    private fun updateSmsSubscriptions(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters.hackleSubscriptionOperationDto())
         val operations = HackleSubscriptionOperations.from(dto)
-        app.updateSmsSubscriptions(operations)
+        app.updateSmsSubscriptions(operations, hackleAppContext)
     }
 
-    private fun updateKakaoSubscriptions(parameters: HackleBridgeParameters) {
+    private fun updateKakaoSubscriptions(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         @Suppress("UNCHECKED_CAST")
         val dto = checkNotNull(parameters.hackleSubscriptionOperationDto())
         val operations = HackleSubscriptionOperations.from(dto)
-        app.updateKakaoSubscriptions(operations)
+        app.updateKakaoSubscriptions(operations, hackleAppContext)
     }
 
-    private fun setPhoneNumber(parameters: HackleBridgeParameters) {
+    private fun setPhoneNumber(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         val phoneNumber = checkNotNull(parameters.phoneNumber())
-        app.setPhoneNumber(phoneNumber, null)
+        app.setPhoneNumber(phoneNumber, hackleAppContext, null)
     }
 
-    private fun variation(parameters: HackleBridgeParameters): String {
+    private fun variation(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): String {
         val experimentKey = checkNotNull(parameters.experimentKey())
         val defaultVariationKey = parameters.defaultVariation()
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.variationDetail(experimentKey, null, defaultVariation).variation.name },
-            onUserId = { userId -> app.variationDetail(experimentKey, User.of(userId), defaultVariation).variation.name },
-            onUser = { user -> app.variationDetail(experimentKey, user, defaultVariation).variation.name }
+            onDefault = { app.variationDetail(experimentKey, null, defaultVariation, hackleAppContext).variation.name },
+            onUserId = { userId -> app.variationDetail(experimentKey, User.of(userId), defaultVariation, hackleAppContext).variation.name },
+            onUser = { user -> app.variationDetail(experimentKey, user, defaultVariation, hackleAppContext).variation.name }
         )
     }
 
-    private fun variationDetail(parameters: HackleBridgeParameters): DecisionDto {
+    private fun variationDetail(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): DecisionDto {
         val experimentKey = checkNotNull(parameters.experimentKey())
         val defaultVariationKey = parameters.defaultVariation()
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.variationDetail(experimentKey, null, defaultVariation).toDto() },
-            onUserId = { userId -> app.variationDetail(experimentKey, User.of(userId), defaultVariation).toDto() },
-            onUser = { user -> app.variationDetail(experimentKey, user, defaultVariation).toDto() }
+            onDefault = { app.variationDetail(experimentKey, null, defaultVariation, hackleAppContext).toDto() },
+            onUserId = { userId -> app.variationDetail(experimentKey, User.of(userId), defaultVariation, hackleAppContext).toDto() },
+            onUser = { user -> app.variationDetail(experimentKey, user, defaultVariation, hackleAppContext).toDto() }
         )
     }
 
-    private fun isFeatureOn(parameters: HackleBridgeParameters): Boolean {
+    private fun isFeatureOn(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): Boolean {
         val featureKey = checkNotNull(parameters.featureKey())
 
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.featureFlagDetail(featureKey, null).isOn },
-            onUserId = { userId -> app.featureFlagDetail(featureKey, User.of(userId)).isOn },
-            onUser = { user -> app.featureFlagDetail(featureKey, user).isOn }
+            onDefault = { app.featureFlagDetail(featureKey, null, hackleAppContext).isOn },
+            onUserId = { userId -> app.featureFlagDetail(featureKey, User.of(userId), hackleAppContext).isOn },
+            onUser = { user -> app.featureFlagDetail(featureKey, user, hackleAppContext).isOn }
         )
     }
 
-    private fun featureFlagDetail(parameters: HackleBridgeParameters): FeatureFlagDecisionDto {
+    private fun featureFlagDetail(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): FeatureFlagDecisionDto {
         val featureKey = checkNotNull(parameters.featureKey())
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.featureFlagDetail(featureKey, null).toDto() },
-            onUserId = { userId -> app.featureFlagDetail(featureKey, User.of(userId)).toDto() },
-            onUser = { user -> app.featureFlagDetail(featureKey, user).toDto() }
+            onDefault = { app.featureFlagDetail(featureKey, null, hackleAppContext).toDto() },
+            onUserId = { userId -> app.featureFlagDetail(featureKey, User.of(userId), hackleAppContext).toDto() },
+            onUser = { user -> app.featureFlagDetail(featureKey, user, hackleAppContext).toDto() }
         )
     }
 
-    private fun track(parameters: HackleBridgeParameters) {
+    private fun track(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext) {
         val hackleEvent = when (val event = parameters.event()) {
             is String -> {
                 Event.of(event)
@@ -266,23 +266,23 @@ internal class HackleBridge(
         
         return withUserContext(
             parameters = parameters,
-            onDefault = { app.track(hackleEvent, null) },
-            onUserId = { userId -> app.track(hackleEvent, User.of(userId)) },
-            onUser = { user -> app.track(hackleEvent, user)}
+            onDefault = { app.track(hackleEvent, null, hackleAppContext) },
+            onUserId = { userId -> app.track(hackleEvent, User.of(userId), hackleAppContext) },
+            onUser = { user -> app.track(hackleEvent, user, hackleAppContext)}
         )
     }
 
-    private fun remoteConfig(parameters: HackleBridgeParameters): String {
+    private fun remoteConfig(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): String {
         val remoteConfig = withUserContext(
             parameters = parameters,
-            onDefault = { app.remoteConfig(null) },
+            onDefault = { app.remoteConfig(null, hackleAppContext) },
             onUserId = { userId -> 
                 val user = User.builder()
                     .userId(userId)
                     .build()
-                app.remoteConfig(user)
+                app.remoteConfig(user, hackleAppContext)
             },
-            onUser = { user -> app.remoteConfig(user)}
+            onUser = { user -> app.remoteConfig(user, hackleAppContext)}
         )
 
         val key = checkNotNull(parameters.key())

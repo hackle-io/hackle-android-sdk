@@ -1,5 +1,6 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
@@ -109,7 +110,7 @@ class UserManagerTest {
                 .build()
         )
 
-        val actual = sut.resolve(null)
+        val actual = sut.resolve(null, HackleAppContext.default)
         expectThat(actual).isEqualTo(
             HackleUser.builder()
                 .identifier(IdentifierType.ID, "init_id")
@@ -124,7 +125,7 @@ class UserManagerTest {
     fun `resolve - inputUser`() {
         sut.initialize(null)
 
-        val actual = sut.resolve(User.builder().id("input_id").build())
+        val actual = sut.resolve(User.builder().id("input_id").build(), HackleAppContext.default)
         expectThat(actual).isEqualTo(
             HackleUser.builder()
                 .identifier(IdentifierType.ID, "input_id")
@@ -228,12 +229,12 @@ class UserManagerTest {
         every { targetEventFetcher.fetch(any()) } returns userTargetEvents
 
         sut.initialize(null)
-        expectThat(sut.resolve(null).cohorts).hasSize(0)
-        expectThat(sut.resolve(null).targetEvents).hasSize(0)
+        expectThat(sut.resolve(null, HackleAppContext.default).cohorts).hasSize(0)
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).hasSize(0)
 
         sut.sync()
-        expectThat(sut.resolve(null).cohorts).isEqualTo(listOf(Cohort(42)))
-        expectThat(sut.resolve(null).targetEvents).isEqualTo(listOf(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null)))
+        expectThat(sut.resolve(null, HackleAppContext.default).cohorts).isEqualTo(listOf(Cohort(42)))
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).isEqualTo(listOf(TargetEvent("purchase", listOf(TargetEvent.Stat(1738368000000, 1)), null)))
     }
 
     @Test
@@ -241,12 +242,12 @@ class UserManagerTest {
         every { targetEventFetcher.fetch(any()) } throws IllegalArgumentException("fail")
 
         sut.initialize(null)
-        expectThat(sut.resolve(null).cohorts).hasSize(0)
-        expectThat(sut.resolve(null).targetEvents).hasSize(0)
+        expectThat(sut.resolve(null, HackleAppContext.default).cohorts).hasSize(0)
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).hasSize(0)
 
         sut.sync()
-        expectThat(sut.resolve(null).cohorts).hasSize(0)
-        expectThat(sut.resolve(null).targetEvents).hasSize(0)
+        expectThat(sut.resolve(null, HackleAppContext.default).cohorts).hasSize(0)
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).hasSize(0)
     }
 
     @Test
@@ -396,7 +397,7 @@ class UserManagerTest {
         sut.initialize(null)
         sut.sync()
 
-        expectThat(sut.resolve(null).targetEvents).isEqualTo(userTargetEvents.rawEvents())
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).isEqualTo(userTargetEvents.rawEvents())
 
         val newTargetEvents = UserTargetEvents.builder()
             .put(targetEvent)
@@ -404,8 +405,8 @@ class UserManagerTest {
         every { targetEventFetcher.fetch(any()) } returns newTargetEvents
         sut.sync()
         
-        expectThat(sut.resolve(null).targetEvents).isNotEqualTo(userTargetEvents.rawEvents())
-        expectThat(sut.resolve(null).targetEvents).isEqualTo(newTargetEvents.rawEvents())
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).isNotEqualTo(userTargetEvents.rawEvents())
+        expectThat(sut.resolve(null, HackleAppContext.default).targetEvents).isEqualTo(newTargetEvents.rawEvents())
     }
 
     @Test
@@ -818,7 +819,7 @@ class UserManagerTest {
                 .deviceId("device_id")
                 .build()
         )
-        expectThat(sut.resolve(null)).isEqualTo(
+        expectThat(sut.resolve(null, HackleAppContext.default)).isEqualTo(
             HackleUser.builder()
                 .identifier(IdentifierType.ID, "hackle_device_id")
                 .identifier(IdentifierType.DEVICE, "device_id")
@@ -848,7 +849,7 @@ class UserManagerTest {
                 .deviceId("device_id")
                 .build()
         )
-        expectThat(sut.resolve(null)).isEqualTo(
+        expectThat(sut.resolve(null, HackleAppContext.default)).isEqualTo(
             HackleUser.builder()
                 .identifier(IdentifierType.ID, "hackle_device_id")
                 .identifier(IdentifierType.DEVICE, "device_id")
