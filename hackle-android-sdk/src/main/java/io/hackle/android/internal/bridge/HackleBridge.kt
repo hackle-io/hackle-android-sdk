@@ -10,6 +10,9 @@ import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 internal class HackleBridge(
     private val hackleAppCore: HackleAppCore
 ) : HackleAppBridge {
+    override fun isInvocableString(string: String): Boolean {
+        return BridgeInvocation.isInvocableString(string)
+    }
 
     override fun invoke(string: String): String {
         val response: BridgeResponse = try {

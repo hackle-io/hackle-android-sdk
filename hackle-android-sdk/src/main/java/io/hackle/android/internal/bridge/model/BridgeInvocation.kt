@@ -30,9 +30,12 @@ internal class BridgeInvocation(string: String) {
         HIDE_USER_EXPLORER("hideUserExplorer");
 
         companion object {
-            private val ALL = values().associateBy { it.text }
+            private val ALL = entries.associateBy { it.text }
             fun from(name: String): Command {
                 return requireNotNull(ALL[name]) { "name[$name]" }
+            }
+            fun fromOrNull(name: String): Command? {
+                return ALL[name]
             }
         }
     }
@@ -65,6 +68,23 @@ internal class BridgeInvocation(string: String) {
         private const val KEY_COMMAND = "command"
         private const val KEY_PARAMETERS = "parameters"
         private const val KEY_BROWSER_PROPERTIES = "browserProperties"
+        
+        fun isInvocableString(string: String): Boolean {
+            val data = try {
+                string.parseJson<Map<String, Any>>()
+            } catch (_: Throwable) {
+                return false
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            val invocation = data[KEY_HACKLE] as? Map<String, Any> ?: return false
+
+            @Suppress("UNCHECKED_CAST")
+            val commandString = invocation[KEY_COMMAND] as? String ?: return false
+
+            @Suppress("UNCHECKED_CAST")
+            return Command.fromOrNull(commandString) != null
+        }
     }
 }
 

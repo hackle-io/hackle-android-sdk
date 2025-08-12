@@ -3,6 +3,7 @@ package io.hackle.android.internal.bridge
 import com.google.gson.GsonBuilder
 import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.bridge.model.BridgeInvocation
 import io.hackle.android.internal.bridge.model.BridgeResponse
 import io.hackle.android.internal.bridge.model.HackleBrowserProperties
 import io.hackle.android.internal.context.HackleAppContext
@@ -47,6 +48,20 @@ class HackleBridgeTest {
     fun setup() {
         app = spyk(mockk<HackleAppCore>())
         bridge = HackleBridge(app)
+    }
+    
+    @Test
+    fun `check invocable string test`() {
+        val jsonString = createJsonString("getSessionId")
+        val result = BridgeInvocation.isInvocableString(jsonString)
+        assertThat(result, `is`(true))
+    }
+
+    @Test
+    fun `check not invocable string test`() {
+        val jsonString = createJsonString("fakeFunction")
+        val result = BridgeInvocation.isInvocableString(jsonString)
+        assertThat(result, `is`(false))
     }
 
     @Test
