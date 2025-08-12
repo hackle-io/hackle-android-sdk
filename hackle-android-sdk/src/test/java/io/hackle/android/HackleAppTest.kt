@@ -1,7 +1,7 @@
 package io.hackle.android
 
 import android.webkit.WebView
-import io.hackle.android.internal.HackleAppInternal
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
@@ -102,7 +102,7 @@ class HackleAppTest {
         }
 
         sut = HackleApp(
-            HackleAppInternal(
+            HackleAppCore(
                 Clock.SYSTEM,
                 core,
                 eventExecutor,

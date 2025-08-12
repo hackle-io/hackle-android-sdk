@@ -32,7 +32,7 @@ import io.hackle.sdk.core.model.toEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
 
-internal class HackleAppInternal(
+internal class HackleAppCore(
     private val clock: Clock,
     private val core: HackleCore,
     private val eventExecutor: Executor,
@@ -306,6 +306,6 @@ internal class HackleAppInternal(
     }
 
     companion object {
-        private val log = Logger<HackleAppInternal>()
+        private val log = Logger<HackleAppCore>()
     }
 }

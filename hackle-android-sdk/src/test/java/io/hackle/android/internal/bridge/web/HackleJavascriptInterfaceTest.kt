@@ -1,7 +1,7 @@
 package io.hackle.android.internal.bridge.web
 
 import io.hackle.android.HackleAppMode
-import io.hackle.android.internal.HackleAppInternal
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.bridge.HackleBridge
 import io.hackle.android.internal.model.Sdk
 import io.mockk.every
@@ -55,7 +55,7 @@ class HackleJavascriptInterfaceTest {
     
     private fun hackleBridge(sdkKey: String, mode: HackleAppMode): HackleBridge {
         return HackleBridge(
-            mockk<HackleAppInternal>(),
+            mockk<HackleAppCore>(),
             Sdk(sdkKey, "name", "version"),
             mode
         )

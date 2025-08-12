@@ -1,9 +1,8 @@
 package io.hackle.android.internal.bridge
 
 import com.google.gson.GsonBuilder
-import io.hackle.android.HackleApp
 import io.hackle.android.HackleAppMode
-import io.hackle.android.internal.HackleAppInternal
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.bridge.model.BridgeResponse
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.utils.json.parseJson
@@ -11,7 +10,6 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.ParameterConfig
 import io.hackle.sdk.common.PropertyOperation
-import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
@@ -33,7 +31,7 @@ import org.junit.Test
 @Suppress("DEPRECATION")
 class HackleBridgeTest {
 
-    private lateinit var app: HackleAppInternal
+    private lateinit var app: HackleAppCore
     private lateinit var bridge: HackleBridge
     private val gson = GsonBuilder()
         .serializeNulls()  // null 값도 직렬화
@@ -41,7 +39,7 @@ class HackleBridgeTest {
 
     @Before
     fun setup() {
-        app = spyk(mockk<HackleAppInternal>())
+        app = spyk(mockk<HackleAppCore>())
         bridge = HackleBridge(app, sdk = mockk<Sdk>(), mode = HackleAppMode.NATIVE)
 
         every { app.withBrowserProperties<BridgeResponse>(any(), any()) } answers {

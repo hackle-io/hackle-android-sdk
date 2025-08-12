@@ -2,7 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.HackleAppInternal
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -423,7 +423,7 @@ internal object HackleApps {
         // Instantiate
 
         return HackleApp(
-            internal = HackleAppInternal(
+            hackleAppCore = HackleAppCore(
                 clock = Clock.SYSTEM,
                 core = core,
                 eventExecutor = eventExecutor,

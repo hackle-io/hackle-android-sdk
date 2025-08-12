@@ -1,7 +1,7 @@
 package io.hackle.android.internal.bridge
 
 import io.hackle.android.HackleAppMode
-import io.hackle.android.internal.HackleAppInternal
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.bridge.model.*
 import io.hackle.android.internal.bridge.model.BridgeInvocation.Command.*
 import io.hackle.android.internal.model.Sdk
@@ -9,7 +9,7 @@ import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 
 internal class HackleBridge(
-    private val app: HackleAppInternal,
+    private val app: HackleAppCore,
     internal val sdk: Sdk,
     internal val mode: HackleAppMode,
 ) {
