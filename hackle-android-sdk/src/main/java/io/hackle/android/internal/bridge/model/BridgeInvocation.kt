@@ -30,7 +30,7 @@ internal class BridgeInvocation(string: String) {
         HIDE_USER_EXPLORER("hideUserExplorer");
 
         companion object {
-            private val ALL = entries.associateBy { it.text }
+            private val ALL = values().associateBy { it.text }
             fun from(name: String): Command {
                 return requireNotNull(ALL[name]) { "name[$name]" }
             }
