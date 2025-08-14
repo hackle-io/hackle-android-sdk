@@ -58,9 +58,62 @@ class HackleBridgeTest {
     }
 
     @Test
-    fun `check not invocable string test`() {
-        val jsonString = createJsonString("fakeFunction")
-        val result = BridgeInvocation.isInvocableString(jsonString)
+    fun `valid invocation string should return true`() {
+        // Given
+        val validString = """{"_hackle":{"command":"foo"}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(validString)
+
+        // Then
+        assertThat(result, `is`(true))
+    }
+
+    @Test
+    fun `empty command should return false`() {
+        // Given
+        val invalidString = """{"_hackle":{"command":""}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
+    }
+
+    @Test
+    fun `non-map _hackle value should return false`() {
+        // Given
+        val invalidString = """{"_hackle":""}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
+    }
+
+    @Test
+    fun `empty _hackle object should return false`() {
+        // Given
+        val invalidString = """{"_hackle":{}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
+    }
+
+    @Test
+    fun `missing _hackle key should return false`() {
+        // Given
+        val invalidString = """{"something":{"command":""}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
         assertThat(result, `is`(false))
     }
 

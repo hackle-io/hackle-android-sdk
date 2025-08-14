@@ -34,9 +34,6 @@ internal class BridgeInvocation(string: String) {
             fun from(name: String): Command {
                 return requireNotNull(ALL[name]) { "name[$name]" }
             }
-            fun fromOrNull(name: String): Command? {
-                return ALL[name]
-            }
         }
     }
 
@@ -82,8 +79,7 @@ internal class BridgeInvocation(string: String) {
             @Suppress("UNCHECKED_CAST")
             val commandString = invocation[KEY_COMMAND] as? String ?: return false
 
-            @Suppress("UNCHECKED_CAST")
-            return Command.fromOrNull(commandString) != null
+            return !commandString.isEmpty()
         }
     }
 }
