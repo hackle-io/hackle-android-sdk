@@ -1,8 +1,13 @@
 package io.hackle.android.internal.bridge
 
 import com.google.gson.GsonBuilder
-import io.hackle.android.HackleApp
+import io.hackle.android.HackleAppMode
+import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.bridge.model.BridgeInvocation
 import io.hackle.android.internal.bridge.model.BridgeResponse
+import io.hackle.android.internal.bridge.model.HackleBrowserProperties
+import io.hackle.android.internal.context.HackleAppContext
+import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
@@ -29,16 +34,87 @@ import org.junit.Test
 @Suppress("DEPRECATION")
 class HackleBridgeTest {
 
-    private lateinit var app: HackleApp
+    private lateinit var app: HackleAppCore
     private lateinit var bridge: HackleBridge
     private val gson = GsonBuilder()
         .serializeNulls()  // null 값도 직렬화
         .create()
+    private val defaultBrowserProperties = mapOf(
+        "browsername" to "Chrome WebView",
+        "url" to "https://hackle.io"
+    )
 
     @Before
     fun setup() {
-        app = spyk(mockk<HackleApp>())
+        app = spyk(mockk<HackleAppCore>())
         bridge = HackleBridge(app)
+    }
+    
+    @Test
+    fun `check invocable string test`() {
+        val jsonString = createJsonString("getSessionId")
+        val result = BridgeInvocation.isInvocableString(jsonString)
+        assertThat(result, `is`(true))
+    }
+
+    @Test
+    fun `valid invocation string should return true`() {
+        // Given
+        val validString = """{"_hackle":{"command":"foo"}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(validString)
+
+        // Then
+        assertThat(result, `is`(true))
+    }
+
+    @Test
+    fun `empty command should return false`() {
+        // Given
+        val invalidString = """{"_hackle":{"command":""}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
+    }
+
+    @Test
+    fun `non-map _hackle value should return false`() {
+        // Given
+        val invalidString = """{"_hackle":""}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
+    }
+
+    @Test
+    fun `empty _hackle object should return false`() {
+        // Given
+        val invalidString = """{"_hackle":{}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
+    }
+
+    @Test
+    fun `missing _hackle key should return false`() {
+        // Given
+        val invalidString = """{"something":{"command":""}}"""
+
+        // When
+        val result = BridgeInvocation.isInvocableString(invalidString)
+
+        // Then
+        assertThat(result, `is`(false))
     }
 
     @Test
@@ -51,7 +127,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data,`is`("abcd1234"))
+            assertThat(data, `is`("abcd1234"))
         }
     }
 
@@ -61,14 +137,18 @@ class HackleBridgeTest {
             .id("foo")
             .userId("bar")
             .deviceId("abcd1234")
-            .identifiers(mapOf(
-                "foo" to "bar"
-            ))
-            .properties(mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            ))
+            .identifiers(
+                mapOf(
+                    "foo" to "bar"
+                )
+            )
+            .properties(
+                mapOf(
+                    "number" to 123,
+                    "string" to "text",
+                    "array" to arrayOf(123, "123")
+                )
+            )
             .build()
         every { app.user } returns user
         val jsonString = createJsonString("getUser")
@@ -136,7 +216,7 @@ class HackleBridgeTest {
                 assertThat(array.size, `is`(2))
                 assertThat((array[0] as Number).toDouble(), `is`(123.0))
                 assertThat(array[1], `is`("123"))
-            })
+            }, null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -150,7 +230,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("setUser", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isNullOrEmpty(), `is`(false))
@@ -165,7 +244,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("setUserId", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.setUserId(withArg { assertThat(it, `is`(userId)) })
+            app.setUserId(withArg { assertThat(it, `is`(userId)) }, null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -180,7 +259,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("setUserId", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.setUserId(null)
+            app.setUserId(null, null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -194,7 +273,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("setUserId", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -208,7 +286,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("setDeviceId", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.setDeviceId(withArg { assertThat(it, `is`("abcd1234")) })
+            app.setDeviceId(withArg { assertThat(it, `is`("abcd1234")) }, null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -222,7 +300,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("setDeviceId", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -236,9 +313,17 @@ class HackleBridgeTest {
         val jsonString = createJsonString("setUserProperty", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.setUserProperty(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`("bar")) }
+            app.updateUserProperties(
+                withArg {
+                    val map = it.asMap()
+                    assertThat(map.size, `is`(1))
+
+                    val set = map[PropertyOperation.SET] as Map<String, *>
+                    assertThat(set.size, `is`(1))
+                    assertThat(set["foo"], `is`("bar"))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                null
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -253,7 +338,6 @@ class HackleBridgeTest {
         val parameters = mapOf<String, Any>()
         val jsonString = createJsonString("setUserProperty", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -277,24 +361,28 @@ class HackleBridgeTest {
         val jsonString = createJsonString("updateUserProperties", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.updateUserProperties(withArg {
-                val map = it.asMap()
-                assertThat(map.size, `is`(2))
+            app.updateUserProperties(
+                withArg {
+                    val map = it.asMap()
+                    assertThat(map.size, `is`(2))
 
-                val set = map[PropertyOperation.SET] as Map<String, *>
-                assertThat(set.size, `is`(3))
-                assertThat((set["number"] as Number).toDouble(), `is`(123.0))
-                assertThat(set["string"], `is`("text"))
+                    val set = map[PropertyOperation.SET] as Map<String, *>
+                    assertThat(set.size, `is`(3))
+                    assertThat((set["number"] as Number).toDouble(), `is`(123.0))
+                    assertThat(set["string"], `is`("text"))
 
-                val array = set["array"] as ArrayList<*>
-                assertThat(array.size, `is`(2))
-                assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                assertThat(array[1], `is`("123"))
+                    val array = set["array"] as ArrayList<*>
+                    assertThat(array.size, `is`(2))
+                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
+                    assertThat(array[1], `is`("123"))
 
-                val setOnce = map[PropertyOperation.SET_ONCE] as Map<String, *>
-                assertThat(setOnce.size, `is`(1))
-                assertThat(setOnce["foo"], `is`("bar"))
-            })
+                    val setOnce = map[PropertyOperation.SET_ONCE] as Map<String, *>
+                    assertThat(setOnce.size, `is`(1))
+                    assertThat(setOnce["foo"], `is`("bar"))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                null
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -314,19 +402,22 @@ class HackleBridgeTest {
         val jsonString = createJsonString("updatePushSubscriptions", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.updatePushSubscriptions(withArg {
-                val map = it.asMap()
-                assertThat(map.size, `is`(3))
+            app.updatePushSubscriptions(
+                withArg {
+                    val map = it.asMap()
+                    assertThat(map.size, `is`(3))
 
-                val marketing = map["\$marketing"]
-                assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
+                    val marketing = map["\$marketing"]
+                    assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
 
-                val information = map["\$information"]
-                assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
+                    val information = map["\$information"]
+                    assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
 
-                val chat = map["chat"]
-                assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
-            })
+                    val chat = map["chat"]
+                    assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -346,19 +437,22 @@ class HackleBridgeTest {
         val jsonString = createJsonString("updateSmsSubscriptions", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.updateSmsSubscriptions(withArg {
-                val map = it.asMap()
-                assertThat(map.size, `is`(3))
+            app.updateSmsSubscriptions(
+                withArg {
+                    val map = it.asMap()
+                    assertThat(map.size, `is`(3))
 
-                val marketing = map["\$marketing"]
-                assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
+                    val marketing = map["\$marketing"]
+                    assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
 
-                val information = map["\$information"]
-                assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
+                    val information = map["\$information"]
+                    assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
 
-                val chat = map["chat"]
-                assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
-            })
+                    val chat = map["chat"]
+                    assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -378,19 +472,22 @@ class HackleBridgeTest {
         val jsonString = createJsonString("updateKakaoSubscriptions", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.updateKakaoSubscriptions(withArg {
-                val map = it.asMap()
-                assertThat(map.size, `is`(3))
+            app.updateKakaoSubscriptions(
+                withArg {
+                    val map = it.asMap()
+                    assertThat(map.size, `is`(3))
 
-                val marketing = map["\$marketing"]
-                assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
+                    val marketing = map["\$marketing"]
+                    assertThat(marketing, `is`(HackleSubscriptionStatus.UNSUBSCRIBED))
 
-                val information = map["\$information"]
-                assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
+                    val information = map["\$information"]
+                    assertThat(information, `is`(HackleSubscriptionStatus.SUBSCRIBED))
 
-                val chat = map["chat"]
-                assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
-            })
+                    val chat = map["chat"]
+                    assertThat(chat, `is`(HackleSubscriptionStatus.UNKNOWN))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -404,7 +501,6 @@ class HackleBridgeTest {
         val parameters = mapOf<String, Any>()
         val jsonString = createJsonString("updateUserProperties", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -417,7 +513,12 @@ class HackleBridgeTest {
         val jsonString = createJsonString("resetUser")
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.resetUser()
+            app.resetUser(withArg<HackleAppContext> {
+                assertThat(
+                    it.browserProperties,
+                    `is`(defaultBrowserProperties)
+                )
+            }, null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -432,7 +533,11 @@ class HackleBridgeTest {
         val jsonString = createJsonString("setPhoneNumber", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.setPhoneNumber("+8210-1234-5678")
+            app.setPhoneNumber(
+                "+8210-1234-5678",
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                null
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -446,7 +551,12 @@ class HackleBridgeTest {
         val jsonString = createJsonString("unsetPhoneNumber")
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.unsetPhoneNumber()
+            app.unsetPhoneNumber(withArg<HackleAppContext> {
+                assertThat(
+                    it.browserProperties,
+                    `is`(defaultBrowserProperties)
+                )
+            }, null)
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -456,14 +566,19 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation`() {
-        every { app.variation(any(), any<Variation>()) } returns Variation.B
+        every { app.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variation(
+            app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<Variation> { assertThat(it.name, `is`("D")) }
+                null,
+                withArg<Variation> { assertThat(it.name, `is`("D")) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -475,7 +590,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation with user string`() {
-        every { app.variation(any(), any<String>(), any()) } returns Variation.B
+        every { app.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf(
             "experimentKey" to 1,
             "defaultVariation" to "D",
@@ -484,10 +602,11 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variation(
+            app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) },
-                withArg { assertThat(it.name, `is`("D")) }
+                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
+                withArg { assertThat(it.name, `is`("D")) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -499,7 +618,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation with user object`() {
-        every { app.variation(any(), any<User>(), any()) } returns Variation.B
+        every { app.variationDetail(any(), any<User>(), any(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -519,7 +641,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.variation(
+            app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -535,7 +657,8 @@ class HackleBridgeTest {
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
                 },
-                withArg { assertThat(it.name, `is`("D")) }
+                withArg { assertThat(it.name, `is`("D")) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -550,7 +673,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("variation", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -560,14 +682,19 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail`() {
-        every { app.variationDetail(any(), any<Variation>()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
+        every { app.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<Variation> { assertThat(it.name, `is`("D")) }
+                null,
+                withArg<Variation> { assertThat(it.name, `is`("D")) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -587,7 +714,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail with user string`() {
-        every { app.variationDetail(any(), any<String>(), any()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
+        every { app.variationDetail(any(), any(), any(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val parameters = mapOf(
             "experimentKey" to 1,
             "defaultVariation" to "D",
@@ -598,8 +728,9 @@ class HackleBridgeTest {
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) },
-                withArg { assertThat(it.name, `is`("D")) }
+                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
+                withArg { assertThat(it.name, `is`("D")) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -619,7 +750,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with variation detail with user object`() {
-        every { app.variationDetail(any(), any<User>(), any()) } returns Decision.of(Variation.B, DecisionReason.DEFAULT_RULE)
+        every { app.variationDetail(any(), any<User>(), any(), any()) } returns Decision.of(
+            Variation.B,
+            DecisionReason.DEFAULT_RULE
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -655,7 +789,8 @@ class HackleBridgeTest {
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
                 },
-                withArg { assertThat(it.name, `is`("D")) }
+                withArg { assertThat(it.name, `is`("D")) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -678,7 +813,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("variationDetail", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -688,14 +822,21 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with is feature on`() {
-        every { app.isFeatureOn(any()) } returns true
+        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1)
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.isFeatureOn(withArg {
-                assertThat(it, `is`(1))
-            })
+            app.featureFlagDetail(
+                withArg {
+                    assertThat(it, `is`(1))
+                },
+                user = null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -706,14 +847,20 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with is feature on with user string`() {
-        every { app.isFeatureOn(any(), any<String>()) } returns true
+        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.isFeatureOn(
+            app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) }
+                withArg<User> {
+                    assertThat(it, `is`(User.of("abcd1234")))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -725,7 +872,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with is feature on with user object`() {
-        every { app.isFeatureOn(any(), any<User>()) } returns true
+        every { app.featureFlagDetail(any(), any<User>(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -741,7 +891,7 @@ class HackleBridgeTest {
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.isFeatureOn(
+            app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -756,7 +906,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat(array[0], `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -771,7 +922,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("isFeatureOn", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -781,14 +931,21 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with feature detail`() {
-        every { app.featureFlagDetail(any()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
+        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1)
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.featureFlagDetail(withArg {
-                assertThat(it, `is`(1))
-            })
+            app.featureFlagDetail(
+                withArg {
+                    assertThat(it, `is`(1))
+                },
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -807,14 +964,18 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with feature flag detail with user string`() {
-        every { app.featureFlagDetail(any(), any<String>()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
+        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<String> { assertThat(it, `is`("abcd1234")) }
+                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -834,7 +995,10 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with feature flag detail with user object`() {
-        every { app.featureFlagDetail(any(), any<User>()) } returns FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE, ParameterConfig.empty())
+        every { app.featureFlagDetail(any(), any<User>(), any()) } returns FeatureFlagDecision.on(
+            DecisionReason.DEFAULT_RULE,
+            ParameterConfig.empty()
+        )
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -865,7 +1029,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -888,7 +1053,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("featureFlagDetail", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -902,9 +1066,13 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(withArg<String> {
-                assertThat(it, `is`("foo"))
-            })
+            app.track(
+                withArg<Event> {
+                    assertThat(it, `is`(Event.of("foo")))
+                },
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -923,12 +1091,13 @@ class HackleBridgeTest {
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
-                withArg<String> {
-                    assertThat(it, `is`("foo"))
+                withArg<Event> {
+                    assertThat(it, `is`(Event.of("foo")))
                 },
-                withArg<String> {
-                    assertThat(it, `is`("abcd1234"))
-                }
+                withArg<User> {
+                    assertThat(it, `is`(User.of("abcd1234")))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -959,8 +1128,8 @@ class HackleBridgeTest {
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
-                withArg<String> {
-                    assertThat(it, `is`("foo"))
+                withArg<Event> {
+                    assertThat(it, `is`(Event.of("foo")))
                 },
                 withArg<User> {
                     assertThat(it.id, `is`("foo"))
@@ -975,7 +1144,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -996,12 +1166,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.track(withArg<Event> {
-                assertThat(it.key, `is`("foo"))
-                assertThat(it.value, `is`(123.0))
-                assertThat(it.properties.size, `is`(1))
-                assertThat(it.properties["abc"], `is`("def"))
-            })
+            app.track(
+                withArg<Event> {
+                    assertThat(it.key, `is`("foo"))
+                    assertThat(it.value, `is`(123.0))
+                    assertThat(it.properties.size, `is`(1))
+                    assertThat(it.properties["abc"], `is`("def"))
+                },
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1031,9 +1205,10 @@ class HackleBridgeTest {
                     assertThat(it.properties.size, `is`(1))
                     assertThat(it.properties["abc"], `is`("def"))
                 },
-                withArg<String> {
-                    assertThat(it, `is`("abcd1234"))
-                }
+                withArg<User> {
+                    assertThat(it, `is`(User.of("abcd1234")))
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1088,7 +1263,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1103,7 +1279,6 @@ class HackleBridgeTest {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("track", parameters)
         val result = bridge.invoke(jsonString)
-        verify { app wasNot Called }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -1113,7 +1288,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - string`() {
-        every { app.remoteConfig().getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(null, any()).getString(any(), any()) } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1122,11 +1297,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig()
-            app.remoteConfig().getString(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`("abc")) }
-            )
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+                .getString(
+                    withArg { assertThat(it, `is`("foo")) },
+                    withArg { assertThat(it, `is`("abc")) }
+                )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1137,7 +1317,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - string`() {
-        every { app.remoteConfig(any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any()).getString(any(), any()) } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1150,7 +1330,8 @@ class HackleBridgeTest {
             app.remoteConfig(
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             ).getString(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`("abc")) }
@@ -1165,7 +1346,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - string`() {
-        every { app.remoteConfig(any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any()).getString(any(), any()) } returns "foo"
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1200,7 +1381,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             ).getString(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`("abc")) }
@@ -1215,7 +1397,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - number`() {
-        every { app.remoteConfig().getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(null, any()).getDouble(any(), any()) } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1224,11 +1406,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig()
-            app.remoteConfig().getDouble(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(1000.0)) }
-            )
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+                .getDouble(
+                    withArg { assertThat(it, `is`("foo")) },
+                    withArg { assertThat(it, `is`(1000.0)) }
+                )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1239,7 +1426,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - number`() {
-        every { app.remoteConfig(any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any()).getDouble(any(), any()) } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1252,7 +1439,8 @@ class HackleBridgeTest {
             app.remoteConfig(
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             ).getDouble(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`(1000.0)) }
@@ -1267,7 +1455,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - number`() {
-        every { app.remoteConfig(any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any()).getDouble(any(), any()) } returns 123.0
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1302,7 +1490,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             ).getDouble(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`(1000.0)) }
@@ -1317,7 +1506,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - boolean`() {
-        every { app.remoteConfig().getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(null, any()).getBoolean(any(), any()) } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1326,11 +1515,16 @@ class HackleBridgeTest {
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.remoteConfig()
-            app.remoteConfig().getBoolean(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(false)) }
-            )
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+            app.remoteConfig(
+                null,
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
+                .getBoolean(
+                    withArg { assertThat(it, `is`("foo")) },
+                    withArg { assertThat(it, `is`(false)) }
+                )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1341,7 +1535,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - boolean`() {
-        every { app.remoteConfig(any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any()).getBoolean(any(), any()) } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1354,7 +1548,8 @@ class HackleBridgeTest {
             app.remoteConfig(
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             ).getBoolean(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`(false)) }
@@ -1369,7 +1564,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - boolean`() {
-        every { app.remoteConfig(any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any()).getBoolean(any(), any()) } returns true
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1404,7 +1599,8 @@ class HackleBridgeTest {
                     assertThat(array.size, `is`(2))
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
-                }
+                },
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             ).getBoolean(
                 withArg { assertThat(it, `is`("foo")) },
                 withArg { assertThat(it, `is`(false)) }
@@ -1420,7 +1616,7 @@ class HackleBridgeTest {
     @Test
     fun `invoke with remote config with invalid parameters`() {
         val remoteConfig = mockk<HackleRemoteConfig>()
-        every { app.remoteConfig() } returns remoteConfig
+        every { app.remoteConfig(any(), any()) } returns remoteConfig
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)
@@ -1431,7 +1627,7 @@ class HackleBridgeTest {
             assertNull(data)
         }
     }
-    
+
     @Test
     fun `invoke set current screen with parameters`() {
         every { app.setCurrentScreen(any()) } answers { }
@@ -1481,11 +1677,16 @@ class HackleBridgeTest {
         }
     }
 
-    private fun createJsonString(command: String, parameters: HackleBridgeParameters? = null): String {
+    private fun createJsonString(
+        command: String,
+        parameters: HackleBridgeParameters? = null,
+        browserProperties: HackleBrowserProperties = defaultBrowserProperties
+    ): String {
         val map = mapOf<String, Any>(
             "_hackle" to mapOf(
                 "command" to command,
-                "parameters" to parameters
+                "parameters" to parameters,
+                "browserProperties" to browserProperties
             )
         )
 

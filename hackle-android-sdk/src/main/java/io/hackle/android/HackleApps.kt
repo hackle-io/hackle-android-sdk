@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -378,10 +379,7 @@ internal object HackleApps {
             .setNotificationDataReceiver(notificationManager)
 
         // PII
-        val piiEventManager = PIIEventManager(
-            core = core,
-            userManager = userManager
-        )
+        val piiEventManager = PIIEventManager()
 
         // UserExplorer
         val devToolsApi = DevToolsApi(
@@ -425,22 +423,24 @@ internal object HackleApps {
         // Instantiate
 
         return HackleApp(
-            clock = Clock.SYSTEM,
-            core = core,
-            eventExecutor = eventExecutor,
-            backgroundExecutor = TaskExecutors.default(),
-            synchronizer = pollingSynchronizer,
-            userManager = userManager,
-            workspaceManager = workspaceManager,
-            sessionManager = sessionManager,
-            screenManager = screenManager,
-            eventProcessor = eventProcessor,
-            pushTokenManager = pushTokenManager,
-            notificationManager = notificationManager,
-            piiEventManager = piiEventManager,
-            fetchThrottler = fetchThrottler,
-            device = device,
-            userExplorer = userExplorer,
+            hackleAppCore = HackleAppCore(
+                clock = Clock.SYSTEM,
+                core = core,
+                eventExecutor = eventExecutor,
+                backgroundExecutor = TaskExecutors.default(),
+                synchronizer = pollingSynchronizer,
+                userManager = userManager,
+                workspaceManager = workspaceManager,
+                sessionManager = sessionManager,
+                screenManager = screenManager,
+                eventProcessor = eventProcessor,
+                pushTokenManager = pushTokenManager,
+                notificationManager = notificationManager,
+                piiEventManager = piiEventManager,
+                fetchThrottler = fetchThrottler,
+                device = device,
+                userExplorer = userExplorer,
+            ),
             sdk = sdk,
             mode = config.mode
         )

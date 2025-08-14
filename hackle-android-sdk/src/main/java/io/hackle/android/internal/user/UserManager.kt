@@ -1,5 +1,6 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.core.map
@@ -44,22 +45,22 @@ internal class UserManager(
 
     // HackleUser resolve
 
-    fun resolve(user: User?): HackleUser {
+    fun resolve(user: User?, hackleAppContext: HackleAppContext): HackleUser {
         if (user == null) {
-            return toHackleUser(currentContext)
+            return toHackleUser(currentContext, hackleAppContext)
         }
         val context = synchronized(LOCK) {
             updateUser(user)
         }
-        return toHackleUser(context.current)
+        return toHackleUser(context.current, hackleAppContext)
     }
 
     fun toHackleUser(user: User): HackleUser {
         val context = currentContext.with(user)
-        return toHackleUser(context)
+        return toHackleUser(context, HackleAppContext.default)
     }
 
-    private fun toHackleUser(context: UserContext): HackleUser {
+    private fun toHackleUser(context: UserContext, hackleAppContext: HackleAppContext): HackleUser {
         return HackleUser.builder()
             .identifiers(context.user.identifiers)
             .identifier(IdentifierType.ID, context.user.id)
@@ -69,6 +70,7 @@ internal class UserManager(
             .identifier(IdentifierType.DEVICE, device.id, overwrite = false)
             .identifier(IdentifierType.HACKLE_DEVICE_ID, device.id)
             .properties(context.user.properties)
+            .hackleProperties(hackleAppContext.browserProperties ?: emptyMap())
             .hackleProperties(device.properties)
             .cohorts(context.cohorts.rawCohorts())
             .targetEvents(context.targetEvents.rawEvents())
@@ -90,11 +92,11 @@ internal class UserManager(
      * @param updated 변경된 사용자 정보
      */
     fun syncIfNeeded(updated: Updated<User>) {
-        if(hasNewIdentifiers(updated.previous, updated.current)) {
+        if (hasNewIdentifiers(updated.previous, updated.current)) {
             syncCohort()
         }
 
-        if(!updated.previous.identifierEquals(updated.current)) {
+        if (!updated.previous.identifierEquals(updated.current)) {
             syncTargetEvents()
         }
     }
