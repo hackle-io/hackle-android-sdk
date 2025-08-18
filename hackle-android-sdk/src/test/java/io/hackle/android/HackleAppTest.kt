@@ -8,7 +8,7 @@ import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.push.token.PushTokenManager
-import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.remoteConfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session

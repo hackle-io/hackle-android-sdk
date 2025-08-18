@@ -1,7 +1,6 @@
 package io.hackle.android.internal.remoteConfig
 
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.RemoteConfigDecision

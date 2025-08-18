@@ -1,4 +1,4 @@
-package io.hackle.android.internal.remoteconfig
+package io.hackle.android.internal.remoteConfig
 
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
