@@ -298,7 +298,7 @@ class HackleApp internal constructor(
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
-    fun hackleAppBridge(): HackleAppBridge {
+    internal fun hackleAppBridge(): HackleAppBridge {
         return HackleBridge(this.hackleAppCore)
     }
 
