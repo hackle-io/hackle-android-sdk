@@ -30,6 +30,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import kotlin.String
 
 @Suppress("DEPRECATION")
 class HackleBridgeTest {
@@ -1288,7 +1289,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - string`() {
-        every { app.remoteConfig(null, any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(null, any(), any(), any() as String) } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1299,14 +1300,10 @@ class HackleBridgeTest {
         verify(exactly = 1) {
             app.remoteConfig(
                 null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-            app.remoteConfig(
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-                .getString(
-                    withArg { assertThat(it, `is`("foo")) },
-                    withArg { assertThat(it, `is`("abc")) }
-                )
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<String> { assertThat(it, `is`("abc")) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1317,7 +1314,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - string`() {
-        every { app.remoteConfig(any(), any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any(), any(), any() as String) } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1331,10 +1328,9 @@ class HackleBridgeTest {
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            ).getString(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`("abc")) }
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<String> { assertThat(it, `is`("abc")) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1346,7 +1342,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - string`() {
-        every { app.remoteConfig(any(), any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any(), any(), any() as String) } returns "foo"
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1382,10 +1378,9 @@ class HackleBridgeTest {
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            ).getString(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`("abc")) }
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<String> { assertThat(it, `is`("abc")) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1397,7 +1392,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - number`() {
-        every { app.remoteConfig(null, any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(null, any(), any(), any() as Double) } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1408,14 +1403,10 @@ class HackleBridgeTest {
         verify(exactly = 1) {
             app.remoteConfig(
                 null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-            app.remoteConfig(
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-                .getDouble(
-                    withArg { assertThat(it, `is`("foo")) },
-                    withArg { assertThat(it, `is`(1000.0)) }
-                )
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<Double> { assertThat(it, `is`(1000.0)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1426,7 +1417,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - number`() {
-        every { app.remoteConfig(any(), any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any(), any(), any() as Double) } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1440,10 +1431,9 @@ class HackleBridgeTest {
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            ).getDouble(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(1000.0)) }
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<Double> { assertThat(it, `is`(1000.0)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1455,7 +1445,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - number`() {
-        every { app.remoteConfig(any(), any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any(), any(), any() as Double) } returns 123.0
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1491,10 +1481,9 @@ class HackleBridgeTest {
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            ).getDouble(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(1000.0)) }
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<Double> { assertThat(it, `is`(1000.0)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1506,7 +1495,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config - boolean`() {
-        every { app.remoteConfig(null, any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(null, any(), any(), any() as Boolean) } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1517,14 +1506,10 @@ class HackleBridgeTest {
         verify(exactly = 1) {
             app.remoteConfig(
                 null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-            app.remoteConfig(
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) })
-                .getBoolean(
-                    withArg { assertThat(it, `is`("foo")) },
-                    withArg { assertThat(it, `is`(false)) }
-                )
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<Boolean> { assertThat(it, `is`(false)) }
+            )
         }
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1535,7 +1520,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user string - boolean`() {
-        every { app.remoteConfig(any(), any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any(), any(), any() as Boolean) } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1549,10 +1534,9 @@ class HackleBridgeTest {
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            ).getBoolean(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(false)) }
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<Boolean> { assertThat(it, `is`(false)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1564,7 +1548,7 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with remote config with user object - boolean`() {
-        every { app.remoteConfig(any(), any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any(), any(), any() as Boolean) } returns true
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1600,10 +1584,9 @@ class HackleBridgeTest {
                     assertThat((array[0] as Number).toDouble(), `is`(123.0))
                     assertThat(array[1], `is`("123"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            ).getBoolean(
-                withArg { assertThat(it, `is`("foo")) },
-                withArg { assertThat(it, `is`(false)) }
+                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
+                withArg<String> { assertThat(it, `is`("foo")) },
+                withArg<Boolean> { assertThat(it, `is`(false)) }
             )
         }
         result.parseJson<BridgeResponse>().apply {
@@ -1616,7 +1599,7 @@ class HackleBridgeTest {
     @Test
     fun `invoke with remote config with invalid parameters`() {
         val remoteConfig = mockk<HackleRemoteConfig>()
-        every { app.remoteConfig(any(), any()) } returns remoteConfig
+        every { app.remoteConfig(any(), any(), any(), any() as String) } returns ""
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = bridge.invoke(jsonString)

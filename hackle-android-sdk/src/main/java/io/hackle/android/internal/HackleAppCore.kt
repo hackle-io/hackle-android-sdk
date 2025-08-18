@@ -9,7 +9,6 @@ import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIProperty
 import io.hackle.android.internal.pii.toSecuredEvent
 import io.hackle.android.internal.push.token.PushTokenManager
-import io.hackle.android.internal.remoteconfig.HackleRemoteConfigBridgeImpl
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
@@ -265,8 +264,19 @@ internal class HackleAppCore(
         return HackleRemoteConfigImpl(user, core, userManager)
     }
     
-    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext): HackleRemoteConfig {
-        return HackleRemoteConfigBridgeImpl(user, core, userManager, hackleAppContext)
+    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext, key: String, defaultValue: String): String {
+        val remoteConfig = HackleRemoteConfigImpl(user, core, userManager)
+        return remoteConfig.getString(key, defaultValue, hackleAppContext)
+    }
+    
+    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext, key: String, defaultValue: Double): Double {
+        val remoteConfig = HackleRemoteConfigImpl(user, core, userManager)
+        return remoteConfig.getDouble(key, defaultValue, hackleAppContext)
+    }
+    
+    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext, key: String, defaultValue: Boolean): Boolean {
+        val remoteConfig = HackleRemoteConfigImpl(user, core, userManager)
+        return remoteConfig.getBoolean(key, defaultValue, hackleAppContext)
     }
 
     fun fetch(callback: Runnable?) {
