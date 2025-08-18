@@ -249,7 +249,7 @@ internal class HackleBridge(
         return hackleAppCore.track(event, parameters.user(), hackleAppContext)
     }
 
-    private fun remoteConfig(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): String {
+    private fun remoteConfig(parameters: HackleBridgeParameters, hackleAppContext: HackleAppContext): Any {
         val user = parameters.userWithUserId()
         val remoteConfig = hackleAppCore.remoteConfig(user, hackleAppContext)
         val key = checkNotNull(parameters.key())
@@ -261,12 +261,12 @@ internal class HackleBridge(
 
             "number" -> {
                 val defaultValue = checkNotNull(parameters.defaultNumberValue())
-                return remoteConfig.getDouble(key, defaultValue.toDouble()).toString()
+                return remoteConfig.getDouble(key, defaultValue.toDouble())
             }
 
             "boolean" -> {
                 val defaultValue = checkNotNull(parameters.defaultBooleanValue())
-                return remoteConfig.getBoolean(key, defaultValue).toString()
+                return remoteConfig.getBoolean(key, defaultValue)
             }
 
             else -> {

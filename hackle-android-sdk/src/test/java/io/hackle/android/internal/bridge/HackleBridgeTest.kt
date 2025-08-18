@@ -1420,7 +1420,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data, `is`("123.0"))
+            assertThat(data, `is`(123.0))
         }
     }
 
@@ -1449,7 +1449,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data, `is`("123.0"))
+            assertThat(data, `is`(123.0))
         }
     }
 
@@ -1500,7 +1500,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data, `is`("123.0"))
+            assertThat(data, `is`(123.0))
         }
     }
 
@@ -1529,7 +1529,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data, `is`("true"))
+            assertThat(data, `is`(true))
         }
     }
 
@@ -1558,7 +1558,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data, `is`("true"))
+            assertThat(data, `is`(true))
         }
     }
 
@@ -1609,7 +1609,7 @@ class HackleBridgeTest {
         result.parseJson<BridgeResponse>().apply {
             assertThat(success, `is`(true))
             assertThat(message, `is`("OK"))
-            assertThat(data, `is`("true"))
+            assertThat(data, `is`(true))
         }
     }
 
