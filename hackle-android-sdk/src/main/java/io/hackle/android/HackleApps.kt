@@ -33,7 +33,6 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
@@ -378,9 +377,6 @@ internal object HackleApps {
         NotificationHandler.getInstance(context)
             .setNotificationDataReceiver(notificationManager)
 
-        // PII
-        val piiEventManager = PIIEventManager()
-
         // UserExplorer
         val devToolsApi = DevToolsApi(
             sdk = sdk,
@@ -436,7 +432,6 @@ internal object HackleApps {
                 eventProcessor = eventProcessor,
                 pushTokenManager = pushTokenManager,
                 notificationManager = notificationManager,
-                piiEventManager = piiEventManager,
                 fetchThrottler = fetchThrottler,
                 device = device,
                 userExplorer = userExplorer,

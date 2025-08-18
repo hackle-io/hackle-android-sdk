@@ -1,10 +1,10 @@
 package io.hackle.android.internal.context
 
 internal data class HackleAppContext(
-    val browserProperties: Map<String, Any>?
+    val browserProperties: Map<String, Any>
 ) {
     companion object {
-        internal var default = HackleAppContext(null)
+        internal var DEFAULT = HackleAppContext(emptyMap())
 
         fun create(browserProperties: Map<String, Any>): HackleAppContext {
             return HackleAppContext(browserProperties)

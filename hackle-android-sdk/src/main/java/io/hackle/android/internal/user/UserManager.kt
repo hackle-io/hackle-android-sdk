@@ -57,7 +57,7 @@ internal class UserManager(
 
     fun toHackleUser(user: User): HackleUser {
         val context = currentContext.with(user)
-        return toHackleUser(context, HackleAppContext.default)
+        return toHackleUser(context, HackleAppContext.DEFAULT)
     }
 
     private fun toHackleUser(context: UserContext, hackleAppContext: HackleAppContext): HackleUser {
@@ -70,11 +70,14 @@ internal class UserManager(
             .identifier(IdentifierType.DEVICE, device.id, overwrite = false)
             .identifier(IdentifierType.HACKLE_DEVICE_ID, device.id)
             .properties(context.user.properties)
-            .hackleProperties(hackleAppContext.browserProperties ?: emptyMap())
-            .hackleProperties(device.properties)
+            .hackleProperties(hackleProperties(hackleAppContext, device))
             .cohorts(context.cohorts.rawCohorts())
             .targetEvents(context.targetEvents.rawEvents())
             .build()
+    }
+    
+    private fun hackleProperties(hackleAppContext: HackleAppContext, device: Device): Map<String, Any> {
+        return hackleAppContext.browserProperties + device.properties
     }
 
     // Sync

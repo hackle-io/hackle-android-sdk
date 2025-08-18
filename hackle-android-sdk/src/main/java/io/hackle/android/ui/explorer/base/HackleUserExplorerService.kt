@@ -29,7 +29,7 @@ internal class HackleUserExplorerService(
 ) {
 
     fun currentUser(): HackleUser {
-        return userManager.resolve(null, HackleAppContext.default)
+        return userManager.resolve(null, HackleAppContext.DEFAULT)
     }
 
     fun registeredPushToken(): String? {

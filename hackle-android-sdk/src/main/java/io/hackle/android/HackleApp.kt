@@ -114,7 +114,7 @@ class HackleApp internal constructor(
         val operations = PropertyOperations.builder()
             .set(key, value)
             .build()
-        hackleAppCore.updateUserProperties(operations, HackleAppContext.default, callback)
+        hackleAppCore.updateUserProperties(operations, HackleAppContext.DEFAULT, callback)
     }
 
     /**
@@ -125,7 +125,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
-        hackleAppCore.updateUserProperties(operations, HackleAppContext.default, callback)
+        hackleAppCore.updateUserProperties(operations, HackleAppContext.DEFAULT, callback)
     }
 
     /**
@@ -134,7 +134,7 @@ class HackleApp internal constructor(
      * @param operations a set of subscription operations to apply.
      */
     fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
-        hackleAppCore.updatePushSubscriptions(operations, HackleAppContext.default)
+        hackleAppCore.updatePushSubscriptions(operations, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -143,7 +143,7 @@ class HackleApp internal constructor(
      * @param operations a set of subscription operations to apply.
      */
     fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
-        hackleAppCore.updateSmsSubscriptions(operations, HackleAppContext.default)
+        hackleAppCore.updateSmsSubscriptions(operations, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -152,7 +152,7 @@ class HackleApp internal constructor(
      * @param operations a set of subscription operations to apply.
      */
     fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
-        hackleAppCore.updateKakaoSubscriptions(operations, HackleAppContext.default)
+        hackleAppCore.updateKakaoSubscriptions(operations, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -165,7 +165,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
-        hackleAppCore.resetUser(HackleAppContext.default, callback)
+        hackleAppCore.resetUser(HackleAppContext.DEFAULT, callback)
     }
 
     /**
@@ -176,7 +176,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
-        hackleAppCore.setPhoneNumber(phoneNumber, HackleAppContext.default, callback)
+        hackleAppCore.setPhoneNumber(phoneNumber, HackleAppContext.DEFAULT, callback)
     }
 
     /**
@@ -186,7 +186,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun unsetPhoneNumber(callback: Runnable? = null) {
-        hackleAppCore.unsetPhoneNumber(HackleAppContext.default, callback)
+        hackleAppCore.unsetPhoneNumber(HackleAppContext.DEFAULT, callback)
     }
 
     /**
@@ -213,7 +213,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
-        return hackleAppCore.variationDetail(experimentKey, null, defaultVariation, HackleAppContext.default)
+        return hackleAppCore.variationDetail(experimentKey, null, defaultVariation, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -223,7 +223,7 @@ class HackleApp internal constructor(
      *         value - decision result
      */
     fun allVariationDetails(): Map<Long, Decision> {
-        return hackleAppCore.allVariationDetails(null, HackleAppContext.default)
+        return hackleAppCore.allVariationDetails(null, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -249,7 +249,7 @@ class HackleApp internal constructor(
      * @return a [FeatureFlagDecision] object
      */
     fun featureFlagDetail(featureKey: Long): FeatureFlagDecision {
-        return hackleAppCore.featureFlagDetail(featureKey, null, HackleAppContext.default)
+        return hackleAppCore.featureFlagDetail(featureKey, null, HackleAppContext.DEFAULT)
     }
 
 
@@ -268,7 +268,7 @@ class HackleApp internal constructor(
      * @param event  the event that occurred. MUST NOT be null.
      */
     fun track(event: Event) {
-        hackleAppCore.track(event, null, HackleAppContext.default)
+        hackleAppCore.track(event, null, HackleAppContext.DEFAULT)
     }
 
 
@@ -276,7 +276,7 @@ class HackleApp internal constructor(
      * Returns an instance of Hackle Remote Config.
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return hackleAppCore.remoteConfig(null, HackleAppContext.default)
+        return hackleAppCore.remoteConfig(null)
     }
 
     /**
@@ -336,7 +336,7 @@ class HackleApp internal constructor(
             experimentKey,
             User.of(userId),
             defaultVariation,
-            HackleAppContext.default
+            HackleAppContext.DEFAULT
         ).variation
     }
 
@@ -347,7 +347,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.default).variation
+        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.DEFAULT).variation
     }
 
     @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
@@ -357,7 +357,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        return hackleAppCore.variationDetail(experimentKey, User.of(userId), defaultVariation, HackleAppContext.default)
+        return hackleAppCore.variationDetail(experimentKey, User.of(userId), defaultVariation, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
@@ -367,57 +367,57 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.default)
+        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use allVariationDetails() with setUser(user) instead.")
     fun allVariationDetails(user: User): Map<Long, Decision> {
-        return hackleAppCore.allVariationDetails(user, HackleAppContext.default)
+        return hackleAppCore.allVariationDetails(user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
-        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.default)
+        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.default)
+        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, userId: String): Boolean {
-        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.default).isOn
+        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.DEFAULT).isOn
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.default).isOn
+        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.DEFAULT).isOn
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, userId: String) {
-        hackleAppCore.track(Event.of(eventKey), User.of(userId), HackleAppContext.default)
+        hackleAppCore.track(Event.of(eventKey), User.of(userId), HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, userId: String) {
-        hackleAppCore.track(event, User.of(userId), HackleAppContext.default)
+        hackleAppCore.track(event, User.of(userId), HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, user: User) {
-        hackleAppCore.track(Event.of(eventKey), user, HackleAppContext.default)
+        hackleAppCore.track(Event.of(eventKey), user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, user: User) {
-        hackleAppCore.track(event, user, HackleAppContext.default)
+        hackleAppCore.track(event, user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
-        return hackleAppCore.remoteConfig(user, HackleAppContext.default)
+        return hackleAppCore.remoteConfig(user)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))

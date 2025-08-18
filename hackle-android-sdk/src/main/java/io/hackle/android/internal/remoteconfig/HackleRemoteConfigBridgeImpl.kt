@@ -8,10 +8,11 @@ import io.hackle.sdk.common.decision.RemoteConfigDecision
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.model.ValueType
 
-internal class HackleRemoteConfigImpl(
+internal class HackleRemoteConfigBridgeImpl(
     user: User?,
     core: HackleCore,
     userManager: UserManager,
+    private val hackleAppContext: HackleAppContext
 ) : HackleRemoteConfigCore(user, core, userManager), HackleRemoteConfig {
 
     override fun getString(key: String, defaultValue: String): String {
@@ -39,6 +40,6 @@ internal class HackleRemoteConfigImpl(
         requiredType: ValueType,
         defaultValue: T,
     ): RemoteConfigDecision<T> {
-        return get(key, requiredType, defaultValue, HackleAppContext.DEFAULT)
+        return get(key, requiredType, defaultValue, hackleAppContext)
     }
 }

@@ -6,9 +6,10 @@ import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pii.PIIEventManager
-import io.hackle.android.internal.pii.phonenumber.PhoneNumber
+import io.hackle.android.internal.pii.PIIProperty
+import io.hackle.android.internal.pii.toSecuredEvent
 import io.hackle.android.internal.push.token.PushTokenManager
+import io.hackle.android.internal.remoteconfig.HackleRemoteConfigBridgeImpl
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
@@ -46,7 +47,6 @@ internal class HackleAppCore(
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
-    private val piiEventManager: PIIEventManager,
     private val fetchThrottler: Throttler,
     private val device: Device,
     internal val userExplorer: HackleUserExplorer,
@@ -178,7 +178,10 @@ internal class HackleAppCore(
         callback: Runnable?
     ) {
         try {
-            val event = piiEventManager.setPhoneNumber(PhoneNumber.create(phoneNumber))
+            val event = PropertyOperations.builder()
+                .set(PIIProperty.PHONE_NUMBER.key, phoneNumber)
+                .build()
+                .toSecuredEvent()
             track(event, null, hackleAppContext)
             eventProcessor.flush()
         } catch (e: Exception) {
@@ -190,7 +193,10 @@ internal class HackleAppCore(
 
     fun unsetPhoneNumber(hackleAppContext: HackleAppContext, callback: Runnable?) {
         try {
-            val event = piiEventManager.unsetPhoneNumber()
+            val event = PropertyOperations.builder()
+                .unset(PIIProperty.PHONE_NUMBER.key)
+                .build()
+                .toSecuredEvent()
             track(event, null, hackleAppContext)
             eventProcessor.flush()
         } catch (e: Exception) {
@@ -255,8 +261,12 @@ internal class HackleAppCore(
         }
     }
 
+    fun remoteConfig(user: User?): HackleRemoteConfig {
+        return HackleRemoteConfigImpl(user, core, userManager)
+    }
+    
     fun remoteConfig(user: User?, hackleAppContext: HackleAppContext): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, core, userManager, hackleAppContext)
+        return HackleRemoteConfigBridgeImpl(user, core, userManager, hackleAppContext)
     }
 
     fun fetch(callback: Runnable?) {

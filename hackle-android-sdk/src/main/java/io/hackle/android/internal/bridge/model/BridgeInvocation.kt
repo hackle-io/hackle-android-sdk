@@ -79,7 +79,7 @@ internal class BridgeInvocation(string: String) {
             @Suppress("UNCHECKED_CAST")
             val commandString = invocation[KEY_COMMAND] as? String ?: return false
 
-            return !commandString.isEmpty()
+            return commandString.isNotEmpty()
         }
     }
 }

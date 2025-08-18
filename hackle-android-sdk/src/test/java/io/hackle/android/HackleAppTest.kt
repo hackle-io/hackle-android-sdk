@@ -7,7 +7,6 @@ import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
@@ -81,9 +80,6 @@ class HackleAppTest {
     private lateinit var notificationManager: NotificationManager
 
     @RelaxedMockK
-    private lateinit var piiEventManager: PIIEventManager
-
-    @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
 
     @RelaxedMockK
@@ -115,7 +111,6 @@ class HackleAppTest {
                 eventProcessor,
                 pushTokenManager,
                 notificationManager,
-                piiEventManager,
                 fetchThrottler,
                 MockDevice("hackle_device_id", emptyMap()),
                 userExplorer,
@@ -449,7 +444,6 @@ class HackleAppTest {
     fun setPhoneNumber() {
         sut.setPhoneNumber("")
 
-        verify(exactly = 1) { piiEventManager.setPhoneNumber(any()) }
         verify(exactly = 1) { core.track(any(), any(), any()) }
     }
 
@@ -457,7 +451,6 @@ class HackleAppTest {
     fun unsetPhoneNumber() {
         sut.unsetPhoneNumber()
 
-        verify(exactly = 1) { piiEventManager.unsetPhoneNumber() }
         verify(exactly = 1) { core.track(any(), any(), any()) }
     }
 
