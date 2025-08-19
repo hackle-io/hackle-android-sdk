@@ -17,7 +17,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 
-internal class HackleRemoteConfigImplTest {
+internal class ContextRemoteConfigTest {
 
     @MockK
     private lateinit var core: HackleCore
@@ -25,13 +25,19 @@ internal class HackleRemoteConfigImplTest {
     @MockK
     private lateinit var userManager: UserManager
 
-    private lateinit var sut: DefaultRemoteConfig
+    private lateinit var sut: ContextRemoteConfig
+    
+    private var hackleAppContext = HackleAppContext.create(mapOf(
+        "test_string_key" to "from_context",
+        "test_double_key" to 100.5,
+        "test_boolean_key" to true
+    ))
 
     @Before
     fun setUp() {
         userManager = mockk()
         core = mockk(relaxed = true)
-        sut = DefaultRemoteConfig(mockk(), core, userManager)
+        sut = ContextRemoteConfig(mockk(), core, userManager, hackleAppContext)
     }
 
     @Test
@@ -42,14 +48,52 @@ internal class HackleRemoteConfigImplTest {
         val mockDecision = RemoteConfigDecision.of(expectedValue, DecisionReason.TRAFFIC_ALLOCATED)
         val mockHackleUser = mockk<HackleUser>()
 
-        every { userManager.resolve(any(), HackleAppContext.DEFAULT) } returns mockHackleUser
+        every { userManager.resolve(any(), hackleAppContext) } returns mockHackleUser
         every { core.remoteConfig(key, mockHackleUser, ValueType.STRING, defaultValue) } returns mockDecision
 
         val actual = sut.getString(key, defaultValue)
 
         expectThat(actual).isEqualTo(expectedValue)
-        verify { userManager.resolve(any(), HackleAppContext.DEFAULT) }
+        verify { userManager.resolve(any(), hackleAppContext) }
     }
+
+
+    @Test
+    fun `getInt은 core의 remoteConfig 결과를 int로 변환하여 반환한다`() {
+        val key = "test_int_key"
+        val defaultValue = 42
+        val expectedValue = 100
+        val mockDecision = RemoteConfigDecision.of(expectedValue, DecisionReason.TRAFFIC_ALLOCATED)
+        val mockHackleUser = mockk<HackleUser>()
+
+        every { userManager.resolve(any(), hackleAppContext) } returns mockHackleUser
+        every { core.remoteConfig(key, mockHackleUser, ValueType.NUMBER, defaultValue) } returns mockDecision
+
+        val actual = sut.getInt(key, defaultValue)
+
+        expectThat(actual).isEqualTo(expectedValue)
+        verify { userManager.resolve(any(), hackleAppContext) }
+    }
+
+
+    @Test
+    fun `getLong은 core의 remoteConfig 결과를 Long으로 변환하여 반환한다`() {
+        val key = "test_long_key"
+        val defaultValue = 42L
+        val expectedValue = 100L
+        val mockDecision = RemoteConfigDecision.of(expectedValue, DecisionReason.TRAFFIC_ALLOCATED)
+        val mockHackleUser = mockk<HackleUser>()
+
+        every { userManager.resolve(any(), hackleAppContext) } returns mockHackleUser
+        every { core.remoteConfig(key, mockHackleUser, ValueType.NUMBER, defaultValue) } returns mockDecision
+
+        val actual = sut.getLong(key, defaultValue)
+
+        expectThat(actual).isEqualTo(expectedValue)
+        verify { userManager.resolve(any(), hackleAppContext) }
+    }
+
+
 
     @Test
     fun `getDouble은 core의 remoteConfig 결과를 double로 변환하여 반환한다`() {
@@ -59,15 +103,15 @@ internal class HackleRemoteConfigImplTest {
         val mockDecision = RemoteConfigDecision.of(expectedValue, DecisionReason.TRAFFIC_ALLOCATED)
         val mockHackleUser = mockk<HackleUser>()
 
-        every { userManager.resolve(any(), HackleAppContext.DEFAULT) } returns mockHackleUser
+        every { userManager.resolve(any(), hackleAppContext) } returns mockHackleUser
         every { core.remoteConfig(key, mockHackleUser, ValueType.NUMBER, defaultValue) } returns mockDecision
 
         val actual = sut.getDouble(key, defaultValue)
 
         expectThat(actual).isEqualTo(expectedValue)
-        verify { userManager.resolve(any(), HackleAppContext.DEFAULT) }
+        verify { userManager.resolve(any(), hackleAppContext) }
     }
-    
+
     @Test
     fun `getBoolean은 core의 remoteConfig 결과를 boolean로 변환하여 반환한다`() {
         val key = "test_double_key"
@@ -76,12 +120,12 @@ internal class HackleRemoteConfigImplTest {
         val mockDecision = RemoteConfigDecision.of(expectedValue, DecisionReason.TRAFFIC_ALLOCATED)
         val mockHackleUser = mockk<HackleUser>()
 
-        every { userManager.resolve(any(), HackleAppContext.DEFAULT) } returns mockHackleUser
+        every { userManager.resolve(any(), hackleAppContext) } returns mockHackleUser
         every { core.remoteConfig(key, mockHackleUser, ValueType.BOOLEAN, defaultValue) } returns mockDecision
 
         val actual = sut.getBoolean(key, defaultValue)
 
         expectThat(actual).isEqualTo(expectedValue)
-        verify { userManager.resolve(any(), HackleAppContext.DEFAULT) }
+        verify { userManager.resolve(any(), hackleAppContext) }
     }
 }
