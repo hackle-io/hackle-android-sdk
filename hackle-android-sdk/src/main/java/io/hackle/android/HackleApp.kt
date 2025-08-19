@@ -54,6 +54,8 @@ class HackleApp internal constructor(
 
     internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
 
+    private var invocator: HackleInvocator? = null
+
     /**
      * Shows the user explorer UI button.
      *
@@ -300,7 +302,9 @@ class HackleApp internal constructor(
     }
 
     internal fun invocator(): HackleInvocator {
-        return HackleInvocatorImpl(this.hackleAppCore)
+        return invocator ?: HackleInvocatorImpl(this.hackleAppCore).also {
+            invocator = it
+        }
     }
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
