@@ -1,10 +1,10 @@
 package io.hackle.android
 
-import io.hackle.sdk.common.HackleAppBridge
+import io.hackle.sdk.common.HackleInvocator
 
-object HackleInvocator {
+object HackleAppInvocator {
     @JvmStatic
-    fun hackleAppBridge(): HackleAppBridge {
-        return Hackle.app.hackleAppBridge()
+    fun hackleInvocator(): HackleInvocator {
+        return Hackle.app.invocator()
     }
 }

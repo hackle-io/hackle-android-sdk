@@ -1,9 +1,7 @@
-package io.hackle.android.internal.bridge.model
+package io.hackle.android.internal.invocator.model
 
-import io.hackle.android.internal.properties.operate
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.ParameterConfig
-import io.hackle.sdk.common.PropertyOperation
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
@@ -15,8 +13,6 @@ import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test

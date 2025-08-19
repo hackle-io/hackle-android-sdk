@@ -4,7 +4,7 @@ internal data class HackleAppContext(
     val browserProperties: Map<String, Any>
 ) {
     companion object {
-        internal var DEFAULT = HackleAppContext(emptyMap())
+        internal val DEFAULT = HackleAppContext(emptyMap())
 
         fun create(browserProperties: Map<String, Any>): HackleAppContext {
             return HackleAppContext(browserProperties)

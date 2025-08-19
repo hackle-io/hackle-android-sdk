@@ -9,7 +9,8 @@ import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIProperty
 import io.hackle.android.internal.pii.toSecuredEvent
 import io.hackle.android.internal.push.token.PushTokenManager
-import io.hackle.android.internal.remoteConfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.remoteconfig.DefaultRemoteConfig
+import io.hackle.android.internal.remoteconfig.ContextRemoteConfig
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
@@ -25,7 +26,6 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
@@ -72,15 +72,6 @@ internal class HackleAppCore(
                 onReady.run()
             }
         }
-    }
-
-    fun showUserExplorer() {
-        userExplorer.show()
-        Metrics.counter("user.explorer.show").increment()
-    }
-
-    fun hideUserExplorer() {
-        userExplorer.hide()
     }
 
     fun setUser(user: User, callback: Runnable?) {
@@ -261,22 +252,11 @@ internal class HackleAppCore(
     }
 
     fun remoteConfig(user: User?): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, core, userManager)
+        return DefaultRemoteConfig(user, core, userManager)
     }
     
-    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext, key: String, defaultValue: String): String {
-        val remoteConfig = HackleRemoteConfigImpl(user, core, userManager)
-        return remoteConfig.getString(key, defaultValue, hackleAppContext)
-    }
-    
-    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext, key: String, defaultValue: Double): Double {
-        val remoteConfig = HackleRemoteConfigImpl(user, core, userManager)
-        return remoteConfig.getDouble(key, defaultValue, hackleAppContext)
-    }
-    
-    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext, key: String, defaultValue: Boolean): Boolean {
-        val remoteConfig = HackleRemoteConfigImpl(user, core, userManager)
-        return remoteConfig.getBoolean(key, defaultValue, hackleAppContext)
+    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext): HackleRemoteConfig {
+        return ContextRemoteConfig(user, core, userManager, hackleAppContext)
     }
 
     fun fetch(callback: Runnable?) {

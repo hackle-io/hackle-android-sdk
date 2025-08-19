@@ -1,8 +1,8 @@
-package io.hackle.android.internal.bridge.web
+package io.hackle.android.internal.invocator.web
 
 import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.bridge.HackleBridge
+import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.model.Sdk
 import io.mockk.every
 import io.mockk.mockk
@@ -40,7 +40,7 @@ class HackleJavascriptInterfaceTest {
     @Test
     fun invoke() {
         // given
-        val bridge = mockk<HackleBridge>()
+        val bridge = mockk<HackleInvocatorImpl>()
         every { bridge.invoke(any()) } returns "result"
         val sut = HackleJavascriptInterface(bridge, Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
 
@@ -54,7 +54,7 @@ class HackleJavascriptInterfaceTest {
         }
     }
 
-    private fun hackleBridge(): HackleBridge {
-        return HackleBridge(mockk<HackleAppCore>(),)
+    private fun hackleBridge(): HackleInvocatorImpl {
+        return HackleInvocatorImpl(mockk<HackleAppCore>(),)
     }
 }

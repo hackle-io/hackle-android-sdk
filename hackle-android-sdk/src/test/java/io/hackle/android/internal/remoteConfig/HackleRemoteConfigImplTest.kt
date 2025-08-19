@@ -1,4 +1,4 @@
-package io.hackle.android.internal.remoteConfig
+package io.hackle.android.internal.remoteconfig
 
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.user.UserManager
@@ -25,13 +25,13 @@ internal class HackleRemoteConfigImplTest {
     @MockK
     private lateinit var userManager: UserManager
 
-    private lateinit var sut: HackleRemoteConfigImpl
+    private lateinit var sut: DefaultRemoteConfig
 
     @Before
     fun setUp() {
         userManager = mockk()
         core = mockk(relaxed = true)
-        sut = HackleRemoteConfigImpl(mockk(), core, userManager)
+        sut = DefaultRemoteConfig(mockk(), core, userManager)
     }
 
     @Test

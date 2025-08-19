@@ -8,8 +8,8 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.bridge.HackleBridge
-import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
+import io.hackle.android.internal.invocator.HackleInvocatorImpl
+import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
@@ -59,14 +59,14 @@ class HackleApp internal constructor(
      * This is typically used for debugging purposes to view the current user's state.
      */
     fun showUserExplorer() {
-        hackleAppCore.showUserExplorer()
+        userExplorer.show()
     }
 
     /**
      * Hides the user explorer UI button if it is currently visible.
      */
     fun hideUserExplorer() {
-        hackleAppCore.hideUserExplorer()
+        userExplorer.hide()
     }
 
     /**
@@ -293,13 +293,13 @@ class HackleApp internal constructor(
                         "JavaScript can use reflection to manipulate application"
             )
         }
-        val bridge = hackleAppBridge()
-        val jsInterface = HackleJavascriptInterface(bridge, this.sdk, this.mode)
+        val invocator = invocator()
+        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
-    internal fun hackleAppBridge(): HackleAppBridge {
-        return HackleBridge(this.hackleAppCore)
+    internal fun invocator(): HackleInvocator {
+        return HackleInvocatorImpl(this.hackleAppCore)
     }
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {

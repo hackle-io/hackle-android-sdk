@@ -1,6 +1,6 @@
 package io.hackle.android.ui.explorer.base
 
-import io.hackle.android.internal.bridge.model.toDto
+import io.hackle.android.internal.invocator.model.toDto
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.devtools.DevToolsApi
 import io.hackle.android.internal.devtools.OverrideRequestDto

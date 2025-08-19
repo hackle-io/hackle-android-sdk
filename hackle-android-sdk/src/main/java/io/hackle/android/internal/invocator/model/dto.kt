@@ -1,4 +1,4 @@
-package io.hackle.android.internal.bridge.model
+package io.hackle.android.internal.invocator.model
 
 import com.google.gson.annotations.SerializedName
 import io.hackle.sdk.common.Event

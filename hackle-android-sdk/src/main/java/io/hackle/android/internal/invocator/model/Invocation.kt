@@ -1,9 +1,9 @@
-package io.hackle.android.internal.bridge.model
+package io.hackle.android.internal.invocator.model
 
-import io.hackle.android.internal.bridge.HackleBridgeParameters
+import io.hackle.android.internal.invocator.HackleInvokeParameters
 import io.hackle.android.internal.utils.json.parseJson
 
-internal class BridgeInvocation(string: String) {
+internal class Invocation(string: String) {
 
     enum class Command(val text: String) {
         GET_SESSION_ID("getSessionId"),
@@ -29,7 +29,7 @@ internal class BridgeInvocation(string: String) {
         SHOW_USER_EXPLORER("showUserExplorer"),
         HIDE_USER_EXPLORER("hideUserExplorer");
 
-        companion object {
+        companion object Companion {
             private val ALL = values().associateBy { it.text }
             fun from(name: String): Command {
                 return requireNotNull(ALL[name]) { "name[$name]" }
@@ -38,7 +38,7 @@ internal class BridgeInvocation(string: String) {
     }
 
     val command: Command
-    val parameters: HackleBridgeParameters
+    val parameters: HackleInvokeParameters
     val browserProperties: HackleBrowserProperties
 
     init {
@@ -55,12 +55,12 @@ internal class BridgeInvocation(string: String) {
             throw IllegalArgumentException("Unsupported command string received.")
         }
         @Suppress("UNCHECKED_CAST")
-        this.parameters = invocation[KEY_PARAMETERS] as? HackleBridgeParameters ?: HashMap()
+        this.parameters = invocation[KEY_PARAMETERS] as? HackleInvokeParameters ?: HashMap()
         @Suppress("UNCHECKED_CAST")
         this.browserProperties = invocation[KEY_BROWSER_PROPERTIES] as? HackleBrowserProperties ?: HashMap()
     }
 
-    companion object {
+    companion object Companion {
         private const val KEY_HACKLE = "_hackle"
         private const val KEY_COMMAND = "command"
         private const val KEY_PARAMETERS = "parameters"
