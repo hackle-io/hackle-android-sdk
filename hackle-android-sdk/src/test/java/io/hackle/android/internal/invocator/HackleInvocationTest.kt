@@ -31,10 +31,10 @@ import org.junit.Test
 import kotlin.String
 
 @Suppress("DEPRECATION")
-class HackleBridgeTest {
+class HackleInvocationTest {
 
     private lateinit var app: HackleAppCore
-    private lateinit var bridge: HackleInvocatorImpl
+    private lateinit var invocation: HackleInvocatorImpl
     private val gson = GsonBuilder()
         .serializeNulls()  // null 값도 직렬화
         .create()
@@ -46,7 +46,7 @@ class HackleBridgeTest {
     @Before
     fun setup() {
         app = spyk(mockk<HackleAppCore>())
-        bridge = HackleInvocatorImpl(app)
+        invocation = HackleInvocatorImpl(app)
     }
     
     @Test
@@ -121,7 +121,7 @@ class HackleBridgeTest {
         every { app.sessionId } returns "abcd1234"
 
         val jsonString = createJsonString("getSessionId")
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) { app.sessionId }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -151,7 +151,7 @@ class HackleBridgeTest {
             .build()
         every { app.user } returns user
         val jsonString = createJsonString("getUser")
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) { app.user }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -199,7 +199,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("user" to user)
         val jsonString = createJsonString("setUser", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setUser(withArg {
                 assertThat(it.id, `is`("foo"))
@@ -228,7 +228,7 @@ class HackleBridgeTest {
     fun `invoke with set user with invalid parameters`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("setUser", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isNullOrEmpty(), `is`(false))
@@ -241,7 +241,7 @@ class HackleBridgeTest {
         val userId = "abcd1234"
         val parameters = mapOf("userId" to userId)
         val jsonString = createJsonString("setUserId", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setUserId(withArg { assertThat(it, `is`(userId)) }, null)
         }
@@ -256,7 +256,7 @@ class HackleBridgeTest {
     fun `invoke with set user id with null`() {
         val parameters: Map<String, Any?> = mapOf("userId" to null)
         val jsonString = createJsonString("setUserId", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setUserId(null, null)
         }
@@ -271,7 +271,7 @@ class HackleBridgeTest {
     fun `invoke with set user id with invalid parameters`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("setUserId", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -283,7 +283,7 @@ class HackleBridgeTest {
     fun `invoke with set device id`() {
         val parameters = mapOf("deviceId" to "abcd1234")
         val jsonString = createJsonString("setDeviceId", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setDeviceId(withArg { assertThat(it, `is`("abcd1234")) }, null)
         }
@@ -298,7 +298,7 @@ class HackleBridgeTest {
     fun `invoke with set device id with invalid parameters`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("setDeviceId", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -310,7 +310,7 @@ class HackleBridgeTest {
     fun `invoke with set user property`() {
         val parameters = mapOf("key" to "foo", "value" to "bar")
         val jsonString = createJsonString("setUserProperty", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.updateUserProperties(
                 withArg {
@@ -336,7 +336,7 @@ class HackleBridgeTest {
     fun `invoke with set user property with invalid parameters`() {
         val parameters = mapOf<String, Any>()
         val jsonString = createJsonString("setUserProperty", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -358,7 +358,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("operations" to operations)
         val jsonString = createJsonString("updateUserProperties", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.updateUserProperties(
                 withArg {
@@ -399,7 +399,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("operations" to operations)
         val jsonString = createJsonString("updatePushSubscriptions", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.updatePushSubscriptions(
                 withArg {
@@ -434,7 +434,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("operations" to operations)
         val jsonString = createJsonString("updateSmsSubscriptions", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.updateSmsSubscriptions(
                 withArg {
@@ -469,7 +469,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("operations" to operations)
         val jsonString = createJsonString("updateKakaoSubscriptions", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.updateKakaoSubscriptions(
                 withArg {
@@ -499,7 +499,7 @@ class HackleBridgeTest {
     fun `invoke with update user properties with invalid parameters`() {
         val parameters = mapOf<String, Any>()
         val jsonString = createJsonString("updateUserProperties", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -510,7 +510,7 @@ class HackleBridgeTest {
     @Test
     fun `invoke with reset user`() {
         val jsonString = createJsonString("resetUser")
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.resetUser(withArg<HackleAppContext> {
                 assertThat(
@@ -530,7 +530,7 @@ class HackleBridgeTest {
     fun `invoke with setPhoneNumber`() {
         val parameters = mapOf("phoneNumber" to "+8210-1234-5678")
         val jsonString = createJsonString("setPhoneNumber", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setPhoneNumber(
                 "+8210-1234-5678",
@@ -548,7 +548,7 @@ class HackleBridgeTest {
     @Test
     fun `invoke with unsetPhoneNumber`() {
         val jsonString = createJsonString("unsetPhoneNumber")
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.unsetPhoneNumber(withArg<HackleAppContext> {
                 assertThat(
@@ -571,7 +571,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
         val jsonString = createJsonString("variation", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -599,7 +599,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("variation", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -638,7 +638,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("variation", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -671,7 +671,7 @@ class HackleBridgeTest {
     fun `invoke with variation with invalid parameters case`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("variation", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -687,7 +687,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
         val jsonString = createJsonString("variationDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -723,7 +723,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("variationDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -770,7 +770,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("variationDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -811,7 +811,7 @@ class HackleBridgeTest {
     fun `invoke with variation detail with invalid parameters case`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("variationDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -827,7 +827,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("featureKey" to 1)
         val jsonString = createJsonString("isFeatureOn", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg {
@@ -852,7 +852,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("isFeatureOn", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -888,7 +888,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("featureKey" to 1, "user" to user)
         val jsonString = createJsonString("isFeatureOn", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -920,7 +920,7 @@ class HackleBridgeTest {
     fun `invoke with is feature on with invalid parameters case`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("isFeatureOn", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -936,7 +936,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("featureKey" to 1)
         val jsonString = createJsonString("featureFlagDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg {
@@ -969,7 +969,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
         val jsonString = createJsonString("featureFlagDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -1011,7 +1011,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("featureKey" to 1, "user" to user)
         val jsonString = createJsonString("featureFlagDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.featureFlagDetail(
                 withArg { assertThat(it, `is`(1)) },
@@ -1051,7 +1051,7 @@ class HackleBridgeTest {
     fun `invoke with feature flag detail with invalid parameters case`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("featureFlagDetail", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -1063,7 +1063,7 @@ class HackleBridgeTest {
     fun `invoke with track with event string`() {
         val parameters = mapOf("event" to "foo")
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
                 withArg<Event> {
@@ -1087,7 +1087,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
                 withArg<Event> {
@@ -1124,7 +1124,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
                 withArg<Event> {
@@ -1163,7 +1163,7 @@ class HackleBridgeTest {
         )
         val parameters = mapOf("event" to event)
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
                 withArg<Event> {
@@ -1195,7 +1195,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
                 withArg<Event> {
@@ -1240,7 +1240,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.track(
                 withArg<Event> {
@@ -1277,7 +1277,7 @@ class HackleBridgeTest {
     fun `invoke with track with invalid parameters`() {
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("track", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
             assertThat(message.isEmpty(), `is`(false))
@@ -1294,7 +1294,7 @@ class HackleBridgeTest {
             "defaultValue" to "abc"
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 null,
@@ -1318,7 +1318,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 withArg {
@@ -1355,7 +1355,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 withArg {
@@ -1391,7 +1391,7 @@ class HackleBridgeTest {
             "defaultValue" to 1000.0
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 null,
@@ -1415,7 +1415,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 withArg {
@@ -1452,7 +1452,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 withArg {
@@ -1489,7 +1489,7 @@ class HackleBridgeTest {
             "defaultValue" to false
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 null,
@@ -1513,7 +1513,7 @@ class HackleBridgeTest {
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 withArg {
@@ -1550,7 +1550,7 @@ class HackleBridgeTest {
             "user" to user
         )
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
                 withArg {
@@ -1583,7 +1583,7 @@ class HackleBridgeTest {
         every { app.remoteConfig(any(), any()).getString(any(), any()) } returns ""
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("remoteConfig", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify { remoteConfig wasNot Called }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(false))
@@ -1600,7 +1600,7 @@ class HackleBridgeTest {
             "className" to "mainActivityClass",
         )
         val jsonString = createJsonString("setCurrentScreen", parameters)
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setCurrentScreen(
                 withArg { assertThat(it, `is`(Screen("mainActivity", "mainActivityClass"))) },
@@ -1616,7 +1616,7 @@ class HackleBridgeTest {
     fun `invoke with show user explorer`() {
         every { app.showUserExplorer() } answers { }
         val jsonString = createJsonString("showUserExplorer")
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.showUserExplorer()
         }
@@ -1631,7 +1631,7 @@ class HackleBridgeTest {
     fun `invoke with hide user explorer`() {
         every { app.hideUserExplorer() } answers { }
         val jsonString = createJsonString("hideUserExplorer")
-        val result = bridge.invoke(jsonString)
+        val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.hideUserExplorer()
         }

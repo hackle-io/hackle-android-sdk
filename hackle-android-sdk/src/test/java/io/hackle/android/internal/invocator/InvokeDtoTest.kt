@@ -17,7 +17,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class DtoConversionTest {
+class InvokeDtoTest {
 
     @Test
     fun `UserDto를 User 모델로 변환한다`() {

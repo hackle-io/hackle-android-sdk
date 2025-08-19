@@ -20,29 +20,29 @@ class HackleJavascriptInterfaceTest {
 
     @Test
     fun getAppSdkKey() {
-        val sut = HackleJavascriptInterface(hackleBridge(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
+        val sut = HackleJavascriptInterface(invocation(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
         expectThat(sut.getAppSdkKey()).isEqualTo("SDK_KEY")
     }
 
     @Test
     fun getInvocationType() {
-        val sut = HackleJavascriptInterface(hackleBridge(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
+        val sut = HackleJavascriptInterface(invocation(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
         expectThat(sut.getInvocationType()).isEqualTo("function")
     }
 
     @Test
     fun getAppMode() {
         val sut =
-            HackleJavascriptInterface(hackleBridge(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.WEB_VIEW_WRAPPER)
+            HackleJavascriptInterface(invocation(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.WEB_VIEW_WRAPPER)
         expectThat(sut.getAppMode()).isEqualTo("WEB_VIEW_WRAPPER")
     }
 
     @Test
     fun invoke() {
         // given
-        val bridge = mockk<HackleInvocatorImpl>()
-        every { bridge.invoke(any()) } returns "result"
-        val sut = HackleJavascriptInterface(bridge, Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
+        val invocation = mockk<HackleInvocatorImpl>()
+        every { invocation.invoke(any()) } returns "result"
+        val sut = HackleJavascriptInterface(invocation, Sdk("SDK_KEY", "name", "version"), HackleAppMode.NATIVE)
 
         // when
         val actual = sut.invoke("42")
@@ -50,11 +50,11 @@ class HackleJavascriptInterfaceTest {
         // then
         expectThat(actual).isEqualTo("result")
         verify(exactly = 1) {
-            bridge.invoke("42")
+            invocation.invoke("42")
         }
     }
 
-    private fun hackleBridge(): HackleInvocatorImpl {
+    private fun invocation(): HackleInvocatorImpl {
         return HackleInvocatorImpl(mockk<HackleAppCore>(),)
     }
 }
