@@ -3,6 +3,7 @@ package io.hackle.android.internal.remoteconfig
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.decision.DecisionReason
+import io.hackle.sdk.common.decision.DecisionReason.REMOTE_CONFIG_PARAMETER_NOT_FOUND
 import io.hackle.sdk.common.decision.RemoteConfigDecision
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.model.ValueType
@@ -126,6 +127,21 @@ internal class ContextRemoteConfigTest {
         val actual = sut.getBoolean(key, defaultValue)
 
         expectThat(actual).isEqualTo(expectedValue)
+        verify { userManager.resolve(any(), hackleAppContext) }
+    }
+
+    fun `알 수 없는 값은 defaultValue를 반환한다`() {
+        val key = "test_double_key"
+        val defaultValue = 42.0
+        val mockDecision = RemoteConfigDecision.of(defaultValue, REMOTE_CONFIG_PARAMETER_NOT_FOUND)
+        val mockHackleUser = mockk<HackleUser>()
+
+        every { userManager.resolve(any(), hackleAppContext) } returns mockHackleUser
+        every { core.remoteConfig(key, mockHackleUser, ValueType.NUMBER, defaultValue) } returns mockDecision
+
+        val actual = sut.getDouble(key, defaultValue)
+
+        expectThat(actual).isEqualTo(defaultValue)
         verify { userManager.resolve(any(), hackleAppContext) }
     }
 }
