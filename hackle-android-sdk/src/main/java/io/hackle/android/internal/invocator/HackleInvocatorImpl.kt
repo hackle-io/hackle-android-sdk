@@ -11,7 +11,6 @@ import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 internal class HackleInvocatorImpl(
     private val hackleAppCore: HackleAppCore
 ) : HackleInvocator {
-    private val userExplorer: HackleUserExplorer get() = hackleAppCore.userExplorer
     
     override fun isInvocableString(string: String): Boolean {
         return Invocation.isInvocableString(string)
@@ -134,12 +133,12 @@ internal class HackleInvocatorImpl(
             }
 
             SHOW_USER_EXPLORER -> {
-                userExplorer.show()
+                hackleAppCore.showUserExplorer()
                 InvokeResponse.success()
             }
 
             HIDE_USER_EXPLORER -> {
-                userExplorer.hide()
+                hackleAppCore.hideUserExplorer()
                 InvokeResponse.success()
             }
         }

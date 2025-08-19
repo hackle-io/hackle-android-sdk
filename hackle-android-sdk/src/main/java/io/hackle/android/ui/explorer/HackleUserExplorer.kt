@@ -13,7 +13,6 @@ import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.internal.metrics.Metrics
 
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
@@ -28,7 +27,6 @@ internal class HackleUserExplorer(
         runOnUiThread {
             attach(activity)
         }
-        Metrics.counter("user.explorer.show").increment()
     }
 
     fun hide() {

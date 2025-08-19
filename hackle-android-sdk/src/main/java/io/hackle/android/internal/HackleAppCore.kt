@@ -19,6 +19,7 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
@@ -26,6 +27,7 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
@@ -48,12 +50,13 @@ internal class HackleAppCore(
     private val notificationManager: NotificationManager,
     private val fetchThrottler: Throttler,
     private val device: Device,
-    internal val userExplorer: HackleUserExplorer,
+    private val userExplorer: HackleUserExplorer,
 ) : Closeable {
 
     val deviceId: String get() = device.id
     val sessionId: String get() = sessionManager.requiredSession.id
     val user: User get() = userManager.currentUser
+    val userExplorerService: HackleUserExplorerService get() = userExplorer.explorerService
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
@@ -72,6 +75,15 @@ internal class HackleAppCore(
                 onReady.run()
             }
         }
+    }
+
+    fun showUserExplorer() {
+        userExplorer.show()
+        Metrics.counter("user.explorer.show").increment()
+    }
+
+    fun hideUserExplorer() {
+        userExplorer.hide()
     }
 
     fun setUser(user: User, callback: Runnable?) {

@@ -1614,11 +1614,11 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with show user explorer`() {
-        every { app.userExplorer.show() } answers { }
+        every { app.showUserExplorer() } answers { }
         val jsonString = createJsonString("showUserExplorer")
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.userExplorer.show()
+            app.showUserExplorer()
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1629,11 +1629,11 @@ class HackleBridgeTest {
 
     @Test
     fun `invoke with hide user explorer`() {
-        every { app.userExplorer.hide() } answers { }
+        every { app.hideUserExplorer() } answers { }
         val jsonString = createJsonString("hideUserExplorer")
         val result = bridge.invoke(jsonString)
         verify(exactly = 1) {
-            app.userExplorer.hide()
+            app.hideUserExplorer()
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))

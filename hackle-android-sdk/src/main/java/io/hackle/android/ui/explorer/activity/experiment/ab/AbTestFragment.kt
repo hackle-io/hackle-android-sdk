@@ -27,7 +27,7 @@ internal class AbTestFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
 
-        val explorerService = Hackle.app.userExplorer.explorerService
+        val explorerService = Hackle.app.userExplorerService
         root = inflater.inflate(R.layout.hackle_fragment_ab_test, container, false)
         itemView = root.findViewById(R.id.hackle_view_ab_test_items)
         adapter = AbTestAdapter(root.context, explorerService)

@@ -16,6 +16,7 @@ import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.sdk.common.Screen
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
@@ -51,7 +52,7 @@ class HackleApp internal constructor(
      */
     val user: User get() = hackleAppCore.user
 
-    internal val userExplorer: HackleUserExplorer get() = hackleAppCore.userExplorer
+    internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
 
     /**
      * Shows the user explorer UI button.
@@ -59,14 +60,14 @@ class HackleApp internal constructor(
      * This is typically used for debugging purposes to view the current user's state.
      */
     fun showUserExplorer() {
-        userExplorer.show()
+        hackleAppCore.showUserExplorer()
     }
 
     /**
      * Hides the user explorer UI button if it is currently visible.
      */
     fun hideUserExplorer() {
-        userExplorer.hide()
+        hackleAppCore.hideUserExplorer()
     }
 
     /**
