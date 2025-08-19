@@ -65,7 +65,7 @@ internal class Invocation(string: String) {
         private const val KEY_COMMAND = "command"
         private const val KEY_PARAMETERS = "parameters"
         private const val KEY_BROWSER_PROPERTIES = "browserProperties"
-        
+
         fun isInvocableString(string: String): Boolean {
             val data = try {
                 string.parseJson<Map<String, Any>>()

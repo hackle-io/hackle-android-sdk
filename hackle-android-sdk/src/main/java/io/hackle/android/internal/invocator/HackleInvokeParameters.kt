@@ -19,7 +19,7 @@ internal fun HackleInvokeParameters.userAsMap(): Map<String, Any>? = this["user"
 
 /**
  * id를 사용하는 [User] 객체를 반환합니다.
- * 
+ *
  * id를 사용합니다
  * @return [User] 객체, 또는 `null`
  */
@@ -140,7 +140,7 @@ internal fun HackleInvokeParameters.featureKey(): Long? = (this["featureKey"] as
  * @return [Event] 객체 또는 `null`
  */
 internal fun HackleInvokeParameters.event(): Event? {
-   return when (val event = this["event"]) {
+    return when (val event = this["event"]) {
         is String -> {
             Event.of(event)
         }
@@ -168,6 +168,7 @@ internal fun HackleInvokeParameters.valueType(): String? = this["valueType"] as?
  */
 
 internal fun HackleInvokeParameters.defaultStringValue(): String? = this["defaultValue"] as? String
+
 /**
  * 원격 구성(Remote Config) 조회 시 사용할 number 기본값을 반환합니다.
  * @return 기본값 (`Number?`)

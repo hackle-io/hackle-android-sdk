@@ -12,8 +12,7 @@ internal class ContextRemoteConfig(
     core: HackleCore,
     userManager: UserManager,
     private val hackleAppContext: HackleAppContext
-): RemoteConfigCore(user, core, userManager), HackleRemoteConfig
-{
+) : RemoteConfigCore(user, core, userManager), HackleRemoteConfig {
     override fun getString(key: String, defaultValue: String): String {
         return get(key, ValueType.STRING, defaultValue, hackleAppContext).value
     }

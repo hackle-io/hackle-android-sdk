@@ -266,7 +266,7 @@ internal class HackleAppCore(
     fun remoteConfig(user: User?): HackleRemoteConfig {
         return DefaultRemoteConfig(user, core, userManager)
     }
-    
+
     fun remoteConfig(user: User?, hackleAppContext: HackleAppContext): HackleRemoteConfig {
         return ContextRemoteConfig(user, core, userManager, hackleAppContext)
     }

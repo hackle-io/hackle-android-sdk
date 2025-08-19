@@ -11,7 +11,7 @@ internal class DefaultRemoteConfig(
     user: User?,
     core: HackleCore,
     userManager: UserManager
-): RemoteConfigCore(user, core, userManager), HackleRemoteConfig {
+) : RemoteConfigCore(user, core, userManager), HackleRemoteConfig {
 
     override fun getString(key: String, defaultValue: String): String {
         return get(key, ValueType.STRING, defaultValue, HackleAppContext.DEFAULT).value
