@@ -4,6 +4,7 @@ import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
@@ -37,6 +38,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
+import strikt.api.expectThrows
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isSameInstanceAs
@@ -100,29 +102,39 @@ class HackleAppTest {
             firstArg<Runnable>().run()
             CompletableFuture.completedFuture(null)
         }
-
-        sut = HackleApp(
-            HackleAppCore(
-                Clock.SYSTEM,
-                core,
-                eventExecutor,
-                backgroundExecutor,
-                synchronizer,
-                userManager,
-                workspaceManager,
-                sessionManager,
-                screenManager,
-                eventProcessor,
-                pushTokenManager,
-                notificationManager,
-                remoteConfigProcessor,
-                fetchThrottler,
-                MockDevice("hackle_device_id", emptyMap()),
-                userExplorer,
-            ),
-            Sdk.of("", HackleConfig.DEFAULT),
-            HackleAppMode.NATIVE
+        
+        val hackleAppCore = HackleAppCore(
+            Clock.SYSTEM,
+            core,
+            eventExecutor,
+            backgroundExecutor,
+            synchronizer,
+            userManager,
+            workspaceManager,
+            sessionManager,
+            screenManager,
+            eventProcessor,
+            pushTokenManager,
+            notificationManager,
+            remoteConfigProcessor,
+            fetchThrottler,
+            MockDevice("hackle_device_id", emptyMap()),
+            userExplorer,
         )
+        
+        sut = HackleApp(
+            hackleAppCore,
+            Sdk.of("", HackleConfig.DEFAULT),
+            HackleAppMode.NATIVE,
+            mockk()
+        )
+    }
+
+    @Test
+    fun `throws NullPointerException when HackleApp is not initialized`() {
+        expectThrows<IllegalStateException> {
+            HackleApp.getInstance()
+        }
     }
 
     @Test

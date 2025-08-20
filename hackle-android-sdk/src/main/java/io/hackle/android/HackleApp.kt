@@ -15,7 +15,6 @@ import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
-import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.sdk.common.Screen
 import io.hackle.android.ui.inappmessage.InAppMessageUi
@@ -36,6 +35,7 @@ class HackleApp internal constructor(
     private val hackleAppCore: HackleAppCore,
     internal val sdk: Sdk,
     internal val mode: HackleAppMode,
+    internal val invocator: HackleInvocator,
 ) : Closeable {
     /**
      * The user's Device Id.
@@ -53,8 +53,6 @@ class HackleApp internal constructor(
     val user: User get() = hackleAppCore.user
 
     internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
-
-    private var invocator: HackleInvocator? = null
 
     /**
      * Shows the user explorer UI button.
@@ -301,10 +299,8 @@ class HackleApp internal constructor(
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
-    internal fun invocator(): HackleInvocator {
-        return invocator ?: HackleInvocatorImpl(this.hackleAppCore).also {
-            invocator = it
-        }
+    fun invocator(): HackleInvocator {
+        return invocator
     }
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {

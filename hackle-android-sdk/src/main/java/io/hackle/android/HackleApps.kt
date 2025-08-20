@@ -24,6 +24,7 @@ import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
+import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
@@ -423,28 +424,32 @@ internal object HackleApps {
         val fetchThrottler = Throttler(throttleLimiter)
 
         // Instantiate
+        val hackleAppCore =HackleAppCore(
+            clock = Clock.SYSTEM,
+            core = core,
+            eventExecutor = eventExecutor,
+            backgroundExecutor = TaskExecutors.default(),
+            synchronizer = pollingSynchronizer,
+            userManager = userManager,
+            workspaceManager = workspaceManager,
+            sessionManager = sessionManager,
+            screenManager = screenManager,
+            eventProcessor = eventProcessor,
+            pushTokenManager = pushTokenManager,
+            notificationManager = notificationManager,
+            remoteConfigProcessor = remoteConfigProcessor,
+            fetchThrottler = fetchThrottler,
+            device = device,
+            userExplorer = userExplorer,
+        )
+        
+        val hackleInvocator = HackleInvocatorImpl(hackleAppCore)
 
         return HackleApp(
-            hackleAppCore = HackleAppCore(
-                clock = Clock.SYSTEM,
-                core = core,
-                eventExecutor = eventExecutor,
-                backgroundExecutor = TaskExecutors.default(),
-                synchronizer = pollingSynchronizer,
-                userManager = userManager,
-                workspaceManager = workspaceManager,
-                sessionManager = sessionManager,
-                screenManager = screenManager,
-                eventProcessor = eventProcessor,
-                pushTokenManager = pushTokenManager,
-                notificationManager = notificationManager,
-                remoteConfigProcessor = remoteConfigProcessor,
-                fetchThrottler = fetchThrottler,
-                device = device,
-                userExplorer = userExplorer,
-            ),
+            hackleAppCore = hackleAppCore,
             sdk = sdk,
-            mode = config.mode
+            mode = config.mode,
+            invocator = hackleInvocator
         )
     }
 
