@@ -11,6 +11,7 @@ import io.hackle.android.internal.pii.toSecuredEvent
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.DefaultRemoteConfig
 import io.hackle.android.internal.remoteconfig.ContextRemoteConfig
+import io.hackle.android.internal.remoteconfig.RemoteConfigProcessor
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
@@ -48,6 +49,7 @@ internal class HackleAppCore(
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
+    private val remoteConfigProcessor: RemoteConfigProcessor,
     private val fetchThrottler: Throttler,
     private val device: Device,
     private val userExplorer: HackleUserExplorer,
@@ -264,11 +266,11 @@ internal class HackleAppCore(
     }
 
     fun remoteConfig(user: User?): HackleRemoteConfig {
-        return DefaultRemoteConfig(user, core, userManager)
+        return DefaultRemoteConfig(remoteConfigProcessor, user)
     }
 
     fun remoteConfig(user: User?, hackleAppContext: HackleAppContext): HackleRemoteConfig {
-        return ContextRemoteConfig(user, core, userManager, hackleAppContext)
+        return ContextRemoteConfig(remoteConfigProcessor, user, hackleAppContext)
     }
 
     fun fetch(callback: Runnable?) {

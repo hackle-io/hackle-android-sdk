@@ -36,6 +36,7 @@ import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
+import io.hackle.android.internal.remoteconfig.RemoteConfigProcessor
 import io.hackle.android.internal.screen.ScreenEventTracker
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
@@ -376,6 +377,11 @@ internal object HackleApps {
         )
         NotificationHandler.getInstance(context)
             .setNotificationDataReceiver(notificationManager)
+        
+        val remoteConfigProcessor = RemoteConfigProcessor(
+            core = core,
+            userManager = userManager,
+        )
 
         // UserExplorer
         val devToolsApi = DevToolsApi(
@@ -432,6 +438,7 @@ internal object HackleApps {
                 eventProcessor = eventProcessor,
                 pushTokenManager = pushTokenManager,
                 notificationManager = notificationManager,
+                remoteConfigProcessor = remoteConfigProcessor,
                 fetchThrottler = fetchThrottler,
                 device = device,
                 userExplorer = userExplorer,

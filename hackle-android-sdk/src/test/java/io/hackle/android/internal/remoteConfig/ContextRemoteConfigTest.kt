@@ -38,7 +38,8 @@ internal class ContextRemoteConfigTest {
     fun setUp() {
         userManager = mockk()
         core = mockk(relaxed = true)
-        sut = ContextRemoteConfig(mockk(), core, userManager, hackleAppContext)
+        val remoteConfigProcess = RemoteConfigProcessor(core, userManager)
+        sut = ContextRemoteConfig(remoteConfigProcess, mockk(), hackleAppContext)
     }
 
     @Test
@@ -130,6 +131,7 @@ internal class ContextRemoteConfigTest {
         verify { userManager.resolve(any(), hackleAppContext) }
     }
 
+    @Test
     fun `알 수 없는 값은 defaultValue를 반환한다`() {
         val key = "test_double_key"
         val defaultValue = 42.0

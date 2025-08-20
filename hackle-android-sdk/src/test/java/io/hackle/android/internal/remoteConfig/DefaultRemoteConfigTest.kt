@@ -32,7 +32,8 @@ internal class DefaultRemoteConfigTest {
     fun setUp() {
         userManager = mockk()
         core = mockk(relaxed = true)
-        sut = DefaultRemoteConfig(mockk(), core, userManager)
+        val remoteConfigProcess = RemoteConfigProcessor(core, userManager)
+        sut = DefaultRemoteConfig(remoteConfigProcess, mockk())
     }
 
     @Test

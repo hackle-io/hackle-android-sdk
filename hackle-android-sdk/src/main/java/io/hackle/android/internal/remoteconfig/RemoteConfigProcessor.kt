@@ -11,8 +11,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.model.ValueType
 
-internal open class RemoteConfigCore(
-    private val user: User?,
+internal class RemoteConfigProcessor(
     private val core: HackleCore,
     private val userManager: UserManager
 ) {
@@ -20,13 +19,14 @@ internal open class RemoteConfigCore(
         key: String,
         requiredType: ValueType,
         defaultValue: T,
+        user: User?,
         hackleAppContext: HackleAppContext,
     ): RemoteConfigDecision<T> {
         val sample = Timer.start()
         return try {
             val hackleUser = userManager.resolve(user, hackleAppContext)
             core.remoteConfig(key, hackleUser, requiredType, defaultValue)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }
             RemoteConfigDecision.of(defaultValue, EXCEPTION)
         }.also {
@@ -35,6 +35,6 @@ internal open class RemoteConfigCore(
     }
 
     companion object Companion {
-        private val log = Logger<RemoteConfigCore>()
+        private val log = Logger<RemoteConfigProcessor>()
     }
 }
