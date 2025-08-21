@@ -1,4 +1,4 @@
-package io.hackle.android.internal.bridge.model
+package io.hackle.android.internal.invocator.model
 
 import com.google.gson.annotations.SerializedName
 import io.hackle.sdk.common.Event
@@ -78,7 +78,7 @@ internal data class EventDto(
         private const val KEY_PROPERTIES = "properties"
 
         @Suppress("UNCHECKED_CAST")
-        fun from(map: Map<String, Any>): EventDto {
+        fun from(map: Map<*, *>): EventDto {
             return EventDto(
                 key = checkNotNull(map[KEY_KEY] as? String),
                 value = (map[KEY_VALUE] as? Number)?.toDouble(),
@@ -144,18 +144,20 @@ internal fun PropertyOperations.Companion.from(dto: PropertyOperationsDto): Prop
                 PropertyOperation.REMOVE -> properties.forEach { (key, value) -> builder.remove(key, value) }
                 PropertyOperation.CLEAR_ALL -> properties.forEach { (_, _) -> builder.clearAll() }
             }
-        } catch (_: Throwable) { }
+        } catch (_: Throwable) {
+        }
     }
     return builder.build()
 }
 
 internal fun HackleSubscriptionOperations.Companion.from(dto: HackleSubscriptionOperationsDto): HackleSubscriptionOperations {
     val builder = builder()
-    for((key, value) in dto) {
+    for ((key, value) in dto) {
         try {
             val status = enumValueOfOrNull<HackleSubscriptionStatus>(value) ?: continue
             builder.custom(key, status)
-        } catch(_: Throwable) { }
+        } catch (_: Throwable) {
+        }
     }
     return builder.build()
 }
