@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
+import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationBroadcastReceiver : BroadcastReceiver() {
@@ -51,7 +52,8 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
         }
 
         try {
-            val notification = NotificationFactory.createNotification(context, notificationExtras, notificationData)
+            val channelId = getChannelId(intent)
+            val notification = NotificationFactory.createNotification(context, notificationExtras, channelId, notificationData)
             val notificationManager = NotificationManagerCompat.from(context)
             notificationManager.notify(TAG, notificationData.notificationId, notification)
         } catch (e: Exception) {
@@ -78,6 +80,10 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
         }
 
         return false
+    }
+    
+    private fun getChannelId(intent: Intent): String  {
+        return intent.getStringExtra("google.c.a.c_id") ?: DEFAULT_NOTIFICATION_CHANNEL_ID
     }
 
     companion object {

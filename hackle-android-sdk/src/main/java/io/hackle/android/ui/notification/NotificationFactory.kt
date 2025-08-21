@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
@@ -23,11 +24,15 @@ internal object NotificationFactory {
 
     private val log = Logger<NotificationFactory>()
 
-    fun createNotification(context: Context, extras: Bundle, data: NotificationData): Notification {
-        val channelId = getDefaultNotificationChannelId(context)
+    fun createNotification(context: Context, extras: Bundle, channelId: String, data: NotificationData): Notification {
+        val channelId = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            resolveNotificationChannelId(context, channelId)
+        } else {
+            DEFAULT_NOTIFICATION_CHANNEL_ID
+        }
         val builder = NotificationCompat.Builder(context, channelId)
         builder.setAutoCancel(true)
-        setPriority(builder)
+        //setPriority(builder)
         setVisibility(builder)
         setSmallIcon(context, builder, data)
         setThumbnailIcon(context, builder, data)
@@ -39,21 +44,32 @@ internal object NotificationFactory {
         setBigPictureStyle(context, builder, data)
         return builder.build()
     }
-
-    private fun getDefaultNotificationChannelId(context: Context): String {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (notificationManager.getNotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID) == null) {
-                log.debug { "Default notification channel does not exist on device." }
-                val channel = NotificationChannel(
-                    DEFAULT_NOTIFICATION_CHANNEL_ID,
-                    DEFAULT_NOTIFICATION_CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_DEFAULT
-                )
-                notificationManager.createNotificationChannel(channel)
-                log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
-            }
+    
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun resolveNotificationChannelId(context: Context, channelId: String): String {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = notificationManager.getNotificationChannel(channelId)
+        if (channel == null) {
+            log.debug { "$channelId channel does not exist on device." }
+            return getDefaultNotificationChannelId(notificationManager)
+        } else {
+            return channelId
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getDefaultNotificationChannelId(notificationManager: NotificationManager): String {
+        if (notificationManager.getNotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID) == null) {
+            log.debug { "Default notification channel does not exist on device." }
+            val channel = NotificationChannel(
+                DEFAULT_NOTIFICATION_CHANNEL_ID,
+                DEFAULT_NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+            log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
+        }
+        
         return DEFAULT_NOTIFICATION_CHANNEL_ID
     }
 
