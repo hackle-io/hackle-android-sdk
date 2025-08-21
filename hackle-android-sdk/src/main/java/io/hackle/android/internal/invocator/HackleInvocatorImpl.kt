@@ -11,7 +11,7 @@ import io.hackle.sdk.core.model.ValueType
 internal class HackleInvocatorImpl(
     private val hackleAppCore: HackleAppCore
 ) : HackleInvocator {
-    
+
     override fun isInvocableString(string: String): Boolean {
         return Invocation.isInvocableString(string)
     }
@@ -224,11 +224,11 @@ internal class HackleInvocatorImpl(
         val defaultVariation = Variation.fromOrControl(defaultVariationKey)
 
         return hackleAppCore.variationDetail(
-            experimentKey, 
-            parameters.user(), 
-            defaultVariation, 
+            experimentKey,
+            parameters.user(),
+            defaultVariation,
             hackleAppContext
-        ) .toDto()
+        ).toDto()
     }
 
     private fun isFeatureOn(parameters: HackleInvokeParameters, hackleAppContext: HackleAppContext): Boolean {
@@ -257,12 +257,18 @@ internal class HackleInvocatorImpl(
         when (checkNotNull(parameters.valueType())) {
             "string" -> {
                 val defaultValue = checkNotNull(parameters.defaultStringValue())
-                return hackleAppCore.remoteConfig(key, ValueType.STRING, defaultValue, user,hackleAppContext).value
+                return hackleAppCore.remoteConfig(key, ValueType.STRING, defaultValue, user, hackleAppContext).value
             }
 
             "number" -> {
                 val defaultValue = checkNotNull(parameters.defaultNumberValue())
-                return hackleAppCore.remoteConfig(key, ValueType.NUMBER, defaultValue, user, hackleAppContext).value.toDouble()
+                return hackleAppCore.remoteConfig(
+                    key,
+                    ValueType.NUMBER,
+                    defaultValue,
+                    user,
+                    hackleAppContext
+                ).value.toDouble()
             }
 
             "boolean" -> {

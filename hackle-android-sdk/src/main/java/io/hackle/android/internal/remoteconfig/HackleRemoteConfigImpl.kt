@@ -16,15 +16,33 @@ internal class HackleRemoteConfigImpl(
     }
 
     override fun getInt(key: String, defaultValue: Int): Int {
-        return hackleAppCore.remoteConfig<Number>(key, ValueType.NUMBER, defaultValue, user, HackleAppContext.DEFAULT).value.toInt()
+        return hackleAppCore.remoteConfig<Number>(
+            key,
+            ValueType.NUMBER,
+            defaultValue,
+            user,
+            HackleAppContext.DEFAULT
+        ).value.toInt()
     }
 
     override fun getLong(key: String, defaultValue: Long): Long {
-        return hackleAppCore.remoteConfig<Number>(key, ValueType.NUMBER, defaultValue, user, HackleAppContext.DEFAULT).value.toLong()
+        return hackleAppCore.remoteConfig<Number>(
+            key,
+            ValueType.NUMBER,
+            defaultValue,
+            user,
+            HackleAppContext.DEFAULT
+        ).value.toLong()
     }
 
     override fun getDouble(key: String, defaultValue: Double): Double {
-        return hackleAppCore.remoteConfig<Number>(key, ValueType.NUMBER, defaultValue, user, HackleAppContext.DEFAULT).value.toDouble()
+        return hackleAppCore.remoteConfig<Number>(
+            key,
+            ValueType.NUMBER,
+            defaultValue,
+            user,
+            HackleAppContext.DEFAULT
+        ).value.toDouble()
     }
 
     override fun getBoolean(key: String, defaultValue: Boolean): Boolean {
