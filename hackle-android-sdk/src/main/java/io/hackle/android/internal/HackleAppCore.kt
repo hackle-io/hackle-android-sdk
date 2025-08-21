@@ -9,9 +9,6 @@ import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIProperty
 import io.hackle.android.internal.pii.toSecuredEvent
 import io.hackle.android.internal.push.token.PushTokenManager
-import io.hackle.android.internal.remoteconfig.DefaultRemoteConfig
-import io.hackle.android.internal.remoteconfig.ContextRemoteConfig
-import io.hackle.android.internal.remoteconfig.RemoteConfigProcessor
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
@@ -25,13 +22,16 @@ import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
+import io.hackle.sdk.common.decision.DecisionReason.EXCEPTION
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.decision.RemoteConfigDecision
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.tryClose
+import io.hackle.sdk.core.model.ValueType
 import io.hackle.sdk.core.model.toEvent
 import java.io.Closeable
 import java.util.concurrent.Executor
@@ -49,7 +49,6 @@ internal class HackleAppCore(
     private val eventProcessor: DefaultEventProcessor,
     private val pushTokenManager: PushTokenManager,
     private val notificationManager: NotificationManager,
-    private val remoteConfigProcessor: RemoteConfigProcessor,
     private val fetchThrottler: Throttler,
     private val device: Device,
     private val userExplorer: HackleUserExplorer,
@@ -265,12 +264,23 @@ internal class HackleAppCore(
         }
     }
 
-    fun remoteConfig(user: User?): HackleRemoteConfig {
-        return DefaultRemoteConfig(remoteConfigProcessor, user)
-    }
-
-    fun remoteConfig(user: User?, hackleAppContext: HackleAppContext): HackleRemoteConfig {
-        return ContextRemoteConfig(remoteConfigProcessor, user, hackleAppContext)
+    fun <T : Any> remoteConfig(
+        key: String,
+        requiredType: ValueType,
+        defaultValue: T,
+        user: User?,
+        hackleAppContext: HackleAppContext,
+    ): RemoteConfigDecision<T> {
+        val sample = Timer.start()
+        return try {
+            val hackleUser = userManager.resolve(user, hackleAppContext)
+            core.remoteConfig(key, hackleUser, requiredType, defaultValue)
+        } catch (_: Exception) {
+            log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }
+            RemoteConfigDecision.of(defaultValue, EXCEPTION)
+        }.also {
+            DecisionMetrics.remoteConfig(sample, key, it)
+        }
     }
 
     fun fetch(callback: Runnable?) {

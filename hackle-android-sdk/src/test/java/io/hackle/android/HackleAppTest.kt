@@ -4,13 +4,11 @@ import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
-import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.push.token.PushTokenManager
-import io.hackle.android.internal.remoteconfig.DefaultRemoteConfig
-import io.hackle.android.internal.remoteconfig.RemoteConfigProcessor
+import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
@@ -81,9 +79,6 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
-    
-    @RelaxedMockK
-    private lateinit var remoteConfigProcessor: RemoteConfigProcessor
 
     @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
@@ -116,7 +111,6 @@ class HackleAppTest {
             eventProcessor,
             pushTokenManager,
             notificationManager,
-            remoteConfigProcessor,
             fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
             userExplorer,
@@ -647,7 +641,7 @@ class HackleAppTest {
     @Test
     fun `remoteConfig`() {
         val actual = sut.remoteConfig()
-        expectThat(actual).isA<DefaultRemoteConfig>()
+        expectThat(actual).isA<HackleRemoteConfigImpl>()
     }
 
     @Test

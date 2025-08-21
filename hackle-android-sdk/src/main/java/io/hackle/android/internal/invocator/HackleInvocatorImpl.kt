@@ -6,6 +6,7 @@ import io.hackle.android.internal.invocator.model.Invocation.Command.*
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.core.model.ValueType
 
 internal class HackleInvocatorImpl(
     private val hackleAppCore: HackleAppCore
@@ -256,17 +257,17 @@ internal class HackleInvocatorImpl(
         when (checkNotNull(parameters.valueType())) {
             "string" -> {
                 val defaultValue = checkNotNull(parameters.defaultStringValue())
-                return hackleAppCore.remoteConfig(user, hackleAppContext).getString(key, defaultValue)
+                return hackleAppCore.remoteConfig(key, ValueType.STRING, defaultValue, user,hackleAppContext).value
             }
 
             "number" -> {
                 val defaultValue = checkNotNull(parameters.defaultNumberValue())
-                return hackleAppCore.remoteConfig(user, hackleAppContext).getDouble(key, defaultValue.toDouble())
+                return hackleAppCore.remoteConfig(key, ValueType.NUMBER, defaultValue, user, hackleAppContext).value.toDouble()
             }
 
             "boolean" -> {
                 val defaultValue = checkNotNull(parameters.defaultBooleanValue())
-                return hackleAppCore.remoteConfig(user, hackleAppContext).getBoolean(key, defaultValue)
+                return hackleAppCore.remoteConfig(key, ValueType.BOOLEAN, defaultValue, user, hackleAppContext).value
             }
 
             else -> {

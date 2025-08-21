@@ -8,13 +8,13 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
+import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.sdk.common.Screen
 import io.hackle.android.ui.inappmessage.InAppMessageUi
@@ -277,7 +277,7 @@ class HackleApp internal constructor(
      * Returns an instance of Hackle Remote Config.
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return hackleAppCore.remoteConfig(null)
+        return HackleRemoteConfigImpl(hackleAppCore, null)
     }
 
     /**
@@ -418,7 +418,7 @@ class HackleApp internal constructor(
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
-        return hackleAppCore.remoteConfig(user)
+        return HackleRemoteConfigImpl(hackleAppCore, user)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))

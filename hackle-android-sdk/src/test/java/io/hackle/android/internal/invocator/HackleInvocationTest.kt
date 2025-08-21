@@ -18,6 +18,7 @@ import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
+import io.hackle.sdk.core.model.ValueType
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
@@ -1287,7 +1288,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config - string`() {
-        every { app.remoteConfig(null, any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any(), any(), null, any()).value } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1297,6 +1298,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.STRING,
+                "abc",
                 null,
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
             )
@@ -1310,7 +1314,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config with user string - string`() {
-        every { app.remoteConfig(any(),any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1321,6 +1325,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.STRING,
+                "abc",
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 },
@@ -1336,7 +1343,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config with user object - string`() {
-        every { app.remoteConfig(any(), any()).getString(any(), any()) } returns "foo"
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns "foo"
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1358,6 +1365,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.STRING,
+                "abc",
                 withArg {
                     assertThat(it.id, `is`("foo"))
                     assertThat(it.userId, `is`("bar"))
@@ -1384,7 +1394,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config - number`() {
-        every { app.remoteConfig(null, any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1394,6 +1404,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.NUMBER,
+                1000.0,
                 null,
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
             )
@@ -1407,7 +1420,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config with user string - number`() {
-        every { app.remoteConfig(any(), any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1418,6 +1431,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.NUMBER,
+                1000.0,
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 },
@@ -1433,7 +1449,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config with user object - number`() {
-        every { app.remoteConfig(any(), any()).getDouble(any(), any()) } returns 123.0
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns 123.0
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1455,6 +1471,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.NUMBER,
+                1000.0,
                 withArg {
                     assertThat(it.id, `is`("foo"))
                     assertThat(it.userId, `is`("bar"))
@@ -1482,7 +1501,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config - boolean`() {
-        every { app.remoteConfig(null, any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1492,6 +1511,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.BOOLEAN,
+                false,
                 null,
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
             )
@@ -1505,7 +1527,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config with user string - boolean`() {
-        every { app.remoteConfig(any(), any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1516,6 +1538,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.BOOLEAN,
+                false,
                 withArg {
                     assertThat(it.userId, `is`("abcd1234"))
                 },
@@ -1531,7 +1556,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config with user object - boolean`() {
-        every { app.remoteConfig(any(), any()).getBoolean(any(), any()) } returns true
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns true
         val user = mapOf(
             "id" to "foo",
             "userId" to "bar",
@@ -1553,6 +1578,9 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.remoteConfig(
+                "foo",
+                ValueType.BOOLEAN,
+                false,
                 withArg {
                     assertThat(it.id, `is`("foo"))
                     assertThat(it.userId, `is`("bar"))
@@ -1580,7 +1608,7 @@ class HackleInvocationTest {
     @Test
     fun `invoke with remote config with invalid parameters`() {
         val remoteConfig = mockk<HackleRemoteConfig>()
-        every { app.remoteConfig(any(), any()).getString(any(), any()) } returns ""
+        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns ""
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = invocation.invoke(jsonString)
