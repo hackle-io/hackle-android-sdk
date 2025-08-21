@@ -19,6 +19,8 @@ import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_
 import io.hackle.sdk.core.internal.log.Logger
 import androidx.core.net.toUri
 import androidx.core.graphics.toColorInt
+import io.hackle.android.ui.notification.Constants.HIGH_NOTIFICATION_CHANNEL_ID
+import io.hackle.android.ui.notification.Constants.HIGH_NOTIFICATION_CHANNEL_NAME
 
 internal object NotificationFactory {
 
@@ -51,10 +53,13 @@ internal object NotificationFactory {
         val channel = notificationManager.getNotificationChannel(channelId)
         if (channel == null) {
             log.debug { "$channelId channel does not exist on device." }
+            if (channelId == HIGH_NOTIFICATION_CHANNEL_ID) {
+                return getHighNotificationChannelId(notificationManager)
+            }
             return getDefaultNotificationChannelId(notificationManager)
-        } else {
-            return channelId
         }
+        
+        return channelId
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -71,6 +76,22 @@ internal object NotificationFactory {
         }
         
         return DEFAULT_NOTIFICATION_CHANNEL_ID
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getHighNotificationChannelId(notificationManager: NotificationManager): String {
+        if (notificationManager.getNotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID) == null) {
+            log.debug { "High notification channel does not exist on device." }
+            val channel = NotificationChannel(
+                HIGH_NOTIFICATION_CHANNEL_ID,
+                HIGH_NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+            log.debug { "Created high notification channel name: $HIGH_NOTIFICATION_CHANNEL_NAME" }
+        }
+
+        return HIGH_NOTIFICATION_CHANNEL_ID
     }
 
     private fun setPriority(builder: NotificationCompat.Builder) {
