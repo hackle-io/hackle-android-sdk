@@ -12,6 +12,7 @@ internal object Constants {
     const val KEY_MESSAGE_ID = "google.message_id"
 
     const val KEY_HACKLE = "hackle"
+    const val KEY_CHANNEL_ID = "channelId"
     const val KEY_WORKSPACE_ID = "workspaceId"
     const val KEY_ENVIRONMENT_ID = "environmentId"
     const val KEY_PUSH_MESSAGE_ID = "pushMessageId"

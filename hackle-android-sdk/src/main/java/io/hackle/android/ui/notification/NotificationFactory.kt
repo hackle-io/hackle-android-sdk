@@ -24,9 +24,9 @@ internal object NotificationFactory {
 
     private val log = Logger<NotificationFactory>()
 
-    fun createNotification(context: Context, extras: Bundle, channelId: String, data: NotificationData): Notification {
+    fun createNotification(context: Context, extras: Bundle, data: NotificationData): Notification {
         val channelId = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            resolveNotificationChannelId(context, channelId)
+            resolveNotificationChannelId(context, data.channelId)
         } else {
             DEFAULT_NOTIFICATION_CHANNEL_ID
         }

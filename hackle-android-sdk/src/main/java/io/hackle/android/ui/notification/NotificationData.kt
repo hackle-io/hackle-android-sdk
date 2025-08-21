@@ -4,6 +4,7 @@ import android.content.Intent
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.ui.notification.Constants.KEY_BODY
 import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_TYPE
+import io.hackle.android.ui.notification.Constants.KEY_CHANNEL_ID
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_DEBUG
@@ -25,6 +26,7 @@ import io.hackle.android.ui.notification.Constants.KEY_TITLE
 import io.hackle.android.ui.notification.Constants.KEY_WORKSPACE_ID
 
 internal data class NotificationData(
+    val channelId: String,
     val messageId: String,
     val workspaceId: Long,
     val environmentId: Long,
@@ -58,6 +60,7 @@ internal data class NotificationData(
                 val hackle = checkNotNull(data.getString(KEY_HACKLE))
                     .parseJson<Map<String, Any>>()
                 return NotificationData(
+                    channelId = checkNotNull(data.getString(KEY_CHANNEL_ID)),
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong(),
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),

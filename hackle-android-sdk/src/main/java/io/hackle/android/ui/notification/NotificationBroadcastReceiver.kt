@@ -52,8 +52,7 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
         }
 
         try {
-            val channelId = getChannelId(intent)
-            val notification = NotificationFactory.createNotification(context, notificationExtras, channelId, notificationData)
+            val notification = NotificationFactory.createNotification(context, notificationExtras, notificationData)
             val notificationManager = NotificationManagerCompat.from(context)
             notificationManager.notify(TAG, notificationData.notificationId, notification)
         } catch (e: Exception) {
@@ -80,10 +79,6 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
         }
 
         return false
-    }
-    
-    private fun getChannelId(intent: Intent): String  {
-        return intent.getStringExtra("google.c.a.c_id") ?: DEFAULT_NOTIFICATION_CHANNEL_ID
     }
 
     companion object {
