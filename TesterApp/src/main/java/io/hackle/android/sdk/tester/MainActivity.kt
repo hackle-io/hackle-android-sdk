@@ -15,16 +15,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import io.hackle.android.Hackle
 import io.hackle.android.HackleApp
-import io.hackle.android.HackleAppMode
 import io.hackle.android.HackleConfig
 import io.hackle.android.app
-import io.hackle.sdk.common.HackleInAppMessage
-import io.hackle.sdk.common.HackleInAppMessageAction
-import io.hackle.sdk.common.HackleInAppMessageListener
-import io.hackle.sdk.common.HackleInAppMessageView
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
-
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
@@ -51,11 +45,6 @@ class MainActivity : AppCompatActivity() {
 
     private var isShowUserExplorer = false
 
-    override fun onResume() {
-        super.onResume()
-        Log.i("HackleSdk", "##### onResume")
-    }
-
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,49 +57,16 @@ class MainActivity : AppCompatActivity() {
             //.sdkUri(sdkUri)
             //.monitoringUri(monitoringUri)
             .logLevel(Log.DEBUG)
-            .mode(HackleAppMode.NATIVE)
+//            .mode(HackleAppMode.NATIVE)
             .build()
 
-        HackleApp.initializeApp(this, sdkKey, config) {
+        HackleApp.initializeApp(this, "T5Poua2anJnJaT6wAVKsGAVeZIQSIIN3", config) {
             findViewById<TextView>(R.id.sdk_status).also { it.text = "INITIALIZED" }
         }
 
-        Log.i("HackleSdk", "##### app_launch")
-
-        Hackle.app.setInAppMessageListener(object : HackleInAppMessageListener {
-            override fun afterInAppMessageClose(inAppMessage: HackleInAppMessage) {
-                Log.d("HackleSdk", "afterInAppMessageClose")
-            }
-
-            override fun afterInAppMessageOpen(inAppMessage: HackleInAppMessage) {
-                Log.d("HackleSdk", "afterInAppMessageOpen")
-            }
-
-            override fun beforeInAppMessageClose(inAppMessage: HackleInAppMessage) {
-                Log.d("HackleSdk", "beforeInAppMessageClose")
-            }
-
-            override fun beforeInAppMessageOpen(inAppMessage: HackleInAppMessage) {
-                Log.d("HackleSdk", "beforeInAppMessageOpen")
-            }
-
-            override fun onInAppMessageClick(
-                inAppMessage: HackleInAppMessage,
-                view: HackleInAppMessageView,
-                action: HackleInAppMessageAction
-            ): Boolean {
-                Log.d("HackleSdk", "onInAppMessageClick")
-                return  false
-            }
-        })
 
         findViewById<TextView>(R.id.sdk_status).setOnClickListener {
-            if(isShowUserExplorer) {
-                Hackle.app.hideUserExplorer()
-            } else {
-                Hackle.app.showUserExplorer()
-            }
-            isShowUserExplorer = !isShowUserExplorer
+         startActivity(Intent(this, SubActivity::class.java))
         }
 
         findViewById<Button>(R.id.ab_text_btn).setOnClickListener {
@@ -178,32 +134,35 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Switch>(R.id.push_switch).setOnCheckedChangeListener { _, isChecked ->
-            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
-            Hackle.app.updatePushSubscriptions(HackleSubscriptionOperations.builder()
-                .marketing(status)
-                .information(status)
-                .custom("chat", status)
-                .build()
+            val status = if (isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updatePushSubscriptions(
+                HackleSubscriptionOperations.builder()
+                    .marketing(status)
+                    .information(status)
+                    .custom("chat", status)
+                    .build()
             )
         }
 
         findViewById<Switch>(R.id.sms_switch).setOnCheckedChangeListener { _, isChecked ->
-            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
-            Hackle.app.updateSmsSubscriptions(HackleSubscriptionOperations.builder()
-                .marketing(status)
-                .information(status)
-                .custom("chat", status)
-                .build()
+            val status = if (isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updateSmsSubscriptions(
+                HackleSubscriptionOperations.builder()
+                    .marketing(status)
+                    .information(status)
+                    .custom("chat", status)
+                    .build()
             )
         }
 
         findViewById<Switch>(R.id.kakao_switch).setOnCheckedChangeListener { _, isChecked ->
-            val status = if(isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
-            Hackle.app.updateKakaoSubscriptions(HackleSubscriptionOperations.builder()
-                .marketing(status)
-                .information(status)
-                .custom("chat", status)
-                .build()
+            val status = if (isChecked) HackleSubscriptionStatus.SUBSCRIBED else HackleSubscriptionStatus.UNSUBSCRIBED
+            Hackle.app.updateKakaoSubscriptions(
+                HackleSubscriptionOperations.builder()
+                    .marketing(status)
+                    .information(status)
+                    .custom("chat", status)
+                    .build()
             )
         }
 

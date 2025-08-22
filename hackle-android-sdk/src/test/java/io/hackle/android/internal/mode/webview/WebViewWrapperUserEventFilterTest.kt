@@ -2,13 +2,8 @@ package io.hackle.android.internal.mode.webview
 
 import io.hackle.android.internal.event.UserEventFilter
 import io.hackle.android.internal.event.UserEvents
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.core.event.UserEvent
-import io.hackle.sdk.core.model.EventType
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -29,7 +24,7 @@ class WebViewWrapperUserEventFilterTest {
             .identifier(IdentifierType.DEVICE, "device")
             .identifier(IdentifierType.HACKLE_DEVICE_ID, "device")
             .build()
-        val actual = sut.check(UserEvents.track("\$push_token", user))
+        val actual = sut.check(UserEvents.track("\$push_token", user = user))
         expectThat(actual).isEqualTo(UserEventFilter.Result.BLOCK)
     }
 
@@ -40,7 +35,7 @@ class WebViewWrapperUserEventFilterTest {
             .identifier(IdentifierType.DEVICE, "device")
             .identifier(IdentifierType.HACKLE_DEVICE_ID, "hackle_device")
             .build()
-        val actual = sut.check(UserEvents.track("\$push_token", user))
+        val actual = sut.check(UserEvents.track("\$push_token", user = user))
         expectThat(actual).isEqualTo(UserEventFilter.Result.PASS)
     }
 }

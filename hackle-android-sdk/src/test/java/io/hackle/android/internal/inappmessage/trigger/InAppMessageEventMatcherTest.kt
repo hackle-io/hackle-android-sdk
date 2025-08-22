@@ -2,7 +2,6 @@ package io.hackle.android.internal.inappmessage.trigger
 
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.support.InAppMessages
-import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.workspace.Workspace
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -19,7 +18,7 @@ import strikt.assertions.isTrue
 class InAppMessageEventMatcherTest {
 
     @MockK
-    private lateinit var ruleDeterminer: InAppMessageEventTriggerDeterminer
+    private lateinit var ruleMatcher: InAppMessageEventTriggerRuleMatcher
 
     @InjectMockKs
     private lateinit var sut: InAppMessageEventMatcher
@@ -33,24 +32,11 @@ class InAppMessageEventMatcherTest {
     }
 
     @Test
-    fun `when event is not TrackEvent when returns false`() {
-        // given
-        val exposureEvent = mockk<UserEvent.Exposure>()
-        val inAppMessage = InAppMessages.create()
-
-        // when
-        val actual = sut.matches(workspace, inAppMessage, exposureEvent)
-
-        // then
-        expectThat(actual).isFalse()
-    }
-
-    @Test
-    fun `not trigger target - rule`() {
+    fun `not match`() {
         // given
         val event = UserEvents.track("test")
         val inAppMessage = InAppMessages.create()
-        every { ruleDeterminer.isTriggerTarget(any(), any(), any()) } returns false
+        every { ruleMatcher.matches(any(), any(), any()) } returns false
 
         // when
         val actual = sut.matches(workspace, inAppMessage, event)
@@ -58,13 +44,13 @@ class InAppMessageEventMatcherTest {
         // then
         expectThat(actual).isFalse()
     }
-    
+
     @Test
-    fun `trigger target`() {
+    fun `match`() {
         // given
         val event = UserEvents.track("test")
         val inAppMessage = InAppMessages.create()
-        every { ruleDeterminer.isTriggerTarget(any(), any(), any()) } returns true
+        every { ruleMatcher.matches(any(), any(), any()) } returns true
 
         // when
         val actual = sut.matches(workspace, inAppMessage, event)
