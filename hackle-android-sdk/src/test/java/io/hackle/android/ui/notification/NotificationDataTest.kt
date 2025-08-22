@@ -19,6 +19,7 @@ class NotificationDataTest {
     fun `parse notification data`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
             "workspaceId" to 1111,
             "environmentId" to 2222,
             "pushMessageId" to 3333,
@@ -43,7 +44,8 @@ class NotificationDataTest {
 
         val result = NotificationData.from(intent)
         assertNotNull(result)
-        assertThat(result!!.messageId, `is`("abcd1234"))
+        assertThat(result!!.channelId, `is`("hackle_heads_up_notification"))
+        assertThat(result.messageId, `is`("abcd1234"))
         assertThat(result.workspaceId, `is`(1111L))
         assertThat(result.environmentId, `is`(2222L))
         assertThat(result.pushMessageId, `is`(3333L))
@@ -64,6 +66,7 @@ class NotificationDataTest {
     fun `should parse notification data even though optional fields are empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
             "workspaceId" to 1111,
             "environmentId" to 2222
         )
@@ -76,7 +79,8 @@ class NotificationDataTest {
 
         val result = NotificationData.from(intent)
         assertNotNull(result)
-        assertThat(result!!.messageId, `is`("abcd1234"))
+        assertThat(result!!.channelId, `is`("hackle_heads_up_notification"))
+        assertThat(result.messageId, `is`("abcd1234"))
         assertThat(result.workspaceId, `is`(1111L))
         assertThat(result.environmentId, `is`(2222L))
         assertNull(result.pushMessageId)
@@ -109,6 +113,7 @@ class NotificationDataTest {
     fun `should return null if workspace id is empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
             "environmentId" to 2222,
             "pushMessageId" to 3333,
             "pushMessageKey" to 4444,
@@ -137,6 +142,7 @@ class NotificationDataTest {
     fun `should return null if environment id is empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
             "workspaceId" to 1111,
             "pushMessageId" to 3333,
             "pushMessageKey" to 4444,
