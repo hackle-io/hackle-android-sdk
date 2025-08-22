@@ -4,11 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View.OnClickListener
-import android.view.WindowInsets
 import android.widget.RelativeLayout
-import androidx.core.graphics.Insets
 import androidx.core.view.WindowInsetsCompat
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
@@ -21,7 +19,7 @@ import java.lang.ref.WeakReference
 internal abstract class InAppMessageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr), InAppMessageLayout {
 
     private var _controller: InAppMessageViewController? = null
@@ -84,7 +82,7 @@ internal fun InAppMessageView.createMessageClickListener(): OnClickListener {
 
 internal fun InAppMessageView.createImageClickListener(
     image: InAppMessage.Message.Image,
-    order: Int?
+    order: Int?,
 ): OnClickListener {
     return OnClickListener {
         val action = image.action ?: return@OnClickListener

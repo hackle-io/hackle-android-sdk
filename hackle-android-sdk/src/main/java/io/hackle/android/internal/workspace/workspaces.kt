@@ -198,6 +198,8 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
 
     val eventTriggerRules = eventTriggerRules.map { it.toTriggerRule() }
     val eventFrequencyCap = eventFrequencyCap?.toFrequencyCap()
+    val eventTriggerDelay = eventTriggerDelay?.let { it.toDelayOrNull() ?: return null }
+        ?: InAppMessage.Delay(InAppMessage.Delay.Type.AFTER, InAppMessage.Delay.AfterCondition(5000))
 
     return InAppMessage(
         id = id,
@@ -206,7 +208,11 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
         status = status,
         eventTrigger = InAppMessage.EventTrigger(
             rules = eventTriggerRules,
-            frequencyCap = eventFrequencyCap
+            frequencyCap = eventFrequencyCap,
+            delay = eventTriggerDelay
+        ),
+        evaluateContext = InAppMessage.EvaluateContext(
+            atDeliverTime = evaluationContext?.atDeliverTime ?: false
         ),
         targetContext = targetContext.toTargetContext(),
         messageContext = messageContext
@@ -225,6 +231,21 @@ internal fun InAppMessageDto.EventFrequencyCapDto.toFrequencyCap(): InAppMessage
     return InAppMessage.EventTrigger.FrequencyCap(
         identifierCaps = identifiers.map { it.toIdentifierCap() },
         durationCap = duration?.toDurationCapOrNull()
+    )
+}
+
+internal fun InAppMessageDto.CampaignDelayDto.toDelayOrNull(): InAppMessage.Delay? {
+    return InAppMessage.Delay(
+        type = parseEnumOrNull<InAppMessage.Delay.Type>(type) ?: return null,
+        afterCondition = afterConditionDto?.let { it.toAfterConditionOrNull() ?: return null }
+
+    )
+}
+
+internal fun InAppMessageDto.CampaignDelayDto.AfterConditionDto.toAfterConditionOrNull(): InAppMessage.Delay.AfterCondition? {
+    val timeUnit = parseEnumOrNull<TimeUnit>(duration.timeUnit) ?: return null
+    return InAppMessage.Delay.AfterCondition(
+        durationMillis = timeUnit.toMillis(duration.amount)
     )
 }
 

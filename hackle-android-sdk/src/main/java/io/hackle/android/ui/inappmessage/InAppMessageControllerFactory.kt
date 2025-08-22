@@ -2,19 +2,19 @@ package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
 import androidx.core.view.ViewCompat
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
 import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
 import io.hackle.sdk.core.model.InAppMessage.DisplayType.*
 
 internal class InAppMessageControllerFactory(
-    private val viewFactory: InAppMessageViewFactory
+    private val viewFactory: InAppMessageViewFactory,
 ) {
     fun create(
         context: InAppMessagePresentationContext,
         ui: InAppMessageUi,
-        activity: Activity
+        activity: Activity,
     ): InAppMessageController? {
         return when (context.message.layout.displayType) {
             NONE -> null
@@ -25,7 +25,7 @@ internal class InAppMessageControllerFactory(
     private fun createViewController(
         context: InAppMessagePresentationContext,
         ui: InAppMessageUi,
-        activity: Activity
+        activity: Activity,
     ): InAppMessageViewController {
         val view = viewFactory.create(context, activity)
         val controller = InAppMessageViewController(view, context, ui)
