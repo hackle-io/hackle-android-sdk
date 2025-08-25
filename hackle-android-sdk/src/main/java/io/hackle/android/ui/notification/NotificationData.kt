@@ -2,6 +2,7 @@ package io.hackle.android.ui.notification
 
 import android.content.Intent
 import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
 import io.hackle.android.ui.notification.Constants.KEY_BODY
 import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_TYPE
 import io.hackle.android.ui.notification.Constants.KEY_CHANNEL_ID
@@ -60,7 +61,8 @@ internal data class NotificationData(
                 val hackle = checkNotNull(data.getString(KEY_HACKLE))
                     .parseJson<Map<String, Any>>()
                 return NotificationData(
-                    channelId = checkNotNull(hackle[KEY_CHANNEL_ID] as? String),
+                    channelId = (hackle[KEY_CHANNEL_ID] as? String) 
+                        ?: DEFAULT_NOTIFICATION_CHANNEL_ID,
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong(),
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
