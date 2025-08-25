@@ -4,6 +4,9 @@ internal object Constants {
 
     const val DEFAULT_NOTIFICATION_CHANNEL_ID = "io_hackle_android_default_notification_channel_id"
     const val DEFAULT_NOTIFICATION_CHANNEL_NAME = "default"
+    
+    const val HIGH_NOTIFICATION_CHANNEL_ID = "io_hackle_android_high_notification_channel_id"
+    const val HIGH_NOTIFICATION_CHANNEL_NAME = "high"
 
     const val DEFAULT_NOTIFICATION_SMALL_ICON = "io_hackle_android_default_notification_small_icon"
     const val DEFAULT_NOTIFICATION_LARGE_ICON = "io_hackle_android_default_notification_large_icon"
@@ -12,6 +15,7 @@ internal object Constants {
     const val KEY_MESSAGE_ID = "google.message_id"
 
     const val KEY_HACKLE = "hackle"
+    const val KEY_CHANNEL_ID = "channelId"
     const val KEY_WORKSPACE_ID = "workspaceId"
     const val KEY_ENVIRONMENT_ID = "environmentId"
     const val KEY_PUSH_MESSAGE_ID = "pushMessageId"
