@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
+import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -37,6 +38,7 @@ import io.hackle.android.internal.inappmessage.schedule.scheduler.TriggeredInApp
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
+import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
@@ -46,7 +48,6 @@ import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
@@ -462,12 +463,6 @@ internal object HackleApps {
         NotificationHandler.getInstance(context)
             .setNotificationDataReceiver(notificationManager)
 
-        // PII
-        val piiEventManager = PIIEventManager(
-            core = core,
-            userManager = userManager
-        )
-
         // UserExplorer
         val devToolsApi = DevToolsApi(
             sdk = sdk,
@@ -508,8 +503,7 @@ internal object HackleApps {
         val fetchThrottler = Throttler(throttleLimiter)
 
         // Instantiate
-
-        return HackleApp(
+        val hackleAppCore = HackleAppCore(
             clock = clock,
             core = core,
             eventExecutor = eventExecutor,
@@ -522,12 +516,18 @@ internal object HackleApps {
             eventProcessor = eventProcessor,
             pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,
-            piiEventManager = piiEventManager,
             fetchThrottler = fetchThrottler,
             device = device,
             userExplorer = userExplorer,
+        )
+
+        val hackleInvocator = HackleInvocatorImpl(hackleAppCore)
+
+        return HackleApp(
+            hackleAppCore = hackleAppCore,
             sdk = sdk,
-            mode = config.mode
+            mode = config.mode,
+            invocator = hackleInvocator
         )
     }
 
