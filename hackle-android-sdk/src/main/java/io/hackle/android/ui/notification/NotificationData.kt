@@ -61,8 +61,7 @@ internal data class NotificationData(
                 val hackle = checkNotNull(data.getString(KEY_HACKLE))
                     .parseJson<Map<String, Any>>()
                 return NotificationData(
-                    channelId = (hackle[KEY_CHANNEL_ID] as? String) 
-                        ?: DEFAULT_NOTIFICATION_CHANNEL_ID,
+                    channelId = channelId(hackle[KEY_CHANNEL_ID] as? String),
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong(),
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
@@ -90,6 +89,13 @@ internal data class NotificationData(
             } catch (_: Exception) {
             }
             return null
+        }
+        
+        fun channelId(channelId: String?): String {
+            if(channelId.isNullOrEmpty()) {
+                return DEFAULT_NOTIFICATION_CHANNEL_ID
+            }
+            return channelId
         }
     }
 }

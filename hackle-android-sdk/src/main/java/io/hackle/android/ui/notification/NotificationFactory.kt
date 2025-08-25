@@ -56,21 +56,23 @@ internal object NotificationFactory {
             if (channelId == HIGH_NOTIFICATION_CHANNEL_ID) {
                 return createHighNotificationChannelId(notificationManager)
             }
-            return createDefaultNotificationChannelId(notificationManager)
+            return resolveDefaultNotificationChannelId(notificationManager)
         }
         
         return channelId
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun createDefaultNotificationChannelId(notificationManager: NotificationManager): String {
-        val channel = NotificationChannel(
-            DEFAULT_NOTIFICATION_CHANNEL_ID,
-            DEFAULT_NOTIFICATION_CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_DEFAULT
-        )
-        notificationManager.createNotificationChannel(channel)
-        log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
+    private fun resolveDefaultNotificationChannelId(notificationManager: NotificationManager): String {
+        if(notificationManager.getNotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID) == null) {
+            val channel = NotificationChannel(
+                DEFAULT_NOTIFICATION_CHANNEL_ID,
+                DEFAULT_NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+            log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
+        }
         
         return DEFAULT_NOTIFICATION_CHANNEL_ID
     }
