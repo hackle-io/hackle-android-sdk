@@ -1,12 +1,12 @@
 package io.hackle.android
 
 import android.webkit.WebView
-import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
+import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pii.PIIEventManager
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.sdk.common.Screen
@@ -36,6 +36,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
+import strikt.api.expectThrows
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isSameInstanceAs
@@ -80,9 +81,6 @@ class HackleAppTest {
     private lateinit var notificationManager: NotificationManager
 
     @RelaxedMockK
-    private lateinit var piiEventManager: PIIEventManager
-
-    @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
 
     @RelaxedMockK
@@ -99,8 +97,8 @@ class HackleAppTest {
             firstArg<Runnable>().run()
             CompletableFuture.completedFuture(null)
         }
-
-        sut = HackleApp(
+        
+        val hackleAppCore = HackleAppCore(
             Clock.SYSTEM,
             core,
             eventExecutor,
@@ -113,13 +111,24 @@ class HackleAppTest {
             eventProcessor,
             pushTokenManager,
             notificationManager,
-            piiEventManager,
             fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
             userExplorer,
-            Sdk.of("", HackleConfig.DEFAULT),
-            HackleAppMode.NATIVE
         )
+        
+        sut = HackleApp(
+            hackleAppCore,
+            Sdk.of("", HackleConfig.DEFAULT),
+            HackleAppMode.NATIVE,
+            mockk()
+        )
+    }
+
+    @Test
+    fun `throws NullPointerException when HackleApp is not initialized`() {
+        expectThrows<IllegalStateException> {
+            HackleApp.getInstance()
+        }
     }
 
     @Test
@@ -446,21 +455,21 @@ class HackleAppTest {
     fun setPhoneNumber() {
         sut.setPhoneNumber("")
 
-        verify(exactly = 1) { piiEventManager.setPhoneNumber(any(), any()) }
+        verify(exactly = 1) { core.track(any(), any(), any()) }
     }
 
     @Test
     fun unsetPhoneNumber() {
         sut.unsetPhoneNumber()
 
-        verify(exactly = 1) { piiEventManager.unsetPhoneNumber(any()) }
+        verify(exactly = 1) { core.track(any(), any(), any()) }
     }
 
     @Test
     fun variation() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
         every { core.experiment(any(), any(), any()) } returns decision
@@ -470,14 +479,14 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isEqualTo(Variation.B)
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `variationDetail - success`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
         every { core.experiment(any(), any(), any()) } returns decision
@@ -487,14 +496,14 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `variationDetail - error`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         every { core.experiment(any(), any(), any()) } throws IllegalArgumentException()
 
@@ -504,14 +513,14 @@ class HackleAppTest {
         // then
         expectThat(actual.variation).isEqualTo(Variation.A)
         expectThat(actual.reason).isEqualTo(DecisionReason.EXCEPTION)
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `allVariationDetails`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         val experiment = mockk<Experiment> {
             every { key } returns 42
@@ -529,7 +538,7 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isEqualTo(mapOf(42L to decision))
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
 
@@ -537,7 +546,7 @@ class HackleAppTest {
     fun `allVariationDetails - exception`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         every { core.experiments(any()) } throws IllegalArgumentException()
 
@@ -552,7 +561,7 @@ class HackleAppTest {
     fun `isFeatureOn`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
         every { core.featureFlag(any(), any()) } returns decision
@@ -562,14 +571,14 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isEqualTo(true)
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `featureFlagDetail - success`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
         every { core.featureFlag(any(), any()) } returns decision
@@ -579,14 +588,14 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `featureFlagDetail - exception`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         every { core.featureFlag(any(), any()) } throws IllegalArgumentException()
 
@@ -596,13 +605,13 @@ class HackleAppTest {
         // then
         expectThat(actual.isOn).isEqualTo(false)
         expectThat(actual.reason).isEqualTo(DecisionReason.EXCEPTION)
-        verify(exactly = 1) { userManager.resolve(null) }
+        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `track`() {
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any()) } returns hackleUser
+        every { userManager.resolve(any(), any()) } returns hackleUser
 
         sut.track("test_1")
         sut.track(Event.builder("test_2").build())
@@ -626,7 +635,7 @@ class HackleAppTest {
                 any()
             )
         }
-        verify(exactly = 2) { userManager.resolve(null) }
+        verify(exactly = 2) { userManager.resolve(null, any()) }
     }
 
     @Test
