@@ -1,8 +1,8 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenter
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
@@ -28,7 +28,7 @@ internal class InAppMessageUi(
     private val defaultListener: HackleInAppMessageListener,
     val scheduler: Scheduler,
     val eventHandler: InAppMessageEventHandler,
-    val imageLoader: ImageLoader
+    val imageLoader: ImageLoader,
 ) : InAppMessagePresenter {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()

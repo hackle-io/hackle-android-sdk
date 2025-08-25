@@ -8,32 +8,23 @@ import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.workspace.Workspace
 
-internal interface InAppMessageEventTriggerDeterminer {
-    fun isTriggerTarget(
-        workspace: Workspace,
-        inAppMessage: InAppMessage,
-        event: UserEvent.Track
-    ): Boolean
+internal interface InAppMessageEventTriggerMatcher {
+    fun matches(workspace: Workspace, inAppMessage: InAppMessage, event: UserEvent.Track): Boolean
 }
 
-internal class InAppMessageEventTriggerRuleDeterminer(
-    private val targetMatcher: TargetMatcher
-) : InAppMessageEventTriggerDeterminer {
-
-    override fun isTriggerTarget(
-        workspace: Workspace,
-        inAppMessage: InAppMessage,
-        event: UserEvent.Track
-    ): Boolean {
+internal class InAppMessageEventTriggerRuleMatcher(
+    private val targetMatcher: TargetMatcher,
+) : InAppMessageEventTriggerMatcher {
+    override fun matches(workspace: Workspace, inAppMessage: InAppMessage, event: UserEvent.Track): Boolean {
         return inAppMessage.eventTrigger.rules.any {
-            ruleMatches(workspace, event, inAppMessage, it)
+            matches(workspace, inAppMessage, event, it)
         }
     }
 
-    private fun ruleMatches(
+    private fun matches(
         workspace: Workspace,
-        event: UserEvent.Track,
         inAppMessage: InAppMessage,
+        event: UserEvent.Track,
         rule: InAppMessage.EventTrigger.Rule,
     ): Boolean {
         if (event.event.key != rule.eventKey) {

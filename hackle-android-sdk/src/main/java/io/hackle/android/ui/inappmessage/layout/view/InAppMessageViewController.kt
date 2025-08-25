@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
 import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*

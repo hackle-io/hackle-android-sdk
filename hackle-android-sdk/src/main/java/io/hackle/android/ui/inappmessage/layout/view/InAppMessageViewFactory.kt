@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage.layout.view
 
 import android.app.Activity
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerImageView
 import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView
 import io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView

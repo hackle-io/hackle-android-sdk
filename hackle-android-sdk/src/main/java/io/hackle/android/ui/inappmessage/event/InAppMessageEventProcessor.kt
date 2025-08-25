@@ -1,13 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
-import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.android.ui.inappmessage.layout.listener
-import io.hackle.sdk.common.decision.DecisionReason
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpression
-import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.model.InAppMessage
-import io.hackle.sdk.core.user.HackleUser
 
 internal interface InAppMessageEventProcessor<EVENT : InAppMessageEvent> {
     fun supports(event: InAppMessageEvent): Boolean
@@ -21,9 +15,7 @@ internal class InAppMessageEventProcessorFactory(private val processors: List<In
     }
 }
 
-internal class InAppMessageImpressionEventProcessor(
-    private val impressionStorage: AndroidInAppMessageImpressionStorage
-) : InAppMessageEventProcessor<InAppMessageEvent.Impression> {
+internal class InAppMessageImpressionEventProcessor : InAppMessageEventProcessor<InAppMessageEvent.Impression> {
     override fun supports(event: InAppMessageEvent): Boolean {
         return event is InAppMessageEvent.Impression
     }
@@ -31,41 +23,14 @@ internal class InAppMessageImpressionEventProcessor(
     override fun process(
         layout: InAppMessageLayout,
         event: InAppMessageEvent.Impression,
-        timestamp: Long
+        timestamp: Long,
     ) {
-        try {
-            if (layout.context.decisionReason == DecisionReason.OVERRIDDEN) {
-                return
-            }
-
-            saveImpression(layout.context.inAppMessage, layout.context.user, timestamp)
-        } catch (e: Throwable) {
-            log.error { "Failed to process InAppMessageImpressionEvent: $e" }
-        }
-    }
-
-    private fun saveImpression(inAppMessage: InAppMessage, user: HackleUser, timestamp: Long) {
-        val impressions = impressionStorage.get(inAppMessage)
-        val impression = InAppMessageImpression(user.identifiers, timestamp)
-
-        val newImpressions = impressions + impression
-
-        val impressionToSave = if (newImpressions.size > IMPRESSION_MAX_SIZE) {
-            newImpressions.drop(newImpressions.size - IMPRESSION_MAX_SIZE)
-        } else {
-            newImpressions
-        }
-        impressionStorage.set(inAppMessage, impressionToSave)
-    }
-
-    companion object {
-        private val log = Logger<InAppMessageImpressionEventProcessor>()
-        private const val IMPRESSION_MAX_SIZE = 100
+        // Do nothing.
     }
 }
 
 internal class InAppMessageActionEventProcessor(
-    private val actionHandlerFactory: InAppMessageActionHandlerFactory
+    private val actionHandlerFactory: InAppMessageActionHandlerFactory,
 ) : InAppMessageEventProcessor<InAppMessageEvent.Action> {
     override fun supports(event: InAppMessageEvent): Boolean {
         return event is InAppMessageEvent.Action
@@ -74,7 +39,7 @@ internal class InAppMessageActionEventProcessor(
     override fun process(
         layout: InAppMessageLayout,
         event: InAppMessageEvent.Action,
-        timestamp: Long
+        timestamp: Long,
     ) {
         val isProcessed =
             layout.listener.onInAppMessageClick(layout.context.inAppMessage, layout, event.action)
@@ -100,7 +65,7 @@ internal class InAppMessageCloseEventProcessor :
     override fun process(
         layout: InAppMessageLayout,
         event: InAppMessageEvent.Close,
-        timestamp: Long
+        timestamp: Long,
     ) {
         // Do nothing. This method is called after the layout is closed.
     }

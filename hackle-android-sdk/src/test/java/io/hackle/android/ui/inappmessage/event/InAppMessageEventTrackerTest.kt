@@ -1,6 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.support.InAppMessages
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.MockKAnnotations
@@ -44,7 +45,8 @@ class InAppMessageEventTrackerTest {
         val context = InAppMessages.context(
             inAppMessage = inAppMessage,
             message = message,
-            properties = mapOf("decision_reason" to "IN_APP_MESSAGE_TARGET")
+            decisionReason = DecisionReason.OVERRIDDEN,
+            properties = mapOf("trigger_event_insert_id" to "event_insert_id")
         )
 
         sut.track(context, InAppMessageEvent.Impression, 42)
@@ -62,7 +64,8 @@ class InAppMessageEventTrackerTest {
                             "body_text" to "text_body",
                             "image_url" to listOf("image_path"),
                             "button_text" to listOf("button_1", "button_2"),
-                            "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                            "decision_reason" to "OVERRIDDEN",
+                            "trigger_event_insert_id" to "event_insert_id",
                         )
                     }
                 },
@@ -91,7 +94,8 @@ class InAppMessageEventTrackerTest {
         val context = InAppMessages.context(
             inAppMessage = inAppMessage,
             message = message,
-            properties = mapOf("decision_reason" to "IN_APP_MESSAGE_TARGET")
+            decisionReason = DecisionReason.OVERRIDDEN,
+            properties = mapOf("trigger_event_insert_id" to "event_insert_id")
         )
 
         sut.track(context, InAppMessageEvent.Close, 42)
@@ -105,7 +109,8 @@ class InAppMessageEventTrackerTest {
                             "in_app_message_id" to 42L,
                             "in_app_message_key" to 320L,
                             "in_app_message_display_type" to "BOTTOM_SHEET",
-                            "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                            "decision_reason" to "OVERRIDDEN",
+                            "trigger_event_insert_id" to "event_insert_id",
                         )
                     }
                 },
@@ -135,7 +140,8 @@ class InAppMessageEventTrackerTest {
         val context = InAppMessages.context(
             inAppMessage = inAppMessage,
             message = message,
-            properties = mapOf("decision_reason" to "IN_APP_MESSAGE_TARGET")
+            decisionReason = DecisionReason.OVERRIDDEN,
+            properties = mapOf("trigger_event_insert_id" to "event_insert_id")
         )
 
         sut.track(context, InAppMessageEvent.buttonAction(action, message.buttons[0]), 42)
@@ -153,7 +159,8 @@ class InAppMessageEventTrackerTest {
                             "action_type" to "WEB_LINK",
                             "button_text" to "button_1",
                             "action_value" to "button_link_click",
-                            "decision_reason" to "IN_APP_MESSAGE_TARGET",
+                            "decision_reason" to "OVERRIDDEN",
+                            "trigger_event_insert_id" to "event_insert_id",
                         )
                     }
                 },

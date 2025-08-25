@@ -4,7 +4,7 @@ import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
