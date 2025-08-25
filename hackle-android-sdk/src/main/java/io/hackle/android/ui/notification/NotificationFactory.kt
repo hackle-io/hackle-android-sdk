@@ -54,42 +54,37 @@ internal object NotificationFactory {
         if (channel == null) {
             log.debug { "$channelId channel does not exist on device." }
             if (channelId == HIGH_NOTIFICATION_CHANNEL_ID) {
-                return getHighNotificationChannelId(notificationManager)
+                return createHighNotificationChannelId(notificationManager)
             }
-            return getDefaultNotificationChannelId(notificationManager)
+            return createDefaultNotificationChannelId(notificationManager)
         }
         
         return channelId
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun getDefaultNotificationChannelId(notificationManager: NotificationManager): String {
-        if (notificationManager.getNotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID) == null) {
-            log.debug { "Default notification channel does not exist on device." }
-            val channel = NotificationChannel(
-                DEFAULT_NOTIFICATION_CHANNEL_ID,
-                DEFAULT_NOTIFICATION_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-            log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
-        }
+    private fun createDefaultNotificationChannelId(notificationManager: NotificationManager): String {
+        val channel = NotificationChannel(
+            DEFAULT_NOTIFICATION_CHANNEL_ID,
+            DEFAULT_NOTIFICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannel(channel)
+        log.debug { "Created default notification channel name: $DEFAULT_NOTIFICATION_CHANNEL_NAME" }
         
         return DEFAULT_NOTIFICATION_CHANNEL_ID
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun getHighNotificationChannelId(notificationManager: NotificationManager): String {
-        if (notificationManager.getNotificationChannel(DEFAULT_NOTIFICATION_CHANNEL_ID) == null) {
-            log.debug { "High notification channel does not exist on device." }
-            val channel = NotificationChannel(
-                HIGH_NOTIFICATION_CHANNEL_ID,
-                HIGH_NOTIFICATION_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(channel)
-            log.debug { "Created high notification channel name: $HIGH_NOTIFICATION_CHANNEL_NAME" }
-        }
+    private fun createHighNotificationChannelId(notificationManager: NotificationManager): String {
+        log.debug { "High notification channel does not exist on device." }
+        val channel = NotificationChannel(
+            HIGH_NOTIFICATION_CHANNEL_ID,
+            HIGH_NOTIFICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        notificationManager.createNotificationChannel(channel)
+        log.debug { "Created high notification channel name: $HIGH_NOTIFICATION_CHANNEL_NAME" }
 
         return HIGH_NOTIFICATION_CHANNEL_ID
     }
