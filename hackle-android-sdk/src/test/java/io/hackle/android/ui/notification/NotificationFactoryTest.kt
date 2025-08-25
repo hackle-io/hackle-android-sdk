@@ -325,68 +325,6 @@ class NotificationFactoryTest {
         assertFalse(notificationData.debug)
     }
 
-    @Test
-    fun `hasLargeImage should return true when largeImageUrl is not null or empty`() {
-        // Given
-        val hackleData = mapOf(
-            KEY_WORKSPACE_ID to 12345,
-            KEY_ENVIRONMENT_ID to 67890,
-            KEY_LARGE_IMAGE_URL to "https://example.com/large.jpg"
-        )
-
-        val intent = createMockIntent("msg_123", hackleData.toJson())
-        val notificationData = NotificationData.from(intent)
-
-        // When & Then
-        assertTrue(notificationData!!.hasLargeImage())
-    }
-
-    @Test
-    fun `hasLargeImage should return false when largeImageUrl is null`() {
-        // Given
-        val hackleData = mapOf(
-            KEY_WORKSPACE_ID to 12345,
-            KEY_ENVIRONMENT_ID to 67890
-        )
-
-        val intent = createMockIntent("msg_123", hackleData.toJson())
-        val notificationData = NotificationData.from(intent)
-
-        // When & Then
-        assertFalse(notificationData!!.hasLargeImage())
-    }
-
-    @Test
-    fun `hasThumbnailImage should return true when thumbnailImageUrl is not null or empty`() {
-        // Given
-        val hackleData = mapOf(
-            KEY_WORKSPACE_ID to 12345,
-            KEY_ENVIRONMENT_ID to 67890,
-            KEY_THUMBNAIL_IMAGE_URL to "https://example.com/thumb.jpg"
-        )
-
-        val intent = createMockIntent("msg_123", hackleData.toJson())
-        val notificationData = NotificationData.from(intent)
-
-        // When & Then
-        assertTrue(notificationData!!.hasThumbnailImage())
-    }
-
-    @Test
-    fun `hasThumbnailImage should return false when thumbnailImageUrl is null`() {
-        // Given
-        val hackleData = mapOf(
-            KEY_WORKSPACE_ID to 12345,
-            KEY_ENVIRONMENT_ID to 67890
-        )
-
-        val intent = createMockIntent("msg_123", hackleData.toJson())
-        val notificationData = NotificationData.from(intent)
-
-        // When & Then
-        assertFalse(notificationData!!.hasThumbnailImage())
-    }
-
     private fun createMockIntent(messageId: String, hackleJson: String): Intent {
         val bundle = MockBundle.create(
             mapOf(
@@ -398,7 +336,4 @@ class NotificationFactoryTest {
         every { intent.extras } returns bundle
         return intent
     }
-
-    private fun NotificationData.hasLargeImage() = largeImageUrl != null && largeImageUrl.isNotEmpty()
-    private fun NotificationData.hasThumbnailImage() = thumbnailImageUrl != null && thumbnailImageUrl.isNotEmpty()
 }
