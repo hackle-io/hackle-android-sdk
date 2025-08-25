@@ -199,7 +199,7 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
     val eventTriggerRules = eventTriggerRules.map { it.toTriggerRule() }
     val eventFrequencyCap = eventFrequencyCap?.toFrequencyCap()
     val eventTriggerDelay = eventTriggerDelay?.let { it.toDelayOrNull() ?: return null }
-        ?: InAppMessage.Delay(InAppMessage.Delay.Type.AFTER, InAppMessage.Delay.AfterCondition(5000))
+        ?: InAppMessage.Delay(InAppMessage.Delay.Type.IMMEDIATE, null)
 
     return InAppMessage(
         id = id,
