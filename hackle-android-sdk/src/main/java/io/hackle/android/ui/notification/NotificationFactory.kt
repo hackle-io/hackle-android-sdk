@@ -34,7 +34,6 @@ internal object NotificationFactory {
         }
         val builder = NotificationCompat.Builder(context, channelId)
         builder.setAutoCancel(true)
-        //setPriority(builder)
         setVisibility(builder)
         setSmallIcon(context, builder, data)
         setThumbnailIcon(context, builder, data)
