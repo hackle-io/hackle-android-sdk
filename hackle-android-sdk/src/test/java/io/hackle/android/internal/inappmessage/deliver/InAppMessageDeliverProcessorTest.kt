@@ -115,7 +115,7 @@ class InAppMessageDeliverProcessorTest {
         val inAppMessage = InAppMessages.create()
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns true
 
         // when
@@ -142,7 +142,7 @@ class InAppMessageDeliverProcessorTest {
         )
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
 
         every {
@@ -178,7 +178,7 @@ class InAppMessageDeliverProcessorTest {
         )
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
 
         every {
@@ -216,7 +216,7 @@ class InAppMessageDeliverProcessorTest {
         )
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
 
         every {

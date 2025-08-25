@@ -1,5 +1,6 @@
 package io.hackle.android.internal.inappmessage.deliver
 
+import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverResponse.Code
 import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluator
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
@@ -50,7 +51,7 @@ internal class InAppMessageDeliverProcessor(
             ?: return InAppMessageDeliverResponse.of(request, Code.IN_APP_MESSAGE_NOT_FOUND)
 
         // check User
-        val user = userManager.resolve(null)
+        val user = userManager.resolve(null, HackleAppContext.DEFAULT)
         val isIdentifierChanged =
             identifierChecker.isIdentifierChanged(request.identifiers, Identifiers.from(user.identifiers))
         if (isIdentifierChanged) {
