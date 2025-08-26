@@ -75,8 +75,8 @@ class HackleConfigTest {
     @Test
     fun `uri`() {
         configTests(
-            HackleConfig::sdkUri to "https://sdk.hackle.io",
-            HackleConfig::eventUri to "https://event.hackle.io",
+            HackleConfig::sdkUri to "https://sdk-api.hackle.io",
+            HackleConfig::eventUri to "https://event-api.hackle.io",
             HackleConfig::monitoringUri to "https://monitoring.hackle.io",
         )
         configTests(
