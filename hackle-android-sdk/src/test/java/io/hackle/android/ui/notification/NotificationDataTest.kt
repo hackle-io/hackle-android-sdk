@@ -1,7 +1,6 @@
 package io.hackle.android.ui.notification
 
 import android.content.Intent
-import android.os.Bundle
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.mock.MockBundle
 import io.mockk.every
@@ -20,7 +19,7 @@ class NotificationDataTest {
     fun `parse notification data`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
-            "channelId" to "hackle_heads_up_notification",
+            "channelType" to "HACKLE_DEFAULT",
             "workspaceId" to 1111,
             "environmentId" to 2222,
             "pushMessageId" to 3333,
@@ -45,7 +44,7 @@ class NotificationDataTest {
 
         val result = NotificationData.from(intent)
         assertNotNull(result)
-        assertThat(result!!.channelId, `is`("hackle_heads_up_notification"))
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
         assertThat(result.messageId, `is`("abcd1234"))
         assertThat(result.workspaceId, `is`(1111L))
         assertThat(result.environmentId, `is`(2222L))
@@ -61,6 +60,115 @@ class NotificationDataTest {
         assertThat(result.largeImageUrl, `is`("https://bar.com"))
         assertThat(result.link, `is`("foo://bar"))
         assertTrue(result.debug)
+    }
+
+    @Test
+    fun `override channel id when default channel type`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelId" to "my_custom_channel",
+            "channelType" to "HACKLE_DEFAULT",
+            "workspaceId" to 1111,
+            "environmentId" to 2222,
+            "title" to "foo",
+            "body" to "bar"
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "google.sent_time" to 1234567890L,
+            "hackle" to map.toJson(),
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+        assertThat(result.messageId, `is`("abcd1234"))
+        assertThat(result.workspaceId, `is`(1111L))
+        assertThat(result.environmentId, `is`(2222L))
+        assertThat(result.title, `is`("foo"))
+        assertThat(result.body, `is`("bar"))
+    }
+
+    @Test
+    fun `should parse notification data with HACKLE_HIGH channel type`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelType" to "HACKLE_HIGH",
+            "workspaceId" to 1111,
+            "environmentId" to 2222,
+            "title" to "High Priority",
+            "body" to "Important message"
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.HIGH_NOTIFICATION_CHANNEL_ID))
+    }
+
+    @Test
+    fun `should parse notification data with CUSTOM channel type`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelType" to "CUSTOM",
+            "channelId" to "my_custom_channel",
+            "workspaceId" to 1111,
+            "environmentId" to 2222,
+            "title" to "Custom Channel",
+            "body" to "Custom message"
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`("my_custom_channel"))
+    }
+
+    @Test
+    fun `should use default channel when CUSTOM channel type has empty channelId`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelType" to "CUSTOM",
+            "channelId" to "",
+            "workspaceId" to 1111,
+            "environmentId" to 2222
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+    }
+
+    @Test
+    fun `should use default channel when channelType is not specified`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "workspaceId" to 1111,
+            "environmentId" to 2222
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
     }
 
     @Test
@@ -80,7 +188,7 @@ class NotificationDataTest {
 
         val result = NotificationData.from(intent)
         assertNotNull(result)
-        assertThat(result!!.channelId, `is`("hackle_heads_up_notification"))
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
         assertThat(result.messageId, `is`("abcd1234"))
         assertThat(result.workspaceId, `is`(1111L))
         assertThat(result.environmentId, `is`(2222L))

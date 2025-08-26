@@ -8,6 +8,7 @@ import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_
 import io.hackle.android.ui.notification.Constants.KEY_BODY
 import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_TYPE
 import io.hackle.android.ui.notification.Constants.KEY_CHANNEL_ID
+import io.hackle.android.ui.notification.Constants.KEY_CHANNEL_TYPE
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_DEBUG
@@ -42,6 +43,7 @@ class NotificationFactoryTest {
     fun `parse notification data with all fields`() {
         // Given
         val hackleData = mapOf(
+            KEY_CHANNEL_TYPE to "CUSTOM",
             KEY_CHANNEL_ID to "test_channel",
             KEY_WORKSPACE_ID to 12345,
             KEY_ENVIRONMENT_ID to 67890,
