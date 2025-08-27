@@ -8,7 +8,9 @@ internal enum class ChannelType {
     companion object {
         private val ALL = ChannelType.values().associateBy { it.name }
         fun from(name: String): ChannelType {
-            return requireNotNull(ALL[name]) { "name[$name]" }
+            return ALL.getOrElse(name) {
+                HACKLE_DEFAULT
+            }
         }
     }
 }
