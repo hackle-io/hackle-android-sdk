@@ -38,7 +38,19 @@ class NotificationManagerTest {
         executor = mockk()
         every { executor.execute(any()) } answers { firstArg<Runnable>().run() }
         workspaceFetcher = mockk()
-        every { workspaceFetcher.fetch() } returns WorkspaceImpl(111L, 222L, emptyList(), emptyList(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyMap(), emptyList())
+        every { workspaceFetcher.fetch() } returns WorkspaceImpl(
+            111L,
+            222L,
+            emptyList(),
+            emptyList(),
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+            emptyMap(),
+            emptyList()
+        )
 
         manager = NotificationManager(
             core = core,
@@ -51,7 +63,29 @@ class NotificationManagerTest {
 
     @Test
     fun `track push click event when notification data received`() {
-        val data = NotificationData("abcd1234", 111L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", 1L, 2L, 3L, "JOURNEY", true)
+        val data = NotificationData(
+            "hackle",
+            "abcd1234",
+            111L,
+            222L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            1L,
+            2L,
+            3L,
+            "JOURNEY",
+            true
+        )
         val timestamp = System.currentTimeMillis()
         manager.onNotificationDataReceived(data, timestamp)
 
@@ -73,16 +107,104 @@ class NotificationManagerTest {
     @Test
     fun `save notification data if environment is not same`() {
         val timestamp = System.currentTimeMillis()
-        val correctData = NotificationData("0", 111L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", 1L, 2L, 3L, "PUSH_MESSAGE", true)
+        val correctData = NotificationData(
+            "hackle",
+            "0",
+            111L,
+            222L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            1L,
+            2L,
+            3L,
+            "PUSH_MESSAGE",
+            true
+        )
         manager.onNotificationDataReceived(correctData, timestamp)
 
-        val diffWorkspaceData = NotificationData("1", 333L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", 2L, 3L, 4L, "PUSH_MESSAGE", true)
+        val diffWorkspaceData = NotificationData(
+            "hackle",
+            "1",
+            333L,
+            222L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            2L,
+            3L,
+            4L,
+            "PUSH_MESSAGE",
+            true
+        )
         manager.onNotificationDataReceived(diffWorkspaceData, 2L)
 
-        val diffEnvironmentData = NotificationData("2", 111L, 333L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", 3L, 4L, 5L, "PUSH_MESSAGE", true)
+        val diffEnvironmentData = NotificationData(
+            "hackle",
+            "2",
+            111L,
+            333L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            3L,
+            4L,
+            5L,
+            "PUSH_MESSAGE",
+            true
+        )
         manager.onNotificationDataReceived(diffEnvironmentData, 3L)
 
-        val bothDiffData = NotificationData("4", 333L, 333L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", 4L, 5L, 6L, "PUSH_MESSAGE", true)
+        val bothDiffData = NotificationData(
+            "hackle",
+            "4",
+            333L,
+            333L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            4L,
+            5L,
+            6L,
+            "PUSH_MESSAGE",
+            true
+        )
         manager.onNotificationDataReceived(bothDiffData, 4L)
 
         verify(exactly = 1) {
@@ -111,7 +233,29 @@ class NotificationManagerTest {
     fun `save notification data if workspace fetcher returns null`() {
         every { workspaceFetcher.fetch() } returns null
 
-        val data = NotificationData("abcd1234", 111L, 222L, 1111L, 2222L, 3333L, 4444L, true, "#FF00FF", "foo", "bar", "https://foo.bar/image", "https://foo.foo", NotificationClickAction.APP_OPEN, "foo://bar", null, null, null, null, true)
+        val data = NotificationData(
+            "hackle",
+            "abcd1234",
+            111L,
+            222L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            null,
+            null,
+            null,
+            null,
+            true
+        )
         manager.onNotificationDataReceived(data, 1L)
 
         verify { core wasNot called }

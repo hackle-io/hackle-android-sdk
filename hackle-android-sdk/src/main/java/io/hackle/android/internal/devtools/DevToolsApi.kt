@@ -1,7 +1,7 @@
 package io.hackle.android.internal.devtools
 
 import com.google.gson.annotations.SerializedName
-import io.hackle.android.internal.bridge.model.UserDto
+import io.hackle.android.internal.invocator.model.UserDto
 import io.hackle.android.internal.http.CONTENT_TYPE_APPLICATION_JSON
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.utils.json.toJson

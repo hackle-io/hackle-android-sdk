@@ -1,8 +1,8 @@
 package io.hackle.android.ui.notification
 
 import android.content.Intent
-import android.os.Bundle
 import io.hackle.android.internal.utils.json.toJson
+import io.hackle.android.mock.MockBundle
 import io.mockk.every
 import io.mockk.mockk
 import org.hamcrest.CoreMatchers.`is`
@@ -19,6 +19,7 @@ class NotificationDataTest {
     fun `parse notification data`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelType" to "HACKLE_DEFAULT",
             "workspaceId" to 1111,
             "environmentId" to 2222,
             "pushMessageId" to 3333,
@@ -34,7 +35,7 @@ class NotificationDataTest {
             "link" to "foo://bar",
             "debug" to true
         )
-        val bundle = mockBundleOf(mapOf(
+        val bundle = MockBundle.create(mapOf(
             "google.message_id" to "abcd1234",
             "google.sent_time" to 1234567890L,
             "hackle" to map.toJson(),
@@ -43,7 +44,8 @@ class NotificationDataTest {
 
         val result = NotificationData.from(intent)
         assertNotNull(result)
-        assertThat(result!!.messageId, `is`("abcd1234"))
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+        assertThat(result.messageId, `is`("abcd1234"))
         assertThat(result.workspaceId, `is`(1111L))
         assertThat(result.environmentId, `is`(2222L))
         assertThat(result.pushMessageId, `is`(3333L))
@@ -61,13 +63,123 @@ class NotificationDataTest {
     }
 
     @Test
-    fun `should parse notification data even though optional fields are empty`() {
+    fun `override channel id when default channel type`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelId" to "my_custom_channel",
+            "channelType" to "HACKLE_DEFAULT",
+            "workspaceId" to 1111,
+            "environmentId" to 2222,
+            "title" to "foo",
+            "body" to "bar"
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "google.sent_time" to 1234567890L,
+            "hackle" to map.toJson(),
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+        assertThat(result.messageId, `is`("abcd1234"))
+        assertThat(result.workspaceId, `is`(1111L))
+        assertThat(result.environmentId, `is`(2222L))
+        assertThat(result.title, `is`("foo"))
+        assertThat(result.body, `is`("bar"))
+    }
+
+    @Test
+    fun `should parse notification data with HACKLE_HIGH channel type`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelType" to "HACKLE_HIGH",
+            "workspaceId" to 1111,
+            "environmentId" to 2222,
+            "title" to "High Priority",
+            "body" to "Important message"
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.HIGH_NOTIFICATION_CHANNEL_ID))
+    }
+
+    @Test
+    fun `should parse notification data with CUSTOM channel type`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelType" to "CUSTOM",
+            "channelId" to "my_custom_channel",
+            "workspaceId" to 1111,
+            "environmentId" to 2222,
+            "title" to "Custom Channel",
+            "body" to "Custom message"
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`("my_custom_channel"))
+    }
+
+    @Test
+    fun `should use default channel when CUSTOM channel type has empty channelId`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelType" to "CUSTOM",
+            "channelId" to "",
+            "workspaceId" to 1111,
+            "environmentId" to 2222
+        )
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+    }
+
+    @Test
+    fun `should use default channel when channelType is not specified`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
             "workspaceId" to 1111,
             "environmentId" to 2222
         )
-        val bundle = mockBundleOf(mapOf(
+        val bundle = MockBundle.create(mapOf(
+            "google.message_id" to "abcd1234",
+            "hackle" to map.toJson()
+        ))
+        every { intent.extras } returns bundle
+
+        val result = NotificationData.from(intent)
+        assertNotNull(result)
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+    }
+
+    @Test
+    fun `should parse notification data even though optional fields are empty`() {
+        val intent = mockk<Intent>()
+        val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
+            "workspaceId" to 1111,
+            "environmentId" to 2222
+        )
+        val bundle = MockBundle.create(mapOf(
             "google.message_id" to "abcd1234",
             "google.sent_time" to 0L,
             "hackle" to map.toJson()
@@ -76,7 +188,8 @@ class NotificationDataTest {
 
         val result = NotificationData.from(intent)
         assertNotNull(result)
-        assertThat(result!!.messageId, `is`("abcd1234"))
+        assertThat(result!!.channelId, `is`(Constants.DEFAULT_NOTIFICATION_CHANNEL_ID))
+        assertThat(result.messageId, `is`("abcd1234"))
         assertThat(result.workspaceId, `is`(1111L))
         assertThat(result.environmentId, `is`(2222L))
         assertNull(result.pushMessageId)
@@ -96,7 +209,7 @@ class NotificationDataTest {
     @Test
     fun `should return null if hackle string is empty`() {
         val intent = mockk<Intent>()
-        val bundle = mockBundleOf(mapOf(
+        val bundle = MockBundle.create(mapOf(
             "google.message_id" to "abcd1234",
             "google.sent_time" to 1234567890
         ))
@@ -109,6 +222,7 @@ class NotificationDataTest {
     fun `should return null if workspace id is empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
             "environmentId" to 2222,
             "pushMessageId" to 3333,
             "pushMessageKey" to 4444,
@@ -123,7 +237,7 @@ class NotificationDataTest {
             "link" to "foo://bar",
             "debug" to true
         )
-        val bundle = mockBundleOf(mapOf(
+        val bundle = MockBundle.create(mapOf(
             "google.message_id" to "abcd1234",
             "google.sent_time" to 1234567890,
             "hackle" to map.toJson()
@@ -137,6 +251,7 @@ class NotificationDataTest {
     fun `should return null if environment id is empty`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(
+            "channelId" to "hackle_heads_up_notification",
             "workspaceId" to 1111,
             "pushMessageId" to 3333,
             "pushMessageKey" to 4444,
@@ -151,7 +266,7 @@ class NotificationDataTest {
             "link" to "foo://bar",
             "debug" to true
         )
-        val bundle = mockBundleOf(mapOf(
+        val bundle = MockBundle.create(mapOf(
             "google.message_id" to "abcd1234",
             "google.sent_time" to 1234567890,
             "hackle" to map.toJson()
@@ -159,45 +274,5 @@ class NotificationDataTest {
         every { intent.extras } returns bundle
 
         assertNull(NotificationData.from(intent))
-    }
-
-    private fun mockBundleOf(map: Map<String, Any?>): Bundle {
-        val bundle = mockk<Bundle>()
-        for ((key, value) in map) {
-            when (value) {
-                is Boolean -> {
-                    every { bundle.getBoolean(key) } returns value
-                    every { bundle.getBoolean(key, any()) } returns value
-                }
-                is String -> {
-                    every { bundle.getString(key) } returns value
-                    every { bundle.getString(key, any()) } returns value
-                }
-                is Number -> {
-                    every { bundle.getByte(key) } returns value.toByte()
-                    every { bundle.getByte(key, any()) } returns value.toByte()
-
-                    every { bundle.getChar(key) } returns value.toChar()
-                    every { bundle.getChar(key, any()) } returns value.toChar()
-
-                    every { bundle.getShort(key) } returns value.toShort()
-                    every { bundle.getShort(key, any()) } returns value.toShort()
-
-                    every { bundle.getInt(key) } returns value.toInt()
-                    every { bundle.getInt(key, any()) } returns value.toInt()
-
-                    every { bundle.getLong(key) } returns value.toLong()
-                    every { bundle.getLong(key, any()) } returns value.toLong()
-
-                    every { bundle.getFloat(key) } returns value.toFloat()
-                    every { bundle.getFloat(key, any()) } returns value.toFloat()
-
-                    every { bundle.getDouble(key) } returns value.toDouble()
-                    every { bundle.getDouble(key, any()) } returns value.toDouble()
-                }
-                else -> throw UnsupportedOperationException("Type is not supported.")
-            }
-        }
-        return bundle
     }
 }
