@@ -12,6 +12,7 @@ class NotificationEventTest {
     @Test
     fun `notification data to event`() {
         val from = NotificationData(
+            channelId = "hackle_default_channel",
             messageId = "abcd1234",
             workspaceId = 123L,
             environmentId = 456L,

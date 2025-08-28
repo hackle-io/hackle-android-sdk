@@ -137,8 +137,8 @@ class HackleConfig private constructor(builder: Builder) {
 
         private val log = AndroidLogger
 
-        internal const val DEFAULT_SDK_URI = "https://sdk.hackle.io"
-        internal const val DEFAULT_EVENT_URI = "https://event.hackle.io"
+        internal const val DEFAULT_SDK_URI = "https://sdk-api.hackle.io"
+        internal const val DEFAULT_EVENT_URI = "https://event-api.hackle.io"
         internal const val DEFAULT_API_URI = "https://api.hackle.io"
         internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
 

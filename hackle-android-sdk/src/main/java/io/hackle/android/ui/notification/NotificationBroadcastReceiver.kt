@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
+import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationBroadcastReceiver : BroadcastReceiver() {

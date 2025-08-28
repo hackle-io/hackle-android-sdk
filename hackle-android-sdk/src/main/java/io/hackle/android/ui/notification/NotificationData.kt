@@ -2,8 +2,12 @@ package io.hackle.android.ui.notification
 
 import android.content.Intent
 import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
+import io.hackle.android.ui.notification.Constants.HIGH_NOTIFICATION_CHANNEL_ID
 import io.hackle.android.ui.notification.Constants.KEY_BODY
 import io.hackle.android.ui.notification.Constants.KEY_CAMPAIGN_TYPE
+import io.hackle.android.ui.notification.Constants.KEY_CHANNEL_ID
+import io.hackle.android.ui.notification.Constants.KEY_CHANNEL_TYPE
 import io.hackle.android.ui.notification.Constants.KEY_CLICK_ACTION
 import io.hackle.android.ui.notification.Constants.KEY_COLOR_FILTER
 import io.hackle.android.ui.notification.Constants.KEY_DEBUG
@@ -25,6 +29,7 @@ import io.hackle.android.ui.notification.Constants.KEY_TITLE
 import io.hackle.android.ui.notification.Constants.KEY_WORKSPACE_ID
 
 internal data class NotificationData(
+    val channelId: String,
     val messageId: String,
     val workspaceId: Long,
     val environmentId: Long,
@@ -57,7 +62,12 @@ internal data class NotificationData(
                 val data = checkNotNull(intent.extras)
                 val hackle = checkNotNull(data.getString(KEY_HACKLE))
                     .parseJson<Map<String, Any>>()
+                val channelType = ChannelType.from(
+                    hackle[KEY_CHANNEL_TYPE] as? String 
+                        ?: ChannelType.HACKLE_DEFAULT.name
+                )
                 return NotificationData(
+                    channelId = channelId(channelType, hackle[KEY_CHANNEL_ID] as? String),
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
                     workspaceId = checkNotNull(hackle[KEY_WORKSPACE_ID] as? Number).toLong(),
                     environmentId = checkNotNull(hackle[KEY_ENVIRONMENT_ID] as? Number).toLong(),
@@ -85,6 +95,19 @@ internal data class NotificationData(
             } catch (_: Exception) {
             }
             return null
+        }
+        
+        fun channelId(channelType: ChannelType, channelId: String?): String {
+            return when(channelType) {
+                ChannelType.HACKLE_DEFAULT -> DEFAULT_NOTIFICATION_CHANNEL_ID
+                ChannelType.HACKLE_HIGH -> HIGH_NOTIFICATION_CHANNEL_ID                
+                ChannelType.CUSTOM -> {
+                    if(channelId.isNullOrEmpty()) {
+                        return DEFAULT_NOTIFICATION_CHANNEL_ID
+                    }
+                    return channelId
+                }
+            }
         }
     }
 }

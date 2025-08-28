@@ -1,34 +1,22 @@
 package io.hackle.android
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
-import io.hackle.android.internal.bridge.HackleBridge
-import io.hackle.android.internal.bridge.web.HackleJavascriptInterface
-import io.hackle.android.internal.core.Updated
-import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
+import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
-import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
-import io.hackle.android.internal.monitoring.metric.DecisionMetrics
-import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.pii.PIIEventManager
-import io.hackle.android.internal.pii.phonenumber.PhoneNumber
-import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.sdk.common.Screen
-import io.hackle.android.internal.screen.ScreenManager
-import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.sync.PollingSynchronizer
-import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.utils.concurrent.Throttler
-import io.hackle.android.internal.workspace.WorkspaceManager
-import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
@@ -36,198 +24,170 @@ import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
-import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
-import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.internal.metrics.Metrics
-import io.hackle.sdk.core.internal.metrics.Timer
-import io.hackle.sdk.core.internal.time.Clock
-import io.hackle.sdk.core.internal.utils.tryClose
-import io.hackle.sdk.core.model.toEvent
 import java.io.Closeable
-import java.util.concurrent.Executor
 
 /**
  * Entry point of Hackle Sdk.
  */
 class HackleApp internal constructor(
-    private val clock: Clock,
-    private val core: HackleCore,
-    private val eventExecutor: Executor,
-    private val backgroundExecutor: Executor,
-    private val synchronizer: PollingSynchronizer,
-    private val userManager: UserManager,
-    private val workspaceManager: WorkspaceManager,
-    private val sessionManager: SessionManager,
-    private val screenManager: ScreenManager,
-    private val eventProcessor: DefaultEventProcessor,
-    private val pushTokenManager: PushTokenManager,
-    private val notificationManager: NotificationManager,
-    private val piiEventManager: PIIEventManager,
-    private val fetchThrottler: Throttler,
-    private val device: Device,
-    internal val userExplorer: HackleUserExplorer,
+    private val hackleAppCore: HackleAppCore,
     internal val sdk: Sdk,
     internal val mode: HackleAppMode,
+    internal val invocator: HackleInvocator,
 ) : Closeable {
-
     /**
      * The user's Device Id.
      */
-    val deviceId: String get() = device.id
+    val deviceId: String get() = hackleAppCore.deviceId
 
     /**
      * Current Session Id. If session is unavailable, returns "0.ffffffff"
      */
-    val sessionId: String get() = sessionManager.requiredSession.id
+    val sessionId: String get() = hackleAppCore.sessionId
 
-    val user: User get() = userManager.currentUser
+    /**
+     * Current User
+     */
+    val user: User get() = hackleAppCore.user
 
+    internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
+
+    /**
+     * Shows the user explorer UI button.
+     *
+     * This is typically used for debugging purposes to view the current user's state.
+     */
     fun showUserExplorer() {
-        userExplorer.show()
-        Metrics.counter("user.explorer.show").increment()
+        hackleAppCore.showUserExplorer()
     }
 
+    /**
+     * Hides the user explorer UI button if it is currently visible.
+     */
     fun hideUserExplorer() {
-        userExplorer.hide()
+        hackleAppCore.hideUserExplorer()
     }
 
+    /**
+     * Sets or replaces the current user.
+     *
+     * @param user the user to set.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setUser(user: User, callback: Runnable? = null) {
-        try {
-            val updated = userManager.setUser(user)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set user: $e" }
-            callback?.run()
-        }
+        hackleAppCore.setUser(user, callback)
     }
 
+    /**
+     * Sets the userId for the current user.
+     *
+     * @param userId the userId to set for the user. Can be null to identify an anonymous user.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setUserId(userId: String?, callback: Runnable? = null) {
-        try {
-            val updated = userManager.setUserId(userId)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set userId: $e" }
-            callback?.run()
-        }
+        hackleAppCore.setUserId(userId, callback)
     }
 
+    /**
+     * Sets a custom device ID.
+     *
+     * @param deviceId the custom device ID to set.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setDeviceId(deviceId: String, callback: Runnable? = null) {
-        try {
-            val updated = userManager.setDeviceId(deviceId)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set deviceId: $e" }
-            callback?.run()
-        }
+        hackleAppCore.setDeviceId(deviceId, callback)
     }
 
+    /**
+     * Sets a single user property.
+     *
+     * @param key the key of the property.
+     * @param value the value of the property.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
         val operations = PropertyOperations.builder()
             .set(key, value)
             .build()
-        updateUserProperties(operations, callback)
+        hackleAppCore.updateUserProperties(operations, HackleAppContext.DEFAULT, callback)
     }
 
+    /**
+     * Updates user properties with a set of operations.
+     *
+     * @param operations a set of operations to apply to user properties.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
-        try {
-            track(operations.toEvent())
-            eventProcessor.flush()
-            userManager.updateProperties(operations)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update user properties: $e" }
-        } finally {
-            callback?.run()
-        }
+        hackleAppCore.updateUserProperties(operations, HackleAppContext.DEFAULT, callback)
     }
 
+    /**
+     * Updates push notification subscription status.
+     *
+     * @param operations a set of subscription operations to apply.
+     */
     fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
-        try {
-            val event = operations.toEvent("\$push_subscriptions")
-            track(event)
-            core.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update push subscription status: $e" }
-        }
+        hackleAppCore.updatePushSubscriptions(operations, HackleAppContext.DEFAULT)
     }
 
+    /**
+     * Updates SMS subscription status.
+     *
+     * @param operations a set of subscription operations to apply.
+     */
     fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
-        try {
-            val event = operations.toEvent("\$sms_subscriptions")
-            track(event)
-            core.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update sms subscription status: $e" }
-        }
+        hackleAppCore.updateSmsSubscriptions(operations, HackleAppContext.DEFAULT)
     }
 
+    /**
+     * Updates KakaoTalk subscription status.
+     *
+     * @param operations a set of subscription operations to apply.
+     */
     fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
-        try {
-            val event = operations.toEvent("\$kakao_subscriptions")
-            track(event)
-            core.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update kakao subscription status: $e" }
-        }
+        hackleAppCore.updateKakaoSubscriptions(operations, HackleAppContext.DEFAULT)
     }
 
+    /**
+     * Resets the current user.
+     *
+     * When reset user, the deviceId is set to hackleDeviceId
+     * and id, userId, properties are set to null
+     *
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
-        try {
-            val updated = userManager.resetUser()
-            track(PropertyOperations.clearAll().toEvent())
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while reset user: $e" }
-            callback?.run()
-        }
+        hackleAppCore.resetUser(HackleAppContext.DEFAULT, callback)
     }
 
+    /**
+     * Sets the phone number for the current user.
+     *
+     * @param phoneNumber the phone number to set.
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun setPhoneNumber(phoneNumber: String, callback: Runnable? = null) {
-        try {
-            piiEventManager.setPhoneNumber(PhoneNumber.create(phoneNumber), clock.currentMillis())
-            eventProcessor.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set phoneNumber: $e" }
-        } finally {
-            callback?.run()
-        }
+        hackleAppCore.setPhoneNumber(phoneNumber, HackleAppContext.DEFAULT, callback)
     }
 
+    /**
+     * Removes the phone number from the current user.
+     *
+     * @param callback an optional callback to be executed when the operation is complete.
+     */
     @JvmOverloads
     fun unsetPhoneNumber(callback: Runnable? = null) {
-        try {
-            piiEventManager.unsetPhoneNumber(clock.currentMillis())
-            eventProcessor.flush()
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while unset phoneNumber: $e" }
-        } finally {
-            callback?.run()
-        }
-    }
-
-    private fun syncIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
-        try {
-            backgroundExecutor.execute {
-                try {
-                    userManager.syncIfNeeded(userUpdated)
-                } catch (e: Exception) {
-                    log.error { "Failed to sync: $e" }
-                } finally {
-                    callback?.run()
-                }
-            }
-        } catch (e: Exception) {
-            log.error { "Failed to submit sync task: $e" }
-            callback?.run()
-        }
+        hackleAppCore.unsetPhoneNumber(HackleAppContext.DEFAULT, callback)
     }
 
     /**
@@ -244,7 +204,7 @@ class HackleApp internal constructor(
     }
 
     /**
-     * Decide the variation to expose to the user for experiment, and returns an object that
+     * Decide the variation to expose to the user for experiment and returns an object that
      * describes the way the variation was decided.
      *
      * @param experimentKey    the unique key for the experiment.
@@ -254,45 +214,17 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
-        return variationDetailInternal(experimentKey, null, defaultVariation)
-    }
-
-    private fun variationDetailInternal(
-        experimentKey: Long,
-        user: User?,
-        defaultVariation: Variation,
-    ): Decision {
-        val sample = Timer.start()
-        return try {
-            val hackleUser = userManager.resolve(user)
-            core.experiment(experimentKey, hackleUser, defaultVariation)
-        } catch (t: Throwable) {
-            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
-            Decision.of(defaultVariation, DecisionReason.EXCEPTION)
-        }.also {
-            DecisionMetrics.experiment(sample, experimentKey, it)
-        }
+        return hackleAppCore.variationDetail(experimentKey, null, defaultVariation, HackleAppContext.DEFAULT)
     }
 
     /**
-     * Decide the variations for all experiments, and returns a map of decision results.
+     * Decide the variations for all experiments and returns a map of decision results.
      *
      * @return key   - experimentKey
      *         value - decision result
      */
     fun allVariationDetails(): Map<Long, Decision> {
-        return allVariationDetailsInternal(null)
-    }
-
-    private fun allVariationDetailsInternal(user: User?): Map<Long, Decision> {
-        return try {
-            val hackleUser = userManager.resolve(user)
-            core.experiments(hackleUser)
-                .mapKeysTo(hashMapOf()) { (experiment, _) -> experiment.key }
-        } catch (t: Throwable) {
-            log.error { "Unexpected exception while deciding variations for all experiments: $t" }
-            hashMapOf()
-        }
+        return hackleAppCore.allVariationDetails(null, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -310,7 +242,7 @@ class HackleApp internal constructor(
     }
 
     /**
-     * Decide whether the feature is turned on to the user, and returns an object that
+     * Decide whether the feature is turned on to the user and returns an object that
      * describes the way the flag was decided.
      *
      * @param featureKey the unique key for the feature.
@@ -318,21 +250,9 @@ class HackleApp internal constructor(
      * @return a [FeatureFlagDecision] object
      */
     fun featureFlagDetail(featureKey: Long): FeatureFlagDecision {
-        return featureFlagDetailInternal(featureKey, null)
+        return hackleAppCore.featureFlagDetail(featureKey, null, HackleAppContext.DEFAULT)
     }
 
-    private fun featureFlagDetailInternal(featureKey: Long, user: User?): FeatureFlagDecision {
-        val sample = Timer.start()
-        return try {
-            val hackleUser = userManager.resolve(user)
-            core.featureFlag(featureKey, hackleUser)
-        } catch (t: Throwable) {
-            log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
-            FeatureFlagDecision.off(DecisionReason.EXCEPTION)
-        }.also {
-            DecisionMetrics.featureFlag(sample, featureKey, it)
-        }
-    }
 
     /**
      * Records the event that occurred by the user.
@@ -349,23 +269,15 @@ class HackleApp internal constructor(
      * @param event  the event that occurred. MUST NOT be null.
      */
     fun track(event: Event) {
-        trackInternal(event, null)
+        hackleAppCore.track(event, null, HackleAppContext.DEFAULT)
     }
 
-    private fun trackInternal(event: Event, user: User?) {
-        try {
-            val hackleUser = userManager.resolve(user)
-            core.track(event, hackleUser, clock.currentMillis())
-        } catch (t: Throwable) {
-            log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
-        }
-    }
 
     /**
-     * Returns a instance of Hackle Remote Config.
+     * Returns an instance of Hackle Remote Config.
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(null, core, userManager)
+        return HackleRemoteConfigImpl(hackleAppCore, null)
     }
 
     /**
@@ -373,6 +285,7 @@ class HackleApp internal constructor(
      *
      * @param webView  Target WebView. MUST NOT be null.
      */
+    @SuppressLint("UseRequiresApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setWebViewBridge(webView: WebView) {
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -381,9 +294,13 @@ class HackleApp internal constructor(
                         "JavaScript can use reflection to manipulate application"
             )
         }
-        val bridge = HackleBridge(this)
-        val jsInterface = HackleJavascriptInterface(bridge)
+        val invocator = invocator()
+        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
+    }
+
+    fun invocator(): HackleInvocator {
+        return invocator
     }
 
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
@@ -392,49 +309,23 @@ class HackleApp internal constructor(
 
     @JvmOverloads
     fun fetch(callback: Runnable? = null) {
-        fetchThrottler.execute(
-            accept = {
-                backgroundExecutor.execute {
-                    synchronizer.sync()
-                    callback?.run()
-                }
-            },
-            reject = {
-                log.debug { "Too many quick fetch requests." }
-                callback?.run()
-            }
-        )
+        hackleAppCore.fetch(callback)
     }
 
     fun setCurrentScreen(screen: Screen) {
-        screenManager.setCurrentScreen(screen, clock.currentMillis())
+        hackleAppCore.setCurrentScreen(screen)
     }
 
     override fun close() {
-        core.tryClose()
+        hackleAppCore.close()
     }
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
-        userManager.initialize(user)
-        eventExecutor.execute {
-            try {
-                workspaceManager.initialize()
-                pushTokenManager.initialize()
-                sessionManager.initialize()
-                eventProcessor.initialize()
-                synchronizer.sync()
-                notificationManager.flush()
-                log.debug { "HackleApp initialized" }
-            } catch (e: Throwable) {
-                log.error { "Failed to initialize HackleApp: $e" }
-            } finally {
-                onReady.run()
-            }
-        }
+        hackleAppCore.initialize(user, onReady)
     }
 
     // Deprecated
-
+    //<editor-fold desc="Deprecated function">
     @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
     @JvmOverloads
     fun variation(
@@ -442,7 +333,12 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        return variationDetailInternal(experimentKey, User.of(userId), defaultVariation).variation
+        return hackleAppCore.variationDetail(
+            experimentKey,
+            User.of(userId),
+            defaultVariation,
+            HackleAppContext.DEFAULT
+        ).variation
     }
 
     @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
@@ -452,7 +348,7 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Variation {
-        return variationDetailInternal(experimentKey, user, defaultVariation).variation
+        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.DEFAULT).variation
     }
 
     @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
@@ -462,7 +358,7 @@ class HackleApp internal constructor(
         userId: String,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        return variationDetailInternal(experimentKey, User.of(userId), defaultVariation)
+        return hackleAppCore.variationDetail(experimentKey, User.of(userId), defaultVariation, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
@@ -472,57 +368,57 @@ class HackleApp internal constructor(
         user: User,
         defaultVariation: Variation = CONTROL,
     ): Decision {
-        return variationDetailInternal(experimentKey, user, defaultVariation)
+        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use allVariationDetails() with setUser(user) instead.")
     fun allVariationDetails(user: User): Map<Long, Decision> {
-        return allVariationDetailsInternal(user)
+        return hackleAppCore.allVariationDetails(user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
-        return featureFlagDetailInternal(featureKey, User.of(userId))
+        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
     fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        return featureFlagDetailInternal(featureKey, user)
+        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, userId: String): Boolean {
-        return featureFlagDetailInternal(featureKey, User.of(userId)).isOn
+        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.DEFAULT).isOn
     }
 
     @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
     fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        return featureFlagDetailInternal(featureKey, user).isOn
+        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.DEFAULT).isOn
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, userId: String) {
-        trackInternal(Event.of(eventKey), User.of(userId))
+        hackleAppCore.track(Event.of(eventKey), User.of(userId), HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, userId: String) {
-        trackInternal(event, User.of(userId))
+        hackleAppCore.track(event, User.of(userId), HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(eventKey: String, user: User) {
-        trackInternal(Event.of(eventKey), user)
+        hackleAppCore.track(Event.of(eventKey), user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use track(eventKey) with setUser(user) instead.")
     fun track(event: Event, user: User) {
-        trackInternal(event, user)
+        hackleAppCore.track(event, user, HackleAppContext.DEFAULT)
     }
 
     @Deprecated("Use remoteConfig() with setUser(user) instead.")
     fun remoteConfig(user: User): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(user, core, userManager)
+        return HackleRemoteConfigImpl(hackleAppCore, user)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))
@@ -541,6 +437,7 @@ class HackleApp internal constructor(
             "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
         }
     }
+    //</editor-fold>
 
     companion object {
 
