@@ -26,7 +26,7 @@ internal class FeatureFlagFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val explorerService = Hackle.app.userExplorer.explorerService
+        val explorerService = Hackle.app.userExplorerService
         root = inflater.inflate(R.layout.hackle_fragment_feature_flag, container, false)
         itemView = root.findViewById(R.id.hackle_view_feature_flag_items)
         adapter = FeatureFlagAdapter(root.context, explorerService)

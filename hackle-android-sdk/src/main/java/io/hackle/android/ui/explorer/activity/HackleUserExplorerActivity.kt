@@ -30,7 +30,7 @@ internal class HackleUserExplorerActivity : FragmentActivity(), HackleActivity {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.hackle_activity_user_explorer)
 
-        val explorerService = Hackle.app.userExplorer.explorerService
+        val explorerService = Hackle.app.userExplorerService
         val user = explorerService.currentUser()
 
         closeButton = findViewById(R.id.hackle_user_explorer_close_button)
