@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 

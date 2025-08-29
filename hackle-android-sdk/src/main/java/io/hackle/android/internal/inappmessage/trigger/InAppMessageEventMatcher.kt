@@ -5,10 +5,9 @@ import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.workspace.Workspace
 
 internal class InAppMessageEventMatcher(
-    val ruleDeterminer: InAppMessageEventTriggerDeterminer
+    private val ruleMatcher: InAppMessageEventTriggerRuleMatcher,
 ) {
-    fun matches(workspace: Workspace, inAppMessage: InAppMessage, event: UserEvent): Boolean {
-        val trackEvent = event as? UserEvent.Track ?: return false
-        return ruleDeterminer.isTriggerTarget(workspace, inAppMessage, trackEvent)
+    fun matches(workspace: Workspace, inAppMessage: InAppMessage, event: UserEvent.Track): Boolean {
+        return ruleMatcher.matches(workspace, inAppMessage, event)
     }
 }

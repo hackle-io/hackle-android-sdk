@@ -1,7 +1,7 @@
 package io.hackle.android.internal.inappmessage.reset
 
 import io.hackle.android.internal.inappmessage.delay.InAppMessageDelayManager
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageIdentifierChecker
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifierChecker
 import io.hackle.sdk.common.User
 import io.mockk.MockKAnnotations
 import io.mockk.every

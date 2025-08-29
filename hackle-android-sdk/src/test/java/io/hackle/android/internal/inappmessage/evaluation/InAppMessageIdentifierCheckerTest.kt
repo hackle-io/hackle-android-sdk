@@ -1,4 +1,4 @@
-package io.hackle.android.internal.inappmessage.trigger
+package io.hackle.android.internal.inappmessage.evaluation
 
 import io.hackle.android.internal.user.resolvedIdentifiers
 import io.hackle.sdk.common.User

@@ -5,7 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.HackleActivity
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.InAppMessageUi

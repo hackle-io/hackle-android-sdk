@@ -1,10 +1,11 @@
 package io.hackle.android.internal.inappmessage.trigger
 
 import io.hackle.android.internal.event.UserEvents
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluation
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluator
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateType.TRIGGER
 import io.hackle.android.support.InAppMessages
 import io.hackle.sdk.common.decision.DecisionReason
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluation
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.workspace.Workspace
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
@@ -29,7 +30,7 @@ class InAppMessageTriggerDeterminerTest {
     private lateinit var eventMatcher: InAppMessageEventMatcher
 
     @MockK
-    private lateinit var evaluator: InAppMessageEvaluator
+    private lateinit var evaluateProcessor: InAppMessageEvaluateProcessor
 
     @InjectMockKs
     private lateinit var sut: InAppMessageTriggerDeterminer
@@ -112,14 +113,14 @@ class InAppMessageTriggerDeterminerTest {
 
         // then
         expectThat(actual).isNotNull().and {
-            get { this.evaluation } isEqualTo InAppMessageEvaluation(true, DecisionReason.IN_APP_MESSAGE_TARGET)
+            get { this.reason } isEqualTo DecisionReason.IN_APP_MESSAGE_TARGET
             get { this.event } isEqualTo event
         }
     }
 
     private fun determine(vararg decisions: Decision) {
         every { eventMatcher.matches(any(), any(), any()) } returnsMany decisions.map { it.isEventMatched }
-        every { evaluator.evaluate(any(), any(), any(), any()) } returnsMany decisions.filter { it.isEventMatched }
+        every { evaluateProcessor.process(TRIGGER, any()) } returnsMany decisions.filter { it.isEventMatched }
             .map { it.evaluation }
 
         val iam = InAppMessages.create()
@@ -130,11 +131,11 @@ class InAppMessageTriggerDeterminerTest {
     }
 
     private fun decision(isEventMatched: Boolean, isEligible: Boolean, reason: DecisionReason): Decision {
-        return Decision(isEventMatched, InAppMessageEvaluation(isEligible, reason))
+        return Decision(isEventMatched, InAppMessages.eligibilityEvaluation(isEligible = isEligible, reason = reason))
     }
 
     private class Decision(
         val isEventMatched: Boolean,
-        val evaluation: InAppMessageEvaluation,
+        val evaluation: InAppMessageEligibilityEvaluation,
     )
 }

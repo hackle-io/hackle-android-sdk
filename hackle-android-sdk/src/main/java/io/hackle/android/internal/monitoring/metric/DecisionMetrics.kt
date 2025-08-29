@@ -3,7 +3,6 @@ package io.hackle.android.internal.monitoring.metric
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.decision.RemoteConfigDecision
-import io.hackle.sdk.core.decision.InAppMessageDecision
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.metrics.Timer
 
@@ -37,15 +36,4 @@ object DecisionMetrics {
         val timer = Metrics.timer("remote.config.decision", tags)
         sample.stop(timer)
     }
-
-    fun inAppMessage(sample: Timer.Sample, key: Long, decision: InAppMessageDecision) {
-        val tags = hashMapOf(
-            "key" to key.toString(),
-            "show" to if (decision.isShow) "true" else "false",
-            "reason" to decision.reason.name
-        )
-        val timer = Metrics.timer(name = "iam.decision", tags = tags)
-        sample.stop(timer)
-    }
-
 }

@@ -1,7 +1,6 @@
 package io.hackle.android.internal.inappmessage.trigger
 
 import io.hackle.android.internal.event.UserEvents
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluation
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleProcessor
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType
 import io.hackle.android.support.InAppMessages
@@ -32,9 +31,8 @@ class InAppMessageTriggerHandlerTest {
     fun `schedule`() {
         // given
         val inAppMessage = InAppMessages.create()
-        val evaluation = InAppMessageEvaluation(true, DecisionReason.IN_APP_MESSAGE_TARGET)
         val event = UserEvents.track("test", timestamp = 42)
-        val trigger = InAppMessageTrigger(inAppMessage, evaluation, event)
+        val trigger = InAppMessageTrigger(inAppMessage, DecisionReason.IN_APP_MESSAGE_TARGET, event)
 
         // when
         sut.handle(trigger)
