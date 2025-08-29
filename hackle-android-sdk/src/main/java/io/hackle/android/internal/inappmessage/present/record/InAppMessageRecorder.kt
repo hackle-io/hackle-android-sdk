@@ -12,7 +12,7 @@ internal class InAppMessageRecorder(
 ) {
 
     fun record(request: InAppMessagePresentRequest, response: InAppMessagePresentResponse) {
-        if (request.evaluation.reason == DecisionReason.OVERRIDDEN) {
+        if (request.reason == DecisionReason.OVERRIDDEN) {
             return
         }
 

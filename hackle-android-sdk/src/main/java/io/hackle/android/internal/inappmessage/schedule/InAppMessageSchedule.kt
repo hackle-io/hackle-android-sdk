@@ -1,8 +1,8 @@
 package io.hackle.android.internal.inappmessage.schedule
 
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluation
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageTrigger
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.Identifiers
 import io.hackle.sdk.core.model.InAppMessage
 import java.util.UUID
@@ -12,7 +12,7 @@ internal data class InAppMessageSchedule(
     val inAppMessageKey: Long,
     val identifiers: Identifiers,
     val time: Time,
-    val evaluation: InAppMessageEvaluation,
+    val reason: DecisionReason,
     val eventBasedContext: EventBasedContext,
 ) {
 
@@ -51,7 +51,7 @@ internal data class InAppMessageSchedule(
                     inAppMessage = trigger.inAppMessage,
                     startedAt = trigger.event.timestamp
                 ),
-                evaluation = trigger.evaluation,
+                reason = trigger.reason,
                 eventBasedContext = EventBasedContext(
                     insertId = trigger.event.insertId,
                     event = trigger.event.event

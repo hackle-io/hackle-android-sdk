@@ -2,13 +2,16 @@ package io.hackle.android.internal.inappmessage.deliver
 
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverResponse.Code
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluator
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateType
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifierChecker
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageLayoutResolver
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageIdentifierChecker
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.ActivityState
 import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityRequest
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.Identifiers
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
@@ -18,7 +21,8 @@ internal class InAppMessageDeliverProcessor(
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
     private val identifierChecker: InAppMessageIdentifierChecker,
-    private val evaluator: InAppMessageEvaluator,
+    private val layoutResolver: InAppMessageLayoutResolver,
+    private val evaluateProcessor: InAppMessageEvaluateProcessor,
     private val presentProcessor: InAppMessagePresentProcessor,
 ) {
 
@@ -58,19 +62,19 @@ internal class InAppMessageDeliverProcessor(
             return InAppMessageDeliverResponse.of(request, Code.IDENTIFIER_CHANGED)
         }
 
-        // check Evaluation
-        val evaluation = if (inAppMessage.evaluateContext.atDeliverTime) {
-            val evaluation = evaluator.evaluate(workspace, inAppMessage, user, request.requestedAt)
-            log.debug { "InAppMessage Re-evaluate: evaluation=$evaluation, request=$request" }
-            evaluation
-        } else {
-            request.evaluation
-        }
-        if (!evaluation.isEligible) {
+        // resolve layout
+        val layoutEvaluation = layoutResolver.resolve(workspace, inAppMessage, user)
+
+        // check Evaluation (re-evaluate + dedup)
+        val eligibilityRequest = InAppMessageEligibilityRequest(workspace, user, inAppMessage, request.requestedAt)
+        val eligibilityEvaluation = evaluateProcessor.process(InAppMessageEvaluateType.DELIVER, eligibilityRequest)
+        if (!eligibilityEvaluation.isEligible) {
             return InAppMessageDeliverResponse.of(request, Code.INELIGIBLE)
         }
 
-        val presentRequest = InAppMessagePresentRequest.of(request, workspace, inAppMessage, user, evaluation)
+        // present
+        val presentRequest =
+            InAppMessagePresentRequest.of(request, inAppMessage, user, eligibilityEvaluation, layoutEvaluation)
         val presentResponse = presentProcessor.process(presentRequest)
 
         return InAppMessageDeliverResponse.of(request, Code.PRESENT, presentResponse)

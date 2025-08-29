@@ -3,11 +3,8 @@ package io.hackle.android.ui.inappmessage.layout.view
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
 import io.hackle.android.ui.inappmessage.*
@@ -16,7 +13,6 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.model.InAppMessage
 import java.util.concurrent.atomic.AtomicReference
 
 

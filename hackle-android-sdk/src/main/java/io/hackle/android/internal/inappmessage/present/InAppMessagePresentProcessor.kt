@@ -1,12 +1,11 @@
 package io.hackle.android.internal.inappmessage.present
 
-import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContextResolver
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
 import io.hackle.android.internal.inappmessage.present.record.InAppMessageRecorder
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class InAppMessagePresentProcessor(
-    private val contextResolver: InAppMessagePresentationContextResolver,
     private val presenter: InAppMessagePresenter,
     private val recorder: InAppMessageRecorder,
 ) {
@@ -21,7 +20,7 @@ internal class InAppMessagePresentProcessor(
     }
 
     private fun present(request: InAppMessagePresentRequest): InAppMessagePresentResponse {
-        val context = contextResolver.resolve(request)
+        val context = InAppMessagePresentationContext.of(request)
         presenter.present(context)
         return InAppMessagePresentResponse.of(request, context)
     }

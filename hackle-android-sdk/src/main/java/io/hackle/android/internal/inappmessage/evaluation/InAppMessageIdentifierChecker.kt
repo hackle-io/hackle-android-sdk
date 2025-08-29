@@ -1,4 +1,4 @@
-package io.hackle.android.internal.inappmessage.trigger
+package io.hackle.android.internal.inappmessage.evaluation
 
 import io.hackle.sdk.core.model.Identifiers
 import io.hackle.sdk.core.user.IdentifierType
@@ -6,7 +6,7 @@ import io.hackle.sdk.core.user.IdentifierType
 /**
  * Identifier change checker for InAppMessage
  */
-class InAppMessageIdentifierChecker {
+internal class InAppMessageIdentifierChecker {
     fun isIdentifierChanged(old: Identifiers, new: Identifiers): Boolean {
         val oldUserId = old[IdentifierType.USER]
         val newUserId = new[IdentifierType.USER]

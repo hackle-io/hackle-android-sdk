@@ -1,6 +1,5 @@
 package io.hackle.android.support
 
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluation
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageSchedule
@@ -8,6 +7,11 @@ import io.hackle.android.internal.inappmessage.schedule.InAppMessageSchedule.Tim
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.decision.DecisionReason
+import io.hackle.sdk.core.evaluation.evaluator.Evaluator
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluation
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityRequest
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutEvaluation
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutRequest
 import io.hackle.sdk.core.model.Identifiers
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.Target
@@ -238,31 +242,81 @@ internal object InAppMessages {
         inAppMessageKey: Long = 1,
         identifiers: Identifiers = Identifiers.from(User.builder().deviceId("device_id").build()),
         time: Time = Time(System.currentTimeMillis(), System.currentTimeMillis()),
-        evaluation: InAppMessageEvaluation = InAppMessageEvaluation(true, DecisionReason.IN_APP_MESSAGE_TARGET),
+        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
         eventBasedContext: InAppMessageSchedule.EventBasedContext = InAppMessageSchedule.EventBasedContext(
             UUID.randomUUID().toString(), Event.of("test")
         ),
     ): InAppMessageSchedule {
-        return InAppMessageSchedule(dispatchId, inAppMessageKey, identifiers, time, evaluation, eventBasedContext)
+        return InAppMessageSchedule(dispatchId, inAppMessageKey, identifiers, time, reason, eventBasedContext)
+    }
+
+    fun eligibilityRequest(
+        workspace: Workspace = mockk(),
+        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
+        inAppMessage: InAppMessage = create(),
+        timestamp: Long = System.currentTimeMillis(),
+    ): InAppMessageEligibilityRequest {
+        return InAppMessageEligibilityRequest(
+            workspace = workspace,
+            user = user,
+            inAppMessage = inAppMessage,
+            timestamp = timestamp
+        )
+    }
+
+    fun eligibilityEvaluation(
+        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
+        targetEvaluations: List<Evaluator.Evaluation> = emptyList(),
+        inAppMessage: InAppMessage = create(),
+        isEligible: Boolean = true,
+        layoutEvaluation: InAppMessageLayoutEvaluation? = null,
+    ): InAppMessageEligibilityEvaluation {
+        return InAppMessageEligibilityEvaluation(
+            reason = reason,
+            targetEvaluations = targetEvaluations,
+            inAppMessage = inAppMessage,
+            isEligible = isEligible,
+            layoutEvaluation = layoutEvaluation
+        )
+    }
+
+    fun layoutRequest(
+        workspace: Workspace = mockk(),
+        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
+        inAppMessage: InAppMessage = create(),
+    ): InAppMessageLayoutRequest {
+        return InAppMessageLayoutRequest(
+            workspace = workspace,
+            user = user,
+            inAppMessage = inAppMessage
+        )
+    }
+
+    fun layoutEvaluation(
+        request: InAppMessageLayoutRequest = layoutRequest(),
+        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
+        targetEvaluations: List<Evaluator.Evaluation> = emptyList(),
+        message: InAppMessage.Message = request.inAppMessage.messageContext.messages.first(),
+        properties: Map<String, Any> = emptyMap(),
+    ): InAppMessageLayoutEvaluation {
+        return InAppMessageLayoutEvaluation(
+            request = request,
+            reason = reason,
+            targetEvaluations = targetEvaluations,
+            message = message,
+            properties = properties
+        )
     }
 
     fun presentRequest(
         dispatchId: String = UUID.randomUUID().toString(),
-        workspace: Workspace = mockk<Workspace>(relaxed = true),
         inAppMessage: InAppMessage = create(),
+        message: InAppMessage.Message = inAppMessage.messageContext.messages.first(),
         user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
         requestedAt: Long = System.currentTimeMillis(),
-        evaluation: InAppMessageEvaluation = InAppMessageEvaluation(true, DecisionReason.IN_APP_MESSAGE_TARGET),
+        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
         properties: Map<String, Any> = emptyMap(),
     ): InAppMessagePresentRequest {
-        return InAppMessagePresentRequest(
-            dispatchId,
-            workspace,
-            inAppMessage,
-            user,
-            requestedAt,
-            evaluation,
-            properties
-        )
+        return InAppMessagePresentRequest(dispatchId, inAppMessage, message, user, requestedAt, reason, properties)
     }
 }

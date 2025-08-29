@@ -25,9 +25,10 @@ import io.hackle.android.internal.inappmessage.InAppMessageManager
 import io.hackle.android.internal.inappmessage.delay.InAppMessageDelayManager
 import io.hackle.android.internal.inappmessage.delay.InAppMessageDelayScheduler
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverProcessor
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluator
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifierChecker
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageLayoutResolver
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
-import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContextResolver
 import io.hackle.android.internal.inappmessage.present.record.InAppMessageRecorder
 import io.hackle.android.internal.inappmessage.reset.InAppMessageResetProcessor
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleProcessor
@@ -80,11 +81,13 @@ import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluator
+import io.hackle.sdk.core.evaluation.evaluator.EvaluationEventRecorder
+import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityFlowFactory
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageExperimentEvaluator
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutEvaluator
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutSelector
 import io.hackle.sdk.core.evaluation.get
+import io.hackle.sdk.core.event.UserEventFactory
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.log.metrics.MetricLoggerFactory
 import io.hackle.sdk.core.internal.metrics.Metrics
@@ -262,6 +265,16 @@ internal object HackleApps {
             eventProcessor.addDecorator(WebViewWrapperUserEventDecorator())
         }
 
+        // Evaluation Event
+
+        val eventFactory = UserEventFactory(
+            clock = clock
+        )
+        val evaluationEventRecorder = EvaluationEventRecorder(
+            eventFactory = eventFactory,
+            eventProcessor = eventProcessor
+        )
+
         // Core
 
         val abOverrideStorage = create(context, "${PREFERENCES_NAME}_ab_override_$sdkKey")
@@ -281,6 +294,7 @@ internal object HackleApps {
         val core = HackleCore.create(
             context = EvaluationContext.GLOBAL,
             workspaceFetcher = workspaceManager,
+            eventFactory = eventFactory,
             eventProcessor = eventProcessor,
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
@@ -355,26 +369,42 @@ internal object HackleApps {
         )
         val inAppMessageLayoutEvaluator = InAppMessageLayoutEvaluator(
             experimentEvaluator = InAppMessageExperimentEvaluator(EvaluationContext.GLOBAL.get()),
-            selector = InAppMessageLayoutSelector()
-        )
-        val inAppMessagePresentationContextResolver = InAppMessagePresentationContextResolver(
-            core = core,
-            layoutEvaluator = inAppMessageLayoutEvaluator
+            selector = InAppMessageLayoutSelector(),
+            eventRecorder = evaluationEventRecorder
         )
         val inAppMessageRecorder = InAppMessageRecorder(
             storage = inAppMessageImpressionStorage
         )
         val inAppMessagePresentProcessor = InAppMessagePresentProcessor(
-            contextResolver = inAppMessagePresentationContextResolver,
             presenter = inAppMessageUi,
             recorder = inAppMessageRecorder
         )
 
-        val inAppMessageIdentifierChecker = InAppMessageIdentifierChecker()
-        val inAppMessageEligibilityEvaluator = InAppMessageEligibilityEvaluator(EvaluationContext.GLOBAL.get())
-        val inAppMessageEvaluator = InAppMessageEvaluator(
+        val inAppMessageEligibilityFlowFactory = InAppMessageEligibilityFlowFactory(
+            context = EvaluationContext.GLOBAL,
+            layoutEvaluator = inAppMessageLayoutEvaluator
+        )
+
+        val inAppMessageEvaluateProcessor = InAppMessageEvaluateProcessor(
             core = core,
-            eligibilityEvaluator = inAppMessageEligibilityEvaluator
+            flowFactory = inAppMessageEligibilityFlowFactory,
+            eventRecorder = evaluationEventRecorder
+        )
+        val inAppMessageIdentifierChecker = InAppMessageIdentifierChecker()
+
+        val inAppMessageLayoutResolver = InAppMessageLayoutResolver(
+            core = core,
+            layoutEvaluator = inAppMessageLayoutEvaluator
+        )
+
+        val inAppMessageDeliverProcessor = InAppMessageDeliverProcessor(
+            activityProvider = lifecycleManager,
+            workspaceFetcher = workspaceManager,
+            userManager = userManager,
+            identifierChecker = inAppMessageIdentifierChecker,
+            layoutResolver = inAppMessageLayoutResolver,
+            evaluateProcessor = inAppMessageEvaluateProcessor,
+            presentProcessor = inAppMessagePresentProcessor
         )
 
         val inAppMessageDelayScheduler = InAppMessageDelayScheduler(
@@ -384,15 +414,6 @@ internal object HackleApps {
         val inAppMessageDelayManager = InAppMessageDelayManager(
             scheduler = inAppMessageDelayScheduler,
             tasks = ConcurrentHashMap()
-        )
-
-        val inAppMessageDeliverProcessor = InAppMessageDeliverProcessor(
-            activityProvider = lifecycleManager,
-            workspaceFetcher = workspaceManager,
-            userManager = userManager,
-            identifierChecker = inAppMessageIdentifierChecker,
-            evaluator = inAppMessageEvaluator,
-            presentProcessor = inAppMessagePresentProcessor
         )
 
         val inAppMessageSchedulerFactory = InAppMessageSchedulerFactory(
@@ -413,7 +434,7 @@ internal object HackleApps {
         val inAppMessageTriggerDeterminer = InAppMessageTriggerDeterminer(
             workspaceFetcher = workspaceManager,
             eventMatcher = inAppMessageEventMatcher,
-            evaluator = inAppMessageEvaluator
+            evaluateProcessor = inAppMessageEvaluateProcessor
         )
         val inAppMessageTriggerHandler = InAppMessageTriggerHandler(
             scheduleProcessor = inAppMessageScheduleProcessor
