@@ -46,7 +46,7 @@ class InAppMessageEventTrackerTest {
             inAppMessage = inAppMessage,
             message = message,
             decisionReason = DecisionReason.OVERRIDDEN,
-            properties = mapOf("trigger_event_insert_id" to "event_insert_id")
+            properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
         sut.track(context, InAppMessageEvent.Impression, 42)
@@ -65,7 +65,7 @@ class InAppMessageEventTrackerTest {
                             "image_url" to listOf("image_path"),
                             "button_text" to listOf("button_1", "button_2"),
                             "decision_reason" to "OVERRIDDEN",
-                            "trigger_event_insert_id" to "event_insert_id",
+                            "\$trigger_event_insert_id" to "event_insert_id",
                         )
                     }
                 },
@@ -95,7 +95,7 @@ class InAppMessageEventTrackerTest {
             inAppMessage = inAppMessage,
             message = message,
             decisionReason = DecisionReason.OVERRIDDEN,
-            properties = mapOf("trigger_event_insert_id" to "event_insert_id")
+            properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
         sut.track(context, InAppMessageEvent.Close, 42)
@@ -110,7 +110,7 @@ class InAppMessageEventTrackerTest {
                             "in_app_message_key" to 320L,
                             "in_app_message_display_type" to "BOTTOM_SHEET",
                             "decision_reason" to "OVERRIDDEN",
-                            "trigger_event_insert_id" to "event_insert_id",
+                            "\$trigger_event_insert_id" to "event_insert_id",
                         )
                     }
                 },
@@ -141,7 +141,7 @@ class InAppMessageEventTrackerTest {
             inAppMessage = inAppMessage,
             message = message,
             decisionReason = DecisionReason.OVERRIDDEN,
-            properties = mapOf("trigger_event_insert_id" to "event_insert_id")
+            properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
         sut.track(context, InAppMessageEvent.buttonAction(action, message.buttons[0]), 42)
@@ -160,7 +160,7 @@ class InAppMessageEventTrackerTest {
                             "button_text" to "button_1",
                             "action_value" to "button_link_click",
                             "decision_reason" to "OVERRIDDEN",
-                            "trigger_event_insert_id" to "event_insert_id",
+                            "\$trigger_event_insert_id" to "event_insert_id",
                         )
                     }
                 },

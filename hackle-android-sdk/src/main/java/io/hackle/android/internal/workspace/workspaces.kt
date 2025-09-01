@@ -212,7 +212,7 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
             delay = eventTriggerDelay
         ),
         evaluateContext = InAppMessage.EvaluateContext(
-            atDeliverTime = evaluationContext?.atDeliverTime ?: false
+            atDeliverTime = evaluateContext?.atDeliverTime ?: false
         ),
         targetContext = targetContext.toTargetContext(),
         messageContext = messageContext
@@ -237,7 +237,7 @@ internal fun InAppMessageDto.EventFrequencyCapDto.toFrequencyCap(): InAppMessage
 internal fun InAppMessageDto.CampaignDelayDto.toDelayOrNull(): InAppMessage.Delay? {
     return InAppMessage.Delay(
         type = parseEnumOrNull<InAppMessage.Delay.Type>(type) ?: return null,
-        afterCondition = afterConditionDto?.let { it.toAfterConditionOrNull() ?: return null }
+        afterCondition = afterCondition?.let { it.toAfterConditionOrNull() ?: return null }
 
     )
 }

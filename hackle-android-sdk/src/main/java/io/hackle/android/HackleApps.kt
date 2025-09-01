@@ -367,11 +367,7 @@ internal object HackleApps {
             eventHandler = inAppMessageEventHandler,
             imageLoader = imageLoader
         )
-        val inAppMessageLayoutEvaluator = InAppMessageLayoutEvaluator(
-            experimentEvaluator = InAppMessageExperimentEvaluator(EvaluationContext.GLOBAL.get()),
-            selector = InAppMessageLayoutSelector(),
-            eventRecorder = evaluationEventRecorder
-        )
+
         val inAppMessageRecorder = InAppMessageRecorder(
             storage = inAppMessageImpressionStorage
         )
@@ -380,6 +376,11 @@ internal object HackleApps {
             recorder = inAppMessageRecorder
         )
 
+        val inAppMessageLayoutEvaluator = InAppMessageLayoutEvaluator(
+            experimentEvaluator = InAppMessageExperimentEvaluator(EvaluationContext.GLOBAL.get()),
+            selector = InAppMessageLayoutSelector(),
+            eventRecorder = evaluationEventRecorder
+        )
         val inAppMessageEligibilityFlowFactory = InAppMessageEligibilityFlowFactory(
             context = EvaluationContext.GLOBAL,
             layoutEvaluator = inAppMessageLayoutEvaluator

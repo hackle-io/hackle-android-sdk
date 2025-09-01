@@ -69,6 +69,7 @@ internal class InAppMessageDeliverProcessor(
         val eligibilityRequest = InAppMessageEligibilityRequest(workspace, user, inAppMessage, request.requestedAt)
         val eligibilityEvaluation = evaluateProcessor.process(InAppMessageEvaluateType.DELIVER, eligibilityRequest)
         if (!eligibilityEvaluation.isEligible) {
+            log.debug { "InAppMessage Deliver Ineligible: dispatchId=${request.dispatchId}, reason=${eligibilityEvaluation.reason}" }
             return InAppMessageDeliverResponse.of(request, Code.INELIGIBLE)
         }
 

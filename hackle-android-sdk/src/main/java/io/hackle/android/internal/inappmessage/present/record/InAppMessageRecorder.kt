@@ -35,6 +35,7 @@ internal class InAppMessageRecorder(
             newImpressions
         }
         storage.set(request.inAppMessage, impressionToSave)
+        log.debug { "InAppMessage Impression recorded: dispatchId=${request.dispatchId}, inAppMessageKey=${request.inAppMessage.key}, impression=${impression}" }
     }
 
     companion object {

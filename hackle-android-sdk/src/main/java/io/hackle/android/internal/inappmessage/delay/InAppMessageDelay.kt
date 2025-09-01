@@ -9,6 +9,10 @@ internal data class InAppMessageDelay(
 ) {
     val delayMillis: Long get() = schedule.time.delayMillis(requestedAt)
 
+    override fun toString(): String {
+        return "InAppMessageDelay(dispatchId=${schedule.dispatchId}, inAppMessageKey=${schedule.inAppMessageKey}, delayMillis=${delayMillis}ms, requestedAt=$requestedAt, deliverAt=${schedule.time.deliverAt})"
+    }
+
     companion object {
         fun from(request: InAppMessageScheduleRequest): InAppMessageDelay {
             return InAppMessageDelay(

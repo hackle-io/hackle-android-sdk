@@ -179,7 +179,7 @@ internal data class InAppMessageDto(
     val eventTriggerRules: List<EventTriggerRuleDto>,
     val eventFrequencyCap: EventFrequencyCapDto?,
     val eventTriggerDelay: CampaignDelayDto?,
-    val evaluationContext: EvaluationContextDto?,
+    val evaluateContext: EvaluateContextDto?,
     val targetContext: TargetContextDto,
     val messageContext: MessageContextDto,
 ) {
@@ -196,7 +196,7 @@ internal data class InAppMessageDto(
 
     data class CampaignDelayDto(
         val type: String,
-        val afterConditionDto: AfterConditionDto?,
+        val afterCondition: AfterConditionDto?,
     ) {
         data class AfterConditionDto(
             val duration: DurationDto,
@@ -223,7 +223,7 @@ internal data class InAppMessageDto(
         )
     }
 
-    data class EvaluationContextDto(
+    data class EvaluateContextDto(
         val atDeliverTime: Boolean,
     )
 

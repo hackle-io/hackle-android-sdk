@@ -23,7 +23,7 @@ internal data class InAppMessageDeliverRequest(
                 requestedAt = request.requestedAt,
                 reason = request.schedule.reason,
                 properties = PropertiesBuilder()
-                    .add("trigger_event_insert_id", request.schedule.eventBasedContext.insertId)
+                    .add("\$trigger_event_insert_id", request.schedule.eventBasedContext.insertId)
                     .build()
             )
         }

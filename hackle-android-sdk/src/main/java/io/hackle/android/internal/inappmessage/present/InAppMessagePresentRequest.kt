@@ -17,7 +17,7 @@ internal class InAppMessagePresentRequest(
     val properties: Map<String, Any>,
 ) {
     override fun toString(): String {
-        return "InAppMessagePresentRequest(dispatchId=$dispatchId, inAppMessage=$inAppMessage, user=${user.identifiers}, requestedAt=$requestedAt, reason=$reason, properties=$properties)"
+        return "InAppMessagePresentRequest(dispatchId=$dispatchId, inAppMessage=$inAppMessage, message=${message.layout.displayType}, user=${user.identifiers}, requestedAt=$requestedAt, reason=$reason, properties=$properties)"
     }
 
     companion object {

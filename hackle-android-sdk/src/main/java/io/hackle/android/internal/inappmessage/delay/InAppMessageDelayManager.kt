@@ -21,13 +21,13 @@ internal class InAppMessageDelayManager(
         val task = scheduler.schedule(delay)
         tasks[delay.schedule.dispatchId] = task
 
-        log.debug { "InAppMessage Delay started: dispatchId=${request.schedule.dispatchId}" }
+        log.debug { "InAppMessage Delay started: $delay" }
         return delay
     }
 
     private fun ensureDelay(request: InAppMessageScheduleRequest) {
         val existing = tasks[request.schedule.dispatchId] ?: return
-        require(existing.isCompleted) { "Existing delay is not completed: $request" }
+        require(existing.isCompleted) { "Existing delay is not completed: ${existing.delay}" }
         tasks.remove(request.schedule.dispatchId)
     }
 

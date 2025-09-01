@@ -1,5 +1,6 @@
 package io.hackle.android.support
 
+import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverRequest
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageSchedule
@@ -318,5 +319,16 @@ internal object InAppMessages {
         properties: Map<String, Any> = emptyMap(),
     ): InAppMessagePresentRequest {
         return InAppMessagePresentRequest(dispatchId, inAppMessage, message, user, requestedAt, reason, properties)
+    }
+
+    fun deliverRequest(
+        dispatchId: String = UUID.randomUUID().toString(),
+        inAppMessageKey: Long = 1L,
+        identifiers: Identifiers = Identifiers.from(User.builder().deviceId("device_id").build()),
+        requestedAt: Long = System.currentTimeMillis(),
+        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
+        properties: Map<String, Any> = emptyMap(),
+    ): InAppMessageDeliverRequest {
+        return InAppMessageDeliverRequest(dispatchId, inAppMessageKey, identifiers, requestedAt, reason, properties)
     }
 }
