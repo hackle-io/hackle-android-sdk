@@ -15,11 +15,16 @@ internal class InAppMessageResetProcessor(
             val isIdentifierChanged =
                 identifierChecker.isIdentifierChanged(oldUser.resolvedIdentifiers, newUser.resolvedIdentifiers)
             if (isIdentifierChanged) {
-                delayManager.cancelAll()
+                reset()
             }
         } catch (e: Exception) {
             log.error { "Failed to reset InAppMessage: $e" }
         }
+    }
+
+    private fun reset() {
+        val delayed = delayManager.cancelAll()
+        log.debug { "InAppMessage Reset: cancelled=${delayed.count()}" }
     }
 
     companion object {
