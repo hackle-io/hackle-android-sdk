@@ -2,6 +2,7 @@ package io.hackle.android.internal.inappmessage.delay
 
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageSchedule
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleListener
+import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequest
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType
 import io.hackle.android.internal.time.FixedClock
 import io.hackle.android.support.InAppMessages
@@ -64,16 +65,20 @@ class InAppMessageDelaySchedulerTest {
         val sut =
             InAppMessageDelayScheduler(Clock.SYSTEM, Schedulers.executor(Executors.newSingleThreadScheduledExecutor()))
 
+        val listener = InAppMessageScheduleListenerStub()
+        sut.listener = listener
+
         val schedule = InAppMessages.schedule(
+            inAppMessageKey = 999,
             time = InAppMessageSchedule.Time(1001, 2000)
         )
-        val delay = InAppMessageDelay(schedule, 1950)
+        val delay = InAppMessageDelay(schedule, 1900)
 
         val task = sut.schedule(delay)
 
-        expectThat(task.isCompleted).isEqualTo(false)
+        expectThat(listener.count) isEqualTo 0
         Thread.sleep(200)
-        expectThat(task.isCompleted).isEqualTo(true)
+        expectThat(listener.count) isEqualTo 1
     }
 
     @Test
@@ -81,15 +86,26 @@ class InAppMessageDelaySchedulerTest {
         val sut =
             InAppMessageDelayScheduler(Clock.SYSTEM, Schedulers.executor(Executors.newSingleThreadScheduledExecutor()))
 
+        val listener = InAppMessageScheduleListenerStub()
+        sut.listener = listener
+
         val schedule = InAppMessages.schedule(
             time = InAppMessageSchedule.Time(1001, 2000)
         )
-        val delay = InAppMessageDelay(schedule, 1000)
+        val delay = InAppMessageDelay(schedule, 1900)
 
         val task = sut.schedule(delay)
 
-        expectThat(task.isCompleted).isEqualTo(false)
+        expectThat(listener.count) isEqualTo 0
         task.cancel()
-        expectThat(task.isCompleted).isEqualTo(true)
+        Thread.sleep(200)
+        expectThat(listener.count) isEqualTo 0
+    }
+
+    private class InAppMessageScheduleListenerStub : InAppMessageScheduleListener {
+        var count = 0
+        override fun onSchedule(request: InAppMessageScheduleRequest) {
+            count++
+        }
     }
 }

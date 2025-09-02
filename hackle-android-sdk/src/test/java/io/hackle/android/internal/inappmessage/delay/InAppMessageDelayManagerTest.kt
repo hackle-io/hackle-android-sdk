@@ -3,7 +3,6 @@ package io.hackle.android.internal.inappmessage.delay
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequest
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType
 import io.hackle.android.support.InAppMessages
-import io.hackle.android.support.assertThrows
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Before
@@ -47,13 +46,7 @@ class InAppMessageDelayManagerTest {
             get { this["1"] } isEqualTo task1
         }
 
-        // exiting running task
-        assertThrows<IllegalArgumentException> {
-            sut.delay(request1)
-        }
-
         // re delay
-        task1.done = true
         sut.delay(request1)
         expectThat(tasks) {
             hasSize(1)
@@ -94,13 +87,9 @@ class InAppMessageDelayManagerTest {
     private class MockInAppMessageDelayTask(
         override val delay: InAppMessageDelay,
     ) : InAppMessageDelayTask {
-        var done = false
         var cancelled = false
-        override val isCompleted: Boolean get() = done
-
         override fun cancel() {
             cancelled = true
-            done = true
         }
     }
 }

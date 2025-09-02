@@ -33,7 +33,6 @@ internal class InAppMessageDelayScheduler(
         override val delay: InAppMessageDelay,
         private val job: ScheduledJob,
     ) : InAppMessageDelayTask {
-        override val isCompleted: Boolean get() = job.isCompleted
         override fun cancel() {
             job.cancel()
             log.debug { "InAppMessage Delay cancelled: $delay" }
