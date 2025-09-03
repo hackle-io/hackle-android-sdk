@@ -2,7 +2,7 @@ package io.hackle.android.internal.workspace
 
 internal data class WorkspaceConfig(
     val lastModified: String?,
-    val config: WorkspaceConfigDto
+    val config: WorkspaceConfigDto,
 )
 
 internal data class WorkspaceConfigDto(
@@ -15,7 +15,7 @@ internal data class WorkspaceConfigDto(
     val containers: List<ContainerDto>,
     val parameterConfigurations: List<ParameterConfigurationDto>,
     val remoteConfigParameters: List<RemoteConfigParameterDto>,
-    val inAppMessages: List<InAppMessageDto>
+    val inAppMessages: List<InAppMessageDto>,
 )
 
 internal data class WorkspaceDto(
@@ -166,7 +166,7 @@ internal data class RemoteConfigParameterDto(
 
 internal class DurationDto(
     val timeUnit: String,
-    val amount: Long
+    val amount: Long,
 )
 
 internal data class InAppMessageDto(
@@ -178,46 +178,61 @@ internal data class InAppMessageDto(
     val status: String,
     val eventTriggerRules: List<EventTriggerRuleDto>,
     val eventFrequencyCap: EventFrequencyCapDto?,
+    val eventTriggerDelay: CampaignDelayDto?,
+    val evaluateContext: EvaluateContextDto?,
     val targetContext: TargetContextDto,
-    val messageContext: MessageContextDto
+    val messageContext: MessageContextDto,
 ) {
 
     data class EventTriggerRuleDto(
         val eventKey: String,
-        val targets: List<TargetDto>
+        val targets: List<TargetDto>,
     )
 
     data class EventFrequencyCapDto(
         val identifiers: List<IdentifierCapDto>,
-        val duration: DurationCapDto?
+        val duration: DurationCapDto?,
     )
+
+    data class CampaignDelayDto(
+        val type: String,
+        val afterCondition: AfterConditionDto?,
+    ) {
+        data class AfterConditionDto(
+            val duration: DurationDto,
+        )
+    }
 
     data class IdentifierCapDto(
         val identifierType: String,
-        val countPerIdentifier: Long
+        val countPerIdentifier: Long,
     )
 
     data class DurationCapDto(
         val durationUnit: DurationDto,
-        val countPerDuration: Long
+        val countPerDuration: Long,
     )
 
     data class TargetContextDto(
         val targets: List<TargetDto>,
-        val overrides: List<UserOverrideDto>
+        val overrides: List<UserOverrideDto>,
     ) {
         data class UserOverrideDto(
             val identifierType: String,
-            val identifiers: List<String>
+            val identifiers: List<String>,
         )
     }
+
+    data class EvaluateContextDto(
+        val atDeliverTime: Boolean,
+    )
 
     data class MessageContextDto(
         val defaultLang: String,
         val exposure: MessageDto.ExposureDto,
         val platformTypes: List<String>,
         val orientations: List<String>,
-        val messages: List<MessageDto>
+        val messages: List<MessageDto>,
     ) {
         data class MessageDto(
             val variationKey: String?,
@@ -237,43 +252,43 @@ internal data class InAppMessageDto(
             data class LayoutDto(
                 val displayType: String,
                 val layoutType: String,
-                val alignment: AlignmentDto?
+                val alignment: AlignmentDto?,
             )
 
             data class ImageDto(
                 val orientation: String,
                 val imagePath: String,
-                val action: ActionDto?
+                val action: ActionDto?,
             )
 
             data class ImageAutoScrollDto(
-                val interval: DurationDto
+                val interval: DurationDto,
             )
 
             data class TextDto(
                 val title: TextAttributeDto,
-                val body: TextAttributeDto
+                val body: TextAttributeDto,
             ) {
                 data class TextAttributeDto(
                     val text: String,
-                    val style: StyleDto
+                    val style: StyleDto,
                 )
 
                 data class StyleDto(
-                    val textColor: String
+                    val textColor: String,
                 )
             }
 
             data class ButtonDto(
                 val text: String,
                 val style: StyleDto,
-                val action: ActionDto
+                val action: ActionDto,
             ) {
 
                 data class StyleDto(
                     val textColor: String,
                     val bgColor: String,
-                    val borderColor: String
+                    val borderColor: String,
                 )
             }
 
@@ -283,33 +298,33 @@ internal data class InAppMessageDto(
             )
 
             data class BackgroundDto(
-                val color: String
+                val color: String,
             )
 
             data class CloseButtonDto(
                 val style: StyleDto,
-                val action: ActionDto
+                val action: ActionDto,
             ) {
                 data class StyleDto(
-                    val color: String
+                    val color: String,
                 )
             }
 
             data class ExposureDto(
                 val type: String,
-                val key: Long?
+                val key: Long?,
             )
         }
 
         data class AlignmentDto(
             val vertical: String,
-            val horizontal: String
+            val horizontal: String,
         )
 
         data class ActionDto(
             val behavior: String,
             val type: String,
-            val value: String?
+            val value: String?,
         )
     }
 }
