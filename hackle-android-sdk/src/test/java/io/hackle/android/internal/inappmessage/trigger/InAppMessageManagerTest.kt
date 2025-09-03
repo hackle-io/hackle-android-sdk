@@ -1,30 +1,24 @@
 package io.hackle.android.internal.inappmessage.trigger
 
-import io.hackle.android.internal.event.UserEvents
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresenter
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.ActivityState
-import io.hackle.android.support.InAppMessages
-import io.mockk.*
+import io.hackle.android.internal.inappmessage.InAppMessageManager
+import io.hackle.android.internal.inappmessage.reset.InAppMessageResetProcessor
+import io.hackle.sdk.common.User
+import io.hackle.sdk.core.event.UserEvent
+import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
-import strikt.api.expectThat
-import strikt.assertions.isSameInstanceAs
 
 class InAppMessageManagerTest {
 
     @RelaxedMockK
-    private lateinit var determiner: InAppMessageDeterminer
+    private lateinit var triggerProcessor: InAppMessageTriggerProcessor
 
     @RelaxedMockK
-    @MockK
-    private lateinit var presenter: InAppMessagePresenter
-
-    @RelaxedMockK
-    private lateinit var activityProvider: ActivityProvider
+    private lateinit var resetProcessor: InAppMessageResetProcessor
 
     @InjectMockKs
     private lateinit var sut: InAppMessageManager
@@ -32,65 +26,34 @@ class InAppMessageManagerTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        every { activityProvider.currentState } returns ActivityState.ACTIVE
     }
 
     @Test
-    fun `when current state is not ACTIVE then should not present`() {
+    fun `when onEvent then trigger in-app messages`() {
         // given
-        every { activityProvider.currentState } returns ActivityState.INACTIVE
+        val event = mockk<UserEvent>()
 
         // when
-        sut.onEvent(mockk())
-
-        // then
-        verify {
-            presenter wasNot Called
-        }
-    }
-
-
-    @Test
-    fun `when cannot determine message then should not present`() {
-        // given
-        every { determiner.determineOrNull(any()) } returns null
-
-        // when
-        sut.onEvent(mockk())
-
-        // then
-        verify {
-            presenter wasNot Called
-        }
-    }
-
-    @Test
-    fun `when exception occurs while determining message then should not present`() {
-        // given
-        every { determiner.determineOrNull(any()) } throws IllegalArgumentException("fail")
-
-        // when
-        sut.onEvent(mockk())
-
-        // then
-        verify {
-            presenter wasNot Called
-        }
-    }
-
-
-    @Test
-    fun `when message is determined then present the message`() {
-        // given
-        val context = InAppMessages.context()
-        every { determiner.determineOrNull(any()) } returns context
-
-        // when
-        sut.onEvent(UserEvents.track("test"))
+        sut.onEvent(event)
 
         // then
         verify(exactly = 1) {
-            presenter.present(withArg { expectThat(it) isSameInstanceAs context })
+            triggerProcessor.process(event)
+        }
+    }
+
+    @Test
+    fun `when onUserUpdated then reset in-app messages`() {
+        // given
+        val oldUser = mockk<User>()
+        val newUser = mockk<User>()
+
+        // when
+        sut.onUserUpdated(oldUser, newUser, 42)
+
+        // then
+        verify(exactly = 1) {
+            resetProcessor.process(oldUser, newUser)
         }
     }
 }

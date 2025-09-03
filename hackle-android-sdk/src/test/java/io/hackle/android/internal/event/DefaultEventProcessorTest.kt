@@ -8,7 +8,6 @@ import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
@@ -16,6 +15,7 @@ import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserEventDecorator
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
@@ -167,7 +167,7 @@ class DefaultEventProcessorTest {
         // given
         val sut = processor()
         val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
-        val event = UserEvents.track("\$push_token", user)
+        val event = UserEvents.track("\$push_token", user = user)
 
         // when
         sut.process(event)

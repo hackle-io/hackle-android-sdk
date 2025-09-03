@@ -19,13 +19,12 @@ import strikt.api.expectThat
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
-class InAppMessageEventTriggerRuleDeterminerTest {
-
+class InAppMessageEventTriggerRuleMatcherTest {
     @MockK
     private lateinit var targetMatcher: TargetMatcher
 
     @InjectMockKs
-    private lateinit var sut: InAppMessageEventTriggerRuleDeterminer
+    private lateinit var sut: InAppMessageEventTriggerRuleMatcher
 
     private lateinit var workspace: Workspace
 
@@ -42,7 +41,7 @@ class InAppMessageEventTriggerRuleDeterminerTest {
         val inAppMessage = InAppMessages.create(eventTrigger = InAppMessages.eventTrigger(rules = listOf()))
 
         // when
-        val actual = sut.isTriggerTarget(workspace, inAppMessage, event)
+        val actual = sut.matches(workspace, inAppMessage, event)
 
         // then
         expectThat(actual).isFalse()
@@ -64,7 +63,7 @@ class InAppMessageEventTriggerRuleDeterminerTest {
         every { targetMatcher.anyMatches(any(), any(), any()) } returnsMany listOf(false, false)
 
         // when
-        val actual = sut.isTriggerTarget(workspace, inAppMessage, event)
+        val actual = sut.matches(workspace, inAppMessage, event)
 
         // then
         expectThat(actual).isFalse()
@@ -91,7 +90,7 @@ class InAppMessageEventTriggerRuleDeterminerTest {
         every { targetMatcher.anyMatches(any(), any(), any()) } returnsMany listOf(false, false, true, false)
 
         // when
-        val actual = sut.isTriggerTarget(workspace, inAppMessage, event)
+        val actual = sut.matches(workspace, inAppMessage, event)
 
         // then
         expectThat(actual).isTrue()
