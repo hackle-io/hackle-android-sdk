@@ -5,21 +5,22 @@ import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.model.EventType
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
-import io.mockk.every
-import io.mockk.mockk
+import java.util.UUID
 
 object UserEvents {
 
     fun track(
         eventKey: String,
+        insertId: String = UUID.randomUUID().toString(),
         user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
     ): UserEvent.Track {
-        return mockk {
-            every { this@mockk.eventType } returns EventType.Custom(1, eventKey)
-            every { this@mockk.event } returns Event.builder(eventKey).build()
-            every { this@mockk.user } returns user
-            every { this@mockk.timestamp } returns timestamp
-        }
+        return UserEvent.Track(
+            insertId = insertId,
+            timestamp = timestamp,
+            user = user,
+            eventType = EventType.Custom(1, eventKey),
+            event = Event.builder(eventKey).build()
+        )
     }
 }

@@ -17,6 +17,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
 
 internal class InAppMessageDtoTest {
 
@@ -47,6 +48,9 @@ internal class InAppMessageDtoTest {
         expectThat(iam.eventTrigger.rules[0].eventKey).isEqualTo("view_home")
         expectThat(iam.eventTrigger.rules[0].targets.size).isEqualTo(1)
         expectThat(iam.eventTrigger.rules[0].targets[0].conditions.size).isEqualTo(1)
+
+        expectThat(iam.eventTrigger.delay.type).isEqualTo(InAppMessage.Delay.Type.AFTER)
+        expectThat(iam.eventTrigger.delay.afterCondition).isNotNull().get { durationMillis }.isEqualTo(42000)
 
         expectThat(iam.targetContext.targets.size).isEqualTo(1)
         expectThat(iam.targetContext.overrides.size).isEqualTo(1)
