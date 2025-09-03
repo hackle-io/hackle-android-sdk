@@ -1,12 +1,13 @@
 package io.hackle.android.internal.inappmessage.deliver
 
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverResponse.Code
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluation
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluator
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateType
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifierChecker
+import io.hackle.android.internal.inappmessage.evaluation.InAppMessageLayoutResolver
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType.TRIGGERED
-import io.hackle.android.internal.inappmessage.trigger.InAppMessageIdentifierChecker
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.ActivityState
 import io.hackle.android.internal.user.UserManager
@@ -41,7 +42,10 @@ class InAppMessageDeliverProcessorTest {
     private lateinit var identifierChecker: InAppMessageIdentifierChecker
 
     @MockK
-    private lateinit var evaluator: InAppMessageEvaluator
+    private lateinit var layoutResolver: InAppMessageLayoutResolver
+
+    @MockK
+    private lateinit var evaluateProcessor: InAppMessageEvaluateProcessor
 
     @MockK
     private lateinit var presentProcessor: InAppMessagePresentProcessor
@@ -115,7 +119,7 @@ class InAppMessageDeliverProcessorTest {
         val inAppMessage = InAppMessages.create()
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns true
 
         // when
@@ -136,18 +140,20 @@ class InAppMessageDeliverProcessorTest {
         every { workspaceFetcher.fetch() } returns workspace
 
         val inAppMessage = InAppMessages.create(
-            evaluateContext = InAppMessage.EvaluateContext(
-                atDeliverTime = true
-            )
+            evaluateContext = InAppMessage.EvaluateContext(atDeliverTime = true)
         )
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
 
-        every {
-            evaluator.evaluate(any(), any(), any(), any())
-        } returns InAppMessageEvaluation(false, DecisionReason.NOT_IN_IN_APP_MESSAGE_TARGET)
+        val layoutEvaluation = InAppMessages.layoutEvaluation()
+        every { layoutResolver.resolve(any(), any(), any()) } returns layoutEvaluation
+
+        val eligibilityEvaluation = InAppMessages.eligibilityEvaluation(
+            isEligible = false
+        )
+        every { evaluateProcessor.process(InAppMessageEvaluateType.DELIVER, any()) } returns eligibilityEvaluation
 
         // when
         val actual = sut.process(request)
@@ -161,9 +167,7 @@ class InAppMessageDeliverProcessorTest {
     fun `PRESENT`() {
         // given
         val request = InAppMessageDeliverRequest.of(
-            InAppMessages.schedule(
-                evaluation = InAppMessageEvaluation(true, DecisionReason.IN_APP_MESSAGE_TARGET)
-            ).toRequest(TRIGGERED, 42)
+            InAppMessages.schedule(reason = DecisionReason.IN_APP_MESSAGE_TARGET).toRequest(TRIGGERED, 42)
         )
 
         every { activityProvider.currentState } returns ActivityState.ACTIVE
@@ -178,12 +182,16 @@ class InAppMessageDeliverProcessorTest {
         )
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
 
-        every {
-            evaluator.evaluate(any(), any(), any(), any())
-        } returns InAppMessageEvaluation(false, DecisionReason.NOT_IN_IN_APP_MESSAGE_TARGET)
+        val layoutEvaluation = InAppMessages.layoutEvaluation()
+        every { layoutResolver.resolve(any(), any(), any()) } returns layoutEvaluation
+
+        val eligibilityEvaluation = InAppMessages.eligibilityEvaluation(
+            isEligible = true
+        )
+        every { evaluateProcessor.process(InAppMessageEvaluateType.DELIVER, any()) } returns eligibilityEvaluation
 
         val presentResponse = mockk<InAppMessagePresentResponse>()
         every { presentProcessor.process(any()) } returns presentResponse
@@ -199,9 +207,7 @@ class InAppMessageDeliverProcessorTest {
     fun `EXCEPTION`() {
         // given
         val request = InAppMessageDeliverRequest.of(
-            InAppMessages.schedule(
-                evaluation = InAppMessageEvaluation(true, DecisionReason.IN_APP_MESSAGE_TARGET)
-            ).toRequest(TRIGGERED, 42)
+            InAppMessages.schedule(reason = DecisionReason.IN_APP_MESSAGE_TARGET).toRequest(TRIGGERED, 42)
         )
 
         every { activityProvider.currentState } returns ActivityState.ACTIVE
@@ -216,12 +222,16 @@ class InAppMessageDeliverProcessorTest {
         )
         every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
 
-        every { userManager.resolve(any()) } returns HackleUser.builder().build()
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
         every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
 
-        every {
-            evaluator.evaluate(any(), any(), any(), any())
-        } returns InAppMessageEvaluation(false, DecisionReason.NOT_IN_IN_APP_MESSAGE_TARGET)
+        val layoutEvaluation = InAppMessages.layoutEvaluation()
+        every { layoutResolver.resolve(any(), any(), any()) } returns layoutEvaluation
+
+        val eligibilityEvaluation = InAppMessages.eligibilityEvaluation(
+            isEligible = true
+        )
+        every { evaluateProcessor.process(InAppMessageEvaluateType.DELIVER, any()) } returns eligibilityEvaluation
 
         val presentResponse = mockk<InAppMessagePresentResponse>()
         every { presentProcessor.process(any()) } throws IllegalArgumentException("fail")

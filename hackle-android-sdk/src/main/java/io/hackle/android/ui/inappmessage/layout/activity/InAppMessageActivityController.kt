@@ -2,7 +2,7 @@ package io.hackle.android.ui.inappmessage.layout.activity
 
 import android.app.Activity
 import android.content.Intent
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 internal class InAppMessageActivityController private constructor(
     override val context: InAppMessagePresentationContext,
     override val ui: InAppMessageUi,
-    private val activityClass: Class<out InAppMessageActivity>
+    private val activityClass: Class<out InAppMessageActivity>,
 ) : InAppMessageController {
 
     private var messageActivity: WeakReference<InAppMessageActivity>? = null
@@ -57,7 +57,7 @@ internal class InAppMessageActivityController private constructor(
         const val IN_APP_MESSAGE_ID = "hackleInAppMessageId"
         inline fun <reified ACTIVITY : InAppMessageActivity> create(
             context: InAppMessagePresentationContext,
-            ui: InAppMessageUi
+            ui: InAppMessageUi,
         ): InAppMessageActivityController {
             return InAppMessageActivityController(context, ui, ACTIVITY::class.java)
         }

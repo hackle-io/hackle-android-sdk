@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.res.Configuration
 import android.graphics.Color
 import android.view.View
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.sdk.core.model.InAppMessage
 
 internal typealias AndroidOrientation = Int

@@ -23,7 +23,7 @@ class InAppMessageDeliverRequestTest {
         expectThat(deliverRequest) {
             get { dispatchId } isEqualTo "111"
             get { requestedAt } isEqualTo 42L
-            get { properties } isEqualTo mapOf("trigger_event_insert_id" to "222")
+            get { properties } isEqualTo mapOf("\$trigger_event_insert_id" to "222")
         }
     }
 }

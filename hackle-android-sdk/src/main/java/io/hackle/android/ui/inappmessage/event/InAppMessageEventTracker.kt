@@ -1,6 +1,6 @@
 package io.hackle.android.ui.inappmessage.event
 
-import io.hackle.android.internal.inappmessage.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
 
@@ -51,4 +51,5 @@ private fun Event.Builder.properties(context: InAppMessagePresentationContext) =
     property("in_app_message_id", context.inAppMessage.id)
     property("in_app_message_key", context.inAppMessage.key)
     property("in_app_message_display_type", context.message.layout.displayType.name)
+    property("decision_reason", context.decisionReason.name)
 }

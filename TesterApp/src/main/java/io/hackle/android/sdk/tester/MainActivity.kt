@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private val eventUri = BuildConfig.YOUR_EVENT_URI
     private val sdkUri = BuildConfig.YOUR_SDK_URI
     private val monitoringUri = BuildConfig.YOUR_MONITORING_URI
+    private val apiUri = BuildConfig.YOUR_API_URI
 
     private val executor = Executors.newScheduledThreadPool(4)
     private lateinit var userService: UserService
@@ -53,20 +54,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val config = HackleConfig.builder()
-            //.eventUri(eventUri)
-            //.sdkUri(sdkUri)
-            //.monitoringUri(monitoringUri)
+            .eventUri(eventUri)
+            .sdkUri(sdkUri)
+            .monitoringUri(monitoringUri)
+            .apiUri(apiUri)
             .logLevel(Log.DEBUG)
-//            .mode(HackleAppMode.NATIVE)
             .build()
 
-        HackleApp.initializeApp(this, "T5Poua2anJnJaT6wAVKsGAVeZIQSIIN3", config) {
+        HackleApp.initializeApp(this, sdkKey, config) {
             findViewById<TextView>(R.id.sdk_status).also { it.text = "INITIALIZED" }
+            HackleApp.getInstance().showUserExplorer()
         }
 
 
         findViewById<TextView>(R.id.sdk_status).setOnClickListener {
-         startActivity(Intent(this, SubActivity::class.java))
+            startActivity(Intent(this, SubActivity::class.java))
         }
 
         findViewById<Button>(R.id.ab_text_btn).setOnClickListener {
