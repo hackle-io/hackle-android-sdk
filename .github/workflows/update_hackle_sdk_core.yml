@@ -33,33 +33,20 @@ jobs:
         with:
           branch: ${{ steps.version.outputs.branch_name }}
 
-      - name: Set SDK Version
-        id: set-version
-        if: steps.branch-check.outputs.exists == 'false'
-        run: |
-          sed -i "s/sdk_version=.*/sdk_version=${{ steps.version.outputs.new_version }}/" gradle.properties
-
       - name: Create new branch
         if: steps.branch-check.outputs.exists == 'false'
         run: |
           git checkout -b ${{ steps.version.outputs.branch_name }}
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "chore: initialize dev branch"
           git push origin ${{ steps.version.outputs.branch_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Core SDK
         run: |
-          # hackle-sdk-common 의존성 업데이트 
-          sed -i -E "s/releaseApi \"io\.hackle:hackle-sdk-common:[0-9]+\.[0-9]+\.[0-9]+\"/releaseApi \"io.hackle:hackle-sdk-common:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
-          sed -i -E "s/api \"io\.hackle:hackle-sdk-common:[0-9]+\.[0-9]+\.[0-9]+\"/api \"io.hackle:hackle-sdk-common:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
-
-          # hackle-sdk-core 의존성 업데이트
-          sed -i -E "s/releaseImplementation \"io\.hackle:hackle-sdk-core:[0-9]+\.[0-9]+\.[0-9]+\"/releaseImplementation \"io.hackle:hackle-sdk-core:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
-          sed -i -E "s/implementation \"io\.hackle:hackle-sdk-core:[0-9]+\.[0-9]+\.[0-9]+\"/implementation \"io.hackle:hackle-sdk-core:${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
+          # javaSdkVersion 변수 업데이트 (모든 의존성이 이 변수를 사용함)
+          sed -i -E "s/def javaSdkVersion = \"[0-9]*\.[0-9]*\.[0-9]*\"/def javaSdkVersion = \"${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
