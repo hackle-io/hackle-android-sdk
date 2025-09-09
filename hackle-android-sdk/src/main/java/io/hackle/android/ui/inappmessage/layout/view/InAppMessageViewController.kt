@@ -7,12 +7,14 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
+import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.model.InAppMessage
 import java.util.concurrent.atomic.AtomicReference
 
 
@@ -68,6 +70,11 @@ internal class InAppMessageViewController(
         parent.addView(view)
         ViewCompat.requestApplyInsets(parent)
         view.setActivity(activity)
+        
+        // TODO: 특정 인앱만 뒤로가기 동작 시킬지
+        if (view.context.message.layout.displayType == InAppMessage.DisplayType.MODAL || view.context.message.layout.displayType == InAppMessage.DisplayType.BOTTOM_SHEET) {
+            view.setFocusableInTouchModeAndRequestFocus()
+        }
     }
 
     private fun removeView() {
