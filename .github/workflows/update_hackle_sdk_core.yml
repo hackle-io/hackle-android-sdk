@@ -43,6 +43,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Trigger SDK version update
+        if: steps.branch-check.outputs.exists == 'false'
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: update-sdk-version
+          client-payload: '{"branch": "${{ steps.version.outputs.branch_name }}"}'
+
       - name: Update Core SDK
         run: |
           sed -i -E "s/def javaSdkVersion = \"[0-9]*\.[0-9]*\.[0-9]*\"/def javaSdkVersion = \"${{ github.event.inputs.core_version }}\"/g" hackle-android-sdk/build.gradle
