@@ -7,9 +7,8 @@ on:
 
 jobs:
   update-sdk-version:
-    # 수동 dev-* 브랜치 생성 또는 repository_dispatch 이벤트
     if: |
-      (github.event_name == 'create' && github.ref_type == 'branch' && startsWith(github.ref, 'refs/heads/dev-')) ||
+      (github.event_name == 'create' && github.ref_type == 'branch' && startsWith(github.ref_name, 'dev-')) ||
       (github.event_name == 'repository_dispatch' && github.event.action == 'update-sdk-version')
     runs-on: ubuntu-latest
     permissions:
