@@ -1,0 +1,53 @@
+name: update sdk version
+
+on:
+  create:
+  repository_dispatch:
+    types: [update-sdk-version]
+
+jobs:
+  update-sdk-version:
+    # 수동 dev-* 브랜치 생성 또는 repository_dispatch 이벤트
+    if: |
+      (github.event_name == 'create' && github.ref_type == 'branch' && startsWith(github.ref, 'refs/heads/dev-')) ||
+      (github.event_name == 'repository_dispatch' && github.event.action == 'update-sdk-version')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Set branch name
+        id: branch
+        run: |
+          if [ "${{ github.event_name }}" = "create" ]; then
+            echo "branch_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch_name=${{ github.event.client_payload.branch }}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.branch_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from branch name
+        id: version
+        run: |
+          BRANCH_NAME="${{ steps.branch.outputs.branch_name }}"
+          VERSION=${BRANCH_NAME#dev-}
+          echo "sdk_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Update SDK version in gradle.properties
+        run: |
+          sed -i -E "s/sdk_version=.*/sdk_version=${{ steps.version.outputs.sdk_version }}/" gradle.properties
+          echo "Updated sdk_version to ${{ steps.version.outputs.sdk_version }}"
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: update sdk version"
+          git push origin
+

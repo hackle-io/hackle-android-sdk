@@ -43,16 +43,18 @@ android {
 def hasLocalSdk = getLocalProperty('hackle.java.sdk.path') != null
 
 dependencies {
+    def javaSdkVersion = "2.30.0"
+    
     // if hackle.java.sdk.path exist in local.properties, use local hackle-sdk-common and hackle-sdk-core
     if(hasLocalSdk)  {
         debugApi "io.hackle:hackle-sdk-common"
         debugImplementation "io.hackle:hackle-sdk-core"
 
-        releaseApi "io.hackle:hackle-sdk-common:2.30.0"
-        releaseImplementation "io.hackle:hackle-sdk-core:2.30.0"
+        releaseApi "io.hackle:hackle-sdk-common:$javaSdkVersion"
+        releaseImplementation "io.hackle:hackle-sdk-core:$javaSdkVersion"
     } else {
-        api "io.hackle:hackle-sdk-common:2.30.0"
-        implementation "io.hackle:hackle-sdk-core:2.30.0"
+        api "io.hackle:hackle-sdk-common:$javaSdkVersion"
+        implementation "io.hackle:hackle-sdk-core:$javaSdkVersion"
     }
 
 
