@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jacoco'
+    id 'org.jetbrains.dokka' version '1.7.20'
 }
 
 group = 'io.hackle'
@@ -99,12 +100,16 @@ task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
     executionData.setFrom(fileTree(dir: "${project.buildDir}/jacoco/testDebugUnitTest.exec"))
 }
 
+
 afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                from components.release
-
+                groupId group
+                artifactId project.name
+                version version
+                
+                artifact("$buildDir/outputs/aar/${project.name}-release.aar")
                 artifact sourceJar
 
                 pom {
@@ -153,4 +158,31 @@ def getLocalProperty(String key) {
         return properties.getProperty(key)
     }
     return null
+}
+
+// Dokka configuration for KDoc generation
+dokkaHtml.configure {
+    moduleName.set("Hackle Android SDK")
+    outputDirectory.set(file("$projectDir/build/dokka"))
+
+    dokkaSourceSets {
+        named("main") {
+            displayName.set("Hackle Android SDK")
+
+            skipDeprecated.set(true)
+
+            skipEmptyPackages.set(true)
+
+            reportUndocumented.set(false)
+
+            documentedVisibilities.set([
+                org.jetbrains.dokka.DokkaConfiguration.Visibility.PUBLIC
+            ])
+
+            perPackageOption {
+                matchingRegex.set(".*\\.internal.*")
+                suppress.set(true)
+            }
+        }
+    }
 }
