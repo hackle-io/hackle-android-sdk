@@ -306,6 +306,10 @@ class HackleApp internal constructor(
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
         InAppMessageUi.instance.setListener(listener)
     }
+    
+    fun setBackButtonDismissesInAppMessageView(isDismisses: Boolean) {
+        InAppMessageUi.instance.setBackButtonDismisses(isDismisses)
+    }
 
     @JvmOverloads
     fun fetch(callback: Runnable? = null) {
