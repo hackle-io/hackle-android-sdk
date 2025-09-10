@@ -65,3 +65,29 @@ jobs:
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+
+      - name: Convert prerelease to release
+        if: github.event_name == 'release' && github.event.release.prerelease == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releaseId = ${{ github.event.release.id }};
+            const tagName = "${{ github.event.release.tag_name }}";
+            
+            console.log(`Converting prerelease to release for: ${tagName}`);
+            
+            try {
+              const response = await github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId,
+                prerelease: false
+              });
+              
+              console.log(`Successfully converted prerelease to release`);
+              console.log(`Release ID: ${response.data.id}`);
+              console.log(`Release URL: ${response.data.html_url}`);
+              console.log(`Tag: ${response.data.tag_name}`);
+            } catch (error) {
+              core.setFailed(`Failed to convert prerelease to release: ${error.message}`);
+            }
