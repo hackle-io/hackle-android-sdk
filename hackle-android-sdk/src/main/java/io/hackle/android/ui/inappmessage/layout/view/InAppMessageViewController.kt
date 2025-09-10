@@ -14,7 +14,6 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.model.InAppMessage
 import java.util.concurrent.atomic.AtomicReference
 
 

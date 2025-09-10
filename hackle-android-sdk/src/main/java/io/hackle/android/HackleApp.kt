@@ -307,6 +307,16 @@ class HackleApp internal constructor(
         InAppMessageUi.instance.setListener(listener)
     }
     
+    /**
+     * Sets whether the back button should dismiss the in-app message view.
+     * 
+     * When enabled (default), pressing the device's back button will close 
+     * the currently displayed in-app message. When disabled, back button 
+     * presses will be ignored by the in-app message view.
+     * 
+     * @param isDismisses true if the back button should dismiss the in-app message, 
+     *                    false otherwise. Default is true.
+     */
     fun setBackButtonDismissesInAppMessageView(isDismisses: Boolean) {
         InAppMessageUi.instance.setBackButtonDismisses(isDismisses)
     }
