@@ -54,7 +54,7 @@ class HackleApp internal constructor(
     /**
      * Current user.
      *
-     * @return the current user instance
+     * @return the current [User] instance
      */
     val user: User get() = hackleAppCore.user
 
@@ -79,7 +79,7 @@ class HackleApp internal constructor(
     /**
      * Sets or replaces the current user.
      *
-     * @param user the user to set
+     * @param user the [User] to set
      * @param callback an optional callback to be executed when the operation is complete
      */
     @JvmOverloads
@@ -127,7 +127,7 @@ class HackleApp internal constructor(
     /**
      * Updates user properties with a set of operations.
      *
-     * @param operations a set of operations to apply to user properties
+     * @param operations a set of [PropertyOperations] to apply to user properties
      * @param callback an optional callback to be executed when the operation is complete
      */
     @JvmOverloads
@@ -138,7 +138,7 @@ class HackleApp internal constructor(
     /**
      * Updates push notification subscription status.
      *
-     * @param operations a set of subscription operations to apply
+     * @param operations a set of [HackleSubscriptionOperations] to apply
      */
     fun updatePushSubscriptions(operations: HackleSubscriptionOperations) {
         hackleAppCore.updatePushSubscriptions(operations, HackleAppContext.DEFAULT)
@@ -147,7 +147,7 @@ class HackleApp internal constructor(
     /**
      * Updates SMS subscription status.
      *
-     * @param operations a set of subscription operations to apply
+     * @param operations a set of [HackleSubscriptionOperations] to apply
      */
     fun updateSmsSubscriptions(operations: HackleSubscriptionOperations) {
         hackleAppCore.updateSmsSubscriptions(operations, HackleAppContext.DEFAULT)
@@ -156,7 +156,7 @@ class HackleApp internal constructor(
     /**
      * Updates KakaoTalk subscription status.
      *
-     * @param operations a set of subscription operations to apply
+     * @param operations a set of [HackleSubscriptionOperations] to apply
      */
     fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations) {
         hackleAppCore.updateKakaoSubscriptions(operations, HackleAppContext.DEFAULT)
@@ -202,7 +202,7 @@ class HackleApp internal constructor(
      * @param experimentKey    the unique key of the experiment
      * @param defaultVariation the default variation of the experiment. MUST NOT be null
      *
-     * @return the decided variation for the user, or [defaultVariation]
+     * @return the decided [Variation] for the user, or [defaultVariation]
      */
     @JvmOverloads
     fun variation(experimentKey: Long, defaultVariation: Variation = CONTROL): Variation {
@@ -226,7 +226,7 @@ class HackleApp internal constructor(
     /**
      * Decide the variations for all experiments and returns a map of decision results.
      *
-     * @return a map where key is experimentKey and value is decision result
+     * @return a map where key is experimentKey and value is [Decision] result
      */
     fun allVariationDetails(): Map<Long, Decision> {
         return hackleAppCore.allVariationDetails(null, HackleAppContext.DEFAULT)
@@ -270,7 +270,7 @@ class HackleApp internal constructor(
     /**
      * Records the event that occurred by the user.
      *
-     * @param event  the event that occurred. MUST NOT be null
+     * @param event  the [Event] that occurred. MUST NOT be null
      */
     fun track(event: Event) {
         hackleAppCore.track(event, null, HackleAppContext.DEFAULT)
@@ -289,7 +289,7 @@ class HackleApp internal constructor(
     /**
      * Injects the supplied Java object into this WebView.
      *
-     * @param webView  Target WebView. MUST NOT be null
+     * @param webView  Target [WebView]. MUST NOT be null
      */
     @SuppressLint("UseRequiresApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -336,7 +336,7 @@ class HackleApp internal constructor(
     /**
      * Sets the current screen for tracking purposes.
      *
-     * @param screen the screen to set as current
+     * @param screen the [Screen] to set as current
      */
     fun setCurrentScreen(screen: Screen) {
         hackleAppCore.setCurrentScreen(screen)
@@ -478,7 +478,7 @@ class HackleApp internal constructor(
         /**
          * Registers activity lifecycle callbacks to track app state changes.
          *
-         * @param context the application context
+         * @param context the application [Context]
          */
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
@@ -488,7 +488,7 @@ class HackleApp internal constructor(
         /**
          * Checks if the given intent is a Hackle push message.
          *
-         * @param intent the intent to check
+         * @param intent the [Intent] to check
          * @return true if the intent is a Hackle push message, false otherwise
          */
         @JvmStatic
@@ -499,7 +499,7 @@ class HackleApp internal constructor(
         /**
          * Returns a singleton instance of [HackleApp]
          *
-         * @return the singleton HackleApp instance
+         * @return the singleton [HackleApp] instance
          * @throws IllegalStateException if the HackleApp was not initialized
          */
         @JvmStatic
@@ -512,12 +512,12 @@ class HackleApp internal constructor(
         /**
          * Initializes the HackleApp instance with user.
          *
-         * @param context the application context
+         * @param context the application [Context]
          * @param sdkKey the SDK key of your Hackle environment
-         * @param user the initial user, can be null
-         * @param config the HackleConfig that contains the desired configuration
+         * @param user the initial [User], can be null
+         * @param config the [HackleConfig] that contains the desired configuration
          * @param onReady callback that is called when HackleApp is ready to use
-         * @return the initialized HackleApp instance
+         * @return the initialized [HackleApp] instance
          */
         @JvmOverloads
         @JvmStatic
@@ -534,11 +534,11 @@ class HackleApp internal constructor(
         /**
          * Initializes the HackleApp instance.
          *
-         * @param context the application context
+         * @param context the application [Context]
          * @param sdkKey the SDK key of your Hackle environment
-         * @param config the HackleConfig that contains the desired configuration
+         * @param config the [HackleConfig] that contains the desired configuration
          * @param onReady callback that is called when HackleApp is ready to use
-         * @return the initialized HackleApp instance
+         * @return the initialized [HackleApp] instance
          */
         @JvmOverloads
         @JvmStatic
@@ -554,10 +554,10 @@ class HackleApp internal constructor(
         /**
          * Initializes the HackleApp instance.
          *
-         * @param context the application context
+         * @param context the application [Context]
          * @param sdkKey the SDK key of your Hackle environment
          * @param onReady callback that is called when HackleApp is ready to use
-         * @return the initialized HackleApp instance
+         * @return the initialized [HackleApp] instance
          */
         @JvmStatic
         fun initializeApp(
