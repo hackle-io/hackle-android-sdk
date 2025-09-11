@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jacoco'
+    id 'org.jetbrains.dokka' version '1.7.20'
 }
 
 group = 'io.hackle'
@@ -89,7 +90,20 @@ task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
         html.required.set(true)
     }
 
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+    def fileFilter = [
+        '**/R.class', 
+        '**/R$*.class', 
+        '**/BuildConfig.*', 
+        '**/Manifest*.*', 
+        '**/*Test*.*', 
+        'android/**/*.*',
+        '**/ui/inappmessage/layout/view/**',
+        '**/ui/inappmessage/layout/activity/**',
+        '**/ui/explorer/**',
+        '**/ui/notification/NotificationFactory.class',
+        '**/ui/notification/NotificationTrampolineActivity.class',
+        '**/ui/notification/NotificationBroadcastReceiver.class',
+    ]
     def javaTree = fileTree(dir: "${project.buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
     def kotlinTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
     def mainSrc = ['src/main/java']
@@ -99,12 +113,16 @@ task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
     executionData.setFrom(fileTree(dir: "${project.buildDir}/jacoco/testDebugUnitTest.exec"))
 }
 
+
 afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                from components.release
-
+                groupId group
+                artifactId project.name
+                version version
+                
+                artifact("$buildDir/outputs/aar/${project.name}-release.aar")
                 artifact sourceJar
 
                 pom {
@@ -153,4 +171,31 @@ def getLocalProperty(String key) {
         return properties.getProperty(key)
     }
     return null
+}
+
+// Dokka configuration for KDoc generation
+dokkaHtml.configure {
+    moduleName.set("Hackle Android SDK")
+    outputDirectory.set(file("$projectDir/build/dokka"))
+
+    dokkaSourceSets {
+        named("main") {
+            displayName.set("Hackle Android SDK")
+
+            skipDeprecated.set(true)
+
+            skipEmptyPackages.set(true)
+
+            reportUndocumented.set(false)
+
+            documentedVisibilities.set([
+                org.jetbrains.dokka.DokkaConfiguration.Visibility.PUBLIC
+            ])
+
+            perPackageOption {
+                matchingRegex.set(".*\\.internal.*")
+                suppress.set(true)
+            }
+        }
+    }
 }

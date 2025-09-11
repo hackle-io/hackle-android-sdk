@@ -33,6 +33,7 @@ import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -122,6 +123,12 @@ class HackleAppTest {
             HackleAppMode.NATIVE,
             mockk()
         )
+    }
+
+    @After
+    fun tearDown() {
+        unmockkObject(HackleApp)
+        clearAllMocks()
     }
 
     @Test
@@ -861,4 +868,5 @@ class HackleAppTest {
             screenManager.setCurrentScreen(Screen("current_screen", "current_class"), any())
         }
     }
+
 }

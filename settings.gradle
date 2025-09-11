@@ -1,6 +1,14 @@
 include ':hackle-android-sdk'
 rootProject.name = "hackle-android-sdk"
-include ':TesterApp'
+
+// Only include TesterApp in local development, not in CI environments
+def isCI = System.getenv('CI') != null || System.getenv('GITHUB_ACTIONS') != null
+if (!isCI) {
+    include ':TesterApp'
+    println "Including TesterApp for local development"
+} else {
+    println "Excluding TesterApp in CI environment"
+}
 
 def hackleJavaSdkPath = getLocalProperty('hackle.java.sdk.path')
 if (hackleJavaSdkPath) {

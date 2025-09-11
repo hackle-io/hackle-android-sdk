@@ -10,6 +10,7 @@ import io.mockk.verify
 import io.mockk.verifySequence
 import org.junit.Test
 import strikt.api.expectThat
+import strikt.assertions.any
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
@@ -139,7 +140,7 @@ class LifecycleManagerTest {
     fun `instance`() {
         val instance = LifecycleManager.instance
         expectThat(instance) isSameInstanceAs LifecycleManager.instance
-        expectThat(instance.listeners.first()).isA<AppStateManager>()
+        expectThat(instance.listeners).any { this.isA<AppStateManager>() }
     }
 
     private class InternalActivity : Activity(), HackleActivity

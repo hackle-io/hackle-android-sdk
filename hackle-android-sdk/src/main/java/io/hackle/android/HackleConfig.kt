@@ -4,33 +4,83 @@ import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
 import java.util.Collections
 
+/**
+ * Configuration class for Hackle SDK settings.
+ */
 class HackleConfig private constructor(builder: Builder) {
 
+    /**
+     * The log level for SDK logging.
+     */
     val logLevel: Int = builder.logLevel
 
+    /**
+     * The SDK API URI.
+     */
     val sdkUri: String = builder.sdkUri
+    
+    /**
+     * The event API URI.
+     */
     val eventUri: String = builder.eventUri
+    
+    /**
+     * The API URL.
+     */
     val apiUrl: String = builder.apiUri
+    
+    /**
+     * The monitoring API URI.
+     */
     val monitoringUri: String = builder.monitoringUri
 
+    /**
+     * The application mode.
+     */
     val mode: HackleAppMode = builder.mode
 
+    /**
+     * Whether automatic screen tracking is enabled.
+     */
     val automaticScreenTracking: Boolean = builder.automaticScreenTracking
 
+    /**
+     * Whether session tracking is enabled.
+     */
     val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
+    
+    /**
+     * The session timeout in milliseconds.
+     */
     val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
 
+    /**
+     * The polling interval in milliseconds.
+     */
     val pollingIntervalMillis: Int = builder.pollingIntervalMillis
 
+    /**
+     * The event flush interval in milliseconds.
+     */
     val eventFlushIntervalMillis: Int = builder.eventFlushIntervalMillis
+    
+    /**
+     * The event flush threshold.
+     */
     val eventFlushThreshold: Int = builder.eventFlushThreshold
 
+    /**
+     * The exposure event deduplication interval in milliseconds.
+     */
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
     private val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
 
     internal operator fun get(key: String): String? = extra[key]
 
+    /**
+     * Builder class for creating HackleConfig instances.
+     */
     class Builder {
         internal var logLevel: Int = Log.INFO
 
@@ -55,58 +105,142 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal val extra = hashMapOf<String, String>()
 
+        /**
+         * Sets the log level.
+         *
+         * @param logLevel the log level to set
+         * @return this builder instance
+         */
         fun logLevel(logLevel: Int) = apply {
             this.logLevel = logLevel
         }
 
+        /**
+         * Sets the SDK API URI.
+         *
+         * @param sdkUri the SDK URI to set
+         * @return this builder instance
+         */
         fun sdkUri(sdkUri: String) = apply {
             this.sdkUri = sdkUri
         }
 
+        /**
+         * Sets the event API URI.
+         *
+         * @param eventUri the event URI to set
+         * @return this builder instance
+         */
         fun eventUri(eventUri: String) = apply {
             this.eventUri = eventUri
         }
 
+        /**
+         * Sets the API URI.
+         *
+         * @param apiUri the API URI to set
+         * @return this builder instance
+         */
         fun apiUri(apiUri: String) = apply {
             this.apiUri = apiUri
         }
 
+        /**
+         * Sets the monitoring URI.
+         *
+         * @param monitoringUri the monitoring URI to set
+         * @return this builder instance
+         */
         fun monitoringUri(monitoringUri: String) = apply {
             this.monitoringUri = monitoringUri
         }
 
+        /**
+         * Sets the application mode.
+         *
+         * @param mode the application mode to set
+         * @return this builder instance
+         */
         fun mode(mode: HackleAppMode) = apply {
             this.mode = mode
         }
 
+        /**
+         * Sets whether automatic screen tracking is enabled.
+         *
+         * @param automaticScreenTracking true to enable automatic screen tracking, false otherwise
+         * @return this builder instance
+         */
         fun automaticScreenTracking(automaticScreenTracking: Boolean) = apply {
             this.automaticScreenTracking = automaticScreenTracking
         }
 
+        /**
+         * Sets the session timeout in milliseconds.
+         *
+         * @param sessionTimeoutMillis the session timeout in milliseconds
+         * @return this builder instance
+         */
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
             this.sessionTimeoutMillis = sessionTimeoutMillis
         }
 
+        /**
+         * Sets the polling interval in milliseconds.
+         *
+         * @param pollingIntervalMillis the polling interval in milliseconds
+         * @return this builder instance
+         */
         fun pollingIntervalMillis(pollingIntervalMillis: Int) = apply {
             this.pollingIntervalMillis = pollingIntervalMillis
         }
 
+        /**
+         * Sets the event flush interval in milliseconds.
+         *
+         * @param eventFlushIntervalMillis the event flush interval in milliseconds
+         * @return this builder instance
+         */
         fun eventFlushIntervalMillis(eventFlushIntervalMillis: Int) = apply {
             this.eventFlushIntervalMillis = eventFlushIntervalMillis
         }
 
+        /**
+         * Sets the event flush threshold.
+         *
+         * @param eventFlushThreshold the event flush threshold
+         * @return this builder instance
+         */
         fun eventFlushThreshold(eventFlushThreshold: Int) = apply {
             this.eventFlushThreshold = eventFlushThreshold
         }
 
+        /**
+         * Sets the exposure event deduplication interval in milliseconds.
+         *
+         * @param exposureEventDedupIntervalMillis the exposure event deduplication interval in milliseconds
+         * @return this builder instance
+         */
         fun exposureEventDedupIntervalMillis(exposureEventDedupIntervalMillis: Int) = apply {
             this.exposureEventDedupIntervalMillis = exposureEventDedupIntervalMillis
         }
 
+        /**
+         * Adds an extra configuration parameter.
+         *
+         * @param key the parameter key
+         * @param value the parameter value
+         * @return this builder instance
+         */
         fun add(key: String, value: String) = apply {
             this.extra[key] = value
         }
 
+        /**
+         * Builds the HackleConfig instance.
+         *
+         * @return the configured HackleConfig instance
+         */
         fun build(): HackleConfig {
 
             if (pollingIntervalMillis != NO_POLLING && pollingIntervalMillis < MIN_POLLING_INTERVAL_MILLIS) {
@@ -163,8 +297,16 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val MIN_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 1000 // 1s (min)
         internal const val MAX_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS = 24 * 60 * 60 * 1000 // 24h (max)
 
+        /**
+         * Default HackleConfig instance with standard settings.
+         */
         val DEFAULT: HackleConfig = builder().build()
 
+        /**
+         * Creates a new Builder instance.
+         *
+         * @return a new Builder instance for creating HackleConfig
+         */
         @JvmStatic
         fun builder(): Builder {
             return Builder()
