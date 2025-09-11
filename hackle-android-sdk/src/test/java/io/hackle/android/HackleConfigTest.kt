@@ -8,6 +8,8 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 
 class HackleConfigTest {
 
@@ -23,7 +25,36 @@ class HackleConfigTest {
     }
 
     @Test
-    fun `exposureEventDedupIntervalMillis`() {
+    fun `HackleConfig DEFAULT should have expected values`() {
+        // when
+        val result = HackleConfig.DEFAULT
+
+        // then
+        expectThat(result.mode).isEqualTo(HackleAppMode.NATIVE)
+        expectThat(result.pollingIntervalMillis).isEqualTo(-1) // NO_POLLING
+        expectThat(result.sessionTracking).isEqualTo(true)
+        expectThat(result.automaticScreenTracking).isEqualTo(true)
+    }
+
+    @Test
+    fun `HackleConfig builder should create config with custom values`() {
+        // when
+        val result = HackleConfig.builder()
+            .mode(HackleAppMode.WEB_VIEW_WRAPPER)
+            .pollingIntervalMillis(120000) // 2 minutes (above minimum)
+            .eventFlushThreshold(20)
+            .build()
+
+        // then
+        expectThat(result.mode).isEqualTo(HackleAppMode.WEB_VIEW_WRAPPER)
+        expectThat(result.pollingIntervalMillis).isEqualTo(120000)
+        expectThat(result.eventFlushThreshold).isEqualTo(20)
+        // WEB_VIEW_WRAPPER mode disables session tracking
+        expectThat(result.sessionTracking).isEqualTo(false)
+    }
+
+    @Test
+    fun exposureEventDedupIntervalMillis() {
         configTest(60000, HackleConfig::exposureEventDedupIntervalMillis)
         configTest(60000, HackleConfig::exposureEventDedupIntervalMillis) {
             exposureEventDedupIntervalMillis(999)

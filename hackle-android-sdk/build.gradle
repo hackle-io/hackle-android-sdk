@@ -90,7 +90,20 @@ task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
         html.required.set(true)
     }
 
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+    def fileFilter = [
+        '**/R.class', 
+        '**/R$*.class', 
+        '**/BuildConfig.*', 
+        '**/Manifest*.*', 
+        '**/*Test*.*', 
+        'android/**/*.*',
+        '**/ui/inappmessage/layout/view/**',
+        '**/ui/inappmessage/layout/activity/**',
+        '**/ui/explorer/**',
+        '**/ui/notification/NotificationFactory.class',
+        '**/ui/notification/NotificationTrampolineActivity.class',
+        '**/ui/notification/NotificationBroadcastReceiver.class',
+    ]
     def javaTree = fileTree(dir: "${project.buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
     def kotlinTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
     def mainSrc = ['src/main/java']

@@ -43,6 +43,7 @@ internal class InAppMessageLinkActionHandlerTest {
         // given
         val view = mockk<InAppMessageLayout> {
             every { activity } returns null
+            every { context } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = WEB_LINK)
 
@@ -58,6 +59,7 @@ internal class InAppMessageLinkActionHandlerTest {
         // given
         val view = mockk<InAppMessageLayout> {
             every { activity } returns mockk()
+            every { context } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = WEB_LINK, value = null)
 
@@ -74,6 +76,7 @@ internal class InAppMessageLinkActionHandlerTest {
         val activity = mockk<Activity>()
         val view = mockk<InAppMessageLayout> {
             every { this@mockk.activity } returns activity
+            every { context } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = WEB_LINK, value = "gogo")
 
