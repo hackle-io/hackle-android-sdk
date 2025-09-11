@@ -1,5 +1,7 @@
 package io.hackle.android
 
+import android.content.Context
+import android.content.Intent
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
@@ -861,4 +863,5 @@ class HackleAppTest {
             screenManager.setCurrentScreen(Screen("current_screen", "current_class"), any())
         }
     }
+
 }
