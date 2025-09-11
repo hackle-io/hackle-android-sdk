@@ -56,6 +56,22 @@ internal class InAppMessageViewController(
         })
     }
 
+    override fun close(activity: Activity) {
+        if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
+            log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
+            return
+        }
+        
+        view.activity
+            ?.takeIf { it == activity }
+            ?.let { 
+                lifecycle(BEFORE_CLOSE)
+                handle(InAppMessageEvent.Close)
+                ui.closeCurrent()
+                lifecycle(AFTER_CLOSE)
+        }
+    }
+
     private fun lifecycle(lifecycle: InAppMessageLifecycle) {
         view.publish(lifecycle)
         ui.listener.onLifecycle(lifecycle, context.inAppMessage)

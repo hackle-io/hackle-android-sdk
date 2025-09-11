@@ -51,6 +51,10 @@ internal class InAppMessageActivityController private constructor(
         messageActivity?.get()?.activity?.finish()
         ui.closeCurrent()
     }
+    
+    override fun close(activity: Activity) {
+        // nothing to do
+    }
 
     companion object {
         private val log = Logger<InAppMessageActivityController>()
