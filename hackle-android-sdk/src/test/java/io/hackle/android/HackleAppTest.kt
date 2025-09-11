@@ -1,7 +1,5 @@
 package io.hackle.android
 
-import android.content.Context
-import android.content.Intent
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
@@ -35,6 +33,7 @@ import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import io.mockk.*
 import io.mockk.impl.annotations.RelaxedMockK
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -124,6 +123,12 @@ class HackleAppTest {
             HackleAppMode.NATIVE,
             mockk()
         )
+    }
+
+    @After
+    fun tearDown() {
+        unmockkObject(HackleApp)
+        clearAllMocks()
     }
 
     @Test

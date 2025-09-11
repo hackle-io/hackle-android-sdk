@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -68,7 +69,12 @@ class HackleAppsTest {
         // System services mocking
         every { context.getSystemService(any()) } returns null
     }
-    
+
+    @After
+    fun tearDown() {
+        unmockkObject(HackleApp)
+        clearAllMocks()
+    }
 
     @Test
     fun `HackleApps create should return HackleApp instance with default config`() {
