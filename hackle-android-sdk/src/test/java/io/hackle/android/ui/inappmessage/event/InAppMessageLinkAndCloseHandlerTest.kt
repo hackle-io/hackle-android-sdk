@@ -37,6 +37,7 @@ internal class InAppMessageLinkAndCloseHandlerTest {
         // given
         val view = mockk<InAppMessageLayout> {
             every { activity } returns null
+            every { context } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.LINK_AND_CLOSE)
 
@@ -52,6 +53,7 @@ internal class InAppMessageLinkAndCloseHandlerTest {
         // given
         val view = mockk<InAppMessageLayout> {
             every { activity } returns mockk()
+            every { context } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.LINK_AND_CLOSE, value = null)
 
@@ -68,6 +70,7 @@ internal class InAppMessageLinkAndCloseHandlerTest {
         val activity = mockk<Activity>()
         val view = mockk<InAppMessageLayout>(relaxUnitFun = true) {
             every { this@mockk.activity } returns activity
+            every { context } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.LINK_AND_CLOSE, value = "gogo")
 
