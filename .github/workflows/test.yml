@@ -16,9 +16,15 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.2
+          cache-read-only: false
+          gradle-home-cache-cleanup: true
 
       - name: Test
-        run: gradle :hackle-android-sdk:test :hackle-android-sdk:coverageReport
+        run: gradle :hackle-android-sdk:test :hackle-android-sdk:coverageReport --quiet --no-daemon --warning-mode=none
+        env:
+          ANDROID_SDK_SUPPRESS_WARNINGS: true
+          ANDROID_SUPPRESS_ALL_WARNINGS: true
+          JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8 -Djava.awt.headless=true"
       - name: Coverage
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
