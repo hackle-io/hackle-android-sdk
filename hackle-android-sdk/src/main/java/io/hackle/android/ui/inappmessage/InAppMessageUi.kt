@@ -19,7 +19,6 @@ import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Scheduler
-import io.hackle.sdk.core.internal.utils.tryClose
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -95,7 +94,7 @@ internal class InAppMessageUi(
     ) {
         return when (lifecycle) {
             DESTROYED -> {
-                currentMessageController?.close(activity) ?: return
+                currentMessageController?.closeIfAttachedActivityDestroyed(activity) ?: return
             }
             CREATED, STARTED, RESUMED, PAUSED, STOPPED -> Unit
         }

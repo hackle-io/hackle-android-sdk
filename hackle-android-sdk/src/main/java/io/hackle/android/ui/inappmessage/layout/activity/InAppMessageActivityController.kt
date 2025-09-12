@@ -52,8 +52,8 @@ internal class InAppMessageActivityController private constructor(
         ui.closeCurrent()
     }
     
-    override fun close(activity: Activity) {
-        // nothing to do
+    override fun closeIfAttachedActivityDestroyed(activity: Activity) {
+        log.debug { "InAppMessageActivityController ignores activity destroy (activity=${activity.javaClass.simpleName})" }
     }
 
     companion object {

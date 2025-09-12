@@ -35,7 +35,7 @@ internal interface InAppMessageController {
      */
     fun close()
     
-    fun close(activity: Activity)
+    fun closeIfAttachedActivityDestroyed(activity: Activity)
 }
 
 internal fun InAppMessageController.handle(event: InAppMessageEvent) {
