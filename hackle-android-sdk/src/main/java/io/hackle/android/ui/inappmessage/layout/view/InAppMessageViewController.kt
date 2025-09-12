@@ -40,6 +40,7 @@ internal class InAppMessageViewController(
         startAnimation(view.openAnimator, completion = {
             handle(InAppMessageEvent.Impression)
             lifecycle(AFTER_OPEN)
+            view.setFocusableInTouchModeAndRequestFocus()
         })
     }
 
@@ -69,7 +70,6 @@ internal class InAppMessageViewController(
         parent.addView(view)
         ViewCompat.requestApplyInsets(parent)
         view.setActivity(activity)
-        view.setFocusableInTouchModeAndRequestFocus()
     }
 
     private fun removeView() {
