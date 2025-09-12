@@ -37,6 +37,9 @@ internal class InAppMessageUi(
     private var customListener: HackleInAppMessageListener? = null
     val listener get() = customListener ?: defaultListener
 
+    private var _isBackButtonDismisses: Boolean = true
+    val isBackButtonDismisses get() = _isBackButtonDismisses
+
     private val opening = AtomicBoolean(false)
 
     override fun present(context: InAppMessagePresentationContext) {
@@ -73,6 +76,10 @@ internal class InAppMessageUi(
 
     fun setListener(listener: HackleInAppMessageListener?) {
         customListener = listener
+    }
+    
+    fun setBackButtonDismisses(backButtonDismissesInAppMessage: Boolean) {
+        _isBackButtonDismisses = backButtonDismissesInAppMessage
     }
 
     fun closeCurrent() {

@@ -144,4 +144,28 @@ class InAppMessageUiTest {
             controller.open(activity)
         }
     }
+
+    @Test
+    fun `when setBackButtonDismisses is called with true then isBackButtonDismisses should return true`() {
+        // when
+        sut.setBackButtonDismisses(true)
+
+        // then
+        assert(sut.isBackButtonDismisses)
+    }
+
+    @Test
+    fun `when setBackButtonDismisses is called with false then isBackButtonDismisses should return false`() {
+        // when
+        sut.setBackButtonDismisses(false)
+
+        // then
+        assert(!sut.isBackButtonDismisses)
+    }
+
+    @Test
+    fun `default value of isBackButtonDismisses should be true`() {
+        // then
+        assert(sut.isBackButtonDismisses)
+    }
 }
