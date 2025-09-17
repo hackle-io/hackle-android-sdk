@@ -38,7 +38,7 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && InAppMessageUi.instance.isBackButtonDismisses) {
-            controller.close()
+            close()
             return true
         }
         return super.onKeyDown(keyCode, event)
