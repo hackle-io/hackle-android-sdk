@@ -55,7 +55,7 @@ internal class InAppMessageViewController(
                 close(withAnimation = false) {
                     ui.closeCurrent()
                 }
-        }
+            }
     }
 
     private fun close(withAnimation: Boolean, onComplete: () -> Unit) {
@@ -63,7 +63,7 @@ internal class InAppMessageViewController(
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
             return
         }
-        
+
         lifecycle(BEFORE_CLOSE)
         handle(InAppMessageEvent.Close)
 
