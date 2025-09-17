@@ -367,7 +367,6 @@ internal object HackleApps {
             eventHandler = inAppMessageEventHandler,
             imageLoader = imageLoader
         )
-        
 
         val inAppMessageRecorder = InAppMessageRecorder(
             storage = inAppMessageImpressionStorage
