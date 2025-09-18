@@ -3,11 +3,13 @@ package io.hackle.android.ui.inappmessage.layout.view
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.view.View.OnClickListener
 import android.widget.RelativeLayout
 import androidx.core.view.WindowInsetsCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
+import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
@@ -33,6 +35,14 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
 
     val inAppMessage: InAppMessage get() = context.inAppMessage
     val message: InAppMessage.Message get() = context.message
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && InAppMessageUi.instance.isBackButtonDismisses) {
+            close()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
     fun setController(controller: InAppMessageViewController) {
         _controller = controller

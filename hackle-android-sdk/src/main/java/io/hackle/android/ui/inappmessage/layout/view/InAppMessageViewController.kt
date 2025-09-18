@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
+import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
@@ -39,6 +40,7 @@ internal class InAppMessageViewController(
         startAnimation(view.openAnimator, completion = {
             handle(InAppMessageEvent.Impression)
             lifecycle(AFTER_OPEN)
+            view.setFocusableInTouchModeAndRequestFocus()
         })
     }
 
