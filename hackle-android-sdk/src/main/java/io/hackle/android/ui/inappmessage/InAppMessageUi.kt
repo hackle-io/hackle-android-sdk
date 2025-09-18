@@ -92,11 +92,12 @@ internal class InAppMessageUi(
         activity: Activity,
         timestamp: Long
     ) {
-        return when (lifecycle) {
-            DESTROYED -> {
-                currentMessageController?.closeIfAttachedActivityDestroyed(activity) ?: return
-            }
-            CREATED, STARTED, RESUMED, PAUSED, STOPPED -> Unit
+        if (lifecycle != DESTROYED) {
+            return
+        }
+        val controller = currentMessageController ?: return
+        if (controller.layout.activity == activity) {
+            controller.close(false)
         }
     }
 

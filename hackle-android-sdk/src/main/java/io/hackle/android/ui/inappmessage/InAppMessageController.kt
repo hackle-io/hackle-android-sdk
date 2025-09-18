@@ -33,9 +33,8 @@ internal interface InAppMessageController {
     /**
      * Closes the [InAppMessageLayout].
      */
-    fun close()
     
-    fun closeIfAttachedActivityDestroyed(activity: Activity)
+    fun close(withAnimation: Boolean = true)
 }
 
 internal fun InAppMessageController.handle(event: InAppMessageEvent) {
