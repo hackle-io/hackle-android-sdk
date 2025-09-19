@@ -32,8 +32,8 @@ internal interface InAppMessageController {
 
     /**
      * Closes the [InAppMessageLayout].
+     * @param withAnimation Whether to animate the closing process.
      */
-    
     fun close(withAnimation: Boolean = true)
 }
 

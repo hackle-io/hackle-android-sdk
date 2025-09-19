@@ -41,7 +41,7 @@ internal class InAppMessageViewController(
             lifecycle(AFTER_OPEN)
         })
     }
-    
+
     override fun close(withAnimation: Boolean) {
         if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
@@ -49,14 +49,14 @@ internal class InAppMessageViewController(
         }
 
         lifecycle(BEFORE_CLOSE)
-        handle(InAppMessageEvent.Close)
-
         if (withAnimation) {
             startAnimation(view.closeAnimator, completion = {
+                handle(InAppMessageEvent.Close)
                 removeView()
                 lifecycle(AFTER_CLOSE)
             })
         } else {
+            handle(InAppMessageEvent.Close)
             removeView()
             lifecycle(AFTER_CLOSE)
         }
@@ -81,7 +81,7 @@ internal class InAppMessageViewController(
 
         val parent = view.parent as? ViewGroup
         parent?.removeView(view)
-        
+
         ui.closeCurrent()
     }
 
