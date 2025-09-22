@@ -514,6 +514,7 @@ internal object HackleApps {
             lifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
         }
         lifecycleManager.addListener(engagementManager, order = Ordered.HIGHEST + 1)
+        lifecycleManager.addListener(inAppMessageUi, order = Ordered.LOWEST)
         lifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
         lifecycleManager.registerTo(context)
 

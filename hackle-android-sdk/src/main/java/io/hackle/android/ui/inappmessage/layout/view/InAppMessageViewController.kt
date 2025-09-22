@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
+import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
@@ -39,21 +40,28 @@ internal class InAppMessageViewController(
         startAnimation(view.openAnimator, completion = {
             handle(InAppMessageEvent.Impression)
             lifecycle(AFTER_OPEN)
+            view.setFocusableInTouchModeAndRequestFocus()
         })
     }
 
-    override fun close() {
+    override fun close(withAnimation: Boolean) {
         if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
             return
         }
 
         lifecycle(BEFORE_CLOSE)
-        startAnimation(view.closeAnimator, completion = {
+        if (withAnimation) {
+            startAnimation(view.closeAnimator, completion = {
+                handle(InAppMessageEvent.Close)
+                removeView()
+                lifecycle(AFTER_CLOSE)
+            })
+        } else {
             handle(InAppMessageEvent.Close)
             removeView()
             lifecycle(AFTER_CLOSE)
-        })
+        }
     }
 
     private fun lifecycle(lifecycle: InAppMessageLifecycle) {
@@ -73,8 +81,9 @@ internal class InAppMessageViewController(
     private fun removeView() {
         unlockScreenOrientation()
 
-        val parent = view.parent as? ViewGroup ?: return
-        parent.removeView(view)
+        val parent = view.parent as? ViewGroup
+        parent?.removeView(view)
+
         ui.closeCurrent()
     }
 
