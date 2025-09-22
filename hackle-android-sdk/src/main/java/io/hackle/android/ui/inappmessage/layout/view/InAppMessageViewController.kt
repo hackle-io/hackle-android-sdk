@@ -44,18 +44,24 @@ internal class InAppMessageViewController(
         })
     }
 
-    override fun close() {
+    override fun close(withAnimation: Boolean) {
         if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
             return
         }
 
         lifecycle(BEFORE_CLOSE)
-        startAnimation(view.closeAnimator, completion = {
+        if (withAnimation) {
+            startAnimation(view.closeAnimator, completion = {
+                handle(InAppMessageEvent.Close)
+                removeView()
+                lifecycle(AFTER_CLOSE)
+            })
+        } else {
             handle(InAppMessageEvent.Close)
             removeView()
             lifecycle(AFTER_CLOSE)
-        })
+        }
     }
 
     private fun lifecycle(lifecycle: InAppMessageLifecycle) {
@@ -75,8 +81,9 @@ internal class InAppMessageViewController(
     private fun removeView() {
         unlockScreenOrientation()
 
-        val parent = view.parent as? ViewGroup ?: return
-        parent.removeView(view)
+        val parent = view.parent as? ViewGroup
+        parent?.removeView(view)
+
         ui.closeCurrent()
     }
 
