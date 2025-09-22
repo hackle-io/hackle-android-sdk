@@ -20,6 +20,14 @@ import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
+import io.hackle.android.ui.inappmessage.InAppMessageUi
+import android.app.Activity
+import io.hackle.sdk.common.HackleInAppMessageListener
+import io.hackle.sdk.common.HacklePushSubscriptionStatus
+import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.ui.notification.NotificationHandler
+import android.content.Context
+import android.content.Intent
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
@@ -869,4 +877,362 @@ class HackleAppTest {
         }
     }
 
+    @Test
+    fun setInAppMessageListener() {
+        mockkObject(InAppMessageUi.Companion)
+        val mockInstance = mockk<InAppMessageUi>(relaxed = true)
+        every { InAppMessageUi.instance } returns mockInstance
+        val listener = mockk<HackleInAppMessageListener>()
+
+        sut.setInAppMessageListener(listener)
+
+        verify(exactly = 1) {
+            mockInstance.setListener(listener)
+        }
+        unmockkObject(InAppMessageUi.Companion)
+    }
+
+    @Test
+    fun `setInAppMessageListener - null listener`() {
+        mockkObject(InAppMessageUi.Companion)
+        val mockInstance = mockk<InAppMessageUi>(relaxed = true)
+        every { InAppMessageUi.instance } returns mockInstance
+
+        sut.setInAppMessageListener(null)
+
+        verify(exactly = 1) {
+            mockInstance.setListener(null)
+        }
+        unmockkObject(InAppMessageUi.Companion)
+    }
+
+    @Test
+    fun setBackButtonDismissesInAppMessageView() {
+        mockkObject(InAppMessageUi.Companion)
+        val mockInstance = mockk<InAppMessageUi>(relaxed = true)
+        every { InAppMessageUi.instance } returns mockInstance
+
+        sut.setBackButtonDismissesInAppMessageView(true)
+
+        verify(exactly = 1) {
+            mockInstance.setBackButtonDismisses(true)
+        }
+        unmockkObject(InAppMessageUi.Companion)
+    }
+
+    @Test
+    fun `setBackButtonDismissesInAppMessageView - false`() {
+        mockkObject(InAppMessageUi.Companion)
+        val mockInstance = mockk<InAppMessageUi>(relaxed = true)
+        every { InAppMessageUi.instance } returns mockInstance
+
+        sut.setBackButtonDismissesInAppMessageView(false)
+
+        verify(exactly = 1) {
+            mockInstance.setBackButtonDismisses(false)
+        }
+        unmockkObject(InAppMessageUi.Companion)
+    }
+
+    // Deprecated methods tests
+    @Test
+    fun `variation with userId - deprecated`() {
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
+        every { core.experiment(any(), any(), any()) } returns decision
+
+        val actual = sut.variation(42, "user_id")
+
+        expectThat(actual).isEqualTo(Variation.B)
+        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
+    }
+
+    @Test
+    fun `variation with User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
+        every { core.experiment(any(), any(), any()) } returns decision
+
+        val actual = sut.variation(42, user)
+
+        expectThat(actual).isEqualTo(Variation.B)
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `variationDetail with userId - deprecated`() {
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
+        every { core.experiment(any(), any(), any()) } returns decision
+
+        val actual = sut.variationDetail(42, "user_id")
+
+        expectThat(actual).isSameInstanceAs(decision)
+        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
+    }
+
+    @Test
+    fun `variationDetail with User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
+        every { core.experiment(any(), any(), any()) } returns decision
+
+        val actual = sut.variationDetail(42, user)
+
+        expectThat(actual).isSameInstanceAs(decision)
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `allVariationDetails with User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val experiment = mockk<Experiment> {
+            every { key } returns 42
+        }
+        val decision = Decision.of(
+            Variation.B,
+            DecisionReason.TRAFFIC_ALLOCATED,
+            ParameterConfig.empty(),
+            experiment
+        )
+        every { core.experiments(any()) } returns mapOf(experiment to decision)
+
+        val actual = sut.allVariationDetails(user)
+
+        expectThat(actual).isEqualTo(mapOf(42L to decision))
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `featureFlagDetail with userId - deprecated`() {
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
+        every { core.featureFlag(any(), any()) } returns decision
+
+        val actual = sut.featureFlagDetail(42, "user_id")
+
+        expectThat(actual).isSameInstanceAs(decision)
+        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
+    }
+
+    @Test
+    fun `featureFlagDetail with User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
+        every { core.featureFlag(any(), any()) } returns decision
+
+        val actual = sut.featureFlagDetail(42, user)
+
+        expectThat(actual).isSameInstanceAs(decision)
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `isFeatureOn with userId - deprecated`() {
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
+        every { core.featureFlag(any(), any()) } returns decision
+
+        val actual = sut.isFeatureOn(42, "user_id")
+
+        expectThat(actual).isEqualTo(true)
+        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
+    }
+
+    @Test
+    fun `isFeatureOn with User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
+        every { core.featureFlag(any(), any()) } returns decision
+
+        val actual = sut.isFeatureOn(42, user)
+
+        expectThat(actual).isEqualTo(true)
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `track with eventKey and userId - deprecated`() {
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        sut.track("test_event", "user_id")
+
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it.key).isEqualTo("test_event")
+                },
+                any(),
+                any()
+            )
+        }
+        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
+    }
+
+    @Test
+    fun `track with Event and userId - deprecated`() {
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+        val event = Event.builder("test_event").build()
+
+        sut.track(event, "user_id")
+
+        verify(exactly = 1) {
+            core.track(event, any(), any())
+        }
+        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
+    }
+
+    @Test
+    fun `track with eventKey and User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+
+        sut.track("test_event", user)
+
+        verify(exactly = 1) {
+            core.track(
+                withArg {
+                    expectThat(it.key).isEqualTo("test_event")
+                },
+                any(),
+                any()
+            )
+        }
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `track with Event and User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
+        every { userManager.resolve(any(), any()) } returns hackleUser
+        val event = Event.builder("test_event").build()
+
+        sut.track(event, user)
+
+        verify(exactly = 1) {
+            core.track(event, any(), any())
+        }
+        verify(exactly = 1) { userManager.resolve(user, any()) }
+    }
+
+    @Test
+    fun `remoteConfig with User - deprecated`() {
+        val user = User.builder().id("user_id").build()
+
+        val actual = sut.remoteConfig(user)
+
+        expectThat(actual).isA<HackleRemoteConfigImpl>()
+    }
+
+    @Test
+    fun `showUserExplorer with Activity - deprecated`() {
+        val activity = mockk<Activity>()
+
+        sut.showUserExplorer(activity)
+
+        verify(exactly = 1) {
+            userExplorer.show()
+        }
+    }
+
+    @Test
+    fun setPushToken() {
+        sut.setPushToken("test_token")
+        // This method does nothing, just checking it doesn't throw
+    }
+
+    @Test
+    fun updatePushSubscriptionStatus() {
+        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
+        // This method does nothing, just checking it doesn't throw
+    }
+
+}
+
+class HackleAppCompanionTest {
+
+    @Test
+    fun `registerActivityLifecycleCallbacks`() {
+        mockkObject(LifecycleManager.Companion)
+        val mockInstance = mockk<LifecycleManager>(relaxed = true)
+        every { LifecycleManager.instance } returns mockInstance
+        val context = mockk<Context>()
+
+        HackleApp.registerActivityLifecycleCallbacks(context)
+
+        verify(exactly = 1) {
+            mockInstance.registerTo(context)
+        }
+        unmockkObject(LifecycleManager.Companion)
+    }
+
+    @Test
+    fun `isHacklePushMessage`() {
+        mockkObject(NotificationHandler.Companion)
+        val intent = mockk<Intent>()
+        every { NotificationHandler.isHackleIntent(intent) } returns true
+
+        val result = HackleApp.isHacklePushMessage(intent)
+
+        expectThat(result).isEqualTo(true)
+        verify(exactly = 1) {
+            NotificationHandler.isHackleIntent(intent)
+        }
+        unmockkObject(NotificationHandler.Companion)
+    }
+
+    @Test
+    fun `isHacklePushMessage - false`() {
+        mockkObject(NotificationHandler.Companion)
+        val intent = mockk<Intent>()
+        every { NotificationHandler.isHackleIntent(intent) } returns false
+
+        val result = HackleApp.isHacklePushMessage(intent)
+
+        expectThat(result).isEqualTo(false)
+        verify(exactly = 1) {
+            NotificationHandler.isHackleIntent(intent)
+        }
+        unmockkObject(NotificationHandler.Companion)
+    }
+
+    @Test
+    fun `getInstance - when initialized`() {
+        // This test requires HackleApp to be initialized first
+        mockkObject(HackleApp.Companion)
+        val mockInstance = mockk<HackleApp>()
+        every { HackleApp.getInstance() } returns mockInstance
+
+        val result = HackleApp.getInstance()
+
+        expectThat(result).isSameInstanceAs(mockInstance)
+        unmockkObject(HackleApp.Companion)
+    }
 }
