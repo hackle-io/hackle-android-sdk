@@ -88,5 +88,5 @@ internal class ApplicationListenerRegistryTest {
 
     private class TestApplicationListenerRegistry : ApplicationListenerRegistry<TestApplicationListener>()
 
-    private interface TestApplicationListener : ApplicationListener
+    internal interface TestApplicationListener : ApplicationListener
 }
