@@ -4,6 +4,14 @@ import android.app.Activity
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
 import io.hackle.android.internal.lifecycle.ActivityProvider
+import io.hackle.android.internal.lifecycle.Lifecycle
+import io.hackle.android.internal.lifecycle.Lifecycle.CREATED
+import io.hackle.android.internal.lifecycle.Lifecycle.DESTROYED
+import io.hackle.android.internal.lifecycle.Lifecycle.PAUSED
+import io.hackle.android.internal.lifecycle.Lifecycle.RESUMED
+import io.hackle.android.internal.lifecycle.Lifecycle.STARTED
+import io.hackle.android.internal.lifecycle.Lifecycle.STOPPED
+import io.hackle.android.internal.lifecycle.LifecycleListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
@@ -29,7 +37,7 @@ internal class InAppMessageUi(
     val scheduler: Scheduler,
     val eventHandler: InAppMessageEventHandler,
     val imageLoader: ImageLoader,
-) : InAppMessagePresenter {
+) : InAppMessagePresenter, LifecycleListener {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()
     val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
@@ -84,6 +92,20 @@ internal class InAppMessageUi(
 
     fun closeCurrent() {
         _currentMessageController.set(null)
+    }
+
+    override fun onLifecycle(
+        lifecycle: Lifecycle,
+        activity: Activity,
+        timestamp: Long
+    ) {
+        if (lifecycle != DESTROYED) {
+            return
+        }
+        val controller = currentMessageController ?: return
+        if (controller.layout.activity == activity) {
+            controller.close(false)
+        }
     }
 
     companion object {
