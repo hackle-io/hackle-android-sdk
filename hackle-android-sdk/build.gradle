@@ -121,7 +121,9 @@ afterEvaluate {
                 groupId group
                 artifactId project.name
                 version version
-                
+
+                from components.release
+
                 artifact("$buildDir/outputs/aar/${project.name}-release.aar")
                 artifact sourceJar
 
