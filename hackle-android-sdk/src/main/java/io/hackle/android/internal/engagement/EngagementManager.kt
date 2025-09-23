@@ -18,7 +18,6 @@ internal class EngagementManager(
     private val screenManager: ScreenManager,
     private val minimumEngagementDurationMillis: Long
 ) : ApplicationListenerRegistry<EngagementListener>(), ScreenListener, LifecycleListener {
-
     private val _lastEngagementTime = AtomicReference<Long?>()
     val lastEngagementTime: Long? get() = _lastEngagementTime.get()
 
@@ -27,7 +26,7 @@ internal class EngagementManager(
     }
 
     private fun endEngagement(screen: Screen, timestamp: Long) {
-        val startTimestamp = _lastEngagementTime.getAndSet(timestamp) ?: return
+        val startTimestamp = _lastEngagementTime.getAndSet(null) ?: return
 
         val engagementDurationMillis = timestamp - startTimestamp
         if (engagementDurationMillis < minimumEngagementDurationMillis) {
