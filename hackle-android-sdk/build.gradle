@@ -118,11 +118,8 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                groupId group
-                artifactId project.name
-                version version
-                
-                artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+                from components.release
+
                 artifact sourceJar
 
                 pom {
