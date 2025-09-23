@@ -46,6 +46,7 @@ jobs:
       - name: Create prerelease
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.PAT }} 
           script: |
             const tagName = '${{ steps.validate_tag.outputs.version }}';
             
