@@ -41,6 +41,7 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpres
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.lifecycle.ActivityStateManager
+import io.hackle.android.internal.lifecycle.ApplicationEventTracker
 import io.hackle.android.internal.lifecycle.ApplicationStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
@@ -301,13 +302,17 @@ internal object HackleApps {
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
 
-        // AppStateListener
+        // ActivityStateListener
 
         activityStateManager.setExecutor(eventExecutor)
         activityStateManager.addListener(pollingSynchronizer)
         activityStateManager.addListener(sessionManager)
         activityStateManager.addListener(userManager)
         activityStateManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
+
+        // ApplicationStateListener
+
+        applicationStateManager.setExecutor(eventExecutor)
 
         // SessionEventTracker
 
@@ -334,6 +339,13 @@ internal object HackleApps {
             core = core
         )
         engagementManager.addListener(engagementEventTracker)
+
+        val applicationEventTracker = ApplicationEventTracker(
+            userManager = userManager,
+            core = core,
+            device = device
+        )
+        applicationStateManager.addListener(applicationEventTracker)
 
         // InAppMessage
 
