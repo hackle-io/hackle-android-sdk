@@ -122,7 +122,7 @@ internal class LifecycleManager(
 
         private fun create(): LifecycleManager {
             val lifecycleManager = LifecycleManager(Clock.SYSTEM)
-            lifecycleManager.addListener(AppStateManager.instance, order = Ordered.LOWEST)
+            lifecycleManager.addListener(ActivityStateManager.instance, order = Ordered.LOWEST)
             return lifecycleManager
         }
     }

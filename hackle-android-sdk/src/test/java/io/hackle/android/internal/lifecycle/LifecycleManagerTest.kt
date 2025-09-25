@@ -140,7 +140,7 @@ class LifecycleManagerTest {
     fun `instance`() {
         val instance = LifecycleManager.instance
         expectThat(instance) isSameInstanceAs LifecycleManager.instance
-        expectThat(instance.listeners).any { this.isA<AppStateManager>() }
+        expectThat(instance.listeners).any { this.isA<ActivityStateManager>() }
     }
 
     private class InternalActivity : Activity(), HackleActivity

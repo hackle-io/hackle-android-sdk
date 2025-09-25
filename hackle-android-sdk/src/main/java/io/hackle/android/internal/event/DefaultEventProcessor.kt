@@ -6,8 +6,8 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateListener
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.lifecycle.ActivityStateListener
+import io.hackle.android.internal.lifecycle.ActivityStateManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
@@ -38,10 +38,10 @@ internal class DefaultEventProcessor(
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
-    private val appStateManager: AppStateManager,
+    private val activityStateManager: ActivityStateManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
-) : EventProcessor, AppStateListener, Closeable {
+) : EventProcessor, ActivityStateListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
@@ -173,7 +173,7 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            if (appStateManager.currentState == FOREGROUND) {
+            if (activityStateManager.currentState == FOREGROUND) {
                 sessionManager.updateLastEventTime(event.timestamp)
             } else {
                 // Corner case when an event is processed between onPause and onResume

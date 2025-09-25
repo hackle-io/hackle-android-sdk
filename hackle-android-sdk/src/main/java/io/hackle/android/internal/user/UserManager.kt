@@ -8,7 +8,7 @@ import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateListener
+import io.hackle.android.internal.lifecycle.ActivityStateListener
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.sync.Synchronizer
@@ -27,7 +27,7 @@ internal class UserManager(
     private val repository: KeyValueRepository,
     private val cohortFetcher: UserCohortFetcher,
     private val targetEventFetcher: UserTargetEventFetcher,
-) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
+) : ApplicationListenerRegistry<UserListener>(), Synchronizer, ActivityStateListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
     private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty(), UserTargetEvents.empty())

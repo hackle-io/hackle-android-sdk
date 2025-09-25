@@ -10,7 +10,7 @@ import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.lifecycle.AppStateManager
+import io.hackle.android.internal.lifecycle.ActivityStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
@@ -594,7 +594,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
-                        .also { AppStateManager.instance.publishStateIfNeeded() }
+                        .also { ActivityStateManager.instance.publishStateIfNeeded() }
                         .also { INSTANCE = it }
             }
         }
