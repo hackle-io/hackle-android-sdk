@@ -54,6 +54,7 @@ internal class LifecycleManager(
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
     private fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
+        // TODO: 어떻게 할건지?
         if (activity is HackleActivity) {
             return
         }
@@ -123,6 +124,7 @@ internal class LifecycleManager(
         private fun create(): LifecycleManager {
             val lifecycleManager = LifecycleManager(Clock.SYSTEM)
             lifecycleManager.addListener(ActivityStateManager.instance, order = Ordered.LOWEST)
+            lifecycleManager.addListener(ApplicationStateManager.instance, order = Ordered.LOWEST)
             return lifecycleManager
         }
     }
