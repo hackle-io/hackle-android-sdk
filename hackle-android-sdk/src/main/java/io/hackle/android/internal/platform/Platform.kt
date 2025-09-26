@@ -15,7 +15,8 @@ internal interface Platform {
     fun getCurrentDeviceInfo(): DeviceInfo
 }
 
-internal class AndroidPlatform(val context: Context) : Platform {
+internal class AndroidPlatform(val context: Context, previousVersionName: String?, previousVersionCode: Long?) :
+    Platform {
 
     private val packageInfo: PackageInfo
 
@@ -31,11 +32,14 @@ internal class AndroidPlatform(val context: Context) : Platform {
             @Suppress("DEPRECATION")
             versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                 packageInfo.longVersionCode else packageInfo.versionCode.toLong()
-        } catch (_: Throwable) { }
+        } catch (_: Throwable) {
+        }
         packageInfo = PackageInfo(
             packageName = packageName,
             versionName = versionName,
             versionCode = versionCode,
+            previousVersionName = previousVersionName,
+            previousVersionCode = previousVersionCode,
         )
     }
 

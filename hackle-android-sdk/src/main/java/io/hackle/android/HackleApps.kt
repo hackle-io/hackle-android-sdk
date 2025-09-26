@@ -42,6 +42,7 @@ import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.lifecycle.ActivityStateManager
 import io.hackle.android.internal.application.ApplicationEventTracker
+import io.hackle.android.internal.application.ApplicationInstallDeterminer
 import io.hackle.android.internal.application.ApplicationStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
@@ -116,6 +117,7 @@ internal object HackleApps {
         val keyValueRepositoryBySdkKey =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         val device = Device.create(context, globalKeyValueRepository)
+        val applicationInstallDeterminer = ApplicationInstallDeterminer(globalKeyValueRepository, device)
 
         val httpClient = createHttpClient(context, sdk)
 
@@ -313,6 +315,7 @@ internal object HackleApps {
         // ApplicationStateListener
 
         applicationStateManager.setExecutor(eventExecutor)
+        applicationStateManager.setApplicationInstallDeterminer(applicationInstallDeterminer)
 
         // SessionEventTracker
 

@@ -20,11 +20,15 @@ internal class ApplicationStateManager
     : ApplicationListenerRegistry<ApplicationStateListener>(), LifecycleListener, ApplicationOpenListener {
     
     private var enableActivities: MutableSet<Int> = mutableSetOf()
-
     private var executor: Executor? = null
+    private var applicationInstallDeterminer: ApplicationInstallDeterminer? = null
 
     fun setExecutor(executor: Executor) {
         this.executor = executor
+    }
+    
+    fun setApplicationInstallDeterminer(applicationInstallDeterminer: ApplicationInstallDeterminer) {
+        this.applicationInstallDeterminer = applicationInstallDeterminer
     }
     
     private fun onActivityForeground(key: Int, timestamp: Long) {
@@ -52,6 +56,24 @@ internal class ApplicationStateManager
             listener.onState(state, timestamp)
         }
     }
+    
+    private fun publishInstall(timestamp: Long) {
+        listeners.forEach { listener ->
+            listener.onInstall(timestamp)
+        }
+    }
+    
+    private fun publishUpdate(timestamp: Long) {
+        listeners.forEach { listener ->
+            listener.onUpdate(timestamp)
+        }
+    }
+    
+    private fun publishOpen(timestamp: Long) {
+        listeners.forEach { listener ->
+            listener.onOpen(timestamp)
+        }
+    }
 
     private fun execute(block: () -> Unit) {
         val executor = executor
@@ -63,11 +85,20 @@ internal class ApplicationStateManager
     }
 
     override fun onApplicationOpened(timestamp: Long) {
-        log.debug { "application(OPEN)" }
+        val state = applicationInstallDeterminer?.determine()
+        
         execute {
-            listeners.forEach { listener ->
-                listener.onOpen(timestamp)
+            if (state != null && state != ApplicationInstallState.NONE) {
+                log.debug { "application(state=$state)" }
+                when (state) {
+                    ApplicationInstallState.INSTALL -> publishInstall(timestamp)
+                    ApplicationInstallState.UPDATE -> publishUpdate(timestamp)
+                    else -> Unit
+                }
             }
+
+            log.debug { "application(state=OPEN)" }
+            publishOpen(timestamp)
         }
     }
 

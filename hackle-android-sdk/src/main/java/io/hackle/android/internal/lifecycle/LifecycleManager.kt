@@ -55,7 +55,7 @@ internal class LifecycleManager(
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
     private fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        // TODO: 어떻게 할건지?
+        // TODO("핵클 엑티비티 어떻게 할건지")
         if (activity is HackleActivity) {
             return
         }

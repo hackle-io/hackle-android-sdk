@@ -13,8 +13,32 @@ internal class ApplicationEventTracker(
     private val core: HackleCore,
     private val device: Device
 ) : ApplicationStateListener {
+
+    override fun onInstall(timestamp: Long) {
+        val trackEvent = Event.builder(APP_INSTALL_EVENT_KEY)
+            .property("versionName", device.packageInfo.versionName)
+            .property("versionCode", device.packageInfo.versionCode)
+            .build()
+        track(trackEvent, timestamp)
+    }
+    
+    override fun onUpdate(timestamp: Long) {
+        val trackEvent = Event.builder(APP_UPDATE_EVENT_KEY)
+            .property("previousVersionName", device.packageInfo.versionName)
+            .property("previousVersionCode", device.packageInfo.versionCode)
+            .property("versionName", device.packageInfo.versionName)
+            .property("versionCode", device.packageInfo.versionCode)
+            .build()
+        track(trackEvent, timestamp)
+    }
+    
+    
     override fun onOpen(timestamp: Long) {
-        onAppOpen(timestamp)
+        val trackEvent = Event.builder(APP_OPEN_EVENT_KEY)
+            .property("versionName", device.packageInfo.versionName)
+            .property("versionCode", device.packageInfo.versionCode)
+            .build()
+        track(trackEvent, timestamp)
     }
 
     override fun onState(state: AppState, timestamp: Long) {
@@ -24,34 +48,30 @@ internal class ApplicationEventTracker(
         }
     }
 
-    private fun onAppOpen(timestamp: Long) {
-        val trackEvent = Event.builder(APP_OPEN_EVENT_KEY)
-            .property("versionName", device.properties["versionName"])
-            .property("versionCode", device.properties["versionCode"])
-            .build()
-        val hackleUser = userManager.resolve(null, HackleAppContext.DEFAULT)
-        core.track(trackEvent, hackleUser, timestamp)
-    }
-    
     private fun onForeground(timestamp: Long) {
         val trackEvent = Event.builder(APP_FOREGROUND_EVENT_KEY)
-            .property("versionName", device.properties["versionName"])
-            .property("versionCode", device.properties["versionCode"])
+            .property("versionName", device.packageInfo.versionName)
+            .property("versionCode", device.packageInfo.versionCode)
             .build()
-        val hackleUser = userManager.resolve(null, HackleAppContext.DEFAULT)
-        core.track(trackEvent, hackleUser, timestamp)
+        track(trackEvent, timestamp)
     }
     
     private fun onBackground(timestamp: Long) {
         val trackEvent = Event.builder(APP_BACKGROUND_EVENT_KEY)
-            .property("versionName", device.properties["versionName"])
-            .property("versionCode", device.properties["versionCode"])
+            .property("versionName", device.packageInfo.versionName)
+            .property("versionCode", device.packageInfo.versionCode)
             .build()
+        track(trackEvent, timestamp)
+    }
+    
+    private fun track(event: Event, timestamp: Long) {
         val hackleUser = userManager.resolve(null, HackleAppContext.DEFAULT)
-        core.track(trackEvent, hackleUser, timestamp)
+        core.track(event, hackleUser, timestamp)
     }
 
     companion object {
+        const val APP_INSTALL_EVENT_KEY = "\$app_install"
+        const val APP_UPDATE_EVENT_KEY = "\$app_update"
         const val APP_OPEN_EVENT_KEY = "\$app_open"
         const val APP_FOREGROUND_EVENT_KEY = "\$app_foreground"
         const val APP_BACKGROUND_EVENT_KEY = "\$app_background"
