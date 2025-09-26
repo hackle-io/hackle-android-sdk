@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.application.ApplicationStateManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.lifecycle.ActivityStateManager
@@ -26,6 +27,7 @@ import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.time.Clock
 import java.io.Closeable
 
 /**
@@ -365,6 +367,7 @@ class HackleApp internal constructor(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         hackleAppCore.initialize(user, onReady)
+        ApplicationStateManager.instance.onApplicationOpened(Clock.SYSTEM.currentMillis())
     }
 
     // Deprecated

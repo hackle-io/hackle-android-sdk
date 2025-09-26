@@ -41,8 +41,8 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpres
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.lifecycle.ActivityStateManager
-import io.hackle.android.internal.lifecycle.ApplicationEventTracker
-import io.hackle.android.internal.lifecycle.ApplicationStateManager
+import io.hackle.android.internal.application.ApplicationEventTracker
+import io.hackle.android.internal.application.ApplicationStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator

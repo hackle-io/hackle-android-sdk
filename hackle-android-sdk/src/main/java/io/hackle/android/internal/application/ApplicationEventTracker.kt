@@ -1,6 +1,7 @@
-package io.hackle.android.internal.lifecycle
+package io.hackle.android.internal.application
 
 import io.hackle.android.internal.context.HackleAppContext
+import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
@@ -12,10 +13,12 @@ internal class ApplicationEventTracker(
     private val core: HackleCore,
     private val device: Device
 ) : ApplicationStateListener {
-    
+    override fun onOpen(timestamp: Long) {
+        onAppOpen(timestamp)
+    }
+
     override fun onState(state: AppState, timestamp: Long) {
         when (state) {
-           AppState.OPEN -> onAppOpen(timestamp)
            AppState.FOREGROUND -> onForeground(timestamp)
            AppState.BACKGROUND -> onBackground(timestamp)
         }
