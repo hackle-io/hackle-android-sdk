@@ -16,6 +16,7 @@ class DeviceTest {
         val platform = MockPlatform()
         val device = DeviceImpl(
             id = deviceId,
+            isIdCreated = false,
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
@@ -45,6 +46,7 @@ class DeviceTest {
         val platform = MockPlatform()
         val device = DeviceImpl(
             id = deviceId,
+            isIdCreated = false,
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))

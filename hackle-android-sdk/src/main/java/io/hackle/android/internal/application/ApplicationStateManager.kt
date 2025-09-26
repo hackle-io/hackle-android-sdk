@@ -18,37 +18,37 @@ import java.util.concurrent.Executor
 
 internal class ApplicationStateManager
     : ApplicationListenerRegistry<ApplicationStateListener>(), LifecycleListener, ApplicationOpenListener {
-    
-    private var enableActivities: MutableSet<Int> = mutableSetOf()
+
+    private val enableActivities: MutableSet<Int> = mutableSetOf()
     private var executor: Executor? = null
     private var applicationInstallDeterminer: ApplicationInstallDeterminer? = null
 
     fun setExecutor(executor: Executor) {
         this.executor = executor
     }
-    
+
     fun setApplicationInstallDeterminer(applicationInstallDeterminer: ApplicationInstallDeterminer) {
         this.applicationInstallDeterminer = applicationInstallDeterminer
     }
-    
+
     private fun onActivityForeground(key: Int, timestamp: Long) {
         execute {
-            if(enableActivities.isEmpty()) {
+            if (enableActivities.isEmpty()) {
                 publish(FOREGROUND, timestamp)
             }
             enableActivities.add(key)
         }
     }
-    
+
     private fun onActivityBackground(key: Int, timestamp: Long) {
         execute {
             enableActivities.remove(key)
-            if(enableActivities.isEmpty()) {
+            if (enableActivities.isEmpty()) {
                 publish(BACKGROUND, timestamp)
             }
         }
     }
-    
+
     private fun publish(state: AppState, timestamp: Long) {
         log.debug { "application(lifecycle=$state)" }
 
@@ -56,19 +56,19 @@ internal class ApplicationStateManager
             listener.onState(state, timestamp)
         }
     }
-    
+
     private fun publishInstall(timestamp: Long) {
         listeners.forEach { listener ->
             listener.onInstall(timestamp)
         }
     }
-    
+
     private fun publishUpdate(timestamp: Long) {
         listeners.forEach { listener ->
             listener.onUpdate(timestamp)
         }
     }
-    
+
     private fun publishOpen(timestamp: Long) {
         listeners.forEach { listener ->
             listener.onOpen(timestamp)
@@ -86,7 +86,7 @@ internal class ApplicationStateManager
 
     override fun onApplicationOpened(timestamp: Long) {
         val state = applicationInstallDeterminer?.determine()
-        
+
         execute {
             if (state != null && state != ApplicationInstallState.NONE) {
                 log.debug { "application(state=$state)" }
@@ -107,9 +107,10 @@ internal class ApplicationStateManager
         activity: Activity,
         timestamp: Long
     ) {
+        val activityKey = activity.hashCode()
         return when (lifecycle) {
-            STARTED -> onActivityForeground(activity.hashCode(), timestamp)
-            STOPPED -> onActivityBackground(activity.hashCode(), timestamp)
+            STARTED -> onActivityForeground(activityKey, timestamp)
+            STOPPED -> onActivityBackground(activityKey, timestamp)
             CREATED, RESUMED, PAUSED, DESTROYED -> Unit
         }
     }

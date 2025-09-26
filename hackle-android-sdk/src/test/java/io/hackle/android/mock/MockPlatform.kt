@@ -12,7 +12,9 @@ internal class MockPlatform() : Platform {
         PackageInfo(
             packageName = "io.hackle.app",
             versionName = "1.1.1",
-            versionCode = 10101L
+            versionCode = 10101L,
+            previousVersionName = null,
+            previousVersionCode = null
         )
 
     override fun getCurrentDeviceInfo(): DeviceInfo =

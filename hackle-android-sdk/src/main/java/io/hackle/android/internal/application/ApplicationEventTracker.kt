@@ -15,29 +15,21 @@ internal class ApplicationEventTracker(
 ) : ApplicationStateListener {
 
     override fun onInstall(timestamp: Long) {
-        val trackEvent = Event.builder(APP_INSTALL_EVENT_KEY)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
-            .build()
+        val trackEvent = createEvent(APP_INSTALL_EVENT_KEY)
         track(trackEvent, timestamp)
     }
-    
+
     override fun onUpdate(timestamp: Long) {
-        val trackEvent = Event.builder(APP_UPDATE_EVENT_KEY)
-            .property("previousVersionName", device.packageInfo.versionName)
-            .property("previousVersionCode", device.packageInfo.versionCode)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
-            .build()
+        val trackEvent = createEvent(APP_UPDATE_EVENT_KEY) { builder ->
+            builder
+                .property("previousVersionName", device.packageInfo.previousVersionName)
+                .property("previousVersionCode", device.packageInfo.previousVersionCode)
+        }
         track(trackEvent, timestamp)
     }
-    
-    
+
     override fun onOpen(timestamp: Long) {
-        val trackEvent = Event.builder(APP_OPEN_EVENT_KEY)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
-            .build()
+        val trackEvent = createEvent(APP_OPEN_EVENT_KEY)
         track(trackEvent, timestamp)
     }
 
@@ -49,21 +41,31 @@ internal class ApplicationEventTracker(
     }
 
     private fun onForeground(timestamp: Long) {
-        val trackEvent = Event.builder(APP_FOREGROUND_EVENT_KEY)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
-            .build()
+        val trackEvent = createEvent(APP_FOREGROUND_EVENT_KEY)
         track(trackEvent, timestamp)
     }
-    
+
     private fun onBackground(timestamp: Long) {
-        val trackEvent = Event.builder(APP_BACKGROUND_EVENT_KEY)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
-            .build()
+        val trackEvent = createEvent(APP_BACKGROUND_EVENT_KEY)
         track(trackEvent, timestamp)
     }
     
+    private fun createEvent(
+        eventKey: String,
+        additionalProperties: ((Event.Builder) -> Event.Builder)? = null
+    ): Event {
+        val packageInfo = device.packageInfo
+        var builder = Event.builder(eventKey)
+            .property("versionName", packageInfo.versionName)
+            .property("versionCode", packageInfo.versionCode)
+
+        if (additionalProperties != null) {
+            builder = additionalProperties(builder)
+        }
+
+        return builder.build()
+    }
+
     private fun track(event: Event, timestamp: Long) {
         val hackleUser = userManager.resolve(null, HackleAppContext.DEFAULT)
         core.track(event, hackleUser, timestamp)
