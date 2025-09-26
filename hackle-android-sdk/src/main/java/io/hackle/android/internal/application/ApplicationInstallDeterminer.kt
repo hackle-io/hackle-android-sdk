@@ -25,9 +25,7 @@ internal class ApplicationInstallDeterminer(
                 else -> ApplicationInstallState.NONE
             }
 
-            if (applicationInstallState != ApplicationInstallState.NONE) {
-                saveVersionInfo(currentVersion)
-            }
+            saveVersionInfo(currentVersion)
 
             applicationInstallState
         } catch (e: Exception) {
@@ -37,12 +35,8 @@ internal class ApplicationInstallDeterminer(
     }
 
     private fun saveVersionInfo(version: Version) {
-        try {
-            keyValueRepository.putString(Device.KEY_PREVIOUS_VERSION_NAME, version.name ?: "unknown")
-            keyValueRepository.putLong(Device.KEY_PREVIOUS_VERSION_CODE, version.code ?: 0L)
-        } catch (e: Exception) {
-            log.warn { "Failed to save version information: ${e.message}" }
-        }
+        keyValueRepository.putString(Device.KEY_PREVIOUS_VERSION_NAME, version.name!!)
+        keyValueRepository.putLong(Device.KEY_PREVIOUS_VERSION_CODE, version.code!!)
     }
 
     private data class Version(
