@@ -367,7 +367,7 @@ class HackleApp internal constructor(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         hackleAppCore.initialize(user, onReady)
-        ApplicationStateManager.instance.onApplicationOpened(Clock.SYSTEM.currentMillis())
+        ApplicationStateManager.instance.checkApplicationInstall()
     }
 
     // Deprecated

@@ -43,6 +43,7 @@ import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.lifecycle.ActivityStateManager
 import io.hackle.android.internal.application.ApplicationEventTracker
 import io.hackle.android.internal.application.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.ApplicationLifecycleManager
 import io.hackle.android.internal.application.ApplicationStateManager
 import io.hackle.android.internal.lifecycle.LifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
@@ -125,6 +126,7 @@ internal object HackleApps {
 
         val lifecycleManager = LifecycleManager.instance
         val activityStateManager = ActivityStateManager.instance
+        val applicationLifecycleManager = ApplicationLifecycleManager.instance
         val applicationStateManager = ApplicationStateManager.instance
 
         // Synchronizer
@@ -534,6 +536,8 @@ internal object HackleApps {
         lifecycleManager.addListener(inAppMessageUi, order = Ordered.LOWEST)
         lifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
         lifecycleManager.registerTo(context)
+
+        applicationLifecycleManager.registerTo(context)
 
         val throttleLimiter = ThrottleLimiter(
             intervalMillis = 60 * 1000,

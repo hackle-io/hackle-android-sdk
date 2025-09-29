@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
-import io.hackle.android.internal.application.ApplicationStateManager
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.lifecycle.Lifecycle.*
@@ -55,7 +54,6 @@ internal class LifecycleManager(
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
     private fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        // TODO("핵클 엑티비티 어떻게 할건지")
         if (activity is HackleActivity) {
             return
         }
@@ -125,7 +123,6 @@ internal class LifecycleManager(
         private fun create(): LifecycleManager {
             val lifecycleManager = LifecycleManager(Clock.SYSTEM)
             lifecycleManager.addListener(ActivityStateManager.instance, order = Ordered.LOWEST)
-            lifecycleManager.addListener(ApplicationStateManager.instance, order = Ordered.LOWEST)
             return lifecycleManager
         }
     }

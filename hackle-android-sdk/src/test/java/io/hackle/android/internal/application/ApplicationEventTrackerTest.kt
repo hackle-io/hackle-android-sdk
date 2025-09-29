@@ -81,29 +81,6 @@ class ApplicationEventTrackerTest {
     }
 
     @Test
-    fun `onOpen should track app open event with version info`() {
-        // given
-        val timestamp = 1234567890L
-        val eventSlot = slot<Event>()
-        val userSlot = slot<HackleUser>()
-        val timestampSlot = slot<Long>()
-
-        every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
-
-        // when
-        tracker.onOpen(timestamp)
-
-        // then
-        verify { core.track(capture(eventSlot), capture(userSlot), capture(timestampSlot)) }
-
-        expectThat(eventSlot.captured.key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
-        expectThat(eventSlot.captured.properties["versionName"]).isEqualTo("1.0.0")
-        expectThat(eventSlot.captured.properties["versionCode"]).isEqualTo(1L)
-        expectThat(userSlot.captured).isEqualTo(mockUser)
-        expectThat(timestampSlot.captured).isEqualTo(timestamp)
-    }
-
-    @Test
     fun `onState should track foreground event when state is FOREGROUND`() {
         // given
         val timestamp = 1234567890L
@@ -114,14 +91,12 @@ class ApplicationEventTrackerTest {
         every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
 
         // when
-        tracker.onState(AppState.FOREGROUND, timestamp)
+        tracker.onForeground(timestamp, false)
 
         // then
         verify { core.track(capture(eventSlot), capture(userSlot), capture(timestampSlot)) }
 
-        expectThat(eventSlot.captured.key).isEqualTo(ApplicationEventTracker.APP_FOREGROUND_EVENT_KEY)
-        expectThat(eventSlot.captured.properties["versionName"]).isEqualTo("1.0.0")
-        expectThat(eventSlot.captured.properties["versionCode"]).isEqualTo(1L)
+        expectThat(eventSlot.captured.key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
         expectThat(userSlot.captured).isEqualTo(mockUser)
         expectThat(timestampSlot.captured).isEqualTo(timestamp)
     }
@@ -137,14 +112,12 @@ class ApplicationEventTrackerTest {
         every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
 
         // when
-        tracker.onState(AppState.BACKGROUND, timestamp)
+        tracker.onBackground(timestamp)
 
         // then
         verify { core.track(capture(eventSlot), capture(userSlot), capture(timestampSlot)) }
 
         expectThat(eventSlot.captured.key).isEqualTo(ApplicationEventTracker.APP_BACKGROUND_EVENT_KEY)
-        expectThat(eventSlot.captured.properties["versionName"]).isEqualTo("1.0.0")
-        expectThat(eventSlot.captured.properties["versionCode"]).isEqualTo(1L)
         expectThat(userSlot.captured).isEqualTo(mockUser)
         expectThat(timestampSlot.captured).isEqualTo(timestamp)
     }
@@ -202,7 +175,6 @@ class ApplicationEventTrackerTest {
         expectThat(ApplicationEventTracker.APP_INSTALL_EVENT_KEY).isEqualTo("\$app_install")
         expectThat(ApplicationEventTracker.APP_UPDATE_EVENT_KEY).isEqualTo("\$app_update")
         expectThat(ApplicationEventTracker.APP_OPEN_EVENT_KEY).isEqualTo("\$app_open")
-        expectThat(ApplicationEventTracker.APP_FOREGROUND_EVENT_KEY).isEqualTo("\$app_foreground")
         expectThat(ApplicationEventTracker.APP_BACKGROUND_EVENT_KEY).isEqualTo("\$app_background")
     }
 }

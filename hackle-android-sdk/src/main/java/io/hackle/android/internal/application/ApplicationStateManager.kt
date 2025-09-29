@@ -1,25 +1,14 @@
 package io.hackle.android.internal.application
 
-import android.app.Activity
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
-import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.Lifecycle
-import io.hackle.android.internal.lifecycle.Lifecycle.CREATED
-import io.hackle.android.internal.lifecycle.Lifecycle.DESTROYED
-import io.hackle.android.internal.lifecycle.Lifecycle.PAUSED
-import io.hackle.android.internal.lifecycle.Lifecycle.RESUMED
-import io.hackle.android.internal.lifecycle.Lifecycle.STARTED
-import io.hackle.android.internal.lifecycle.Lifecycle.STOPPED
-import io.hackle.android.internal.lifecycle.LifecycleListener
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.Executor
 
-internal class ApplicationStateManager
-    : ApplicationListenerRegistry<ApplicationStateListener>(), LifecycleListener, ApplicationOpenListener {
+internal class ApplicationStateManager(
+    private val clock: Clock,
+) : ApplicationListenerRegistry<ApplicationStateListener>(), ApplicationLifecycleListener {
 
-    private val enableActivities: MutableSet<Int> = mutableSetOf()
     private var executor: Executor? = null
     private var applicationInstallDeterminer: ApplicationInstallDeterminer? = null
 
@@ -31,29 +20,35 @@ internal class ApplicationStateManager
         this.applicationInstallDeterminer = applicationInstallDeterminer
     }
 
-    private fun onActivityForeground(key: Int, timestamp: Long) {
+    override fun onApplicationForeground(timestamp: Long, isAppLaunch: Boolean) {
         execute {
-            if (enableActivities.isEmpty()) {
-                publish(FOREGROUND, timestamp)
+            listeners.forEach { listener ->
+                listener.onForeground(timestamp, isAppLaunch)
             }
-            enableActivities.add(key)
+        }
+
+    }
+
+    override fun onApplicationBackground(timestamp: Long) {
+        execute {
+            listeners.forEach { listener ->
+                listener.onBackground(timestamp)
+            }
         }
     }
 
-    private fun onActivityBackground(key: Int, timestamp: Long) {
+    internal fun checkApplicationInstall() {
+        val state = applicationInstallDeterminer?.determine()
+
         execute {
-            enableActivities.remove(key)
-            if (enableActivities.isEmpty()) {
-                publish(BACKGROUND, timestamp)
+            if (state != null && state != ApplicationInstallState.NONE) {
+                log.debug { "application($state)" }
+                when (state) {
+                    ApplicationInstallState.INSTALL -> publishInstall(clock.currentMillis())
+                    ApplicationInstallState.UPDATE -> publishUpdate(clock.currentMillis())
+                    else -> Unit
+                }
             }
-        }
-    }
-
-    private fun publish(state: AppState, timestamp: Long) {
-        log.debug { "application(lifecycle=$state)" }
-
-        listeners.forEach { listener ->
-            listener.onState(state, timestamp)
         }
     }
 
@@ -69,49 +64,12 @@ internal class ApplicationStateManager
         }
     }
 
-    private fun publishOpen(timestamp: Long) {
-        listeners.forEach { listener ->
-            listener.onOpen(timestamp)
-        }
-    }
-
     private fun execute(block: () -> Unit) {
         val executor = executor
         if (executor != null) {
             executor.execute(block)
         } else {
             block()
-        }
-    }
-
-    override fun onApplicationOpened(timestamp: Long) {
-        val state = applicationInstallDeterminer?.determine()
-
-        execute {
-            if (state != null && state != ApplicationInstallState.NONE) {
-                log.debug { "application(state=$state)" }
-                when (state) {
-                    ApplicationInstallState.INSTALL -> publishInstall(timestamp)
-                    ApplicationInstallState.UPDATE -> publishUpdate(timestamp)
-                    else -> Unit
-                }
-            }
-
-            log.debug { "application(state=OPEN)" }
-            publishOpen(timestamp)
-        }
-    }
-
-    override fun onLifecycle(
-        lifecycle: Lifecycle,
-        activity: Activity,
-        timestamp: Long
-    ) {
-        val activityKey = activity.hashCode()
-        return when (lifecycle) {
-            STARTED -> onActivityForeground(activityKey, timestamp)
-            STOPPED -> onActivityBackground(activityKey, timestamp)
-            CREATED, RESUMED, PAUSED, DESTROYED -> Unit
         }
     }
 
@@ -123,7 +81,7 @@ internal class ApplicationStateManager
         val instance: ApplicationStateManager
             get() {
                 return INSTANCE ?: synchronized(this) {
-                    INSTANCE ?: ApplicationStateManager().also { INSTANCE = it }
+                    INSTANCE ?: ApplicationStateManager(Clock.SYSTEM).also { INSTANCE = it }
                 }
             }
     }
