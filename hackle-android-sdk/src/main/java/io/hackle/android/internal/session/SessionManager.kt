@@ -5,7 +5,7 @@ import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.ActivityStateListener
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
@@ -15,7 +15,7 @@ internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
     private val sessionTimeoutMillis: Long,
-) : ApplicationListenerRegistry<SessionListener>(), ActivityStateListener, UserListener {
+) : ApplicationListenerRegistry<SessionListener>(), AppStateListener, UserListener {
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
 

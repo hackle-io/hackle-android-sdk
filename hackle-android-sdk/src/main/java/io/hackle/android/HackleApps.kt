@@ -40,7 +40,7 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
-import io.hackle.android.internal.lifecycle.ActivityStateManager
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.application.ApplicationEventTracker
 import io.hackle.android.internal.application.ApplicationInstallDeterminer
 import io.hackle.android.internal.application.ApplicationLifecycleManager
@@ -125,7 +125,7 @@ internal object HackleApps {
         // Lifecycle, AppState
 
         val lifecycleManager = LifecycleManager.instance
-        val activityStateManager = ActivityStateManager.instance
+        val appStateManager = AppStateManager.instance
         val applicationLifecycleManager = ApplicationLifecycleManager.instance
         val applicationStateManager = ApplicationStateManager.instance
 
@@ -228,7 +228,7 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            activityStateManager = activityStateManager,
+            appStateManager = appStateManager,
             screenUserEventDecorator = screenUserEventDecorator,
             eventBackoffController = eventBackoffController
         )
@@ -252,8 +252,8 @@ internal object HackleApps {
             clock
         )
 
-        activityStateManager.addListener(rcEventDedupDeterminer)
-        activityStateManager.addListener(exposureEventDedupDeterminer)
+        appStateManager.addListener(rcEventDedupDeterminer)
+        appStateManager.addListener(exposureEventDedupDeterminer)
 
         val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
             listOf(
@@ -308,11 +308,11 @@ internal object HackleApps {
 
         // ActivityStateListener
 
-        activityStateManager.setExecutor(eventExecutor)
-        activityStateManager.addListener(pollingSynchronizer)
-        activityStateManager.addListener(sessionManager)
-        activityStateManager.addListener(userManager)
-        activityStateManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
+        appStateManager.setExecutor(eventExecutor)
+        appStateManager.addListener(pollingSynchronizer)
+        appStateManager.addListener(sessionManager)
+        appStateManager.addListener(userManager)
+        appStateManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
 
         // ApplicationStateListener
 
@@ -525,7 +525,7 @@ internal object HackleApps {
 
         // Metrics
 
-        metricConfiguration(config, activityStateManager, eventExecutor, httpExecutor, httpClient)
+        metricConfiguration(config, appStateManager, eventExecutor, httpExecutor, httpClient)
 
         // LifecycleListener
 
@@ -582,7 +582,7 @@ internal object HackleApps {
 
     private fun metricConfiguration(
         config: HackleConfig,
-        activityStateManager: ActivityStateManager,
+        appStateManager: AppStateManager,
         eventExecutor: Executor,
         httpExecutor: Executor,
         httpClient: OkHttpClient,
@@ -594,7 +594,7 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        activityStateManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
+        appStateManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 

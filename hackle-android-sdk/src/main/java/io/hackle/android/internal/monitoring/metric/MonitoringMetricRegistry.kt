@@ -1,7 +1,7 @@
 package io.hackle.android.internal.monitoring.metric
 
 import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.ActivityStateListener
+import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Counter
@@ -25,7 +25,7 @@ internal class MonitoringMetricRegistry(
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
     clock: Clock = Clock.SYSTEM,
-) : MetricRegistry(clock), ActivityStateListener {
+) : MetricRegistry(clock), AppStateListener {
 
     private val monitoringEndpoint = HttpUrl.get("$monitoringBaseUrl/metrics")
 

@@ -14,15 +14,15 @@ import java.util.concurrent.Executor
 class AppStateManagerTest {
     @Test
     fun `singleton instance`() {
-        val instance = ActivityStateManager.instance
-        expectThat(instance) isSameInstanceAs ActivityStateManager.instance
+        val instance = AppStateManager.instance
+        expectThat(instance) isSameInstanceAs AppStateManager.instance
     }
 
     @Test
     fun `onLifecycle - RESUME`() {
         // given
-        val sut = ActivityStateManager(FixedClock(42))
-        val listener = mockk<ActivityStateListener>()
+        val sut = AppStateManager(FixedClock(42))
+        val listener = mockk<AppStateListener>()
         sut.addListener(listener)
 
         // when
@@ -38,8 +38,8 @@ class AppStateManagerTest {
     @Test
     fun `onLifecycle - PAUSED`() {
         // given
-        val sut = ActivityStateManager(FixedClock(42))
-        val listener = mockk<ActivityStateListener>()
+        val sut = AppStateManager(FixedClock(42))
+        val listener = mockk<AppStateListener>()
         sut.addListener(listener)
 
         // when
@@ -55,8 +55,8 @@ class AppStateManagerTest {
     @Test
     fun `onLifecycle - do nothing`() {
         // given
-        val sut = ActivityStateManager(FixedClock(42))
-        val listener = mockk<ActivityStateListener>()
+        val sut = AppStateManager(FixedClock(42))
+        val listener = mockk<AppStateListener>()
         sut.addListener(listener)
 
         // when
@@ -75,8 +75,8 @@ class AppStateManagerTest {
     @Test
     fun `publishStateIfNeeded - when currentState is null then do nothing`() {
         // given
-        val sut = ActivityStateManager(FixedClock(42))
-        val listener = mockk<ActivityStateListener>()
+        val sut = AppStateManager(FixedClock(42))
+        val listener = mockk<AppStateListener>()
         sut.addListener(listener)
 
         // when
@@ -91,11 +91,11 @@ class AppStateManagerTest {
     @Test
     fun `publishStateIfNeeded - when currentState is not null then publish state`() {
         // given
-        val sut = ActivityStateManager(FixedClock(42))
+        val sut = AppStateManager(FixedClock(42))
         sut.onLifecycle(Lifecycle.RESUMED, mockk(), 100)
 
         // when
-        val listener = mockk<ActivityStateListener>()
+        val listener = mockk<AppStateListener>()
         sut.addListener(listener)
         sut.publishStateIfNeeded()
 
@@ -107,13 +107,13 @@ class AppStateManagerTest {
 
     @Test
     fun `executor`() {
-        val sut = ActivityStateManager(FixedClock(42))
+        val sut = AppStateManager(FixedClock(42))
         val executor = mockk<Executor>()
         every { executor.execute(any()) } answers { firstArg<Runnable>().run() }
 
         sut.setExecutor(executor)
 
-        val listener = mockk<ActivityStateListener>()
+        val listener = mockk<AppStateListener>()
         sut.addListener(listener)
 
         sut.onLifecycle(Lifecycle.RESUMED, mockk(), 100)

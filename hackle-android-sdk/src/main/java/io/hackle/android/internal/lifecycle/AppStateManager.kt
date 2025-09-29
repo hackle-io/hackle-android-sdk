@@ -9,9 +9,9 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.Executor
 
-internal class ActivityStateManager(
+internal class AppStateManager(
     private val clock: Clock,
-) : ApplicationListenerRegistry<ActivityStateListener>(), LifecycleListener {
+) : ApplicationListenerRegistry<AppStateListener>(), LifecycleListener {
 
     private var _currentState: AppState? = null
     val currentState get() = _currentState ?: BACKGROUND
@@ -65,15 +65,15 @@ internal class ActivityStateManager(
         }
     }
 
-    companion object Companion {
-        private val log = Logger<ActivityStateManager>()
+    companion object {
+        private val log = Logger<AppStateManager>()
 
-        private var INSTANCE: ActivityStateManager? = null
+        private var INSTANCE: AppStateManager? = null
 
-        val instance: ActivityStateManager
+        val instance: AppStateManager
             get() {
                 return INSTANCE ?: synchronized(this) {
-                    INSTANCE ?: ActivityStateManager(Clock.SYSTEM).also { INSTANCE = it }
+                    INSTANCE ?: AppStateManager(Clock.SYSTEM).also { INSTANCE = it }
                 }
             }
     }
