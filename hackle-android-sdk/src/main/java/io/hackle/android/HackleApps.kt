@@ -306,7 +306,7 @@ internal object HackleApps {
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
 
-        // ActivityStateListener
+        // AppStateListener
 
         appStateManager.setExecutor(eventExecutor)
         appStateManager.addListener(pollingSynchronizer)
