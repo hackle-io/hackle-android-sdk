@@ -31,9 +31,9 @@ internal class ApplicationEventTracker(
         track(trackEvent, timestamp)
     }
 
-    override fun onForeground(timestamp: Long, isAppLaunch: Boolean) {
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
         val trackEvent = Event.builder(APP_OPEN_EVENT_KEY)
-            .property("appLaunch", isAppLaunch)
+            .property("isFromBackground", isFromBackground)
             .build()
         track(trackEvent, timestamp)
     }

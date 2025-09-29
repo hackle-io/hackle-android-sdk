@@ -20,13 +20,12 @@ internal class ApplicationStateManager(
         this.applicationInstallDeterminer = applicationInstallDeterminer
     }
 
-    override fun onApplicationForeground(timestamp: Long, isAppLaunch: Boolean) {
+    override fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean) {
         execute {
             listeners.forEach { listener ->
-                listener.onForeground(timestamp, isAppLaunch)
+                listener.onForeground(timestamp, isFromBackground)
             }
         }
-
     }
 
     override fun onApplicationBackground(timestamp: Long) {

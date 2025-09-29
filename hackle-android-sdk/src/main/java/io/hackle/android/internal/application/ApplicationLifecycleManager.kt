@@ -9,7 +9,6 @@ import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 internal class ApplicationLifecycleManager(
@@ -17,8 +16,8 @@ internal class ApplicationLifecycleManager(
 ) : ApplicationListenerRegistry<ApplicationLifecycleListener>(), Application.ActivityLifecycleCallbacks {
 
     private val enableActivities: MutableSet<Int> = mutableSetOf()
-    private var isAppLaunch: AtomicBoolean = AtomicBoolean(true)
-    private var appState: AtomicReference<AppState> = AtomicReference(AppState.FOREGROUND)
+    private val appState get() = _appState
+    private var _appState: AppState = AppState.FOREGROUND 
 
     fun registerTo(context: Context) {
         val application = context.applicationContext as Application
@@ -57,19 +56,18 @@ internal class ApplicationLifecycleManager(
     private fun onActivityForeground(key: Int, timestamp: Long) {
         if (enableActivities.isEmpty()) {
             log.debug { "application(onForeground)" }
-            val isAppLaunch = isAppLaunch.getAndSet(false)
-            appState.set(AppState.FOREGROUND)
-            listeners.forEach { it.onApplicationForeground(timestamp, isAppLaunch) }
+            listeners.forEach { it.onApplicationForeground(timestamp, appState == AppState.BACKGROUND) }
+            _appState = AppState.FOREGROUND
         }
         enableActivities.add(key)
     }
 
     private fun onActivityBackground(key: Int, timestamp: Long) {
         enableActivities.remove(key)
-        if (enableActivities.isEmpty() && appState.get() == AppState.FOREGROUND) {
+        if (enableActivities.isEmpty() && appState == AppState.FOREGROUND) {
             log.debug { "application(onBackground)" }
-            appState.set(AppState.BACKGROUND)
             listeners.forEach { it.onApplicationBackground(timestamp) }
+            _appState = AppState.BACKGROUND
         }
     }
 

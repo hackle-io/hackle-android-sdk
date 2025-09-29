@@ -67,7 +67,7 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStarted(mockActivity1)
 
         // then
-        verify { mockListener.onApplicationForeground(1234567890L, true) }
+        verify { mockListener.onApplicationForeground(1234567890L, false) }
     }
 
     @Test
@@ -109,42 +109,6 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStopped(mockActivity2)
 
         // then
-        verify { mockListener.onApplicationBackground(1234567890L) }
-    }
-
-    @Test
-    fun `isAppLaunch flag should be true only for first foreground event`() {
-        // when - first foreground
-        manager.onActivityStarted(mockActivity1)
-
-        // then
-        verify { mockListener.onApplicationForeground(1234567890L, true) }
-
-        // when - go to background and foreground again
-        manager.onActivityStopped(mockActivity1)
-        clearMocks(mockListener)
-        manager.onActivityStarted(mockActivity1)
-
-        // then - isAppLaunch should be false
-        verify { mockListener.onApplicationForeground(1234567890L, false) }
-    }
-
-    @Test
-    fun `should handle multiple foreground-background cycles correctly`() {
-        // First cycle
-        manager.onActivityStarted(mockActivity1)
-        verify { mockListener.onApplicationForeground(1234567890L, true) }
-
-        manager.onActivityStopped(mockActivity1)
-        verify { mockListener.onApplicationBackground(1234567890L) }
-
-        clearMocks(mockListener)
-
-        // Second cycle
-        manager.onActivityStarted(mockActivity1)
-        verify { mockListener.onApplicationForeground(1234567890L, false) }
-
-        manager.onActivityStopped(mockActivity1)
         verify { mockListener.onApplicationBackground(1234567890L) }
     }
 
@@ -202,7 +166,7 @@ class ApplicationLifecycleManagerTest {
     fun `should handle same activity multiple start-stop cycles`() {
         // First start-stop
         manager.onActivityStarted(mockActivity1)
-        verify { mockListener.onApplicationForeground(1234567890L, true) }
+        verify { mockListener.onApplicationForeground(1234567890L, false) }
 
         manager.onActivityStopped(mockActivity1)
         verify { mockListener.onApplicationBackground(1234567890L) }
@@ -211,7 +175,7 @@ class ApplicationLifecycleManagerTest {
 
         // Second start-stop for same activity
         manager.onActivityStarted(mockActivity1)
-        verify { mockListener.onApplicationForeground(1234567890L, false) }
+        verify { mockListener.onApplicationForeground(1234567890L, true) }
 
         manager.onActivityStopped(mockActivity1)
         verify { mockListener.onApplicationBackground(1234567890L) }
