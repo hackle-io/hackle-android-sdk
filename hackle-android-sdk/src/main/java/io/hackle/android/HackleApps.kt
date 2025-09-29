@@ -345,6 +345,8 @@ internal object HackleApps {
         )
         engagementManager.addListener(engagementEventTracker)
 
+        // ApplicationEventTracker
+        
         val applicationEventTracker = ApplicationEventTracker(
             userManager = userManager,
             core = core,
@@ -537,6 +539,8 @@ internal object HackleApps {
         lifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
         lifecycleManager.registerTo(context)
 
+        // ApplicationLifecycleListener
+        
         applicationLifecycleManager.registerTo(context)
 
         val throttleLimiter = ThrottleLimiter(
