@@ -25,39 +25,25 @@ internal class AppStateManager(
         val state = _currentState ?: return
         val timestamp = clock.currentMillis()
         execute {
-            if (state == FOREGROUND) {
-                publishForeground(timestamp, false)
-            } else {
-                publishBackground(timestamp)
-            }
+            publish(state, timestamp)
         }
     }
 
-    private fun publishForeground(timestamp: Long, isFromBackground: Boolean) {
-        execute { 
-            log.debug { "onState(state=$FOREGROUND)" }
-            for (listener in listeners) {
-                try {
-                    listener.onForeground(timestamp, isFromBackground)
-                } catch (e: Throwable) {
-                    log.error { "Failed to handle state [${listener.javaClass.simpleName}, $FOREGROUND]: $e" }
-                }
-            }
-            _currentState = FOREGROUND
+    private fun onState(state: AppState, timestamp: Long) {
+        execute {
+            publish(state, timestamp)
+            _currentState = state
         }
     }
-    
-    private fun publishBackground(timestamp: Long) {
-        execute { 
-            log.debug { "onState(state=$BACKGROUND)" }
-            for (listener in listeners) {
-                try {
-                    listener.onBackground(timestamp)
-                } catch (e: Throwable) {
-                    log.error { "Failed to handle state [${listener.javaClass.simpleName}, $BACKGROUND]: $e" }
-                }
+
+    private fun publish(state: AppState, timestamp: Long) {
+        log.debug { "onState(state=$state)" }
+        for (listener in listeners) {
+            try {
+                listener.onState(state, timestamp)
+            } catch (e: Throwable) {
+                log.error { "Failed to handle state [${listener.javaClass.simpleName}, $state]: $e" }
             }
-            _currentState = BACKGROUND
         }
     }
 
@@ -70,12 +56,20 @@ internal class AppStateManager(
         }
     }
 
+    //override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
+    //    return when (activityLifecycle) {
+    //        RESUMED -> onState(FOREGROUND, timestamp)
+    //        PAUSED -> onState(BACKGROUND, timestamp)
+    //        CREATED, STARTED, STOPPED, DESTROYED -> Unit
+    //    }
+    //}
+
     override fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean) {
-        publishForeground(timestamp, isFromBackground)
+        onState(FOREGROUND, timestamp)
     }
 
     override fun onApplicationBackground(timestamp: Long) {
-        publishBackground(timestamp)
+        onState(BACKGROUND, timestamp)
     }
 
     companion object {

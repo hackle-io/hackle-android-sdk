@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Bundle
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
+import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
@@ -15,7 +16,8 @@ internal class ApplicationLifecycleManager(
 ) : ApplicationListenerRegistry<ApplicationLifecycleListener>(), Application.ActivityLifecycleCallbacks {
 
     private val enableActivities: MutableSet<Int> = mutableSetOf()
-    private var isFromBackground = false
+    private val appState get() = _appState
+    private var _appState: AppState = AppState.FOREGROUND
 
     fun registerTo(context: Context) {
         val application = context.applicationContext as Application
@@ -54,18 +56,18 @@ internal class ApplicationLifecycleManager(
     private fun onActivityForeground(key: Int, timestamp: Long) {
         if (enableActivities.isEmpty()) {
             log.debug { "application(onForeground)" }
-            listeners.forEach { it.onApplicationForeground(timestamp, isFromBackground) }
-            isFromBackground = false
+            listeners.forEach { it.onApplicationForeground(timestamp, appState == AppState.BACKGROUND) }
+            _appState = AppState.FOREGROUND
         }
         enableActivities.add(key)
     }
 
     private fun onActivityBackground(key: Int, timestamp: Long) {
         enableActivities.remove(key)
-        if (enableActivities.isEmpty() && !isFromBackground) {
+        if (enableActivities.isEmpty() && appState == AppState.FOREGROUND) {
             log.debug { "application(onBackground)" }
             listeners.forEach { it.onApplicationBackground(timestamp) }
-            isFromBackground = true
+            _appState = AppState.BACKGROUND
         }
     }
 

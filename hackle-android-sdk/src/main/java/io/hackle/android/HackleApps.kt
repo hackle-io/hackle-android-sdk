@@ -356,7 +356,7 @@ internal object HackleApps {
             packageInfo = packageInfo
         )
         applicationInstallStateManager.addListener(applicationEventTracker)
-        appStateManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
+        appStateManager.addListener(applicationEventTracker)
 
         // InAppMessage
 

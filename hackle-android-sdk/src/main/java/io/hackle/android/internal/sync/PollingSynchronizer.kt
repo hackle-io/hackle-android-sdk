@@ -53,13 +53,12 @@ internal class PollingSynchronizer(
             log.info { "$this stopped polling." }
         }
     }
-    
-    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
-        start()
-    }
-    
-    override fun onBackground(timestamp: Long) {
-        stop()
+
+    override fun onState(state: AppState, timestamp: Long) {
+        return when (state) {
+            AppState.FOREGROUND -> start()
+            AppState.BACKGROUND -> stop()
+        }
     }
 
     override fun toString(): String {

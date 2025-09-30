@@ -366,6 +366,7 @@ class HackleApp internal constructor(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         hackleAppCore.initialize(user, onReady)
+        ApplicationInstallStateManager.instance.checkApplicationInstall()
     }
 
     // Deprecated
@@ -595,10 +596,7 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
-                        .also {
-                            ApplicationInstallStateManager.instance.checkApplicationInstall()
-                            AppStateManager.instance.publishStateIfNeeded()
-                        }
+                        .also { AppStateManager.instance.publishStateIfNeeded() }
                         .also { INSTANCE = it }
             }
         }
