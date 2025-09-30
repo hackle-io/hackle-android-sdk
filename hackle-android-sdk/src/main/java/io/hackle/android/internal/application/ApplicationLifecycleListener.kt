@@ -3,6 +3,6 @@ package io.hackle.android.internal.application
 import io.hackle.android.internal.core.listener.ApplicationListener
 
 internal interface ApplicationLifecycleListener : ApplicationListener {
-    fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean)
-    fun onApplicationBackground(timestamp: Long)
+    fun onForeground(timestamp: Long, isFromBackground: Boolean)
+    fun onBackground(timestamp: Long)
 }

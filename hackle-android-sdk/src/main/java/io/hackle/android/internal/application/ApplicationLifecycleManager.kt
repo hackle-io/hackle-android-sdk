@@ -56,7 +56,7 @@ internal class ApplicationLifecycleManager(
     private fun onActivityForeground(key: Int, timestamp: Long) {
         if (enableActivities.isEmpty()) {
             log.debug { "application(onForeground)" }
-            listeners.forEach { it.onApplicationForeground(timestamp, appState == AppState.BACKGROUND) }
+            listeners.forEach { it.onForeground(timestamp, appState == AppState.BACKGROUND) }
             _appState = AppState.FOREGROUND
         }
         enableActivities.add(key)
@@ -66,7 +66,7 @@ internal class ApplicationLifecycleManager(
         enableActivities.remove(key)
         if (enableActivities.isEmpty() && appState == AppState.FOREGROUND) {
             log.debug { "application(onBackground)" }
-            listeners.forEach { it.onApplicationBackground(timestamp) }
+            listeners.forEach { it.onBackground(timestamp) }
             _appState = AppState.BACKGROUND
         }
     }

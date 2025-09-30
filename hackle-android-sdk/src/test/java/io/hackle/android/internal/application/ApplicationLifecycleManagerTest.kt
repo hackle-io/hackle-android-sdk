@@ -66,7 +66,7 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStarted(mockActivity1)
 
         // then
-        verify { mockListener.onApplicationForeground(1234567890L, false) }
+        verify { mockListener.onForeground(1234567890L, false) }
     }
 
     @Test
@@ -79,7 +79,7 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStarted(mockActivity2)
 
         // then
-        verify(exactly = 0) { mockListener.onApplicationForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
     }
 
     @Test
@@ -93,7 +93,7 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStopped(mockActivity1)
 
         // then
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
@@ -108,7 +108,7 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStopped(mockActivity2)
 
         // then
-        verify { mockListener.onApplicationBackground(1234567890L) }
+        verify { mockListener.onBackground(1234567890L) }
     }
 
     @Test
@@ -117,8 +117,8 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityCreated(mockActivity1, mockBundle)
 
         // then - no interactions with listeners
-        verify(exactly = 0) { mockListener.onApplicationForeground(any(), any()) }
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
@@ -127,8 +127,8 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityResumed(mockActivity1)
 
         // then - no interactions with listeners
-        verify(exactly = 0) { mockListener.onApplicationForeground(any(), any()) }
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
@@ -137,8 +137,8 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityPaused(mockActivity1)
 
         // then - no interactions with listeners
-        verify(exactly = 0) { mockListener.onApplicationForeground(any(), any()) }
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
@@ -147,8 +147,8 @@ class ApplicationLifecycleManagerTest {
         manager.onActivitySaveInstanceState(mockActivity1, mockBundle)
 
         // then - no interactions with listeners
-        verify(exactly = 0) { mockListener.onApplicationForeground(any(), any()) }
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
@@ -157,27 +157,27 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityDestroyed(mockActivity1)
 
         // then - no interactions with listeners
-        verify(exactly = 0) { mockListener.onApplicationForeground(any(), any()) }
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
     fun `should handle same activity multiple start-stop cycles`() {
         // First start-stop
         manager.onActivityStarted(mockActivity1)
-        verify { mockListener.onApplicationForeground(1234567890L, false) }
+        verify { mockListener.onForeground(1234567890L, false) }
 
         manager.onActivityStopped(mockActivity1)
-        verify { mockListener.onApplicationBackground(1234567890L) }
+        verify { mockListener.onBackground(1234567890L) }
 
         clearMocks(mockListener)
 
         // Second start-stop for same activity
         manager.onActivityStarted(mockActivity1)
-        verify { mockListener.onApplicationForeground(1234567890L, true) }
+        verify { mockListener.onForeground(1234567890L, true) }
 
         manager.onActivityStopped(mockActivity1)
-        verify { mockListener.onApplicationBackground(1234567890L) }
+        verify { mockListener.onBackground(1234567890L) }
     }
 
     @Test
@@ -191,7 +191,7 @@ class ApplicationLifecycleManagerTest {
         manager.onActivityStopped(mockActivity2)
 
         // then - should not trigger background event
-        verify(exactly = 0) { mockListener.onApplicationBackground(any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
     }
 
     @Test
@@ -231,6 +231,6 @@ class ApplicationLifecycleManagerTest {
         freshManager.onActivityStarted(mockActivity1)
 
         // should be from background now
-        verify { mockListener.onApplicationForeground(1234567890L, true) }
+        verify { mockListener.onForeground(1234567890L, true) }
     }
 }

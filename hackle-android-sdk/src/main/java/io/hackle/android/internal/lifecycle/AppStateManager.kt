@@ -56,19 +56,11 @@ internal class AppStateManager(
         }
     }
 
-    //override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
-    //    return when (activityLifecycle) {
-    //        RESUMED -> onState(FOREGROUND, timestamp)
-    //        PAUSED -> onState(BACKGROUND, timestamp)
-    //        CREATED, STARTED, STOPPED, DESTROYED -> Unit
-    //    }
-    //}
-
-    override fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean) {
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
         onState(FOREGROUND, timestamp, isFromBackground)
     }
 
-    override fun onApplicationBackground(timestamp: Long) {
+    override fun onBackground(timestamp: Long) {
         onState(BACKGROUND, timestamp, false)
     }
 
