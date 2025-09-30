@@ -30,10 +30,8 @@ internal class RemoteConfigEventDedupDeterminer(
         return listOf("${key.parameterId}", "${key.valueId}", key.decisionReason).joinToString("-")
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        if (state == AppState.BACKGROUND) {
-            saveToRepository()
-        }
+    override fun onBackground(timestamp: Long) {
+        saveToRepository()
     }
 
     data class Key(

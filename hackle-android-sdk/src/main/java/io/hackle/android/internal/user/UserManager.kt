@@ -257,11 +257,8 @@ internal class UserManager(
         }
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        return when (state) {
-            FOREGROUND -> Unit
-            BACKGROUND -> saveUser(currentUser)
-        }
+    override fun onBackground(timestamp: Long) {
+        saveUser(currentUser)
     }
 
     data class UserModel(

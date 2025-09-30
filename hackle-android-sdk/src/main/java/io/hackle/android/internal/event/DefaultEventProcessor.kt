@@ -131,11 +131,12 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        when (state) {
-            FOREGROUND -> start()
-            BACKGROUND -> stop()
-        }.safe
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        start()
+    }
+    
+    override fun onBackground(timestamp: Long) {
+        stop()
     }
 
     override fun close() {

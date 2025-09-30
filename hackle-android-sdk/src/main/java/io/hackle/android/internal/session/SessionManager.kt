@@ -99,20 +99,14 @@ internal class SessionManager(
         }
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
+    
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        startNewSessionIfNeeded(userManager.currentUser, timestamp)
+    }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        return when (state) {
-            FOREGROUND -> {
-                startNewSessionIfNeeded(userManager.currentUser, timestamp)
-                Unit
-            }
-
-            BACKGROUND -> {
-                updateLastEventTime(timestamp)
-                currentSession?.let { saveSession(it) }
-                Unit
-            }
-        }
+    override fun onBackground(timestamp: Long) {
+        updateLastEventTime(timestamp)
+        currentSession?.let { saveSession(it) }
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {

@@ -37,11 +37,8 @@ internal class MonitoringMetricRegistry(
         return FlushTimer(id, clock)
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        return when (state) {
-            AppState.FOREGROUND -> Unit
-            AppState.BACKGROUND -> eventExecutor.execute { flush() }
-        }
+    override fun onBackground(timestamp: Long) {
+        eventExecutor.execute { flush() }
     }
 
     private fun flush() {

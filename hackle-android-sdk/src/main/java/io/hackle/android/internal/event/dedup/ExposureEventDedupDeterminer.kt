@@ -29,10 +29,8 @@ internal class ExposureEventDedupDeterminer(
         return listOf("${key.experimentId}", "${key.variationId}", key.variationKey, key.decisionReason).joinToString("-")
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        if (state == AppState.BACKGROUND) {
-            saveToRepository()
-        }
+    override fun onBackground(timestamp: Long) {
+        saveToRepository()
     }
 
     data class Key(
