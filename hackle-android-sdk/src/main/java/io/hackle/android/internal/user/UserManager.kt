@@ -10,6 +10,7 @@ import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
 import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.PackageInfo
 import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.sync.Synchronizer
 import io.hackle.android.internal.utils.json.parseJson
@@ -24,6 +25,7 @@ import io.hackle.sdk.core.user.IdentifierType
 
 internal class UserManager(
     private val device: Device,
+    private val packageInfo: PackageInfo,
     private val repository: KeyValueRepository,
     private val cohortFetcher: UserCohortFetcher,
     private val targetEventFetcher: UserTargetEventFetcher,
@@ -77,7 +79,7 @@ internal class UserManager(
     }
     
     private fun hackleProperties(hackleAppContext: HackleAppContext, device: Device): Map<String, Any> {
-        return hackleAppContext.browserProperties + device.properties
+        return hackleAppContext.browserProperties + device.properties + packageInfo.properties
     }
 
     // Sync

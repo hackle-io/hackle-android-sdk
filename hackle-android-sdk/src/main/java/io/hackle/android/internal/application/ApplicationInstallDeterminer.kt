@@ -2,27 +2,25 @@ package io.hackle.android.internal.application
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.PackageInfo
+import io.hackle.android.internal.platform.model.PackageVersionInfo
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class ApplicationInstallDeterminer(
     private val keyValueRepository: KeyValueRepository,
-    private val device: Device
+    private val device: Device,
+    private val packageInfo: PackageInfo
 ) {
     fun determine(): ApplicationInstallState {
         return try {
-            val currentVersion = Version(
-                device.packageInfo.versionName,
-                device.packageInfo.versionCode
-            )
-            val previousVersion = Version(
-                device.packageInfo.previousVersionName,
-                device.packageInfo.previousVersionCode
-            )
+            val previousVersion = packageInfo.previousPackageVersionInfo
+            val currentVersion = packageInfo.currentPackageVersionInfo
+            
             saveVersionInfo(currentVersion)
 
             return when {
-                !previousVersion.isAvailable && device.isIdCreated -> ApplicationInstallState.INSTALL
-                previousVersion.isAvailable && currentVersion != previousVersion -> ApplicationInstallState.UPDATE
+                previousVersion == null && device.isIdCreated -> ApplicationInstallState.INSTALL
+                previousVersion != null && previousVersion != currentVersion -> ApplicationInstallState.UPDATE
                 else -> ApplicationInstallState.NONE
             }
         } catch (e: Exception) {
@@ -31,17 +29,9 @@ internal class ApplicationInstallDeterminer(
         }
     }
 
-    private fun saveVersionInfo(version: Version) {
-        keyValueRepository.putString(Device.KEY_PREVIOUS_VERSION_NAME, version.name!!)
-        keyValueRepository.putLong(Device.KEY_PREVIOUS_VERSION_CODE, version.code!!)
-    }
-
-    private data class Version(
-        val name: String?,
-        val code: Long?
-    ) {
-        val isAvailable: Boolean
-            get() = name != null && code != null
+    private fun saveVersionInfo(packageVersionInfo: PackageVersionInfo) {
+        keyValueRepository.putString(PackageInfo.KEY_PREVIOUS_VERSION_NAME, packageVersionInfo.versionName)
+        keyValueRepository.putLong(PackageInfo.KEY_PREVIOUS_VERSION_CODE, packageVersionInfo.versionCode!!)
     }
 
     companion object {

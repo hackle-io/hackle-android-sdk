@@ -1,50 +1,17 @@
 package io.hackle.android.internal.platform
 
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Build
 import io.hackle.android.internal.platform.helper.DeviceHelper
 import io.hackle.android.internal.platform.model.DeviceInfo
-import io.hackle.android.internal.platform.model.PackageInfo
 import java.util.TimeZone
 
 internal interface Platform {
-
-    fun getPackageInfo(): PackageInfo
-
     fun getCurrentDeviceInfo(): DeviceInfo
 }
 
-internal class AndroidPlatform(val context: Context, previousVersionName: String?, previousVersionCode: Long?) :
-    Platform {
-
-    private val packageInfo: PackageInfo
-
-    init {
-        var packageName = ""
-        var versionName = ""
-        var versionCode = 0L
-
-        try {
-            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            packageName = packageInfo.packageName
-            versionName = packageInfo.versionName
-            @Suppress("DEPRECATION")
-            versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                packageInfo.longVersionCode else packageInfo.versionCode.toLong()
-        } catch (_: Throwable) {
-        }
-        packageInfo = PackageInfo(
-            packageName = packageName,
-            versionName = versionName,
-            versionCode = versionCode,
-            previousVersionName = previousVersionName,
-            previousVersionCode = previousVersionCode,
-        )
-    }
-
-    override fun getPackageInfo(): PackageInfo = packageInfo
-
+internal class AndroidPlatform(val context: Context) : Platform {
+    
     override fun getCurrentDeviceInfo(): DeviceInfo {
         val displayMetrics = DeviceHelper.getDisplayMetrics(context)
         return DeviceInfo(

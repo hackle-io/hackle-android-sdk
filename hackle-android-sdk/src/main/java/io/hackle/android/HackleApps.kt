@@ -50,6 +50,7 @@ import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.PackageInfo
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
@@ -118,7 +119,8 @@ internal object HackleApps {
         val keyValueRepositoryBySdkKey =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
         val device = Device.create(context, globalKeyValueRepository)
-        val applicationInstallDeterminer = ApplicationInstallDeterminer(globalKeyValueRepository, device)
+        val packageInfo = PackageInfo.create(context, globalKeyValueRepository)
+        val applicationInstallDeterminer = ApplicationInstallDeterminer(globalKeyValueRepository, device, packageInfo)
 
         val httpClient = createHttpClient(context, sdk)
 
@@ -165,6 +167,7 @@ internal object HackleApps {
         val targetEventFetcher = UserTargetEventFetcher(config.sdkUri, httpClient)
         val userManager = UserManager(
             device = device,
+            packageInfo = packageInfo,
             repository = keyValueRepositoryBySdkKey,
             cohortFetcher = cohortFetcher,
             targetEventFetcher = targetEventFetcher
@@ -350,7 +353,7 @@ internal object HackleApps {
         val applicationEventTracker = ApplicationEventTracker(
             userManager = userManager,
             core = core,
-            device = device
+            packageInfo = packageInfo
         )
         applicationInstallStateManager.addListener(applicationEventTracker)
         appStateManager.addListener(applicationEventTracker)

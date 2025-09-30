@@ -3,7 +3,7 @@ package io.hackle.android.internal.application
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.lifecycle.AppStateListener
-import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.model.PackageInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
@@ -12,23 +12,23 @@ import io.hackle.sdk.core.HackleCore
 internal class ApplicationEventTracker(
     private val userManager: UserManager,
     private val core: HackleCore,
-    private val device: Device
+    private val packageInfo: PackageInfo
 ) : AppStateListener, ApplicationInstallStateListener {
 
     override fun onInstall(timestamp: Long) {
         val trackEvent = Event.builder(APP_INSTALL_EVENT_KEY)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
+            .property("versionName", packageInfo.currentPackageVersionInfo.versionName)
+            .property("versionCode", packageInfo.currentPackageVersionInfo.versionCode)
             .build()
         track(trackEvent, timestamp)
     }
 
     override fun onUpdate(timestamp: Long) {
         val trackEvent = Event.builder(APP_UPDATE_EVENT_KEY)
-            .property("versionName", device.packageInfo.versionName)
-            .property("versionCode", device.packageInfo.versionCode)
-            .property("previousVersionName", device.packageInfo.previousVersionName)
-            .property("previousVersionCode", device.packageInfo.previousVersionCode)
+            .property("versionName", packageInfo.currentPackageVersionInfo.versionName)
+            .property("versionCode", packageInfo.currentPackageVersionInfo.versionCode)
+            .property("previousVersionName", packageInfo.previousPackageVersionInfo?.versionName)
+            .property("previousVersionCode", packageInfo.previousPackageVersionInfo?.versionCode)
             .build()
         track(trackEvent, timestamp)
     }
