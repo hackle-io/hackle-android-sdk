@@ -9,7 +9,6 @@ import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
-import java.util.concurrent.atomic.AtomicReference
 
 internal class ApplicationLifecycleManager(
     private val clock: Clock
@@ -17,7 +16,7 @@ internal class ApplicationLifecycleManager(
 
     private val enableActivities: MutableSet<Int> = mutableSetOf()
     private val appState get() = _appState
-    private var _appState: AppState = AppState.FOREGROUND 
+    private var _appState: AppState = AppState.FOREGROUND
 
     fun registerTo(context: Context) {
         val application = context.applicationContext as Application

@@ -214,4 +214,24 @@ class ApplicationLifecycleManagerTest {
         // This is verified by checking the instance creation behavior
         expectThat(instance).isEqualTo(instance) // Basic existence check
     }
+
+    @Test
+    fun `initial appState should be FOREGROUND`() {
+        // given - fresh manager instance
+        val freshManager = ApplicationLifecycleManager(mockClock)
+
+        // when - directly check initial state through behavior
+        freshManager.onActivityStarted(mockActivity1)
+
+        // then - since initial state is FOREGROUND, isFromBackground should be false
+        freshManager.addListener(mockListener)
+        clearMocks(mockListener)
+
+        // stop and start again to trigger foreground event
+        freshManager.onActivityStopped(mockActivity1)
+        freshManager.onActivityStarted(mockActivity1)
+
+        // should be from background now
+        verify { mockListener.onApplicationForeground(1234567890L, true) }
+    }
 }

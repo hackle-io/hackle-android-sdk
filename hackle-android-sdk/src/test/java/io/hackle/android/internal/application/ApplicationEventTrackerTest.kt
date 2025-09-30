@@ -177,4 +177,102 @@ class ApplicationEventTrackerTest {
         expectThat(ApplicationEventTracker.APP_OPEN_EVENT_KEY).isEqualTo("\$app_open")
         expectThat(ApplicationEventTracker.APP_BACKGROUND_EVENT_KEY).isEqualTo("\$app_background")
     }
+
+    @Test
+    fun `should track multiple events in sequence with different timestamps`() {
+        // given
+        val timestamp1 = 1000L
+        val timestamp2 = 2000L
+        val timestamp3 = 3000L
+        val timestamp4 = 4000L
+        val eventSlots = mutableListOf<Event>()
+        val timestampSlots = mutableListOf<Long>()
+
+        every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
+        every { core.track(capture(eventSlots), any(), capture(timestampSlots)) } returns Unit
+
+        // when - simulate full app lifecycle: install -> foreground -> background -> foreground
+        tracker.onInstall(timestamp1)
+        tracker.onForeground(timestamp2, false)
+        tracker.onBackground(timestamp3)
+        tracker.onForeground(timestamp4, true)
+
+        // then - all events should be tracked with correct timestamps
+        expectThat(eventSlots.size).isEqualTo(4)
+        expectThat(eventSlots[0].key).isEqualTo(ApplicationEventTracker.APP_INSTALL_EVENT_KEY)
+        expectThat(eventSlots[1].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+        expectThat(eventSlots[2].key).isEqualTo(ApplicationEventTracker.APP_BACKGROUND_EVENT_KEY)
+        expectThat(eventSlots[3].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+
+        expectThat(timestampSlots[0]).isEqualTo(timestamp1)
+        expectThat(timestampSlots[1]).isEqualTo(timestamp2)
+        expectThat(timestampSlots[2]).isEqualTo(timestamp3)
+        expectThat(timestampSlots[3]).isEqualTo(timestamp4)
+    }
+
+    @Test
+    fun `should track update followed by foreground events`() {
+        // given
+        val updateTimestamp = 1000L
+        val foregroundTimestamp = 1100L
+        val eventSlots = mutableListOf<Event>()
+
+        every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
+        every { core.track(capture(eventSlots), any(), any()) } returns Unit
+
+        // when - app update followed by foreground
+        tracker.onUpdate(updateTimestamp)
+        tracker.onForeground(foregroundTimestamp, true)
+
+        // then
+        expectThat(eventSlots.size).isEqualTo(2)
+        expectThat(eventSlots[0].key).isEqualTo(ApplicationEventTracker.APP_UPDATE_EVENT_KEY)
+        expectThat(eventSlots[0].properties["versionName"]).isEqualTo("1.0.0")
+        expectThat(eventSlots[0].properties["previousVersionName"]).isEqualTo("0.9.0")
+        expectThat(eventSlots[1].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+        expectThat(eventSlots[1].properties["isFromBackground"]).isEqualTo(true)
+    }
+
+    @Test
+    fun `onForeground should include isFromBackground flag correctly`() {
+        // given
+        val timestamp1 = 1000L
+        val timestamp2 = 2000L
+        val eventSlots = mutableListOf<Event>()
+
+        every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
+        every { core.track(capture(eventSlots), any(), any()) } returns Unit
+
+        // when - first foreground (not from background), then from background
+        tracker.onForeground(timestamp1, false)
+        tracker.onForeground(timestamp2, true)
+
+        // then
+        expectThat(eventSlots.size).isEqualTo(2)
+        expectThat(eventSlots[0].properties["isFromBackground"]).isEqualTo(false)
+        expectThat(eventSlots[1].properties["isFromBackground"]).isEqualTo(true)
+    }
+
+    @Test
+    fun `should handle rapid state transitions correctly`() {
+        // given
+        val eventSlots = mutableListOf<Event>()
+        every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
+        every { core.track(capture(eventSlots), any(), any()) } returns Unit
+
+        // when - rapid state transitions
+        tracker.onForeground(1000L, false)
+        tracker.onBackground(1001L)
+        tracker.onForeground(1002L, true)
+        tracker.onBackground(1003L)
+        tracker.onForeground(1004L, true)
+
+        // then - all events should be tracked
+        expectThat(eventSlots.size).isEqualTo(5)
+        expectThat(eventSlots[0].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+        expectThat(eventSlots[1].key).isEqualTo(ApplicationEventTracker.APP_BACKGROUND_EVENT_KEY)
+        expectThat(eventSlots[2].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+        expectThat(eventSlots[3].key).isEqualTo(ApplicationEventTracker.APP_BACKGROUND_EVENT_KEY)
+        expectThat(eventSlots[4].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+    }
 }

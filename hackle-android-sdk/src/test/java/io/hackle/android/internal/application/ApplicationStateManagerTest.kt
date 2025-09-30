@@ -257,4 +257,65 @@ class ApplicationStateManagerTest {
         // then
         expectThat(instance1 === instance2).isTrue()
     }
+
+    @Test
+    fun `executor should handle async execution correctly`() {
+        // given
+        val asyncExecutor = mockk<Executor>()
+        val executedRunnables = mutableListOf<Runnable>()
+        every { asyncExecutor.execute(capture(executedRunnables)) } just Runs
+
+        manager.setExecutor(asyncExecutor)
+
+        // when
+        manager.onApplicationForeground(1234567890L, true)
+
+        // then - executor was called but runnable not executed yet
+        verify { asyncExecutor.execute(any()) }
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+
+        // when - manually execute the captured runnable
+        executedRunnables.first().run()
+
+        // then - listener should be called now
+        verify { mockListener.onForeground(1234567890L, true) }
+    }
+
+    @Test
+    fun `checkApplicationInstall should use executor for async execution`() {
+        // given
+        val asyncExecutor = mockk<Executor>()
+        val executedRunnables = mutableListOf<Runnable>()
+        every { asyncExecutor.execute(capture(executedRunnables)) } just Runs
+        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
+
+        manager.setExecutor(asyncExecutor)
+
+        // when
+        manager.checkApplicationInstall()
+
+        // then - executor was called
+        verify { asyncExecutor.execute(any()) }
+
+        // when - manually execute the captured runnable
+        executedRunnables.first().run()
+
+        // then
+        verify { mockListener.onInstall(1234567890L) }
+    }
+
+    @Test
+    fun `should execute synchronously when executor is null`() {
+        // given - fresh manager without executor
+        val syncManager = ApplicationStateManager(mockClock)
+        syncManager.addListener(mockListener)
+        syncManager.setApplicationInstallDeterminer(mockInstallDeterminer)
+        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
+
+        // when - call checkApplicationInstall without executor
+        syncManager.checkApplicationInstall()
+
+        // then - listener should be called immediately (synchronously)
+        verify { mockListener.onInstall(1234567890L) }
+    }
 }

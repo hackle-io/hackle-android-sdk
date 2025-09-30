@@ -75,4 +75,58 @@ class DeviceTest {
         assertThat(properties["screenHeight"], `is`(deviceInfo.screenInfo.height))
         assertThat(properties["isApp"], `is`(true))
     }
+
+    @Test
+    fun `isIdCreated should be true when device ID is newly created`() {
+        // given
+        val deviceId = UUID.randomUUID().toString()
+        val platform = MockPlatform()
+
+        // when
+        val device = DeviceImpl(
+            id = deviceId,
+            isIdCreated = true,
+            platform = platform,
+        )
+
+        // then
+        assertThat(device.isIdCreated, `is`(true))
+    }
+
+    @Test
+    fun `isIdCreated should be false when device ID already exists`() {
+        // given
+        val deviceId = UUID.randomUUID().toString()
+        val platform = MockPlatform()
+
+        // when
+        val device = DeviceImpl(
+            id = deviceId,
+            isIdCreated = false,
+            platform = platform,
+        )
+
+        // then
+        assertThat(device.isIdCreated, `is`(false))
+    }
+
+    @Test
+    fun `packageInfo should return correct package information`() {
+        // given
+        val deviceId = UUID.randomUUID().toString()
+        val platform = MockPlatform()
+        val device = DeviceImpl(
+            id = deviceId,
+            isIdCreated = false,
+            platform = platform,
+        )
+
+        // when
+        val packageInfo = device.packageInfo
+
+        // then
+        assertThat(packageInfo.packageName, `is`("io.hackle.app"))
+        assertThat(packageInfo.versionName, `is`("1.1.1"))
+        assertThat(packageInfo.versionCode, `is`(10101L))
+    }
 }
