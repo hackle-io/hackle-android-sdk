@@ -8,11 +8,11 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.application.ApplicationStateManager
+import io.hackle.android.internal.application.ApplicationInstallStateManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.internal.activity.ActivityLifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
@@ -366,7 +366,7 @@ class HackleApp internal constructor(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         hackleAppCore.initialize(user, onReady)
-        ApplicationStateManager.instance.checkApplicationInstall()
+        ApplicationInstallStateManager.instance.checkApplicationInstall()
     }
 
     // Deprecated
@@ -498,7 +498,7 @@ class HackleApp internal constructor(
          */
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
-            LifecycleManager.instance.registerTo(context)
+            ActivityLifecycleManager.instance.registerTo(context)
         }
 
         /**

@@ -1,4 +1,4 @@
-package io.hackle.android.internal.lifecycle
+package io.hackle.android.internal.activity
 
 import android.app.Activity
 import android.app.Application
@@ -6,15 +6,15 @@ import android.content.Context
 import android.os.Bundle
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.lifecycle.Lifecycle.*
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import java.lang.ref.WeakReference
 
-internal class LifecycleManager(
+internal class ActivityLifecycleManager(
     private val clock: Clock
-) : ApplicationListenerRegistry<LifecycleListener>(), Application.ActivityLifecycleCallbacks, ActivityProvider {
+) : ApplicationListenerRegistry<ActivityLifecycleListener>(), Application.ActivityLifecycleCallbacks, ActivityProvider {
 
     private var state: ActivityState = ActivityState.INACTIVE
     private var activity: WeakReference<Activity>? = null
@@ -28,59 +28,59 @@ internal class LifecycleManager(
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        onLifecycle(CREATED, activity, clock.currentMillis())
+        onLifecycle(ActivityLifecycle.CREATED, activity, clock.currentMillis())
     }
 
     override fun onActivityStarted(activity: Activity) {
-        onLifecycle(STARTED, activity, clock.currentMillis())
+        onLifecycle(ActivityLifecycle.STARTED, activity, clock.currentMillis())
     }
 
     override fun onActivityResumed(activity: Activity) {
-        onLifecycle(RESUMED, activity, clock.currentMillis())
+        onLifecycle(ActivityLifecycle.RESUMED, activity, clock.currentMillis())
     }
 
     override fun onActivityPaused(activity: Activity) {
-        onLifecycle(PAUSED, activity, clock.currentMillis())
+        onLifecycle(ActivityLifecycle.PAUSED, activity, clock.currentMillis())
     }
 
     override fun onActivityStopped(activity: Activity) {
-        onLifecycle(STOPPED, activity, clock.currentMillis())
+        onLifecycle(ActivityLifecycle.STOPPED, activity, clock.currentMillis())
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        onLifecycle(DESTROYED, activity, clock.currentMillis())
+        onLifecycle(ActivityLifecycle.DESTROYED, activity, clock.currentMillis())
     }
 
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
-    private fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
+    private fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
         if (activity is HackleActivity) {
             return
         }
-        resolveCurrentActivity(lifecycle, activity)
-        publish(lifecycle, activity, timestamp)
+        resolveCurrentActivity(activityLifecycle, activity)
+        publish(activityLifecycle, activity, timestamp)
     }
 
-    private fun resolveCurrentActivity(lifecycle: Lifecycle, activity: Activity) {
-        when (lifecycle) {
-            CREATED, STARTED -> {
+    private fun resolveCurrentActivity(activityLifecycle: ActivityLifecycle, activity: Activity) {
+        when (activityLifecycle) {
+            ActivityLifecycle.CREATED, ActivityLifecycle.STARTED -> {
                 setCurrentActivityIfNeeded(activity)
             }
 
-            RESUMED -> {
+            ActivityLifecycle.RESUMED -> {
                 setCurrentActivityIfNeeded(activity)
                 this.state = ActivityState.ACTIVE
             }
 
-            PAUSED -> {
+            ActivityLifecycle.PAUSED -> {
                 this.state = ActivityState.INACTIVE
             }
 
-            STOPPED -> {
+            ActivityLifecycle.STOPPED -> {
                 unsetCurrentActivityIfNeeded(activity)
             }
 
-            DESTROYED -> Unit
+            ActivityLifecycle.DESTROYED -> Unit
         }
     }
 
@@ -96,22 +96,22 @@ internal class LifecycleManager(
         }
     }
 
-    private fun publish(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        log.debug { "onLifecycle(lifecycle=$lifecycle, activity=${activity.javaClass.simpleName})" }
+    private fun publish(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
+        log.debug { "onLifecycle(lifecycle=$activityLifecycle, activity=${activity.javaClass.simpleName})" }
         for (listener in listeners) {
             try {
-                listener.onLifecycle(lifecycle, activity, timestamp)
+                listener.onLifecycle(activityLifecycle, activity, timestamp)
             } catch (e: Throwable) {
-                log.error { "Failed to handle lifecycle [${listener.javaClass.simpleName}, $lifecycle]: $e" }
+                log.error { "Failed to handle lifecycle [${listener.javaClass.simpleName}, $activityLifecycle]: $e" }
             }
         }
     }
 
     companion object {
-        private val log = Logger<LifecycleManager>()
-        private var INSTANCE: LifecycleManager? = null
+        private val log = Logger<ActivityLifecycleManager>()
+        private var INSTANCE: ActivityLifecycleManager? = null
 
-        val instance: LifecycleManager
+        val instance: ActivityLifecycleManager
             get() {
                 return INSTANCE ?: synchronized(this) {
                     INSTANCE ?: create().also {
@@ -120,10 +120,9 @@ internal class LifecycleManager(
                 }
             }
 
-        private fun create(): LifecycleManager {
-            val lifecycleManager = LifecycleManager(Clock.SYSTEM)
-            lifecycleManager.addListener(AppStateManager.instance, order = Ordered.LOWEST)
-            return lifecycleManager
+        private fun create(): ActivityLifecycleManager {
+            val activityLifecycleManager = ActivityLifecycleManager(Clock.SYSTEM)
+            return activityLifecycleManager
         }
     }
 }

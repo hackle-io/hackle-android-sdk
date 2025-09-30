@@ -8,8 +8,8 @@ import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifier
 import io.hackle.android.internal.inappmessage.evaluation.InAppMessageLayoutResolver
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.ActivityState
+import io.hackle.android.internal.activity.ActivityProvider
+import io.hackle.android.internal.activity.ActivityState
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityRequest
 import io.hackle.sdk.core.internal.log.Logger

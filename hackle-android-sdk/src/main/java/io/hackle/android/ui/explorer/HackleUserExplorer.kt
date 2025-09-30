@@ -6,9 +6,9 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import io.hackle.android.R
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.Lifecycle
-import io.hackle.android.internal.lifecycle.LifecycleListener
+import io.hackle.android.internal.activity.ActivityProvider
+import io.hackle.android.internal.activity.ActivityLifecycle
+import io.hackle.android.internal.activity.ActivityLifecycleListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
@@ -17,7 +17,7 @@ import io.hackle.sdk.core.internal.log.Logger
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
     private val activityProvider: ActivityProvider,
-) : LifecycleListener {
+) : ActivityLifecycleListener {
 
     private var isShow: Boolean = false
 
@@ -66,8 +66,8 @@ internal class HackleUserExplorer(
         }
     }
 
-    override fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        if (lifecycle == Lifecycle.RESUMED) {
+    override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
+        if (activityLifecycle == ActivityLifecycle.RESUMED) {
             if (isShow) {
                 attach(activity)
             }

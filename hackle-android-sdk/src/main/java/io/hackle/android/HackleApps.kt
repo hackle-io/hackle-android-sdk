@@ -44,8 +44,8 @@ import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.application.ApplicationEventTracker
 import io.hackle.android.internal.application.ApplicationInstallDeterminer
 import io.hackle.android.internal.application.ApplicationLifecycleManager
-import io.hackle.android.internal.application.ApplicationStateManager
-import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.internal.application.ApplicationInstallStateManager
+import io.hackle.android.internal.activity.ActivityLifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
@@ -124,10 +124,10 @@ internal object HackleApps {
 
         // Lifecycle, AppState
 
-        val lifecycleManager = LifecycleManager.instance
+        val activityLifecycleManager = ActivityLifecycleManager.instance
         val appStateManager = AppStateManager.instance
         val applicationLifecycleManager = ApplicationLifecycleManager.instance
-        val applicationStateManager = ApplicationStateManager.instance
+        val applicationInstallStateManager = ApplicationInstallStateManager.instance
 
         // Synchronizer
 
@@ -184,7 +184,7 @@ internal object HackleApps {
 
         val screenManager = ScreenManager(
             userManager = userManager,
-            activityProvider = lifecycleManager
+            activityProvider = activityLifecycleManager
         )
 
         // EngagementManager
@@ -316,8 +316,8 @@ internal object HackleApps {
 
         // ApplicationStateListener
 
-        applicationStateManager.setExecutor(eventExecutor)
-        applicationStateManager.setApplicationInstallDeterminer(applicationInstallDeterminer)
+        applicationInstallStateManager.setExecutor(eventExecutor)
+        applicationInstallStateManager.setApplicationInstallDeterminer(applicationInstallDeterminer)
 
         // SessionEventTracker
 
@@ -352,7 +352,8 @@ internal object HackleApps {
             core = core,
             device = device
         )
-        applicationStateManager.addListener(applicationEventTracker)
+        applicationInstallStateManager.addListener(applicationEventTracker)
+        appStateManager.addListener(applicationEventTracker)
 
         // InAppMessage
 
@@ -382,7 +383,7 @@ internal object HackleApps {
         )
         val imageLoader = GlideImageLoader()
         val inAppMessageUi = InAppMessageUi.create(
-            activityProvider = lifecycleManager,
+            activityProvider = activityLifecycleManager,
             messageControllerFactory = InAppMessageControllerFactory(InAppMessageViewFactory()),
             scheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
             eventHandler = inAppMessageEventHandler,
@@ -420,7 +421,7 @@ internal object HackleApps {
         )
 
         val inAppMessageDeliverProcessor = InAppMessageDeliverProcessor(
-            activityProvider = lifecycleManager,
+            activityProvider = activityLifecycleManager,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
             identifierChecker = inAppMessageIdentifierChecker,
@@ -522,7 +523,7 @@ internal object HackleApps {
                 pushTokenManager = pushTokenManager,
                 devToolsApi = devToolsApi,
             ),
-            activityProvider = lifecycleManager
+            activityProvider = activityLifecycleManager
         )
 
         // Metrics
@@ -532,12 +533,12 @@ internal object HackleApps {
         // LifecycleListener
 
         if (config.automaticScreenTracking) {
-            lifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
+            activityLifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
         }
-        lifecycleManager.addListener(engagementManager, order = Ordered.HIGHEST + 1)
-        lifecycleManager.addListener(inAppMessageUi, order = Ordered.LOWEST)
-        lifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
-        lifecycleManager.registerTo(context)
+        activityLifecycleManager.addListener(engagementManager, order = Ordered.HIGHEST + 1)
+        activityLifecycleManager.addListener(inAppMessageUi, order = Ordered.LOWEST)
+        activityLifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
+        activityLifecycleManager.registerTo(context)
 
         // ApplicationLifecycleListener
         

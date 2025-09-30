@@ -1,17 +1,16 @@
 package io.hackle.android.internal.lifecycle
 
-import android.app.Activity
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
 import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.Lifecycle.*
+import io.hackle.android.internal.application.ApplicationLifecycleListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.Executor
 
 internal class AppStateManager(
     private val clock: Clock,
-) : ApplicationListenerRegistry<AppStateListener>(), LifecycleListener {
+) : ApplicationListenerRegistry<AppStateListener>(), ApplicationLifecycleListener {
 
     private var _currentState: AppState? = null
     val currentState get() = _currentState ?: BACKGROUND
@@ -57,12 +56,20 @@ internal class AppStateManager(
         }
     }
 
-    override fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        return when (lifecycle) {
-            RESUMED -> onState(FOREGROUND, timestamp)
-            PAUSED -> onState(BACKGROUND, timestamp)
-            CREATED, STARTED, STOPPED, DESTROYED -> Unit
-        }
+    //override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
+    //    return when (activityLifecycle) {
+    //        RESUMED -> onState(FOREGROUND, timestamp)
+    //        PAUSED -> onState(BACKGROUND, timestamp)
+    //        CREATED, STARTED, STOPPED, DESTROYED -> Unit
+    //    }
+    //}
+
+    override fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean) {
+        onState(FOREGROUND, timestamp)
+    }
+
+    override fun onApplicationBackground(timestamp: Long) {
+        onState(BACKGROUND, timestamp)
     }
 
     companion object {

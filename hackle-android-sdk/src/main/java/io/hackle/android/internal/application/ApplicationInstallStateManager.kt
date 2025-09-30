@@ -5,9 +5,9 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.Executor
 
-internal class ApplicationStateManager(
+internal class ApplicationInstallStateManager(
     private val clock: Clock,
-) : ApplicationListenerRegistry<ApplicationStateListener>(), ApplicationLifecycleListener {
+) : ApplicationListenerRegistry<ApplicationInstallStateListener>() {
 
     private var executor: Executor? = null
     private var applicationInstallDeterminer: ApplicationInstallDeterminer? = null
@@ -18,22 +18,6 @@ internal class ApplicationStateManager(
 
     fun setApplicationInstallDeterminer(applicationInstallDeterminer: ApplicationInstallDeterminer) {
         this.applicationInstallDeterminer = applicationInstallDeterminer
-    }
-
-    override fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean) {
-        execute {
-            listeners.forEach { listener ->
-                listener.onForeground(timestamp, isFromBackground)
-            }
-        }
-    }
-
-    override fun onApplicationBackground(timestamp: Long) {
-        execute {
-            listeners.forEach { listener ->
-                listener.onBackground(timestamp)
-            }
-        }
     }
 
     internal fun checkApplicationInstall() {
@@ -73,14 +57,14 @@ internal class ApplicationStateManager(
     }
 
     companion object Companion {
-        private val log = Logger<ApplicationStateManager>()
+        private val log = Logger<ApplicationInstallStateManager>()
 
-        private var INSTANCE: ApplicationStateManager? = null
+        private var INSTANCE: ApplicationInstallStateManager? = null
 
-        val instance: ApplicationStateManager
+        val instance: ApplicationInstallStateManager
             get() {
                 return INSTANCE ?: synchronized(this) {
-                    INSTANCE ?: ApplicationStateManager(Clock.SYSTEM).also { INSTANCE = it }
+                    INSTANCE ?: ApplicationInstallStateManager(Clock.SYSTEM).also { INSTANCE = it }
                 }
             }
     }

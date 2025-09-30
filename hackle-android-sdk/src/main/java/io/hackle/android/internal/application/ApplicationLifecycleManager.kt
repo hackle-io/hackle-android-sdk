@@ -7,6 +7,7 @@ import android.os.Bundle
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 
@@ -85,7 +86,7 @@ internal class ApplicationLifecycleManager(
 
         private fun create(): ApplicationLifecycleManager {
             val applicationLifecycleManager = ApplicationLifecycleManager(Clock.SYSTEM)
-            applicationLifecycleManager.addListener(ApplicationStateManager.instance, order = Ordered.LOWEST)
+            applicationLifecycleManager.addListener(AppStateManager.instance, order = Ordered.LOWEST)
             return applicationLifecycleManager
         }
     }
