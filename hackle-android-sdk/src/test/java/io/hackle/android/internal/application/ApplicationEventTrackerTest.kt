@@ -1,19 +1,28 @@
 package io.hackle.android.internal.application
 
-/*
+import io.hackle.android.internal.context.HackleAppContext
+import io.hackle.android.internal.platform.model.PackageVersionInfo
+import io.hackle.android.internal.user.UserManager
+import io.hackle.android.mock.MockPackageInfo
+import io.hackle.sdk.common.Event
+import io.hackle.sdk.core.HackleCore
+import io.hackle.sdk.core.user.HackleUser
+import io.mockk.*
+import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
+
 class ApplicationEventTrackerTest {
 
     private val userManager = mockk<UserManager>()
     private val core = mockk<HackleCore>(relaxed = true)
     private val mockUser = mockk<HackleUser>()
-    private val packageInfo = PackageInfo("test.app", "1.0.0", 1L, "0.9.0", 0L)
-    private val device = MockDevice(
-        id = "test-device",
-        properties = emptyMap(),
-        packageInfo = packageInfo
+    private val packageInfo = MockPackageInfo(
+        currentPackageVersionInfo = PackageVersionInfo("1.0.0", 1L),
+        previousPackageVersionInfo = PackageVersionInfo("0.9.0", 0L)
     )
 
-    private val tracker = ApplicationEventTracker(userManager, core, device)
+    private val tracker = ApplicationEventTracker(userManager, core, packageInfo)
 
     @Test
     fun `onInstall should track app install event with version info`() {
@@ -64,7 +73,7 @@ class ApplicationEventTrackerTest {
     }
 
     @Test
-    fun `onState should track foreground event when state is FOREGROUND`() {
+    fun `onForeground should track foreground event when state is FOREGROUND`() {
         // given
         val timestamp = 1234567890L
         val eventSlot = slot<Event>()
@@ -80,12 +89,13 @@ class ApplicationEventTrackerTest {
         verify { core.track(capture(eventSlot), capture(userSlot), capture(timestampSlot)) }
 
         expectThat(eventSlot.captured.key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
+        expectThat(eventSlot.captured.properties["isFromBackground"]).isEqualTo(false)
         expectThat(userSlot.captured).isEqualTo(mockUser)
         expectThat(timestampSlot.captured).isEqualTo(timestamp)
     }
 
     @Test
-    fun `onState should track background event when state is BACKGROUND`() {
+    fun `onBackground should track background event when state is BACKGROUND`() {
         // given
         val timestamp = 1234567890L
         val eventSlot = slot<Event>()
@@ -108,12 +118,10 @@ class ApplicationEventTrackerTest {
     @Test
     fun `createEvent should handle empty version name`() {
         // given
-        val deviceWithEmptyVersionName = MockDevice(
-            id = "test-device",
-            properties = emptyMap(),
-            packageInfo = PackageInfo("test.app", "", 1L, null, null)
+        val packageInfoWithEmptyVersionName = MockPackageInfo(
+            currentPackageVersionInfo = PackageVersionInfo("", 1L)
         )
-        val trackerWithEmptyVersion = ApplicationEventTracker(userManager, core, deviceWithEmptyVersionName)
+        val trackerWithEmptyVersion = ApplicationEventTracker(userManager, core, packageInfoWithEmptyVersionName)
         val timestamp = 1234567890L
         val eventSlot = slot<Event>()
 
@@ -132,12 +140,10 @@ class ApplicationEventTrackerTest {
     @Test
     fun `createEvent should handle zero version code`() {
         // given
-        val deviceWithZeroVersionCode = MockDevice(
-            id = "test-device",
-            properties = emptyMap(),
-            packageInfo = PackageInfo("test.app", "1.0.0", 0L, null, null)
+        val packageInfoWithZeroVersionCode = MockPackageInfo(
+            currentPackageVersionInfo = PackageVersionInfo("1.0.0", 0L)
         )
-        val trackerWithZeroVersion = ApplicationEventTracker(userManager, core, deviceWithZeroVersionCode)
+        val trackerWithZeroVersion = ApplicationEventTracker(userManager, core, packageInfoWithZeroVersionCode)
         val timestamp = 1234567890L
         val eventSlot = slot<Event>()
 
@@ -259,5 +265,3 @@ class ApplicationEventTrackerTest {
         expectThat(eventSlots[4].key).isEqualTo(ApplicationEventTracker.APP_OPEN_EVENT_KEY)
     }
 }
-
- */
