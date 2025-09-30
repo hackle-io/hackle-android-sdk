@@ -5,8 +5,10 @@ import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.lifecycle.AppState
+import io.hackle.android.internal.platform.model.PackageVersionInfo
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.mock.MockDevice
+import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
@@ -38,7 +40,13 @@ class UserManagerTest {
         repository = MapKeyValueRepository()
         cohortFetcher = mockk()
         targetEventFetcher = mockk()
-        sut = UserManager(MockDevice("hackle_device_id", emptyMap()), repository, cohortFetcher, targetEventFetcher)
+        sut = UserManager(
+            MockDevice("hackle_device_id", emptyMap()),
+            MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
+            repository,
+            cohortFetcher,
+            targetEventFetcher
+        )
 
         listener = mockk(relaxed = true)
         sut.addListener(listener)
@@ -209,6 +217,7 @@ class UserManagerTest {
     fun `toHackleUser - hackle properties`() {
         val sut = UserManager(
             MockDevice("hackle_device_id", mapOf("age" to 42)),
+            MockPackageInfo(PackageVersionInfo("1.0.0", 0L)),
             repository,
             cohortFetcher,
             targetEventFetcher
@@ -1102,13 +1111,13 @@ class UserManagerTest {
 
     @Test
     fun `onChanged - foreground`() {
-        sut.onState(AppState.FOREGROUND, 42)
+        sut.onForeground(42, true)
     }
 
     @Test
     fun `onChanged - background`() {
         expectThat(repository.getString("user")).isNull()
-        sut.onState(AppState.BACKGROUND, 42)
+        sut.onBackground(42)
         expectThat(repository.getString("user")).isNotNull()
     }
 }

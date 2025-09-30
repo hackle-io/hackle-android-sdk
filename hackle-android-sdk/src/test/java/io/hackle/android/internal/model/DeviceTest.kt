@@ -1,7 +1,6 @@
 package io.hackle.android.internal.model
 
 import io.hackle.android.internal.platform.model.DeviceInfo
-import io.hackle.android.internal.platform.model.PackageInfo
 import io.hackle.android.mock.MockPlatform
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
@@ -21,10 +20,6 @@ class DeviceTest {
         )
         assertThat(device.id, `is`(deviceId))
         assertThat(device.properties["platform"], `is`("Android"))
-
-        assertThat(device.properties["packageName"], `is`("io.hackle.app"))
-        assertThat(device.properties["versionName"], `is`("1.1.1"))
-        assertThat(device.properties["versionCode"], `is`(10101L))
 
         assertThat(device.properties["osName"], `is`("DummyOS"))
         assertThat(device.properties["osVersion"], `is`("1.0.0"))
@@ -50,14 +45,7 @@ class DeviceTest {
             platform = platform,
         )
         assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, platform.getPackageInfo())
         assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
-    }
-
-    private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
-        assertThat(properties["packageName"], `is`(packageInfo.packageName))
-        assertThat(properties["versionName"], `is`(packageInfo.versionName))
-        assertThat(properties["versionCode"], `is`(packageInfo.versionCode))
     }
 
     private fun assertDeviceProperties(properties: Map<String, Any>, deviceInfo: DeviceInfo) {
@@ -108,25 +96,5 @@ class DeviceTest {
 
         // then
         assertThat(device.isIdCreated, `is`(false))
-    }
-
-    @Test
-    fun `packageInfo should return correct package information`() {
-        // given
-        val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
-        val device = DeviceImpl(
-            id = deviceId,
-            isIdCreated = false,
-            platform = platform,
-        )
-
-        // when
-        val packageInfo = device.packageInfo
-
-        // then
-        assertThat(packageInfo.packageName, `is`("io.hackle.app"))
-        assertThat(packageInfo.versionName, `is`("1.1.1"))
-        assertThat(packageInfo.versionCode, `is`(10101L))
     }
 }

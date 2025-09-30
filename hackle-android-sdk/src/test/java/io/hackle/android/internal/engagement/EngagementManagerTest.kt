@@ -1,6 +1,6 @@
 package io.hackle.android.internal.engagement
 
-import io.hackle.android.internal.lifecycle.Lifecycle
+import io.hackle.android.internal.activity.ActivityLifecycle
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.user.UserManager
@@ -89,14 +89,14 @@ class EngagementManagerTest {
 
     @Test
     fun `onLifecycle RESUME - startEngagement`() {
-        sut.onLifecycle(Lifecycle.RESUMED, mockk(), 42)
+        sut.onLifecycle(ActivityLifecycle.RESUMED, mockk(), 42)
         expectThat(sut.lastEngagementTime).isEqualTo(42)
     }
 
     @Test
     fun `onLifecycle PAUSED - currentScreen is null then do nothing`() {
         every { screenManager.currentScreen } returns null
-        sut.onLifecycle(Lifecycle.PAUSED, mockk(), 42)
+        sut.onLifecycle(ActivityLifecycle.PAUSED, mockk(), 42)
         verify { listener wasNot Called }
     }
 
@@ -106,7 +106,7 @@ class EngagementManagerTest {
         every { screenManager.currentScreen } returns s
 
         sut.onScreenStarted(null, s, mockk(), 42)
-        sut.onLifecycle(Lifecycle.PAUSED, mockk(), 142)
+        sut.onLifecycle(ActivityLifecycle.PAUSED, mockk(), 142)
 
         verify(exactly = 1) {
             listener.onEngagement(

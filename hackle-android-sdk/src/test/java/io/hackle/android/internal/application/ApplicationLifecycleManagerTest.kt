@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
-import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
 import org.junit.After
@@ -37,9 +36,9 @@ class ApplicationLifecycleManagerTest {
         every { mockApplication.unregisterActivityLifecycleCallbacks(any()) } just Runs
 
         // Mock ApplicationStateManager singleton
-        mockkObject(ApplicationStateManager.Companion)
-        val mockApplicationStateManager = mockk<ApplicationStateManager>(relaxed = true)
-        every { ApplicationStateManager.instance } returns mockApplicationStateManager
+        mockkObject(ApplicationInstallStateManager.Companion)
+        val mockApplicationInstallStateManager = mockk<ApplicationInstallStateManager>(relaxed = true)
+        every { ApplicationInstallStateManager.instance } returns mockApplicationInstallStateManager
 
         manager = ApplicationLifecycleManager(mockClock)
         manager.addListener(mockListener)
@@ -47,7 +46,7 @@ class ApplicationLifecycleManagerTest {
 
     @After
     fun tearDown() {
-        unmockkObject(ApplicationStateManager.Companion)
+        unmockkObject(ApplicationInstallStateManager.Companion)
         clearAllMocks()
     }
 

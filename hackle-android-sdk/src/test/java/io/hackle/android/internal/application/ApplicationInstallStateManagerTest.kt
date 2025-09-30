@@ -1,23 +1,18 @@
 package io.hackle.android.internal.application
 
-import android.app.Activity
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.Lifecycle
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isEqualTo
-import strikt.assertions.isSameInstanceAs
 import strikt.assertions.isTrue
 import java.util.concurrent.Executor
 
-class ApplicationStateManagerTest {
+class ApplicationInstallStateManagerTest {
 
     private val mockClock = mockk<Clock>()
-    private var manager: ApplicationStateManager = ApplicationStateManager(mockClock)
-    private val mockListener = mockk<ApplicationStateListener>(relaxed = true)
+    private var manager: ApplicationInstallStateManager = ApplicationInstallStateManager(mockClock)
+    private val mockListener = mockk<ApplicationInstallStateListener>(relaxed = true)
     private val mockExecutor = mockk<Executor>()
     private val mockInstallDeterminer = mockk<ApplicationInstallDeterminer>()
     private val executorSlot = slot<Runnable>()
@@ -31,62 +26,6 @@ class ApplicationStateManagerTest {
         manager.addListener(mockListener)
         manager.setExecutor(mockExecutor)
         manager.setApplicationInstallDeterminer(mockInstallDeterminer)
-    }
-
-    @Test
-    fun `onApplicationForeground should notify all listeners`() {
-        // when
-        manager.onApplicationForeground(1234567890L, true)
-
-        // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onForeground(1234567890L, true) }
-    }
-
-    @Test
-    fun `onApplicationForeground should handle isAppLaunch false`() {
-        // when
-        manager.onApplicationForeground(1234567890L, false)
-
-        // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onForeground(1234567890L, false) }
-    }
-
-    @Test
-    fun `onApplicationBackground should notify all listeners`() {
-        // when
-        manager.onApplicationBackground(1234567890L)
-
-        // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onBackground(1234567890L) }
-    }
-
-    @Test
-    fun `onApplicationForeground should work without executor`() {
-        // given - manager without executor
-        val managerWithoutExecutor = ApplicationStateManager(mockClock)
-        managerWithoutExecutor.addListener(mockListener)
-
-        // when
-        managerWithoutExecutor.onApplicationForeground(1234567890L, true)
-
-        // then
-        verify { mockListener.onForeground(1234567890L, true) }
-    }
-
-    @Test
-    fun `onApplicationBackground should work without executor`() {
-        // given - manager without executor
-        val managerWithoutExecutor = ApplicationStateManager(mockClock)
-        managerWithoutExecutor.addListener(mockListener)
-
-        // when
-        managerWithoutExecutor.onApplicationBackground(1234567890L)
-
-        // then
-        verify { mockListener.onBackground(1234567890L) }
     }
 
     @Test
@@ -133,7 +72,7 @@ class ApplicationStateManagerTest {
     @Test
     fun `checkApplicationInstall should handle null determiner gracefully`() {
         // given - manager without install determiner
-        val managerWithoutDeterminer = ApplicationStateManager(mockClock)
+        val managerWithoutDeterminer = ApplicationInstallStateManager(mockClock)
         managerWithoutDeterminer.addListener(mockListener)
 
         // when
@@ -147,7 +86,7 @@ class ApplicationStateManagerTest {
     @Test
     fun `checkApplicationInstall should work without executor`() {
         // given
-        val managerWithoutExecutor = ApplicationStateManager(mockClock)
+        val managerWithoutExecutor = ApplicationInstallStateManager(mockClock)
         managerWithoutExecutor.addListener(mockListener)
         managerWithoutExecutor.setApplicationInstallDeterminer(mockInstallDeterminer)
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
@@ -160,37 +99,9 @@ class ApplicationStateManagerTest {
     }
 
     @Test
-    fun `should handle multiple listeners for foreground events`() {
-        // given
-        val mockListener2 = mockk<ApplicationStateListener>(relaxed = true)
-        manager.addListener(mockListener2)
-
-        // when
-        manager.onApplicationForeground(1234567890L, true)
-
-        // then
-        verify { mockListener.onForeground(1234567890L, true) }
-        verify { mockListener2.onForeground(1234567890L, true) }
-    }
-
-    @Test
-    fun `should handle multiple listeners for background events`() {
-        // given
-        val mockListener2 = mockk<ApplicationStateListener>(relaxed = true)
-        manager.addListener(mockListener2)
-
-        // when
-        manager.onApplicationBackground(1234567890L)
-
-        // then
-        verify { mockListener.onBackground(1234567890L) }
-        verify { mockListener2.onBackground(1234567890L) }
-    }
-
-    @Test
     fun `should handle multiple listeners for install events`() {
         // given
-        val mockListener2 = mockk<ApplicationStateListener>(relaxed = true)
+        val mockListener2 = mockk<ApplicationInstallStateListener>(relaxed = true)
         manager.addListener(mockListener2)
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
 
@@ -205,7 +116,7 @@ class ApplicationStateManagerTest {
     @Test
     fun `should handle multiple listeners for update events`() {
         // given
-        val mockListener2 = mockk<ApplicationStateListener>(relaxed = true)
+        val mockListener2 = mockk<ApplicationInstallStateListener>(relaxed = true)
         manager.addListener(mockListener2)
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.UPDATE
 
@@ -223,14 +134,15 @@ class ApplicationStateManagerTest {
         val newExecutor = mockk<Executor>()
         val newExecutorSlot = slot<Runnable>()
         every { newExecutor.execute(capture(newExecutorSlot)) } answers { newExecutorSlot.captured.run() }
+        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
 
         // when
         manager.setExecutor(newExecutor)
-        manager.onApplicationForeground(1234567890L, true)
+        manager.checkApplicationInstall()
 
         // then
         verify { newExecutor.execute(any()) }
-        verify { mockListener.onForeground(1234567890L, true) }
+        verify { mockListener.onInstall(1234567890L) }
     }
 
     @Test
@@ -251,8 +163,8 @@ class ApplicationStateManagerTest {
     @Test
     fun `getInstance should return singleton instance`() {
         // when
-        val instance1 = ApplicationStateManager.instance
-        val instance2 = ApplicationStateManager.instance
+        val instance1 = ApplicationInstallStateManager.instance
+        val instance2 = ApplicationInstallStateManager.instance
 
         // then
         expectThat(instance1 === instance2).isTrue()
@@ -264,29 +176,6 @@ class ApplicationStateManagerTest {
         val asyncExecutor = mockk<Executor>()
         val executedRunnables = mutableListOf<Runnable>()
         every { asyncExecutor.execute(capture(executedRunnables)) } just Runs
-
-        manager.setExecutor(asyncExecutor)
-
-        // when
-        manager.onApplicationForeground(1234567890L, true)
-
-        // then - executor was called but runnable not executed yet
-        verify { asyncExecutor.execute(any()) }
-        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
-
-        // when - manually execute the captured runnable
-        executedRunnables.first().run()
-
-        // then - listener should be called now
-        verify { mockListener.onForeground(1234567890L, true) }
-    }
-
-    @Test
-    fun `checkApplicationInstall should use executor for async execution`() {
-        // given
-        val asyncExecutor = mockk<Executor>()
-        val executedRunnables = mutableListOf<Runnable>()
-        every { asyncExecutor.execute(capture(executedRunnables)) } just Runs
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
 
         manager.setExecutor(asyncExecutor)
@@ -294,20 +183,21 @@ class ApplicationStateManagerTest {
         // when
         manager.checkApplicationInstall()
 
-        // then - executor was called
+        // then - executor was called but runnable not executed yet
         verify { asyncExecutor.execute(any()) }
+        verify(exactly = 0) { mockListener.onInstall(any()) }
 
         // when - manually execute the captured runnable
         executedRunnables.first().run()
 
-        // then
+        // then - listener should be called now
         verify { mockListener.onInstall(1234567890L) }
     }
 
     @Test
     fun `should execute synchronously when executor is null`() {
         // given - fresh manager without executor
-        val syncManager = ApplicationStateManager(mockClock)
+        val syncManager = ApplicationInstallStateManager(mockClock)
         syncManager.addListener(mockListener)
         syncManager.setApplicationInstallDeterminer(mockInstallDeterminer)
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL

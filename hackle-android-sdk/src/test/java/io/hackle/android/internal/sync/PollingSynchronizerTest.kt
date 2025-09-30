@@ -116,12 +116,12 @@ class PollingSynchronizerTest {
         val delegate = mockk<CompositeSynchronizer>(relaxed = true)
         val sut = PollingSynchronizer(delegate, Schedulers.executor("test"), 200)
 
-        sut.onState(AppState.FOREGROUND, 42)
+        sut.onForeground(42, true)
         Thread.sleep(500)
         verify(exactly = 2) {
             delegate.sync()
         }
-        sut.onState(AppState.BACKGROUND, 42)
+        sut.onBackground(42)
         Thread.sleep(500)
         verify(exactly = 2) {
             delegate.sync()

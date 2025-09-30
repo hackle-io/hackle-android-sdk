@@ -2,6 +2,10 @@ package io.hackle.android.internal.lifecycle
 
 import android.app.Activity
 import android.app.Application
+import io.hackle.android.internal.activity.ActivityLifecycle
+import io.hackle.android.internal.activity.ActivityLifecycleListener
+import io.hackle.android.internal.activity.ActivityLifecycleManager
+import io.hackle.android.internal.activity.ActivityState
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.every
@@ -16,9 +20,9 @@ import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 
-class LifecycleManagerTest {
+class ActivityLifecycleManager {
 
-    private val sut = LifecycleManager(object : Clock {
+    private val sut = ActivityLifecycleManager(object : Clock {
         override fun currentMillis(): Long = 42
         override fun tick(): Long = 42
     })
@@ -125,22 +129,21 @@ class LifecycleManagerTest {
 
     @Test
     fun `publish`() {
-        val listener = mockk<LifecycleListener>(relaxed = true)
+        val listener = mockk<ActivityLifecycleListener>(relaxed = true)
         sut.addListener(listener)
 
         val activity = CustomActivity()
         sut.onActivityResumed(activity)
 
         verify(exactly = 1) {
-            listener.onLifecycle(Lifecycle.RESUMED, activity, 42)
+            listener.onLifecycle(ActivityLifecycle.RESUMED, activity, 42)
         }
     }
 
     @Test
     fun `instance`() {
-        val instance = LifecycleManager.instance
-        expectThat(instance) isSameInstanceAs LifecycleManager.instance
-        expectThat(instance.listeners).any { this.isA<AppStateManager>() }
+        val instance = ActivityLifecycleManager.instance
+        expectThat(instance) isSameInstanceAs ActivityLifecycleManager.instance
     }
 
     private class InternalActivity : Activity(), HackleActivity

@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import io.hackle.android.internal.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.core.ImageLoader

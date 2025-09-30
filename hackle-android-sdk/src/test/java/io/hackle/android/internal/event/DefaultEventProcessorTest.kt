@@ -395,7 +395,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onState(AppState.FOREGROUND, System.currentTimeMillis())
+        sut.onForeground(System.currentTimeMillis(), true)
 
         // then
         verify(exactly = 1) { sut.start() }
@@ -407,7 +407,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onState(AppState.BACKGROUND, System.currentTimeMillis())
+        sut.onBackground(System.currentTimeMillis())
 
         // then
         verify(exactly = 1) { sut.stop() }

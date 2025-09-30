@@ -15,14 +15,16 @@ internal class ApplicationInstallDeterminer(
         return try {
             val previousVersion = packageInfo.previousPackageVersionInfo
             val currentVersion = packageInfo.currentPackageVersionInfo
-            
-            saveVersionInfo(currentVersion)
 
-            return when {
+            val state = when {
                 previousVersion == null && device.isIdCreated -> ApplicationInstallState.INSTALL
                 previousVersion != null && previousVersion != currentVersion -> ApplicationInstallState.UPDATE
                 else -> ApplicationInstallState.NONE
             }
+
+            saveVersionInfo(currentVersion)
+
+            state
         } catch (e: Exception) {
             log.warn { "Failed to determine application install state, returning NONE: ${e.message}" }
             ApplicationInstallState.NONE
