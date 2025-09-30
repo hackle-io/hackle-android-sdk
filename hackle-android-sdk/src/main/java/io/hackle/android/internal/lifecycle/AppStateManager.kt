@@ -25,22 +25,22 @@ internal class AppStateManager(
         val state = _currentState ?: return
         val timestamp = clock.currentMillis()
         execute {
-            publish(state, timestamp)
+            publish(state, timestamp, false)
         }
     }
 
-    private fun onState(state: AppState, timestamp: Long) {
+    private fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
         execute {
-            publish(state, timestamp)
+            publish(state, timestamp, isFromBackground)
             _currentState = state
         }
     }
 
-    private fun publish(state: AppState, timestamp: Long) {
-        log.debug { "onState(state=$state)" }
+    private fun publish(state: AppState, timestamp: Long, isFromBackground: Boolean) {
+        log.debug { "onState(state=$state, isFromBackground=$isFromBackground)" }
         for (listener in listeners) {
             try {
-                listener.onState(state, timestamp)
+                listener.onState(state, timestamp, isFromBackground)
             } catch (e: Throwable) {
                 log.error { "Failed to handle state [${listener.javaClass.simpleName}, $state]: $e" }
             }
@@ -65,11 +65,11 @@ internal class AppStateManager(
     //}
 
     override fun onApplicationForeground(timestamp: Long, isFromBackground: Boolean) {
-        onState(FOREGROUND, timestamp)
+        onState(FOREGROUND, timestamp, isFromBackground)
     }
 
     override fun onApplicationBackground(timestamp: Long) {
-        onState(BACKGROUND, timestamp)
+        onState(BACKGROUND, timestamp, false)
     }
 
     companion object {

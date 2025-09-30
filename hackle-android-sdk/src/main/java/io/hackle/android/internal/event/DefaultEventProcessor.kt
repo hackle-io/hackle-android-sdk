@@ -131,7 +131,7 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
         when (state) {
             FOREGROUND -> start()
             BACKGROUND -> stop()

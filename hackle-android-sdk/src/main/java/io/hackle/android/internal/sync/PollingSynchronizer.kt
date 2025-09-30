@@ -54,7 +54,7 @@ internal class PollingSynchronizer(
         }
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
         return when (state) {
             AppState.FOREGROUND -> start()
             AppState.BACKGROUND -> stop()

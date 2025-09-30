@@ -33,9 +33,9 @@ internal class ApplicationEventTracker(
         track(trackEvent, timestamp)
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
+    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
         when (state) {
-            AppState.FOREGROUND -> onForeground(timestamp, false)
+            AppState.FOREGROUND -> onForeground(timestamp, isFromBackground)
             AppState.BACKGROUND -> onBackground(timestamp)
         }
     }

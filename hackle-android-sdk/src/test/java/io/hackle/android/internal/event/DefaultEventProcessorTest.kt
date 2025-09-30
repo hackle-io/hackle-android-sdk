@@ -395,7 +395,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onForeground(System.currentTimeMillis(), true)
+        sut.onState(io.hackle.android.internal.lifecycle.AppState.FOREGROUND, System.currentTimeMillis(), true)
 
         // then
         verify(exactly = 1) { sut.start() }
@@ -407,7 +407,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onBackground(System.currentTimeMillis())
+        sut.onState(io.hackle.android.internal.lifecycle.AppState.BACKGROUND, System.currentTimeMillis(), false)
 
         // then
         verify(exactly = 1) { sut.stop() }

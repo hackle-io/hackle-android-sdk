@@ -1111,13 +1111,13 @@ class UserManagerTest {
 
     @Test
     fun `onChanged - foreground`() {
-        sut.onForeground(42, true)
+        sut.onState(io.hackle.android.internal.lifecycle.AppState.FOREGROUND, 42, true)
     }
 
     @Test
     fun `onChanged - background`() {
         expectThat(repository.getString("user")).isNull()
-        sut.onBackground(42)
+        sut.onState(io.hackle.android.internal.lifecycle.AppState.BACKGROUND, 42, false)
         expectThat(repository.getString("user")).isNotNull()
     }
 }
