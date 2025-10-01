@@ -26,6 +26,7 @@ import android.app.Activity
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.android.internal.activity.ActivityLifecycleManager
+import io.hackle.android.internal.application.ApplicationLifecycleManager
 import io.hackle.android.ui.notification.NotificationHandler
 import android.content.Context
 import android.content.Intent
@@ -1188,16 +1189,22 @@ class HackleAppCompanionTest {
 
     @Test
     fun `registerActivityLifecycleCallbacks`() {
+        mockkObject(ApplicationLifecycleManager.Companion)
         mockkObject(ActivityLifecycleManager.Companion)
-        val mockInstance = mockk<ActivityLifecycleManager>(relaxed = true)
-        every { ActivityLifecycleManager.instance } returns mockInstance
-        val context = mockk<Context>()
+        val mockApplicationLifecycleManager = mockk<ApplicationLifecycleManager>(relaxed = true)
+        val mockActivityLifecycleManager = mockk<ActivityLifecycleManager>(relaxed = true)
+        every { ApplicationLifecycleManager.instance } returns mockApplicationLifecycleManager
+        every { ActivityLifecycleManager.instance } returns mockActivityLifecycleManager
 
-        HackleApp.registerActivityLifecycleCallbacks(context)
+        val mockContext = mockk<Context>()
+
+        HackleApp.registerActivityLifecycleCallbacks(mockContext)
 
         verify(exactly = 1) {
-            mockInstance.registerTo(context)
+            mockApplicationLifecycleManager.registerTo(mockContext)
+            mockActivityLifecycleManager.registerTo(mockContext)
         }
+        unmockkObject(ApplicationLifecycleManager.Companion)
         unmockkObject(ActivityLifecycleManager.Companion)
     }
 

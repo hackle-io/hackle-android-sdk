@@ -12,6 +12,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isTrue
+import java.util.concurrent.Executor
 
 class ApplicationLifecycleManagerTest {
 
@@ -232,5 +233,65 @@ class ApplicationLifecycleManagerTest {
 
         // should be from background now
         verify { mockListener.onForeground(1234567890L, true) }
+    }
+
+    @Test
+    fun `publishStateIfNeeded should publish foreground state when currentState is FOREGROUND`() {
+        // given
+        manager.onActivityStarted(mockActivity1)
+        clearMocks(mockListener)
+
+        // when
+        manager.publishStateIfNeeded()
+
+        // then
+        verify { mockListener.onForeground(1234567890L, false) }
+    }
+
+    @Test
+    fun `publishStateIfNeeded should publish background state when currentState is BACKGROUND`() {
+        // given - transition to background
+        manager.onActivityStarted(mockActivity1)
+        manager.onActivityStopped(mockActivity1)
+        clearMocks(mockListener)
+
+        // when
+        manager.publishStateIfNeeded()
+
+        // then
+        verify { mockListener.onBackground(1234567890L) }
+    }
+
+    @Test
+    fun `publishStateIfNeeded should not publish when currentState is null`() {
+        // given - fresh manager without any state transitions
+        val freshManager = ApplicationLifecycleManager(mockClock)
+        freshManager.addListener(mockListener)
+
+        // when
+        freshManager.publishStateIfNeeded()
+
+        // then - no events should be published
+        verify(exactly = 0) { mockListener.onForeground(any(), any()) }
+        verify(exactly = 0) { mockListener.onBackground(any()) }
+    }
+
+    @Test
+    fun `publishStateIfNeeded should use executor when set`() {
+        // given
+        val syncExecutor = mockk<Executor>(relaxed = true)
+        val executorSlot = slot<Runnable>()
+        every { syncExecutor.execute(capture(executorSlot)) } answers { executorSlot.captured.run() }
+
+        manager.onActivityStarted(mockActivity1)
+        manager.setExecutor(syncExecutor)
+        clearMocks(mockListener)
+
+        // when
+        manager.publishStateIfNeeded()
+
+        // then
+        verify { syncExecutor.execute(any()) }
+        verify { mockListener.onForeground(1234567890L, false) }
     }
 }
