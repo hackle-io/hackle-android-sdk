@@ -33,7 +33,7 @@ internal class ApplicationInstallDeterminer(
 
     private fun saveVersionInfo(packageVersionInfo: PackageVersionInfo) {
         keyValueRepository.putString(PackageInfo.KEY_PREVIOUS_VERSION_NAME, packageVersionInfo.versionName)
-        keyValueRepository.putLong(PackageInfo.KEY_PREVIOUS_VERSION_CODE, packageVersionInfo.versionCode!!)
+        keyValueRepository.putLong(PackageInfo.KEY_PREVIOUS_VERSION_CODE, packageVersionInfo.versionCode)
     }
 
     companion object {

@@ -497,6 +497,7 @@ class HackleApp internal constructor(
          */
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
+            ApplicationLifecycleManager.instance.registerTo(context)
             ActivityLifecycleManager.instance.registerTo(context)
         }
 
