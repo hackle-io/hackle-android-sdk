@@ -28,7 +28,7 @@
         
         <provider
             android:name=".provider.LifecycleProvider"
-            android:authorities="${applicationId}.HackleReactNativeContentProvider"
+            android:authorities="${applicationId}.HackleLifecycleContentProvider"
             android:exported="false" />
     </application>
 
