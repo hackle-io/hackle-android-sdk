@@ -597,7 +597,6 @@ class HackleApp internal constructor(
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
                         .also {
-                            ApplicationInstallStateManager.instance.checkApplicationInstall()
                             ApplicationLifecycleManager.instance.publishStateIfNeeded()
                         }
                         .also { INSTANCE = it }

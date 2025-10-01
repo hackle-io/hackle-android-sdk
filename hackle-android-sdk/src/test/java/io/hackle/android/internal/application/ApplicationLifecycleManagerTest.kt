@@ -36,18 +36,12 @@ class ApplicationLifecycleManagerTest {
         every { mockApplication.registerActivityLifecycleCallbacks(any()) } just Runs
         every { mockApplication.unregisterActivityLifecycleCallbacks(any()) } just Runs
 
-        // Mock ApplicationStateManager singleton
-        mockkObject(ApplicationInstallStateManager.Companion)
-        val mockApplicationInstallStateManager = mockk<ApplicationInstallStateManager>(relaxed = true)
-        every { ApplicationInstallStateManager.instance } returns mockApplicationInstallStateManager
-
         manager = ApplicationLifecycleManager(mockClock)
         manager.addListener(mockListener)
     }
 
     @After
     fun tearDown() {
-        unmockkObject(ApplicationInstallStateManager.Companion)
         clearAllMocks()
     }
 
@@ -210,8 +204,7 @@ class ApplicationLifecycleManagerTest {
         // when
         val instance = ApplicationLifecycleManager.instance
 
-        // then - should have ApplicationStateManager as listener
-        // This is verified by checking the instance creation behavior
+        // then - verify instance is properly created
         expectThat(instance).isEqualTo(instance) // Basic existence check
     }
 

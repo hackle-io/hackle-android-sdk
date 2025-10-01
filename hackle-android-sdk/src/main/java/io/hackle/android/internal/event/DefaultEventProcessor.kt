@@ -130,11 +130,11 @@ internal class DefaultEventProcessor(
     }
 
     override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
-        start().safe
+        start()
     }
 
     override fun onBackground(timestamp: Long) {
-        stop().safe
+        stop()
     }
 
     override fun close() {

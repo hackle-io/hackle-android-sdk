@@ -26,8 +26,10 @@ internal class ApplicationLifecycleManager(
 
     fun publishStateIfNeeded() {
         val state = _currentState ?: return
-        val timestamp = clock.currentMillis()
+        
         execute {
+            log.debug { "application($state)" }
+            val timestamp = clock.currentMillis()
             when (state) {
                 ApplicationState.FOREGROUND -> listeners.forEach { it.onForeground(timestamp, false) }
                 ApplicationState.BACKGROUND -> listeners.forEach { it.onBackground(timestamp) }

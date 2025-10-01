@@ -1,5 +1,6 @@
 package io.hackle.android.internal
 
+import io.hackle.android.internal.application.ApplicationInstallStateManager
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
@@ -51,6 +52,7 @@ internal class HackleAppCore(
     private val notificationManager: NotificationManager,
     private val fetchThrottler: Throttler,
     private val device: Device,
+    private val applicationInstallStateManager: ApplicationInstallStateManager,
     private val userExplorer: HackleUserExplorer,
 ) : Closeable {
 
@@ -61,6 +63,7 @@ internal class HackleAppCore(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
+        applicationInstallStateManager.checkApplicationInstall()
         eventExecutor.execute {
             try {
                 workspaceManager.initialize()

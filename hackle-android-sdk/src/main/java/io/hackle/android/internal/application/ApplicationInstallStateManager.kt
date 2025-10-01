@@ -6,29 +6,24 @@ import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.Executor
 
 internal class ApplicationInstallStateManager(
+    private val executor: Executor,
     private val clock: Clock,
 ) : ApplicationListenerRegistry<ApplicationInstallStateListener>() {
-
-    private var executor: Executor? = null
     private var applicationInstallDeterminer: ApplicationInstallDeterminer? = null
-
-    fun setExecutor(executor: Executor) {
-        this.executor = executor
-    }
-
+    
     fun setApplicationInstallDeterminer(applicationInstallDeterminer: ApplicationInstallDeterminer) {
         this.applicationInstallDeterminer = applicationInstallDeterminer
     }
 
     internal fun checkApplicationInstall() {
         val state = applicationInstallDeterminer?.determine()
-
         execute {
             if (state != null && state != ApplicationInstallState.NONE) {
                 log.debug { "application($state)" }
+                val timestamp = clock.currentMillis()
                 when (state) {
-                    ApplicationInstallState.INSTALL -> publishInstall(clock.currentMillis())
-                    ApplicationInstallState.UPDATE -> publishUpdate(clock.currentMillis())
+                    ApplicationInstallState.INSTALL -> publishInstall(timestamp)
+                    ApplicationInstallState.UPDATE -> publishUpdate(timestamp)
                     else -> Unit
                 }
             }
@@ -48,24 +43,10 @@ internal class ApplicationInstallStateManager(
     }
 
     private fun execute(block: () -> Unit) {
-        val executor = executor
-        if (executor != null) {
-            executor.execute(block)
-        } else {
-            block()
-        }
+        executor.execute(block)
     }
 
     companion object Companion {
         private val log = Logger<ApplicationInstallStateManager>()
-
-        private var INSTANCE: ApplicationInstallStateManager? = null
-
-        val instance: ApplicationInstallStateManager
-            get() {
-                return INSTANCE ?: synchronized(this) {
-                    INSTANCE ?: ApplicationInstallStateManager(Clock.SYSTEM).also { INSTANCE = it }
-                }
-            }
     }
 }

@@ -90,6 +90,9 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
+    
+    @RelaxedMockK
+    private lateinit var applicationInstallStateManager: ApplicationInstallStateManager
 
     @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
@@ -124,6 +127,7 @@ class HackleAppTest {
             notificationManager,
             fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
+            applicationInstallStateManager,
             userExplorer,
         )
         

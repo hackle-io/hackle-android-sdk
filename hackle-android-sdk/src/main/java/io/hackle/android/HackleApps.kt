@@ -127,7 +127,6 @@ internal object HackleApps {
 
         val activityLifecycleManager = ActivityLifecycleManager.instance
         val applicationLifecycleManager = ApplicationLifecycleManager.instance
-        val applicationInstallStateManager = ApplicationInstallStateManager.instance
 
         // Synchronizer
 
@@ -317,7 +316,11 @@ internal object HackleApps {
 
         // ApplicationInstallStateListener
 
-        applicationInstallStateManager.setExecutor(eventExecutor)
+        val applicationInstallStateManager = ApplicationInstallStateManager(
+            executor = eventExecutor,
+            clock = clock,
+        )
+        
         applicationInstallStateManager.setApplicationInstallDeterminer(applicationInstallDeterminer)
 
         // SessionEventTracker
@@ -532,7 +535,7 @@ internal object HackleApps {
         metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
 
         // LifecycleListener
-
+        activityLifecycleManager.setExecutor(eventExecutor)
         if (config.automaticScreenTracking) {
             activityLifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
         }
@@ -568,6 +571,7 @@ internal object HackleApps {
             notificationManager = notificationManager,
             fetchThrottler = fetchThrottler,
             device = device,
+            applicationInstallStateManager = applicationInstallStateManager,
             userExplorer = userExplorer,
         )
 
