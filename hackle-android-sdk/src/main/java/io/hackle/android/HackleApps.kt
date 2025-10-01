@@ -40,7 +40,6 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.application.ApplicationEventTracker
 import io.hackle.android.internal.application.ApplicationInstallDeterminer
 import io.hackle.android.internal.application.ApplicationLifecycleManager
@@ -124,10 +123,9 @@ internal object HackleApps {
 
         val httpClient = createHttpClient(context, sdk)
 
-        // Lifecycle, AppState
+        // Lifecycle
 
         val activityLifecycleManager = ActivityLifecycleManager.instance
-        val appStateManager = AppStateManager.instance
         val applicationLifecycleManager = ApplicationLifecycleManager.instance
         val applicationInstallStateManager = ApplicationInstallStateManager.instance
 
@@ -231,7 +229,7 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager,
+            applicationLifecycleManager = applicationLifecycleManager,
             screenUserEventDecorator = screenUserEventDecorator,
             eventBackoffController = eventBackoffController
         )
@@ -255,8 +253,8 @@ internal object HackleApps {
             clock
         )
 
-        appStateManager.addListener(rcEventDedupDeterminer)
-        appStateManager.addListener(exposureEventDedupDeterminer)
+        applicationLifecycleManager.addListener(rcEventDedupDeterminer)
+        applicationLifecycleManager.addListener(exposureEventDedupDeterminer)
 
         val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
             listOf(
@@ -309,15 +307,15 @@ internal object HackleApps {
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
 
-        // AppStateListener
+        // ApplicationLifecycleListener
 
-        appStateManager.setExecutor(eventExecutor)
-        appStateManager.addListener(pollingSynchronizer)
-        appStateManager.addListener(sessionManager)
-        appStateManager.addListener(userManager)
-        appStateManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
+        applicationLifecycleManager.setExecutor(eventExecutor)
+        applicationLifecycleManager.addListener(pollingSynchronizer)
+        applicationLifecycleManager.addListener(sessionManager)
+        applicationLifecycleManager.addListener(userManager)
+        applicationLifecycleManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
 
-        // ApplicationStateListener
+        // ApplicationInstallStateListener
 
         applicationInstallStateManager.setExecutor(eventExecutor)
         applicationInstallStateManager.setApplicationInstallDeterminer(applicationInstallDeterminer)
@@ -356,7 +354,7 @@ internal object HackleApps {
             packageInfo = packageInfo
         )
         applicationInstallStateManager.addListener(applicationEventTracker)
-        appStateManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
+        applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
 
         // InAppMessage
 
@@ -531,7 +529,7 @@ internal object HackleApps {
 
         // Metrics
 
-        metricConfiguration(config, appStateManager, eventExecutor, httpExecutor, httpClient)
+        metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
 
         // LifecycleListener
 
@@ -590,7 +588,7 @@ internal object HackleApps {
 
     private fun metricConfiguration(
         config: HackleConfig,
-        appStateManager: AppStateManager,
+        applicationLifecycleManager: ApplicationLifecycleManager,
         eventExecutor: Executor,
         httpExecutor: Executor,
         httpClient: OkHttpClient,
@@ -602,7 +600,7 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        appStateManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
+        applicationLifecycleManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 

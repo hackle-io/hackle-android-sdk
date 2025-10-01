@@ -1,13 +1,11 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.application.ApplicationLifecycleListener
+import io.hackle.android.internal.application.ApplicationLifecycleManager
+import io.hackle.android.internal.application.ApplicationState
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
-import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateListener
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
@@ -38,10 +36,10 @@ internal class DefaultEventProcessor(
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
-    private val appStateManager: AppStateManager,
+    private val applicationLifecycleManager: ApplicationLifecycleManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
-) : EventProcessor, AppStateListener, Closeable {
+) : EventProcessor, ApplicationLifecycleListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
@@ -131,11 +129,12 @@ internal class DefaultEventProcessor(
         eventDispatcher.dispatch(events)
     }
 
-    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
-        when (state) {
-            FOREGROUND -> start()
-            BACKGROUND -> stop()
-        }.safe
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        start().safe
+    }
+
+    override fun onBackground(timestamp: Long) {
+        stop().safe
     }
 
     override fun close() {
@@ -173,7 +172,7 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            if (appStateManager.currentState == FOREGROUND) {
+            if (applicationLifecycleManager.currentState == ApplicationState.FOREGROUND) {
                 sessionManager.updateLastEventTime(event.timestamp)
             } else {
                 // Corner case when an event is processed between onPause and onResume

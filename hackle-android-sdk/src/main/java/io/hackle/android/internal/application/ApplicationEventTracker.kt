@@ -1,8 +1,6 @@
 package io.hackle.android.internal.application
 
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.model.PackageInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
@@ -13,7 +11,7 @@ internal class ApplicationEventTracker(
     private val userManager: UserManager,
     private val core: HackleCore,
     private val packageInfo: PackageInfo
-) : AppStateListener, ApplicationInstallStateListener {
+) : ApplicationLifecycleListener, ApplicationInstallStateListener {
 
     override fun onInstall(timestamp: Long) {
         val trackEvent = Event.builder(APP_INSTALL_EVENT_KEY)
@@ -33,21 +31,14 @@ internal class ApplicationEventTracker(
         track(trackEvent, timestamp)
     }
 
-    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
-        when (state) {
-            AppState.FOREGROUND -> onForeground(timestamp, isFromBackground)
-            AppState.BACKGROUND -> onBackground(timestamp)
-        }
-    }
-
-    private fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
         val trackEvent = Event.builder(APP_OPEN_EVENT_KEY)
             .property("isFromBackground", isFromBackground)
             .build()
         track(trackEvent, timestamp)
     }
 
-    private fun onBackground(timestamp: Long) {
+    override fun onBackground(timestamp: Long) {
         val trackEvent = Event.builder(APP_BACKGROUND_EVENT_KEY)
             .build()
         track(trackEvent, timestamp)

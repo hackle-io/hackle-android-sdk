@@ -1,6 +1,5 @@
 package io.hackle.android.internal.sync
 
-import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import io.mockk.Called
 import io.mockk.mockk
@@ -116,12 +115,12 @@ class PollingSynchronizerTest {
         val delegate = mockk<CompositeSynchronizer>(relaxed = true)
         val sut = PollingSynchronizer(delegate, Schedulers.executor("test"), 200)
 
-        sut.onState(io.hackle.android.internal.lifecycle.AppState.FOREGROUND, 42, true)
+        sut.onForeground(42, true)
         Thread.sleep(500)
         verify(exactly = 2) {
             delegate.sync()
         }
-        sut.onState(io.hackle.android.internal.lifecycle.AppState.BACKGROUND, 42, false)
+        sut.onBackground(42)
         Thread.sleep(500)
         verify(exactly = 2) {
             delegate.sync()

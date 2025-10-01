@@ -1,8 +1,7 @@
 package io.hackle.android.internal.event.dedup
 
+import io.hackle.android.internal.application.ApplicationLifecycleListener
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
@@ -11,7 +10,7 @@ internal class ExposureEventDedupDeterminer(
     repository: KeyValueRepository,
     dedupIntervalMillis: Long,
     clock: Clock = Clock.SYSTEM
-): AppStateListener, CachedUserEventDedupDeterminer<ExposureEventDedupDeterminer.Key, UserEvent.Exposure>(
+): ApplicationLifecycleListener, CachedUserEventDedupDeterminer<ExposureEventDedupDeterminer.Key, UserEvent.Exposure>(
     repository,
     dedupIntervalMillis,
     clock
@@ -29,10 +28,12 @@ internal class ExposureEventDedupDeterminer(
         return listOf("${key.experimentId}", "${key.variationId}", key.variationKey, key.decisionReason).joinToString("-")
     }
 
-    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
-        if (state == AppState.BACKGROUND) {
-            saveToRepository()
-        }
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        // nothing to do
+    }
+
+    override fun onBackground(timestamp: Long) {
+        saveToRepository()
     }
 
     data class Key(

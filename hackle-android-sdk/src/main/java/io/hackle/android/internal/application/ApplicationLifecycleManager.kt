@@ -6,18 +6,34 @@ import android.content.Context
 import android.os.Bundle
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
+import java.util.concurrent.Executor
 
 internal class ApplicationLifecycleManager(
     private val clock: Clock
 ) : ApplicationListenerRegistry<ApplicationLifecycleListener>(), Application.ActivityLifecycleCallbacks {
 
     private val enableActivities: MutableSet<Int> = mutableSetOf()
-    private val appState get() = _appState
-    private var _appState: AppState = AppState.FOREGROUND
+    private var _currentState: ApplicationState? = null
+    val currentState get() = _currentState ?: ApplicationState.BACKGROUND
+
+    private var executor: Executor? = null
+
+    fun setExecutor(executor: Executor) {
+        this.executor = executor
+    }
+
+    fun publishStateIfNeeded() {
+        val state = _currentState ?: return
+        val timestamp = clock.currentMillis()
+        execute {
+            when (state) {
+                ApplicationState.FOREGROUND -> listeners.forEach { it.onForeground(timestamp, false) }
+                ApplicationState.BACKGROUND -> listeners.forEach { it.onBackground(timestamp) }
+            }
+        }
+    }
 
     fun registerTo(context: Context) {
         val application = context.applicationContext as Application
@@ -56,18 +72,32 @@ internal class ApplicationLifecycleManager(
     private fun onActivityForeground(key: Int, timestamp: Long) {
         if (enableActivities.isEmpty()) {
             log.debug { "application(onForeground)" }
-            listeners.forEach { it.onForeground(timestamp, appState == AppState.BACKGROUND) }
-            _appState = AppState.FOREGROUND
+            val isFromBackground = _currentState == ApplicationState.BACKGROUND
+            execute {
+                listeners.forEach { it.onForeground(timestamp, isFromBackground) }
+                _currentState = ApplicationState.FOREGROUND
+            }
         }
         enableActivities.add(key)
     }
 
     private fun onActivityBackground(key: Int, timestamp: Long) {
         enableActivities.remove(key)
-        if (enableActivities.isEmpty() && appState == AppState.FOREGROUND) {
+        if (enableActivities.isEmpty() && _currentState == ApplicationState.FOREGROUND) {
             log.debug { "application(onBackground)" }
-            listeners.forEach { it.onBackground(timestamp) }
-            _appState = AppState.BACKGROUND
+            execute {
+                listeners.forEach { it.onBackground(timestamp) }
+                _currentState = ApplicationState.BACKGROUND
+            }
+        }
+    }
+
+    private fun execute(block: () -> Unit) {
+        val executor = executor
+        if (executor != null) {
+            executor.execute(block)
+        } else {
+            block()
         }
     }
 
@@ -86,7 +116,6 @@ internal class ApplicationLifecycleManager(
 
         private fun create(): ApplicationLifecycleManager {
             val applicationLifecycleManager = ApplicationLifecycleManager(Clock.SYSTEM)
-            applicationLifecycleManager.addListener(AppStateManager.instance, order = Ordered.LOWEST)
             return applicationLifecycleManager
         }
     }

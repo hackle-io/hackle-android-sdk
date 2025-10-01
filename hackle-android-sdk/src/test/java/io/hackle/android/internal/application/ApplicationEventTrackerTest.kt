@@ -1,7 +1,6 @@
 package io.hackle.android.internal.application
 
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.platform.model.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockPackageInfo
@@ -74,7 +73,7 @@ class ApplicationEventTrackerTest {
     }
 
     @Test
-    fun `onState should track foreground event when state is FOREGROUND`() {
+    fun `onForeground should track foreground event`() {
         // given
         val timestamp = 1234567890L
         val eventSlot = slot<Event>()
@@ -84,7 +83,7 @@ class ApplicationEventTrackerTest {
         every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
 
         // when
-        tracker.onState(AppState.FOREGROUND, timestamp, false)
+        tracker.onForeground(timestamp, false)
 
         // then
         verify { core.track(capture(eventSlot), capture(userSlot), capture(timestampSlot)) }
@@ -96,7 +95,7 @@ class ApplicationEventTrackerTest {
     }
 
     @Test
-    fun `onState should track background event when state is BACKGROUND`() {
+    fun `onBackground should track background event`() {
         // given
         val timestamp = 1234567890L
         val eventSlot = slot<Event>()
@@ -106,7 +105,7 @@ class ApplicationEventTrackerTest {
         every { userManager.resolve(null, HackleAppContext.DEFAULT) } returns mockUser
 
         // when
-        tracker.onState(AppState.BACKGROUND, timestamp, false)
+        tracker.onBackground(timestamp)
 
         // then
         verify { core.track(capture(eventSlot), capture(userSlot), capture(timestampSlot)) }
@@ -183,9 +182,9 @@ class ApplicationEventTrackerTest {
 
         // when - simulate full app lifecycle: install -> foreground -> background -> foreground
         tracker.onInstall(timestamp1)
-        tracker.onState(AppState.FOREGROUND, timestamp2, false)
-        tracker.onState(AppState.BACKGROUND, timestamp3, false)
-        tracker.onState(AppState.FOREGROUND, timestamp4, true)
+        tracker.onForeground( timestamp2, false)
+        tracker.onBackground(timestamp3)
+        tracker.onForeground( timestamp4, true)
 
         // then - all events should be tracked with correct timestamps
         expectThat(eventSlots.size).isEqualTo(4)
@@ -212,7 +211,7 @@ class ApplicationEventTrackerTest {
 
         // when - app update followed by foreground
         tracker.onUpdate(updateTimestamp)
-        tracker.onState(AppState.FOREGROUND, foregroundTimestamp, true)
+        tracker.onForeground( foregroundTimestamp, true)
 
         // then
         expectThat(eventSlots.size).isEqualTo(2)
@@ -234,8 +233,8 @@ class ApplicationEventTrackerTest {
         every { core.track(capture(eventSlots), any(), any()) } returns Unit
 
         // when - first foreground (not from background), then from background
-        tracker.onState(AppState.FOREGROUND, timestamp1, false)
-        tracker.onState(AppState.FOREGROUND, timestamp2, true)
+        tracker.onForeground( timestamp1, false)
+        tracker.onForeground( timestamp2, true)
 
         // then
         expectThat(eventSlots.size).isEqualTo(2)
@@ -251,11 +250,11 @@ class ApplicationEventTrackerTest {
         every { core.track(capture(eventSlots), any(), any()) } returns Unit
 
         // when - rapid state transitions
-        tracker.onState(AppState.FOREGROUND, 1000L, false)
-        tracker.onState(AppState.BACKGROUND, 1001L, false)
-        tracker.onState(AppState.FOREGROUND, 1002L, true)
-        tracker.onState(AppState.BACKGROUND, 1003L, false)
-        tracker.onState(AppState.FOREGROUND, 1004L, true)
+        tracker.onForeground( 1000L, false)
+        tracker.onBackground(1001L)
+        tracker.onForeground( 1002L, true)
+        tracker.onBackground(1003L)
+        tracker.onForeground( 1004L, true)
 
         // then - all events should be tracked
         expectThat(eventSlots.size).isEqualTo(5)

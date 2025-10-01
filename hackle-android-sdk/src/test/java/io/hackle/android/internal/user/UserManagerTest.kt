@@ -4,7 +4,6 @@ import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.lifecycle.AppState
 import io.hackle.android.internal.platform.model.PackageVersionInfo
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.mock.MockDevice
@@ -1111,13 +1110,13 @@ class UserManagerTest {
 
     @Test
     fun `onChanged - foreground`() {
-        sut.onState(io.hackle.android.internal.lifecycle.AppState.FOREGROUND, 42, true)
+        sut.onForeground(42, true)
     }
 
     @Test
     fun `onChanged - background`() {
         expectThat(repository.getString("user")).isNull()
-        sut.onState(io.hackle.android.internal.lifecycle.AppState.BACKGROUND, 42, false)
+        sut.onBackground(42)
         expectThat(repository.getString("user")).isNotNull()
     }
 }

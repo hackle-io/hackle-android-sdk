@@ -9,9 +9,9 @@ import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.application.ApplicationInstallStateManager
+import io.hackle.android.internal.application.ApplicationLifecycleManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.activity.ActivityLifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
@@ -597,7 +597,7 @@ class HackleApp internal constructor(
                         .initialize(user, onReady)
                         .also {
                             ApplicationInstallStateManager.instance.checkApplicationInstall()
-                            AppStateManager.instance.publishStateIfNeeded() 
+                            ApplicationLifecycleManager.instance.publishStateIfNeeded()
                         }
                         .also { INSTANCE = it }
             }

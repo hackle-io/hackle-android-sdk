@@ -1,7 +1,6 @@
 package io.hackle.android.internal.monitoring.metric
 
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateListener
+import io.hackle.android.internal.application.ApplicationLifecycleListener
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Counter
@@ -25,7 +24,7 @@ internal class MonitoringMetricRegistry(
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
     clock: Clock = Clock.SYSTEM,
-) : MetricRegistry(clock), AppStateListener {
+) : MetricRegistry(clock), ApplicationLifecycleListener {
 
     private val monitoringEndpoint = HttpUrl.get("$monitoringBaseUrl/metrics")
 
@@ -37,11 +36,12 @@ internal class MonitoringMetricRegistry(
         return FlushTimer(id, clock)
     }
 
-    override fun onState(state: AppState, timestamp: Long, isFromBackground: Boolean) {
-        return when (state) {
-            AppState.FOREGROUND -> Unit
-            AppState.BACKGROUND -> eventExecutor.execute { flush() }
-        }
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        // nothing to do
+    }
+
+    override fun onBackground(timestamp: Long) {
+        eventExecutor.execute { flush() }
     }
 
     private fun flush() {

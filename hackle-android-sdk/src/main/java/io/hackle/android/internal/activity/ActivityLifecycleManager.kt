@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Bundle
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
