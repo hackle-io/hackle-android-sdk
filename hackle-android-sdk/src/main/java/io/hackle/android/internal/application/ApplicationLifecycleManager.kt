@@ -85,7 +85,7 @@ internal class ApplicationLifecycleManager(
 
     private fun onActivityBackground(key: Int, timestamp: Long) {
         enableActivities.remove(key)
-        if (enableActivities.isEmpty() && _currentState == ApplicationState.FOREGROUND) {
+        if (enableActivities.isEmpty()) {
             log.debug { "application(onBackground)" }
             execute {
                 listeners.forEach { it.onBackground(timestamp) }

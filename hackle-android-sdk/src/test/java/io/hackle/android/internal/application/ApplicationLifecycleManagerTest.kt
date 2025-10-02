@@ -176,20 +176,6 @@ class ApplicationLifecycleManagerTest {
     }
 
     @Test
-    fun `should not trigger background event if already in background state`() {
-        // given - go to foreground and then background
-        manager.onActivityStarted(mockActivity1)
-        manager.onActivityStopped(mockActivity1)
-        clearMocks(mockListener)
-
-        // when - stop an activity that was never started (edge case)
-        manager.onActivityStopped(mockActivity2)
-
-        // then - should not trigger background event
-        verify(exactly = 0) { mockListener.onBackground(any()) }
-    }
-
-    @Test
     fun `getInstance should return singleton instance`() {
         // when
         val instance1 = ApplicationLifecycleManager.instance
