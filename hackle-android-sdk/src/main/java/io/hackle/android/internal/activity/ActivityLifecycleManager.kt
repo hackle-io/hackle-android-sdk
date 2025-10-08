@@ -26,6 +26,15 @@ internal class ActivityLifecycleManager(
         this.executor = executor
     }
 
+    fun publishStateIfNeeded() {
+        val currentActivity = currentActivity ?: return
+        if(currentState != ActivityState.ACTIVE) {
+            return
+        } 
+        // activity가 존재하고 active 상태이면 resume 
+        publish(ActivityLifecycle.RESUMED, currentActivity)
+    }
+
     fun registerTo(context: Context) {
         val application = context.applicationContext as Application
         application.unregisterActivityLifecycleCallbacks(this)

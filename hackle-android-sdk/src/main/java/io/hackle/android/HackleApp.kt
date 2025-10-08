@@ -598,6 +598,7 @@ class HackleApp internal constructor(
                         .initialize(user, onReady)
                         .also {
                             ApplicationLifecycleManager.instance.publishStateIfNeeded()
+                            ActivityLifecycleManager.instance.publishStateIfNeeded()
                         }
                         .also { INSTANCE = it }
             }
