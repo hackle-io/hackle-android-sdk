@@ -1,7 +1,7 @@
 package io.hackle.android.internal.application
 
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.platform.model.PackageVersionInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.Event

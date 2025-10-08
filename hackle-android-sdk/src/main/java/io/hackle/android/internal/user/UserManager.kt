@@ -6,8 +6,8 @@ import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.core.map
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.model.Device
-import io.hackle.android.internal.model.PackageInfo
+import io.hackle.android.internal.platform.device.Device
+import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.sync.Synchronizer
 import io.hackle.android.internal.utils.json.parseJson

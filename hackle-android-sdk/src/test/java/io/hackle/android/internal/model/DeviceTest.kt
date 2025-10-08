@@ -1,10 +1,12 @@
 package io.hackle.android.internal.model
 
-import io.hackle.android.internal.platform.model.DeviceInfo
-import io.hackle.android.mock.MockPlatform
+import io.hackle.android.internal.platform.device.DeviceImpl
+import io.hackle.android.internal.platform.device.DeviceInfo
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
+import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 class DeviceTest {
@@ -12,11 +14,11 @@ class DeviceTest {
     @Test
     fun `create device with static compare`() {
         val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
+        val deviceInfo = createTestDeviceInfo()
         val device = DeviceImpl(
             id = deviceId,
             isIdCreated = false,
-            platform = platform,
+            deviceInfo = deviceInfo,
         )
         assertThat(device.id, `is`(deviceId))
         assertThat(device.properties["platform"], `is`("Android"))
@@ -38,14 +40,14 @@ class DeviceTest {
     @Test
     fun `create device with normal case`() {
         val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
+        val deviceInfo = createTestDeviceInfo()
         val device = DeviceImpl(
             id = deviceId,
             isIdCreated = false,
-            platform = platform,
+            deviceInfo = deviceInfo,
         )
         assertThat(device.id, `is`(deviceId))
-        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
+        assertDeviceProperties(device.properties, deviceInfo)
     }
 
     private fun assertDeviceProperties(properties: Map<String, Any>, deviceInfo: DeviceInfo) {
@@ -68,13 +70,13 @@ class DeviceTest {
     fun `isIdCreated should be true when device ID is newly created`() {
         // given
         val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
+        val deviceInfo = createTestDeviceInfo()
 
         // when
         val device = DeviceImpl(
             id = deviceId,
             isIdCreated = true,
-            platform = platform,
+            deviceInfo = deviceInfo,
         )
 
         // then
@@ -85,16 +87,30 @@ class DeviceTest {
     fun `isIdCreated should be false when device ID already exists`() {
         // given
         val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
+        val deviceInfo = createTestDeviceInfo()
 
         // when
         val device = DeviceImpl(
             id = deviceId,
             isIdCreated = false,
-            platform = platform,
+            deviceInfo = deviceInfo,
         )
 
         // then
         assertThat(device.isIdCreated, `is`(false))
+    }
+
+    private fun createTestDeviceInfo(): DeviceInfo {
+        return DeviceInfo(
+            osName = "DummyOS",
+            osVersion = "1.0.0",
+            model = "hackle-123a",
+            type = "phone",
+            brand = "hackle",
+            manufacturer = "hackle manufacture",
+            locale = Locale("ko", "KR"),
+            timezone = TimeZone.getTimeZone("Asia/Seoul"),
+            screenInfo = DeviceInfo.ScreenInfo(1080, 1920)
+        )
     }
 }

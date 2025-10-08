@@ -4,7 +4,7 @@ import io.hackle.android.internal.application.ApplicationInstallStateManager
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
-import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIProperty

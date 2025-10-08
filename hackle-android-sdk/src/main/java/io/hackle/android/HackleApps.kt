@@ -48,8 +48,8 @@ import io.hackle.android.internal.activity.ActivityLifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
-import io.hackle.android.internal.model.Device
-import io.hackle.android.internal.model.PackageInfo
+import io.hackle.android.internal.platform.device.Device
+import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager

@@ -1,6 +1,7 @@
 package io.hackle.android.internal.model
 
-import io.hackle.android.internal.platform.model.PackageVersionInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
+import io.hackle.android.internal.platform.packageinfo.PackageInfoImpl
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

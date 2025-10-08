@@ -1,7 +1,7 @@
 package io.hackle.android.internal.session
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.platform.model.PackageVersionInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo

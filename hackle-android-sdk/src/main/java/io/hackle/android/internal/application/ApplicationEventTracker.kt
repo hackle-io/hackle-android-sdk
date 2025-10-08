@@ -1,7 +1,7 @@
 package io.hackle.android.internal.application
 
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.model.PackageInfo
+import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore

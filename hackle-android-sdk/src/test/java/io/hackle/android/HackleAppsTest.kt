@@ -4,6 +4,9 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.platform.device.Device
+import io.hackle.android.mock.MockDevice
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.junit.After
@@ -68,11 +71,19 @@ class HackleAppsTest {
         
         // System services mocking
         every { context.getSystemService(any()) } returns null
+
+        mockkObject(Device)
+        every { Device.create(any<Context>(), any<KeyValueRepository>())} returns MockDevice(
+            id = "test_device_id",
+            properties = emptyMap(),
+            isIdCreated = true
+        )
     }
 
     @After
     fun tearDown() {
         unmockkObject(HackleApp)
+        unmockkObject(Device)
         clearAllMocks()
     }
 

@@ -4,7 +4,7 @@ import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.platform.model.PackageVersionInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo

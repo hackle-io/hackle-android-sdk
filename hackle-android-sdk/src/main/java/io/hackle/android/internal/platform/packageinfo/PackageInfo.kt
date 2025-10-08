@@ -1,9 +1,9 @@
-package io.hackle.android.internal.model
+package io.hackle.android.internal.platform.packageinfo
 
 import android.content.Context
 import android.os.Build
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.platform.model.PackageVersionInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 
 
 internal interface PackageInfo {

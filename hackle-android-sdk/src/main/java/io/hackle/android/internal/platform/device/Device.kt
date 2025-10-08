@@ -1,10 +1,10 @@
-package io.hackle.android.internal.model
+package io.hackle.android.internal.platform.device
 
 import android.content.Context
+import android.os.Build
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.platform.AndroidPlatform
-import io.hackle.android.internal.platform.Platform
 import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 internal interface Device {
@@ -14,7 +14,6 @@ internal interface Device {
     val properties: Map<String, Any>
 
     companion object {
-
         private const val ID_KEY = "device_id"
 
         fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
@@ -23,11 +22,26 @@ internal interface Device {
                 isDeviceIdCreated = true
                 UUID.randomUUID().toString() 
             }
-           
+
+            val displayMetrics = DeviceHelper.getDisplayMetrics(context)
+
             return DeviceImpl(
                 id = deviceId,
                 isIdCreated = isDeviceIdCreated,
-                platform = AndroidPlatform(context),
+                deviceInfo = DeviceInfo(
+                    osName = "Android",
+                    osVersion = Build.VERSION.RELEASE,
+                    model = Build.MODEL,
+                    type = DeviceHelper.getDeviceType(context),
+                    brand = Build.BRAND,
+                    manufacturer = Build.MANUFACTURER,
+                    locale = DeviceHelper.getDeviceLocale(),
+                    timezone = TimeZone.getDefault(),
+                    screenInfo = DeviceInfo.ScreenInfo(
+                        width = displayMetrics.widthPixels,
+                        height = displayMetrics.heightPixels
+                    )
+                )
             )
         }
     }
@@ -36,12 +50,11 @@ internal interface Device {
 internal data class DeviceImpl(
     override val id: String,
     override val isIdCreated: Boolean,
-    private val platform: Platform,
+    private val deviceInfo: DeviceInfo
 ) : Device {
 
     override val properties: Map<String, Any>
         get() {
-            val deviceInfo = platform.getCurrentDeviceInfo()
             return mapOf(
                 "platform" to "Android",
                 "osName" to deviceInfo.osName,
