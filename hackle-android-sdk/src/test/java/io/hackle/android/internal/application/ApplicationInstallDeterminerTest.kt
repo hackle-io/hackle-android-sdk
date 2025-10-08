@@ -1,5 +1,7 @@
 package io.hackle.android.internal.application
 
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.install.ApplicationInstallState
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.platform.packageinfo.PackageInfo

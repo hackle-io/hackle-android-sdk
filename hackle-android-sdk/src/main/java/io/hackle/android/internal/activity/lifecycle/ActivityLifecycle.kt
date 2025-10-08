@@ -1,4 +1,4 @@
-package io.hackle.android.internal.activity
+package io.hackle.android.internal.activity.lifecycle
 
 internal enum class ActivityLifecycle {
     CREATED,

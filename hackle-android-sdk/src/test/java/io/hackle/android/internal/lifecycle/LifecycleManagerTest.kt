@@ -2,10 +2,10 @@ package io.hackle.android.internal.lifecycle
 
 import android.app.Activity
 import android.app.Application
-import io.hackle.android.internal.activity.ActivityLifecycle
-import io.hackle.android.internal.activity.ActivityLifecycleListener
-import io.hackle.android.internal.activity.ActivityLifecycleManager
-import io.hackle.android.internal.activity.ActivityState
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.activity.lifecycle.ActivityState
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.every
@@ -14,8 +14,6 @@ import io.mockk.verify
 import io.mockk.verifySequence
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.any
-import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs

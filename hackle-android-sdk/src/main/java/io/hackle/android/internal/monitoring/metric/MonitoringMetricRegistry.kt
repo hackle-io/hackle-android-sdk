@@ -1,6 +1,6 @@
 package io.hackle.android.internal.monitoring.metric
 
-import io.hackle.android.internal.application.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Counter

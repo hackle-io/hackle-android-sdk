@@ -1,8 +1,8 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.application.ApplicationLifecycleListener
-import io.hackle.android.internal.application.ApplicationLifecycleManager
-import io.hackle.android.internal.application.ApplicationState
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
@@ -16,7 +16,6 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.internal.time.Clock
-import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
 import io.hackle.sdk.core.user.IdentifierType
 import java.io.Closeable

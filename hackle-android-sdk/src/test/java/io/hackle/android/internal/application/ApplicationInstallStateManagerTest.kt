@@ -1,11 +1,13 @@
 package io.hackle.android.internal.application
 
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.install.ApplicationInstallState
+import io.hackle.android.internal.application.install.ApplicationInstallStateListener
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
-import strikt.api.expectThat
-import strikt.assertions.isTrue
 import java.util.concurrent.Executor
 
 class ApplicationInstallStateManagerTest {

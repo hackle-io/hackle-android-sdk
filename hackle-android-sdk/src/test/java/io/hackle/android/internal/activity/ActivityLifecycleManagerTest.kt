@@ -2,6 +2,10 @@ package io.hackle.android.internal.activity
 
 import android.app.Activity
 import android.app.Application
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.activity.lifecycle.ActivityState
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*

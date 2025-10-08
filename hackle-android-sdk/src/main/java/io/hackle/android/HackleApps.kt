@@ -41,10 +41,10 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpres
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
 import io.hackle.android.internal.application.ApplicationEventTracker
-import io.hackle.android.internal.application.ApplicationInstallDeterminer
-import io.hackle.android.internal.application.ApplicationLifecycleManager
-import io.hackle.android.internal.application.ApplicationInstallStateManager
-import io.hackle.android.internal.activity.ActivityLifecycleManager
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter

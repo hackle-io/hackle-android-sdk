@@ -3,10 +3,10 @@ package io.hackle.android.ui.inappmessage
 import android.app.Activity
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
-import io.hackle.android.internal.activity.ActivityProvider
-import io.hackle.android.internal.activity.ActivityLifecycle
-import io.hackle.android.internal.activity.ActivityLifecycle.DESTROYED
-import io.hackle.android.internal.activity.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.DESTROYED
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler

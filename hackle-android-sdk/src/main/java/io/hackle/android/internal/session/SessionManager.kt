@@ -1,6 +1,6 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.application.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.user.UserListener

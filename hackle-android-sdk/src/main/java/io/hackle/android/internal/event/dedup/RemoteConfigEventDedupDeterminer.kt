@@ -1,6 +1,6 @@
 package io.hackle.android.internal.event.dedup
 
-import io.hackle.android.internal.application.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent

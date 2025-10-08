@@ -2,7 +2,7 @@ package io.hackle.android
 
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.application.ApplicationInstallStateManager
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
@@ -25,8 +25,8 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import android.app.Activity
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HacklePushSubscriptionStatus
-import io.hackle.android.internal.activity.ActivityLifecycleManager
-import io.hackle.android.internal.application.ApplicationLifecycleManager
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.ui.notification.NotificationHandler
 import android.content.Context
 import android.content.Intent

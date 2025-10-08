@@ -6,9 +6,9 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
 import io.hackle.android.R
-import io.hackle.android.internal.activity.ActivityProvider
-import io.hackle.android.internal.activity.ActivityLifecycle
-import io.hackle.android.internal.activity.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton

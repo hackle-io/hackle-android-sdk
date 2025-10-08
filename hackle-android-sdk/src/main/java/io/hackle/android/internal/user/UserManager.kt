@@ -1,6 +1,6 @@
 package io.hackle.android.internal.user
 
-import io.hackle.android.internal.application.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry

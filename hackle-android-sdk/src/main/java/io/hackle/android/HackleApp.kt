@@ -8,11 +8,10 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.application.ApplicationInstallStateManager
-import io.hackle.android.internal.application.ApplicationLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.activity.ActivityLifecycleManager
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl

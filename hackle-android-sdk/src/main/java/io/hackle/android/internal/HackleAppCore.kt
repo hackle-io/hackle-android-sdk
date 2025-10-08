@@ -1,6 +1,6 @@
 package io.hackle.android.internal
 
-import io.hackle.android.internal.application.ApplicationInstallStateManager
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor

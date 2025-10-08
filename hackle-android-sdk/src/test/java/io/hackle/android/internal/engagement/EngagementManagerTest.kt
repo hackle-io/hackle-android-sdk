@@ -1,6 +1,6 @@
 package io.hackle.android.internal.engagement
 
-import io.hackle.android.internal.activity.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.user.UserManager

@@ -1,4 +1,4 @@
-package io.hackle.android.internal.application
+package io.hackle.android.internal.application.lifecycle
 
 internal enum class ApplicationState {
     FOREGROUND,

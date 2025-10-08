@@ -1,6 +1,7 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.application.ApplicationState
+import io.hackle.android.internal.application.lifecycle.ApplicationState
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
@@ -58,7 +59,7 @@ class DefaultEventProcessorTest {
     private lateinit var userManager: UserManager
 
     @RelaxedMockK
-    private lateinit var applicationLifecycleManager: io.hackle.android.internal.application.ApplicationLifecycleManager
+    private lateinit var applicationLifecycleManager: ApplicationLifecycleManager
 
     @RelaxedMockK
     private lateinit var screenManager: ScreenManager
@@ -90,7 +91,7 @@ class DefaultEventProcessorTest {
         eventDispatcher: EventDispatcher = this.eventDispatcher,
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
-        applicationLifecycleManager: io.hackle.android.internal.application.ApplicationLifecycleManager = this.applicationLifecycleManager,
+        applicationLifecycleManager: ApplicationLifecycleManager = this.applicationLifecycleManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
     ): DefaultEventProcessor {

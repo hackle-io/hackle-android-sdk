@@ -1,4 +1,4 @@
-package io.hackle.android.internal.application
+package io.hackle.android.internal.application.install
 
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.platform.device.Device

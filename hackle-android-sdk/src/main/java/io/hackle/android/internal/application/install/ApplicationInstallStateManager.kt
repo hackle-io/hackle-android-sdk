@@ -1,4 +1,4 @@
-package io.hackle.android.internal.application
+package io.hackle.android.internal.application.install
 
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.sdk.core.internal.log.Logger

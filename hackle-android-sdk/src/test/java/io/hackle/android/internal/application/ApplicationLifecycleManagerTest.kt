@@ -4,6 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
 import org.junit.After

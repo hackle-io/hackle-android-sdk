@@ -1,10 +1,9 @@
-package io.hackle.android.internal.application
+package io.hackle.android.internal.application.lifecycle
 
 import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
-import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock

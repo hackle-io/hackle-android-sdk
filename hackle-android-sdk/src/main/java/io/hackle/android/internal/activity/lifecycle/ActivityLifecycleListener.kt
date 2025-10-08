@@ -1,4 +1,4 @@
-package io.hackle.android.internal.activity
+package io.hackle.android.internal.activity.lifecycle
 
 import android.app.Activity
 import io.hackle.android.internal.core.listener.ApplicationListener

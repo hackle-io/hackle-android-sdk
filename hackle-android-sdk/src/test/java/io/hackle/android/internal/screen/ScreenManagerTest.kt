@@ -1,9 +1,9 @@
 package io.hackle.android.internal.screen
 
 import android.app.Activity
-import io.hackle.android.internal.activity.ActivityProvider
-import io.hackle.android.internal.activity.ActivityState
-import io.hackle.android.internal.activity.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityState
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
