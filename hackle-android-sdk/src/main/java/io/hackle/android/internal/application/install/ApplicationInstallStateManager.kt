@@ -8,17 +8,13 @@ import java.util.concurrent.Executor
 internal class ApplicationInstallStateManager(
     private val executor: Executor,
     private val clock: Clock,
+    private val applicationInstallDeterminer: ApplicationInstallDeterminer
 ) : ApplicationListenerRegistry<ApplicationInstallStateListener>() {
-    private var applicationInstallDeterminer: ApplicationInstallDeterminer? = null
-    
-    fun setApplicationInstallDeterminer(applicationInstallDeterminer: ApplicationInstallDeterminer) {
-        this.applicationInstallDeterminer = applicationInstallDeterminer
-    }
 
     internal fun checkApplicationInstall() {
-        val state = applicationInstallDeterminer?.determine()
+        val state = applicationInstallDeterminer.determine()
         execute {
-            if (state != null && state != ApplicationInstallState.NONE) {
+            if (state != ApplicationInstallState.NONE) {
                 log.debug { "application($state)" }
                 val timestamp = clock.currentMillis()
                 when (state) {

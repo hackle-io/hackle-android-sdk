@@ -319,10 +319,9 @@ internal object HackleApps {
         val applicationInstallStateManager = ApplicationInstallStateManager(
             executor = eventExecutor,
             clock = clock,
+            applicationInstallDeterminer = applicationInstallDeterminer
         )
         
-        applicationInstallStateManager.setApplicationInstallDeterminer(applicationInstallDeterminer)
-
         // SessionEventTracker
 
         val sessionEventTracker = SessionEventTracker(

@@ -26,9 +26,8 @@ class ApplicationInstallStateManagerTest {
         every { mockExecutor.execute(capture(executorSlot)) } answers { executorSlot.captured.run() }
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.NONE
 
-        manager = ApplicationInstallStateManager(mockExecutor, mockClock)
+        manager = ApplicationInstallStateManager(mockExecutor, mockClock, mockInstallDeterminer)
         manager.addListener(mockListener)
-        manager.setApplicationInstallDeterminer(mockInstallDeterminer)
     }
 
     @Test
@@ -70,20 +69,6 @@ class ApplicationInstallStateManagerTest {
         verify { mockExecutor.execute(any()) }
         verify { mockListener.onUpdate(1234567890L) }
         verify(exactly = 0) { mockListener.onInstall(any()) }
-    }
-
-    @Test
-    fun `checkApplicationInstall should handle null determiner gracefully`() {
-        // given - manager without install determiner
-        val managerWithoutDeterminer = ApplicationInstallStateManager(mockExecutor, mockClock)
-        managerWithoutDeterminer.addListener(mockListener)
-
-        // when
-        managerWithoutDeterminer.checkApplicationInstall()
-
-        // then - should not crash and no events should be triggered
-        verify(exactly = 0) { mockListener.onInstall(any()) }
-        verify(exactly = 0) { mockListener.onUpdate(any()) }
     }
 
     @Test
@@ -143,21 +128,6 @@ class ApplicationInstallStateManagerTest {
     }
 
     @Test
-    fun `setApplicationInstallDeterminer should update determiner`() {
-        // given
-        val newDeterminer = mockk<ApplicationInstallDeterminer>()
-        every { newDeterminer.determine() } returns ApplicationInstallState.INSTALL
-
-        // when
-        manager.setApplicationInstallDeterminer(newDeterminer)
-        manager.checkApplicationInstall()
-
-        // then
-        verify { newDeterminer.determine() }
-        verify { mockListener.onInstall(1234567890L) }
-    }
-
-    @Test
     fun `executor should handle async execution correctly`() {
         // given
         val asyncExecutor = mockk<Executor>()
@@ -165,9 +135,8 @@ class ApplicationInstallStateManagerTest {
         every { asyncExecutor.execute(capture(executedRunnables)) } just Runs
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
 
-        val asyncManager = ApplicationInstallStateManager(asyncExecutor, mockClock)
+        val asyncManager = ApplicationInstallStateManager(asyncExecutor, mockClock, mockInstallDeterminer)
         asyncManager.addListener(mockListener)
-        asyncManager.setApplicationInstallDeterminer(mockInstallDeterminer)
 
         // when
         asyncManager.checkApplicationInstall()
@@ -191,9 +160,8 @@ class ApplicationInstallStateManagerTest {
         val executorSlot2 = slot<Runnable>()
         every { executor2.execute(capture(executorSlot2)) } answers { executorSlot2.captured.run() }
 
-        val manager2 = ApplicationInstallStateManager(executor2, mockClock)
+        val manager2 = ApplicationInstallStateManager(executor2, mockClock, mockInstallDeterminer)
         manager2.addListener(listener2)
-        manager2.setApplicationInstallDeterminer(mockInstallDeterminer)
 
         every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
 
