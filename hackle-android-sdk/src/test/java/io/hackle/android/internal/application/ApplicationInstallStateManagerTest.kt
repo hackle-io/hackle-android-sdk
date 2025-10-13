@@ -4,84 +4,91 @@ import io.hackle.android.internal.application.install.ApplicationInstallDetermin
 import io.hackle.android.internal.application.install.ApplicationInstallState
 import io.hackle.android.internal.application.install.ApplicationInstallStateListener
 import io.hackle.android.internal.application.install.ApplicationInstallStateManager
+import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.platform.packageinfo.PackageInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
-import java.util.concurrent.Executor
 
 class ApplicationInstallStateManagerTest {
 
     private val mockClock = mockk<Clock>()
-    private val mockListener = mockk<ApplicationInstallStateListener>(relaxed = true)
-    private val mockExecutor = mockk<Executor>()
+    private val mockPackageInfo = mockk<PackageInfo>()
+    private val mockKeyValueRepository = mockk<KeyValueRepository>(relaxed = true)
     private val mockInstallDeterminer = mockk<ApplicationInstallDeterminer>()
-    private val executorSlot = slot<Runnable>()
+    private val mockListener = mockk<ApplicationInstallStateListener>(relaxed = true)
 
     private lateinit var manager: ApplicationInstallStateManager
 
     @Before
     fun setUp() {
         every { mockClock.currentMillis() } returns 1234567890L
-        every { mockExecutor.execute(capture(executorSlot)) } answers { executorSlot.captured.run() }
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.NONE
+        every { mockPackageInfo.packageVersionInfo } returns PackageVersionInfo("1.0.0", 1L)
+        every { mockKeyValueRepository.getString(any()) } returns null
+        every { mockKeyValueRepository.getLong(any(), any()) } returns Long.MIN_VALUE
 
-        manager = ApplicationInstallStateManager(mockExecutor, mockClock, mockInstallDeterminer)
+        manager = ApplicationInstallStateManager(
+            mockClock,
+            mockPackageInfo,
+            mockKeyValueRepository,
+            mockInstallDeterminer
+        )
         manager.addListener(mockListener)
+        manager.initialize()
     }
 
     @Test
     fun `checkApplicationInstall should do nothing when determiner returns NONE`() {
         // given
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.NONE
+        every { mockInstallDeterminer.determine(any(), any()) } returns ApplicationInstallState.NONE
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify(exactly = 0) { mockListener.onInstall(any()) }
-        verify(exactly = 0) { mockListener.onUpdate(any()) }
+        verify(exactly = 0) { mockListener.onInstall(any(), any()) }
+        verify(exactly = 0) { mockListener.onUpdate(any(), any(), any()) }
     }
 
     @Test
     fun `checkApplicationInstall should trigger onInstall when determiner returns INSTALL`() {
         // given
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
+        val currentVersion = PackageVersionInfo("1.0.0", 1L)
+        every { mockPackageInfo.packageVersionInfo } returns currentVersion
+        every { mockInstallDeterminer.determine(currentVersion, null) } returns ApplicationInstallState.INSTALL
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onInstall(1234567890L) }
-        verify(exactly = 0) { mockListener.onUpdate(any()) }
+        verify { mockListener.onInstall(currentVersion, 1234567890L) }
+        verify(exactly = 0) { mockListener.onUpdate(any(), any(), any()) }
+        verify { mockKeyValueRepository.putString(any(), "1.0.0") }
+        verify { mockKeyValueRepository.putLong(any(), 1L) }
     }
 
     @Test
     fun `checkApplicationInstall should trigger onUpdate when determiner returns UPDATE`() {
         // given
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.UPDATE
+        val previousVersion = PackageVersionInfo("0.9.0", 0L)
+        val currentVersion = PackageVersionInfo("1.0.0", 1L)
+        every { mockKeyValueRepository.getString(any()) } returns "0.9.0"
+        every { mockKeyValueRepository.getLong(any(), any()) } returns 0L
+        every { mockPackageInfo.packageVersionInfo } returns currentVersion
+        every { mockInstallDeterminer.determine(currentVersion, previousVersion) } returns ApplicationInstallState.UPDATE
+
+        manager.initialize()
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onUpdate(1234567890L) }
-        verify(exactly = 0) { mockListener.onInstall(any()) }
-    }
-
-    @Test
-    fun `checkApplicationInstall should execute with provided executor`() {
-        // given
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
-
-        // when
-        manager.checkApplicationInstall()
-
-        // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onInstall(1234567890L) }
+        verify { mockListener.onUpdate(previousVersion, currentVersion, 1234567890L) }
+        verify(exactly = 0) { mockListener.onInstall(any(), any()) }
+        verify { mockKeyValueRepository.putString(any(), "1.0.0") }
+        verify { mockKeyValueRepository.putLong(any(), 1L) }
     }
 
     @Test
@@ -89,14 +96,16 @@ class ApplicationInstallStateManagerTest {
         // given
         val mockListener2 = mockk<ApplicationInstallStateListener>(relaxed = true)
         manager.addListener(mockListener2)
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
+        val currentVersion = PackageVersionInfo("1.0.0", 1L)
+        every { mockPackageInfo.packageVersionInfo } returns currentVersion
+        every { mockInstallDeterminer.determine(currentVersion, null) } returns ApplicationInstallState.INSTALL
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify { mockListener.onInstall(1234567890L) }
-        verify { mockListener2.onInstall(1234567890L) }
+        verify { mockListener.onInstall(currentVersion, 1234567890L) }
+        verify { mockListener2.onInstall(currentVersion, 1234567890L) }
     }
 
     @Test
@@ -104,75 +113,56 @@ class ApplicationInstallStateManagerTest {
         // given
         val mockListener2 = mockk<ApplicationInstallStateListener>(relaxed = true)
         manager.addListener(mockListener2)
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.UPDATE
+        val previousVersion = PackageVersionInfo("0.9.0", 0L)
+        val currentVersion = PackageVersionInfo("1.0.0", 1L)
+        every { mockKeyValueRepository.getString(any()) } returns "0.9.0"
+        every { mockKeyValueRepository.getLong(any(), any()) } returns 0L
+        every { mockPackageInfo.packageVersionInfo } returns currentVersion
+        every { mockInstallDeterminer.determine(currentVersion, previousVersion) } returns ApplicationInstallState.UPDATE
+
+        manager.initialize()
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify { mockListener.onUpdate(1234567890L) }
-        verify { mockListener2.onUpdate(1234567890L) }
+        verify { mockListener.onUpdate(previousVersion, currentVersion, 1234567890L) }
+        verify { mockListener2.onUpdate(previousVersion, currentVersion, 1234567890L) }
     }
 
     @Test
-    fun `executor should be used during checkApplicationInstall`() {
+    fun `initialize should load previous version from key value repository`() {
         // given
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
+        every { mockKeyValueRepository.getString(any()) } returns "0.9.0"
+        every { mockKeyValueRepository.getLong(any(), any()) } returns 0L
+
+        val newManager = ApplicationInstallStateManager(
+            mockClock,
+            mockPackageInfo,
+            mockKeyValueRepository,
+            mockInstallDeterminer
+        )
+
+        // when
+        newManager.initialize()
+
+        // then
+        verify { mockKeyValueRepository.getString(any()) }
+        verify { mockKeyValueRepository.getLong(any(), any()) }
+    }
+
+    @Test
+    fun `checkApplicationInstall should save current version after determining install state`() {
+        // given
+        val currentVersion = PackageVersionInfo("1.0.0", 1L)
+        every { mockPackageInfo.packageVersionInfo } returns currentVersion
+        every { mockInstallDeterminer.determine(any(), any()) } returns ApplicationInstallState.NONE
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify { mockExecutor.execute(any()) }
-        verify { mockListener.onInstall(1234567890L) }
-    }
-
-    @Test
-    fun `executor should handle async execution correctly`() {
-        // given
-        val asyncExecutor = mockk<Executor>()
-        val executedRunnables = mutableListOf<Runnable>()
-        every { asyncExecutor.execute(capture(executedRunnables)) } just Runs
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
-
-        val asyncManager = ApplicationInstallStateManager(asyncExecutor, mockClock, mockInstallDeterminer)
-        asyncManager.addListener(mockListener)
-
-        // when
-        asyncManager.checkApplicationInstall()
-
-        // then - executor was called but runnable not executed yet
-        verify { asyncExecutor.execute(any()) }
-        verify(exactly = 0) { mockListener.onInstall(any()) }
-
-        // when - manually execute the captured runnable
-        executedRunnables.first().run()
-
-        // then - listener should be called now
-        verify { mockListener.onInstall(1234567890L) }
-    }
-
-    @Test
-    fun `multiple managers should be independent`() {
-        // given
-        val executor2 = mockk<Executor>()
-        val listener2 = mockk<ApplicationInstallStateListener>(relaxed = true)
-        val executorSlot2 = slot<Runnable>()
-        every { executor2.execute(capture(executorSlot2)) } answers { executorSlot2.captured.run() }
-
-        val manager2 = ApplicationInstallStateManager(executor2, mockClock, mockInstallDeterminer)
-        manager2.addListener(listener2)
-
-        every { mockInstallDeterminer.determine() } returns ApplicationInstallState.INSTALL
-
-        // when - call checkApplicationInstall on both managers
-        manager.checkApplicationInstall()
-        manager2.checkApplicationInstall()
-
-        // then - each manager should trigger its own listener
-        verify { mockListener.onInstall(1234567890L) }
-        verify { listener2.onInstall(1234567890L) }
-        verify { mockExecutor.execute(any()) }
-        verify { executor2.execute(any()) }
+        verify { mockKeyValueRepository.putString(any(), "1.0.0") }
+        verify { mockKeyValueRepository.putLong(any(), 1L) }
     }
 }

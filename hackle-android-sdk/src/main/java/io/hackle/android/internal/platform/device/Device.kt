@@ -5,29 +5,20 @@ import android.os.Build
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import java.util.Locale
 import java.util.TimeZone
-import java.util.UUID
 
 internal interface Device {
 
     val id: String
-    val isIdCreated: Boolean
     val properties: Map<String, Any>
 
     companion object {
         private const val ID_KEY = "device_id"
 
-        fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
-            var isDeviceIdCreated = false
-            val deviceId = keyValueRepository.getString(ID_KEY) {
-                isDeviceIdCreated = true
-                UUID.randomUUID().toString() 
-            }
-
+        fun create(context: Context, deviceId: String): Device {
             val displayMetrics = DeviceHelper.getDisplayMetrics(context)
 
             return DeviceImpl(
                 id = deviceId,
-                isIdCreated = isDeviceIdCreated,
                 deviceInfo = DeviceInfo(
                     osName = "Android",
                     osVersion = Build.VERSION.RELEASE,
@@ -44,12 +35,15 @@ internal interface Device {
                 )
             )
         }
+        
+        fun getDeviceId(keyValueRepository: KeyValueRepository, mapping: (String) -> String): String {
+            return keyValueRepository.getString(ID_KEY, mapping)
+        }
     }
 }
 
 internal data class DeviceImpl(
     override val id: String,
-    override val isIdCreated: Boolean,
     private val deviceInfo: DeviceInfo
 ) : Device {
 

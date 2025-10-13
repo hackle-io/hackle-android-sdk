@@ -98,6 +98,7 @@ import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import io.hackle.sdk.core.internal.time.Clock
 import okhttp3.OkHttpClient
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -117,9 +118,14 @@ internal object HackleApps {
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
         val keyValueRepositoryBySdkKey =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
-        val device = Device.create(context, globalKeyValueRepository)
-        val packageInfo = PackageInfo.create(context, globalKeyValueRepository)
-        val applicationInstallDeterminer = ApplicationInstallDeterminer(globalKeyValueRepository, device, packageInfo)
+        var isDeviceIdCreated = false
+        val deviceId = Device.getDeviceId(globalKeyValueRepository) {
+            isDeviceIdCreated = true
+            UUID.randomUUID().toString()
+        }
+        val device = Device.create(context, deviceId)
+        val packageInfo = PackageInfo.create(context)
+        val applicationInstallDeterminer = ApplicationInstallDeterminer(isDeviceIdCreated)
 
         val httpClient = createHttpClient(context, sdk)
 
@@ -317,8 +323,9 @@ internal object HackleApps {
         // ApplicationInstallStateListener
 
         val applicationInstallStateManager = ApplicationInstallStateManager(
-            executor = eventExecutor,
             clock = clock,
+            packageInfo = packageInfo,
+            keyValueRepository = globalKeyValueRepository,
             applicationInstallDeterminer = applicationInstallDeterminer
         )
         
@@ -352,8 +359,7 @@ internal object HackleApps {
         
         val applicationEventTracker = ApplicationEventTracker(
             userManager = userManager,
-            core = core,
-            packageInfo = packageInfo
+            core = core
         )
         applicationInstallStateManager.addListener(applicationEventTracker)
         applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)

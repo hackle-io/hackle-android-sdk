@@ -73,10 +73,9 @@ class HackleAppsTest {
         every { context.getSystemService(any()) } returns null
 
         mockkObject(Device)
-        every { Device.create(any<Context>(), any<KeyValueRepository>())} returns MockDevice(
+        every { Device.create(any<Context>(), any<String>())} returns MockDevice(
             id = "test_device_id",
-            properties = emptyMap(),
-            isIdCreated = true
+            properties = emptyMap()
         )
     }
 

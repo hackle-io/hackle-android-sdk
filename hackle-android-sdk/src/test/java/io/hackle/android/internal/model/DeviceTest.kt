@@ -17,7 +17,6 @@ class DeviceTest {
         val deviceInfo = createTestDeviceInfo()
         val device = DeviceImpl(
             id = deviceId,
-            isIdCreated = false,
             deviceInfo = deviceInfo,
         )
         assertThat(device.id, `is`(deviceId))
@@ -43,7 +42,6 @@ class DeviceTest {
         val deviceInfo = createTestDeviceInfo()
         val device = DeviceImpl(
             id = deviceId,
-            isIdCreated = false,
             deviceInfo = deviceInfo,
         )
         assertThat(device.id, `is`(deviceId))
@@ -66,39 +64,6 @@ class DeviceTest {
         assertThat(properties["isApp"], `is`(true))
     }
 
-    @Test
-    fun `isIdCreated should be true when device ID is newly created`() {
-        // given
-        val deviceId = UUID.randomUUID().toString()
-        val deviceInfo = createTestDeviceInfo()
-
-        // when
-        val device = DeviceImpl(
-            id = deviceId,
-            isIdCreated = true,
-            deviceInfo = deviceInfo,
-        )
-
-        // then
-        assertThat(device.isIdCreated, `is`(true))
-    }
-
-    @Test
-    fun `isIdCreated should be false when device ID already exists`() {
-        // given
-        val deviceId = UUID.randomUUID().toString()
-        val deviceInfo = createTestDeviceInfo()
-
-        // when
-        val device = DeviceImpl(
-            id = deviceId,
-            isIdCreated = false,
-            deviceInfo = deviceInfo,
-        )
-
-        // then
-        assertThat(device.isIdCreated, `is`(false))
-    }
 
     private fun createTestDeviceInfo(): DeviceInfo {
         return DeviceInfo(

@@ -3,39 +3,37 @@ package io.hackle.android.internal.application
 import io.hackle.android.internal.application.install.ApplicationInstallStateListener
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.platform.packageinfo.PackageInfo
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
 
-
 internal class ApplicationEventTracker(
     private val userManager: UserManager,
-    private val core: HackleCore,
-    private val packageInfo: PackageInfo
+    private val core: HackleCore
 ) : ApplicationLifecycleListener, ApplicationInstallStateListener {
 
-    override fun onInstall(timestamp: Long) {
+    override fun onInstall(versionInfo: PackageVersionInfo, timestamp: Long) {
         val trackEvent = Event.builder(APP_INSTALL_EVENT_KEY)
-            .property("versionName", packageInfo.currentPackageVersionInfo.versionName)
-            .property("versionCode", packageInfo.currentPackageVersionInfo.versionCode)
+            .property("version_name", versionInfo.versionName)
+            .property("version_code", versionInfo.versionCode)
             .build()
         track(trackEvent, timestamp)
     }
 
-    override fun onUpdate(timestamp: Long) {
+    override fun onUpdate(previousVersion: PackageVersionInfo?, currentVersion: PackageVersionInfo, timestamp: Long) {
         val trackEvent = Event.builder(APP_UPDATE_EVENT_KEY)
-            .property("versionName", packageInfo.currentPackageVersionInfo.versionName)
-            .property("versionCode", packageInfo.currentPackageVersionInfo.versionCode)
-            .property("previousVersionName", packageInfo.previousPackageVersionInfo?.versionName)
-            .property("previousVersionCode", packageInfo.previousPackageVersionInfo?.versionCode)
+            .property("version_name", currentVersion.versionName)
+            .property("version_code", currentVersion.versionCode)
+            .property("previous_version_name", previousVersion?.versionName)
+            .property("previous_version_code", previousVersion?.versionCode)
             .build()
         track(trackEvent, timestamp)
     }
 
     override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
         val trackEvent = Event.builder(APP_OPEN_EVENT_KEY)
-            .property("isFromBackground", isFromBackground)
+            .property("is_from_background", isFromBackground)
             .build()
         track(trackEvent, timestamp)
     }

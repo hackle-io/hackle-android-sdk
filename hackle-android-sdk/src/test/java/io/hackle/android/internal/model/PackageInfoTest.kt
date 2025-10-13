@@ -11,12 +11,10 @@ class PackageInfoTest {
     @Test
     fun `PackageInfoImpl properties should return correct map`() {
         // given
-        val currentVersion = PackageVersionInfo("1.2.3", 123L)
-        val previousVersion = PackageVersionInfo("1.0.0", 100L)
+        val packageVersionInfo = PackageVersionInfo("1.2.3", 123L)
         val packageInfo = PackageInfoImpl(
             packageName = "com.example.app",
-            currentPackageVersionInfo = currentVersion,
-            previousPackageVersionInfo = previousVersion
+            packageVersionInfo = packageVersionInfo
         )
 
         // when
@@ -29,21 +27,16 @@ class PackageInfoTest {
     }
 
     @Test
-    fun `PackageInfoImpl properties should not include previousVersion`() {
+    fun `PackageInfoImpl packageVersionInfo should return correct version info`() {
         // given
-        val currentVersion = PackageVersionInfo("1.2.3", 123L)
-        val previousVersion = PackageVersionInfo("1.0.0", 100L)
+        val packageVersionInfo = PackageVersionInfo("1.2.3", 123L)
         val packageInfo = PackageInfoImpl(
             packageName = "com.example.app",
-            currentPackageVersionInfo = currentVersion,
-            previousPackageVersionInfo = previousVersion
+            packageVersionInfo = packageVersionInfo
         )
 
-        // when
-        val properties = packageInfo.properties
-
-        // then
-        expectThat(properties.containsKey("previousVersionName")).isEqualTo(false)
-        expectThat(properties.containsKey("previousVersionCode")).isEqualTo(false)
+        // when & then
+        expectThat(packageInfo.packageVersionInfo.versionName).isEqualTo("1.2.3")
+        expectThat(packageInfo.packageVersionInfo.versionCode).isEqualTo(123L)
     }
 }

@@ -63,15 +63,16 @@ internal class HackleAppCore(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
-        applicationInstallStateManager.checkApplicationInstall()
         eventExecutor.execute {
             try {
                 workspaceManager.initialize()
                 pushTokenManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
+                applicationInstallStateManager.initialize()
                 synchronizer.sync()
                 notificationManager.flush()
+                applicationInstallStateManager.checkApplicationInstall()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }

@@ -2,28 +2,18 @@ package io.hackle.android.internal.platform.packageinfo
 
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 
 
 internal interface PackageInfo {
-    val currentPackageVersionInfo: PackageVersionInfo
-    val previousPackageVersionInfo: PackageVersionInfo?
+    val packageVersionInfo: PackageVersionInfo
     val properties: Map<String, Any>
 
     companion object Companion {
-        const val KEY_PREVIOUS_VERSION_NAME = "previous_version_name"
-        const val KEY_PREVIOUS_VERSION_CODE = "previous_version_code"
-
-        fun create(context: Context, keyValueRepository: KeyValueRepository): PackageInfo {
+        
+        fun create(context: Context): PackageInfo {
             var packageName = ""
             var versionName = ""
             var versionCode = 0L
-
-            val previousVersionName = keyValueRepository.getString(KEY_PREVIOUS_VERSION_NAME)
-            val previousVersionCode = keyValueRepository.getLong(KEY_PREVIOUS_VERSION_CODE, Long.MIN_VALUE)
-                .takeUnless { it == Long.MIN_VALUE }
-
             try {
                 val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                 packageName = packageInfo.packageName
@@ -33,41 +23,28 @@ internal interface PackageInfo {
                     packageInfo.longVersionCode else packageInfo.versionCode.toLong()
             } catch (_: Throwable) {
             }
-            val currentPackageVersionInfo = PackageVersionInfo(
+
+            val packageVersionInfo = PackageVersionInfo(
                 versionName = versionName,
                 versionCode = versionCode
             )
-            val previousPackageVersionInfo = if (previousVersionName != null && previousVersionCode != null) {
-                PackageVersionInfo(
-                    versionName = previousVersionName,
-                    versionCode = previousVersionCode
-                )
-            } else {
-                null
-            }
-
-            return PackageInfoImpl(
-                packageName = packageName,
-                currentPackageVersionInfo = currentPackageVersionInfo,
-                previousPackageVersionInfo = previousPackageVersionInfo
-            )
+            
+            return PackageInfoImpl(packageName, packageVersionInfo)
         }
     }
 }
 
 internal data class PackageInfoImpl(
     private val packageName: String,
-    override val currentPackageVersionInfo: PackageVersionInfo,
-    override val previousPackageVersionInfo: PackageVersionInfo?,
+    override val packageVersionInfo: PackageVersionInfo
 ) : PackageInfo {
 
     override val properties: Map<String, Any>
         get() {
             return mapOf(
                 "packageName" to packageName,
-                "versionName" to currentPackageVersionInfo.versionName,
-                "versionCode" to currentPackageVersionInfo.versionCode,
+                "versionName" to packageVersionInfo.versionName,
+                "versionCode" to packageVersionInfo.versionCode,
             )
         }
 }
-
