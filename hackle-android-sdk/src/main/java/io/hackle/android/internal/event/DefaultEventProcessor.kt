@@ -20,7 +20,6 @@ import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.internal.utils.safe
 import io.hackle.sdk.core.internal.utils.tryClose
-import io.hackle.sdk.core.user.IdentifierType
 import java.io.Closeable
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
@@ -180,20 +179,6 @@ internal class DefaultEventProcessor(
                 sessionManager.startNewSessionIfNeeded(userManager.currentUser, event.timestamp)
             }
         }
-
-        private fun decorateSession(event: UserEvent): UserEvent {
-            if (event.user.sessionId != null) {
-                return event
-            }
-
-            val session = sessionManager.currentSession ?: return event
-
-            val newUser = event.user.toBuilder()
-                .identifier(IdentifierType.SESSION, session.id, overwrite = false)
-                .build()
-            return event.with(newUser)
-        }
-
 
         private fun save(event: UserEvent) {
             eventRepository.save(event)

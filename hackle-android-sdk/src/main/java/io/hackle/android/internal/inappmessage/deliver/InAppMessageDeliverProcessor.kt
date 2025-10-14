@@ -10,7 +10,9 @@ import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProces
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
 import io.hackle.android.internal.lifecycle.ActivityProvider
 import io.hackle.android.internal.lifecycle.ActivityState
+import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.decorateWith
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityRequest
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.Identifiers
@@ -20,6 +22,7 @@ internal class InAppMessageDeliverProcessor(
     private val activityProvider: ActivityProvider,
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
+    private val sessionUserDecorator: SessionUserDecorator,
     private val identifierChecker: InAppMessageIdentifierChecker,
     private val layoutResolver: InAppMessageLayoutResolver,
     private val evaluateProcessor: InAppMessageEvaluateProcessor,
@@ -56,6 +59,7 @@ internal class InAppMessageDeliverProcessor(
 
         // check User
         val user = userManager.resolve(null, HackleAppContext.DEFAULT)
+            .decorateWith(sessionUserDecorator)
         val isIdentifierChanged =
             identifierChecker.isIdentifierChanged(request.identifiers, Identifiers.from(user.identifiers))
         if (isIdentifierChanged) {
