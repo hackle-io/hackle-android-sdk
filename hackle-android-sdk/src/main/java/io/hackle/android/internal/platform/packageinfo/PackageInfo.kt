@@ -5,7 +5,7 @@ import android.os.Build
 
 
 internal interface PackageInfo {
-    val packageVersionInfo: PackageVersionInfo
+    val packageVersion: PackageVersionInfo
     val properties: Map<String, Any>
 
     companion object Companion {
@@ -36,15 +36,15 @@ internal interface PackageInfo {
 
 internal data class PackageInfoImpl(
     private val packageName: String,
-    override val packageVersionInfo: PackageVersionInfo
+    override val packageVersion: PackageVersionInfo
 ) : PackageInfo {
 
     override val properties: Map<String, Any>
         get() {
             return mapOf(
                 "packageName" to packageName,
-                "versionName" to packageVersionInfo.versionName,
-                "versionCode" to packageVersionInfo.versionCode,
+                "versionName" to packageVersion.versionName,
+                "versionCode" to packageVersion.versionCode,
             )
         }
 }

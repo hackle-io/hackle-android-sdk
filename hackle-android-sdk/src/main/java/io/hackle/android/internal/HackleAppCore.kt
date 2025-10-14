@@ -69,7 +69,6 @@ internal class HackleAppCore(
                 pushTokenManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
-                applicationInstallStateManager.initialize()
                 synchronizer.sync()
                 notificationManager.flush()
                 applicationInstallStateManager.checkApplicationInstall()

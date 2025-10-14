@@ -53,6 +53,7 @@ import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
@@ -118,14 +119,9 @@ internal object HackleApps {
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
         val keyValueRepositoryBySdkKey =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
-        var isDeviceIdCreated = false
-        val deviceId = Device.getDeviceId(globalKeyValueRepository) {
-            isDeviceIdCreated = true
-            UUID.randomUUID().toString()
-        }
-        val device = Device.create(context, deviceId)
-        val packageInfo = PackageInfo.create(context)
-        val applicationInstallDeterminer = ApplicationInstallDeterminer(isDeviceIdCreated)
+        
+        val platformManager = PlatformManager(context, globalKeyValueRepository)
+        val applicationInstallDeterminer = ApplicationInstallDeterminer()
 
         val httpClient = createHttpClient(context, sdk)
 
@@ -169,8 +165,8 @@ internal object HackleApps {
         val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
         val targetEventFetcher = UserTargetEventFetcher(config.sdkUri, httpClient)
         val userManager = UserManager(
-            device = device,
-            packageInfo = packageInfo,
+            device = platformManager.device,
+            packageInfo = platformManager.packageInfo,
             repository = keyValueRepositoryBySdkKey,
             cohortFetcher = cohortFetcher,
             targetEventFetcher = targetEventFetcher
@@ -324,8 +320,7 @@ internal object HackleApps {
 
         val applicationInstallStateManager = ApplicationInstallStateManager(
             clock = clock,
-            packageInfo = packageInfo,
-            keyValueRepository = globalKeyValueRepository,
+            platformManager = platformManager,
             applicationInstallDeterminer = applicationInstallDeterminer
         )
         
@@ -539,7 +534,12 @@ internal object HackleApps {
 
         metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
 
+        // ApplicationLifecycleListener
+
+        applicationLifecycleManager.registerTo(context)
+        
         // LifecycleListener
+
         activityLifecycleManager.setExecutor(eventExecutor)
         if (config.automaticScreenTracking) {
             activityLifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
@@ -549,9 +549,7 @@ internal object HackleApps {
         activityLifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
         activityLifecycleManager.registerTo(context)
 
-        // ApplicationLifecycleListener
         
-        applicationLifecycleManager.registerTo(context)
 
         val throttleLimiter = ThrottleLimiter(
             intervalMillis = 60 * 1000,
@@ -575,7 +573,7 @@ internal object HackleApps {
             pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,
             fetchThrottler = fetchThrottler,
-            device = device,
+            device = platformManager.device,
             applicationInstallStateManager = applicationInstallStateManager,
             userExplorer = userExplorer,
         )

@@ -12,11 +12,11 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return INSTALL when no previous version and device ID is created`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = true)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, null)
+        val result = determiner.determine(null, currentVersion, true)
 
         // then
         expectThat(result).isEqualTo(ApplicationInstallState.INSTALL)
@@ -25,11 +25,11 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return NONE when no previous version but device ID is not created`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = false)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, null)
+        val result = determiner.determine(null, currentVersion, false)
 
         // then
         expectThat(result).isEqualTo(ApplicationInstallState.NONE)
@@ -38,12 +38,12 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return UPDATE when previous version exists and is different from current`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = false)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("2.0.0", 2L)
         val previousVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, previousVersion)
+        val result = determiner.determine(previousVersion, currentVersion, false)
 
         // then
         expectThat(result).isEqualTo(ApplicationInstallState.UPDATE)
@@ -52,12 +52,12 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return NONE when previous version exists and is same as current`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = false)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
         val previousVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, previousVersion)
+        val result = determiner.determine(previousVersion, currentVersion, false)
 
         // then
         expectThat(result).isEqualTo(ApplicationInstallState.NONE)
@@ -66,12 +66,12 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return UPDATE when version name is different but version code is same`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = false)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("1.0.1", 1L)
         val previousVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, previousVersion)
+        val result = determiner.determine(previousVersion, currentVersion, false)
 
         // then
         expectThat(result).isEqualTo(ApplicationInstallState.UPDATE)
@@ -80,12 +80,12 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return UPDATE when version code is different but version name is same`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = false)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("1.0.0", 2L)
         val previousVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, previousVersion)
+        val result = determiner.determine(previousVersion, currentVersion, false)
 
         // then
         expectThat(result).isEqualTo(ApplicationInstallState.UPDATE)
@@ -94,12 +94,12 @@ class ApplicationInstallDeterminerTest {
     @Test
     fun `determine - should return INSTALL when device ID is created even with version change`() {
         // given
-        val determiner = ApplicationInstallDeterminer(isDeviceIdCreated = true)
+        val determiner = ApplicationInstallDeterminer()
         val currentVersion = PackageVersionInfo("2.0.0", 2L)
         val previousVersion = PackageVersionInfo("1.0.0", 1L)
 
         // when
-        val result = determiner.determine(currentVersion, previousVersion)
+        val result = determiner.determine(previousVersion, currentVersion, true)
 
         // then - when device ID is created, UPDATE takes priority
         expectThat(result).isEqualTo(ApplicationInstallState.UPDATE)

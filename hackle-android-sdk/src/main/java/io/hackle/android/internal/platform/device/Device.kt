@@ -2,7 +2,6 @@ package io.hackle.android.internal.platform.device
 
 import android.content.Context
 import android.os.Build
-import io.hackle.android.internal.database.repository.KeyValueRepository
 import java.util.Locale
 import java.util.TimeZone
 
@@ -12,7 +11,6 @@ internal interface Device {
     val properties: Map<String, Any>
 
     companion object {
-        private const val ID_KEY = "device_id"
 
         fun create(context: Context, deviceId: String): Device {
             val displayMetrics = DeviceHelper.getDisplayMetrics(context)
@@ -34,10 +32,6 @@ internal interface Device {
                     )
                 )
             )
-        }
-        
-        fun getDeviceId(keyValueRepository: KeyValueRepository, mapping: (String) -> String): String {
-            return keyValueRepository.getString(ID_KEY, mapping)
         }
     }
 }

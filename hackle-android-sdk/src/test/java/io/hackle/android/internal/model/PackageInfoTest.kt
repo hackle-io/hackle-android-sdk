@@ -14,7 +14,7 @@ class PackageInfoTest {
         val packageVersionInfo = PackageVersionInfo("1.2.3", 123L)
         val packageInfo = PackageInfoImpl(
             packageName = "com.example.app",
-            packageVersionInfo = packageVersionInfo
+            packageVersion = packageVersionInfo
         )
 
         // when
@@ -32,11 +32,11 @@ class PackageInfoTest {
         val packageVersionInfo = PackageVersionInfo("1.2.3", 123L)
         val packageInfo = PackageInfoImpl(
             packageName = "com.example.app",
-            packageVersionInfo = packageVersionInfo
+            packageVersion = packageVersionInfo
         )
 
         // when & then
-        expectThat(packageInfo.packageVersionInfo.versionName).isEqualTo("1.2.3")
-        expectThat(packageInfo.packageVersionInfo.versionCode).isEqualTo(123L)
+        expectThat(packageInfo.packageVersion.versionName).isEqualTo("1.2.3")
+        expectThat(packageInfo.packageVersion.versionCode).isEqualTo(123L)
     }
 }

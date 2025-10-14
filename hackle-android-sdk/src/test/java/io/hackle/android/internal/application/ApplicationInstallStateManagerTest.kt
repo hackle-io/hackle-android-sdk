@@ -4,8 +4,7 @@ import io.hackle.android.internal.application.install.ApplicationInstallDetermin
 import io.hackle.android.internal.application.install.ApplicationInstallState
 import io.hackle.android.internal.application.install.ApplicationInstallStateListener
 import io.hackle.android.internal.application.install.ApplicationInstallStateManager
-import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.platform.packageinfo.PackageInfo
+import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
@@ -14,9 +13,8 @@ import org.junit.Test
 
 class ApplicationInstallStateManagerTest {
 
+    private val mockPlatformManager = mockk<PlatformManager>()
     private val mockClock = mockk<Clock>()
-    private val mockPackageInfo = mockk<PackageInfo>()
-    private val mockKeyValueRepository = mockk<KeyValueRepository>(relaxed = true)
     private val mockInstallDeterminer = mockk<ApplicationInstallDeterminer>()
     private val mockListener = mockk<ApplicationInstallStateListener>(relaxed = true)
 
@@ -25,24 +23,23 @@ class ApplicationInstallStateManagerTest {
     @Before
     fun setUp() {
         every { mockClock.currentMillis() } returns 1234567890L
-        every { mockPackageInfo.packageVersionInfo } returns PackageVersionInfo("1.0.0", 1L)
-        every { mockKeyValueRepository.getString(any()) } returns null
-        every { mockKeyValueRepository.getLong(any(), any()) } returns Long.MIN_VALUE
+        every { mockPlatformManager.currentVersion } returns PackageVersionInfo("1.0.0", 1L)
+        every { mockPlatformManager.previousVersion } returns null
+        every { mockPlatformManager.isDeviceIdCreated } returns false
 
         manager = ApplicationInstallStateManager(
             mockClock,
-            mockPackageInfo,
-            mockKeyValueRepository,
+            mockPlatformManager,
             mockInstallDeterminer
         )
         manager.addListener(mockListener)
-        manager.initialize()
     }
 
     @Test
     fun `checkApplicationInstall should do nothing when determiner returns NONE`() {
         // given
-        every { mockInstallDeterminer.determine(any(), any()) } returns ApplicationInstallState.NONE
+        every { mockPlatformManager.isDeviceIdCreated } returns false
+        every { mockInstallDeterminer.determine(null, any(), false) } returns ApplicationInstallState.NONE
 
         // when
         manager.checkApplicationInstall()
@@ -56,8 +53,10 @@ class ApplicationInstallStateManagerTest {
     fun `checkApplicationInstall should trigger onInstall when determiner returns INSTALL`() {
         // given
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
-        every { mockPackageInfo.packageVersionInfo } returns currentVersion
-        every { mockInstallDeterminer.determine(currentVersion, null) } returns ApplicationInstallState.INSTALL
+        every { mockPlatformManager.currentVersion } returns currentVersion
+        every { mockPlatformManager.previousVersion } returns null
+        every { mockPlatformManager.isDeviceIdCreated } returns true
+        every { mockInstallDeterminer.determine(null, currentVersion, true) } returns ApplicationInstallState.INSTALL
 
         // when
         manager.checkApplicationInstall()
@@ -65,8 +64,6 @@ class ApplicationInstallStateManagerTest {
         // then
         verify { mockListener.onInstall(currentVersion, 1234567890L) }
         verify(exactly = 0) { mockListener.onUpdate(any(), any(), any()) }
-        verify { mockKeyValueRepository.putString(any(), "1.0.0") }
-        verify { mockKeyValueRepository.putLong(any(), 1L) }
     }
 
     @Test
@@ -74,12 +71,10 @@ class ApplicationInstallStateManagerTest {
         // given
         val previousVersion = PackageVersionInfo("0.9.0", 0L)
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
-        every { mockKeyValueRepository.getString(any()) } returns "0.9.0"
-        every { mockKeyValueRepository.getLong(any(), any()) } returns 0L
-        every { mockPackageInfo.packageVersionInfo } returns currentVersion
-        every { mockInstallDeterminer.determine(currentVersion, previousVersion) } returns ApplicationInstallState.UPDATE
-
-        manager.initialize()
+        every { mockPlatformManager.previousVersion } returns previousVersion
+        every { mockPlatformManager.currentVersion } returns currentVersion
+        every { mockPlatformManager.isDeviceIdCreated } returns true
+        every { mockInstallDeterminer.determine(previousVersion, currentVersion, true) } returns ApplicationInstallState.UPDATE
 
         // when
         manager.checkApplicationInstall()
@@ -87,8 +82,6 @@ class ApplicationInstallStateManagerTest {
         // then
         verify { mockListener.onUpdate(previousVersion, currentVersion, 1234567890L) }
         verify(exactly = 0) { mockListener.onInstall(any(), any()) }
-        verify { mockKeyValueRepository.putString(any(), "1.0.0") }
-        verify { mockKeyValueRepository.putLong(any(), 1L) }
     }
 
     @Test
@@ -97,8 +90,10 @@ class ApplicationInstallStateManagerTest {
         val mockListener2 = mockk<ApplicationInstallStateListener>(relaxed = true)
         manager.addListener(mockListener2)
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
-        every { mockPackageInfo.packageVersionInfo } returns currentVersion
-        every { mockInstallDeterminer.determine(currentVersion, null) } returns ApplicationInstallState.INSTALL
+        every { mockPlatformManager.currentVersion } returns currentVersion
+        every { mockPlatformManager.previousVersion } returns null
+        every { mockPlatformManager.isDeviceIdCreated } returns true
+        every { mockInstallDeterminer.determine(null, currentVersion, true) } returns ApplicationInstallState.INSTALL
 
         // when
         manager.checkApplicationInstall()
@@ -115,12 +110,10 @@ class ApplicationInstallStateManagerTest {
         manager.addListener(mockListener2)
         val previousVersion = PackageVersionInfo("0.9.0", 0L)
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
-        every { mockKeyValueRepository.getString(any()) } returns "0.9.0"
-        every { mockKeyValueRepository.getLong(any(), any()) } returns 0L
-        every { mockPackageInfo.packageVersionInfo } returns currentVersion
-        every { mockInstallDeterminer.determine(currentVersion, previousVersion) } returns ApplicationInstallState.UPDATE
-
-        manager.initialize()
+        every { mockPlatformManager.previousVersion } returns previousVersion
+        every { mockPlatformManager.currentVersion } returns currentVersion
+        every { mockPlatformManager.isDeviceIdCreated } returns true
+        every { mockInstallDeterminer.determine(previousVersion, currentVersion, true) } returns ApplicationInstallState.UPDATE
 
         // when
         manager.checkApplicationInstall()
@@ -131,38 +124,19 @@ class ApplicationInstallStateManagerTest {
     }
 
     @Test
-    fun `initialize should load previous version from key value repository`() {
-        // given
-        every { mockKeyValueRepository.getString(any()) } returns "0.9.0"
-        every { mockKeyValueRepository.getLong(any(), any()) } returns 0L
-
-        val newManager = ApplicationInstallStateManager(
-            mockClock,
-            mockPackageInfo,
-            mockKeyValueRepository,
-            mockInstallDeterminer
-        )
-
-        // when
-        newManager.initialize()
-
-        // then
-        verify { mockKeyValueRepository.getString(any()) }
-        verify { mockKeyValueRepository.getLong(any(), any()) }
-    }
-
-    @Test
-    fun `checkApplicationInstall should save current version after determining install state`() {
+    fun `checkApplicationInstall should not trigger any event when version is same and device id already exists`() {
         // given
         val currentVersion = PackageVersionInfo("1.0.0", 1L)
-        every { mockPackageInfo.packageVersionInfo } returns currentVersion
-        every { mockInstallDeterminer.determine(any(), any()) } returns ApplicationInstallState.NONE
+        every { mockPlatformManager.previousVersion } returns currentVersion
+        every { mockPlatformManager.currentVersion } returns currentVersion
+        every { mockPlatformManager.isDeviceIdCreated } returns false
+        every { mockInstallDeterminer.determine(currentVersion, currentVersion, false) } returns ApplicationInstallState.NONE
 
         // when
         manager.checkApplicationInstall()
 
         // then
-        verify { mockKeyValueRepository.putString(any(), "1.0.0") }
-        verify { mockKeyValueRepository.putLong(any(), 1L) }
+        verify(exactly = 0) { mockListener.onInstall(any(), any()) }
+        verify(exactly = 0) { mockListener.onUpdate(any(), any(), any()) }
     }
 }
