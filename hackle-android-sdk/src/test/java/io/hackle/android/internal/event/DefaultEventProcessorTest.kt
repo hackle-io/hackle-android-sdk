@@ -1,13 +1,13 @@
 package io.hackle.android.internal.event
 
+import io.hackle.android.internal.application.lifecycle.ApplicationState
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppStateManager
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
@@ -59,7 +59,7 @@ class DefaultEventProcessorTest {
     private lateinit var userManager: UserManager
 
     @RelaxedMockK
-    private lateinit var appStateManager: AppStateManager
+    private lateinit var applicationLifecycleManager: ApplicationLifecycleManager
 
     @RelaxedMockK
     private lateinit var screenManager: ScreenManager
@@ -73,7 +73,7 @@ class DefaultEventProcessorTest {
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
         every { eventDedupDeterminer.isDedupTarget(any()) } returns false
         every { sessionManager.currentSession } returns null
-        every { appStateManager.currentState } returns AppState.FOREGROUND
+        every { applicationLifecycleManager.currentState } returns ApplicationState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
         every { screenManager.currentScreen } returns null
     }
@@ -91,7 +91,7 @@ class DefaultEventProcessorTest {
         eventDispatcher: EventDispatcher = this.eventDispatcher,
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
-        appStateManager: AppStateManager = this.appStateManager,
+        applicationLifecycleManager: ApplicationLifecycleManager = this.applicationLifecycleManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
     ): DefaultEventProcessor {
@@ -107,7 +107,7 @@ class DefaultEventProcessorTest {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager,
+            applicationLifecycleManager = applicationLifecycleManager,
             screenUserEventDecorator = ScreenUserEventDecorator(screenManager),
             eventBackoffController = eventBackoffController
         )
@@ -197,7 +197,7 @@ class DefaultEventProcessorTest {
         val sut = processor()
         val user = HackleUser.of("id")
         val event = event(user = user, timestamp = 42)
-        every { appStateManager.currentState } returns AppState.BACKGROUND
+        every { applicationLifecycleManager.currentState } returns ApplicationState.BACKGROUND
 
         // when
         sut.process(event)
@@ -395,7 +395,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onState(AppState.FOREGROUND, System.currentTimeMillis())
+        sut.onForeground(System.currentTimeMillis(), true)
 
         // then
         verify(exactly = 1) { sut.start() }
@@ -407,7 +407,7 @@ class DefaultEventProcessorTest {
         val sut = spyk(processor())
 
         // when
-        sut.onState(AppState.BACKGROUND, System.currentTimeMillis())
+        sut.onBackground(System.currentTimeMillis())
 
         // then
         verify(exactly = 1) { sut.stop() }

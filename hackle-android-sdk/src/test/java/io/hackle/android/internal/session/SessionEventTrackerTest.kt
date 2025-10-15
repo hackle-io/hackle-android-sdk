@@ -1,8 +1,10 @@
 package io.hackle.android.internal.session
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
+import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -21,8 +23,13 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionStarted`() {
         // given
-        val userManager =
-            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk(), mockk())
+        val userManager = UserManager(
+            MockDevice("device_id", emptyMap()),
+            MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
+            MapKeyValueRepository(),
+            mockk(),
+            mockk()
+        )
         val core = mockk<HackleCore>(relaxed = true)
         val sut = SessionEventTracker(userManager, core)
 
@@ -52,8 +59,13 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionEnded`() {
         // given
-        val userManager =
-            UserManager(MockDevice("device_id", emptyMap()), MapKeyValueRepository(), mockk(), mockk())
+        val userManager = UserManager(
+            MockDevice("device_id", emptyMap()),
+            MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
+            MapKeyValueRepository(),
+            mockk(),
+            mockk()
+        )
         val core = mockk<HackleCore>(relaxed = true)
         val sut = SessionEventTracker(userManager, core)
 

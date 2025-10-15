@@ -2,9 +2,9 @@ package io.hackle.android.internal.engagement
 
 import android.app.Activity
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.lifecycle.Lifecycle
-import io.hackle.android.internal.lifecycle.Lifecycle.*
-import io.hackle.android.internal.lifecycle.LifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.*
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenListener
 import io.hackle.android.internal.screen.ScreenManager
@@ -17,7 +17,7 @@ internal class EngagementManager(
     private val userManager: UserManager,
     private val screenManager: ScreenManager,
     private val minimumEngagementDurationMillis: Long
-) : ApplicationListenerRegistry<EngagementListener>(), ScreenListener, LifecycleListener {
+) : ApplicationListenerRegistry<EngagementListener>(), ScreenListener, ActivityLifecycleListener {
     private val _lastEngagementTime = AtomicReference<Long?>()
     val lastEngagementTime: Long? get() = _lastEngagementTime.get()
 
@@ -56,8 +56,8 @@ internal class EngagementManager(
         endEngagement(screen, timestamp)
     }
 
-    override fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        return when (lifecycle) {
+    override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
+        return when (activityLifecycle) {
             RESUMED -> startEngagement(timestamp)
             PAUSED -> {
                 val screen = screenManager.currentScreen ?: return
