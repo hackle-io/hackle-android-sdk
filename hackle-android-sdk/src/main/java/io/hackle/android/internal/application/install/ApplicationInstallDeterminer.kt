@@ -4,7 +4,11 @@ import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class ApplicationInstallDeterminer {
-    fun determine(previousVersion: PackageVersionInfo?, currentVersion: PackageVersionInfo, isDeviceIdCreated: Boolean): ApplicationInstallState {
+    fun determine(
+        previousVersion: PackageVersionInfo?,
+        currentVersion: PackageVersionInfo,
+        isDeviceIdCreated: Boolean
+    ): ApplicationInstallState {
         return try {
             val state = when {
                 previousVersion == null && isDeviceIdCreated -> ApplicationInstallState.INSTALL

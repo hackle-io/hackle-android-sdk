@@ -27,9 +27,9 @@ internal class ActivityLifecycleManager(
 
     fun publishStateIfNeeded() {
         val currentActivity = currentActivity ?: return
-        if(currentState != ActivityState.ACTIVE) {
+        if (currentState != ActivityState.ACTIVE) {
             return
-        } 
+        }
         // activity가 존재하고 active 상태이면 resume 
         publish(ActivityLifecycle.RESUMED, currentActivity)
     }
@@ -121,7 +121,7 @@ internal class ActivityLifecycleManager(
                 }
             }
         }
-        
+
     }
 
     private fun execute(block: () -> Unit) {

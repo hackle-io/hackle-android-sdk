@@ -1,9 +1,7 @@
 package io.hackle.android.internal.application.install
 
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.platform.PlatformManager
-import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
@@ -13,9 +11,13 @@ internal class ApplicationInstallStateManager(
     private val platformManager: PlatformManager,
     private val applicationInstallDeterminer: ApplicationInstallDeterminer
 ) : ApplicationListenerRegistry<ApplicationInstallStateListener>() {
-    
+
     internal fun checkApplicationInstall() {
-        val state = applicationInstallDeterminer.determine(platformManager.previousVersion, platformManager.currentVersion, platformManager.isDeviceIdCreated)
+        val state = applicationInstallDeterminer.determine(
+            platformManager.previousVersion,
+            platformManager.currentVersion,
+            platformManager.isDeviceIdCreated
+        )
         if (state != ApplicationInstallState.NONE) {
             log.debug { "application($state)" }
             val timestamp = clock.currentMillis()

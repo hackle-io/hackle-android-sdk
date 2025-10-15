@@ -7,7 +7,7 @@ import android.database.Cursor
 import android.net.Uri
 import io.hackle.android.HackleApp
 
-internal class LifecycleProvider: ContentProvider() {
+internal class LifecycleProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         val context = context ?: return false
         val application = context.applicationContext as? Application ?: return false

@@ -48,8 +48,6 @@ import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
-import io.hackle.android.internal.platform.device.Device
-import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
@@ -99,7 +97,6 @@ import io.hackle.sdk.core.internal.metrics.Metrics
 import io.hackle.sdk.core.internal.scheduler.Schedulers
 import io.hackle.sdk.core.internal.time.Clock
 import okhttp3.OkHttpClient
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -119,7 +116,7 @@ internal object HackleApps {
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
         val keyValueRepositoryBySdkKey =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
-        
+
         val platformManager = PlatformManager(context, globalKeyValueRepository)
         val applicationInstallDeterminer = ApplicationInstallDeterminer()
 
@@ -323,7 +320,7 @@ internal object HackleApps {
             platformManager = platformManager,
             applicationInstallDeterminer = applicationInstallDeterminer
         )
-        
+
         // SessionEventTracker
 
         val sessionEventTracker = SessionEventTracker(
@@ -351,7 +348,7 @@ internal object HackleApps {
         engagementManager.addListener(engagementEventTracker)
 
         // ApplicationEventTracker
-        
+
         val applicationEventTracker = ApplicationEventTracker(
             userManager = userManager,
             core = core
@@ -537,7 +534,7 @@ internal object HackleApps {
         // ApplicationLifecycleListener
 
         applicationLifecycleManager.registerTo(context)
-        
+
         // LifecycleListener
 
         activityLifecycleManager.setExecutor(eventExecutor)
@@ -549,7 +546,6 @@ internal object HackleApps {
         activityLifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
         activityLifecycleManager.registerTo(context)
 
-        
 
         val throttleLimiter = ThrottleLimiter(
             intervalMillis = 60 * 1000,

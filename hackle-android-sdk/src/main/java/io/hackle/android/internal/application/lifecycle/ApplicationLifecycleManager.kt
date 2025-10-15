@@ -25,7 +25,7 @@ internal class ApplicationLifecycleManager(
 
     fun publishStateIfNeeded() {
         val state = _currentState ?: return
-        
+
         execute {
             log.debug { "application($state)" }
             val timestamp = clock.currentMillis()
