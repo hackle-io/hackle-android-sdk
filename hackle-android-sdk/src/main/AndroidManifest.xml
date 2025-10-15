@@ -25,6 +25,11 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </receiver>
+        
+        <provider
+            android:name=".provider.LifecycleProvider"
+            android:authorities="${applicationId}.HackleLifecycleContentProvider"
+            android:exported="false" />
     </application>
 
 </manifest>

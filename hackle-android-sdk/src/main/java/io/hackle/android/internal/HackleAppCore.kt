@@ -1,9 +1,10 @@
 package io.hackle.android.internal
 
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
-import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.pii.PIIProperty
@@ -51,6 +52,7 @@ internal class HackleAppCore(
     private val notificationManager: NotificationManager,
     private val fetchThrottler: Throttler,
     private val device: Device,
+    private val applicationInstallStateManager: ApplicationInstallStateManager,
     private val userExplorer: HackleUserExplorer,
 ) : Closeable {
 
@@ -69,6 +71,7 @@ internal class HackleAppCore(
                 eventProcessor.initialize()
                 synchronizer.sync()
                 notificationManager.flush()
+                applicationInstallStateManager.checkApplicationInstall()
                 log.debug { "HackleApp initialized" }
             } catch (e: Throwable) {
                 log.error { "Failed to initialize HackleApp: $e" }

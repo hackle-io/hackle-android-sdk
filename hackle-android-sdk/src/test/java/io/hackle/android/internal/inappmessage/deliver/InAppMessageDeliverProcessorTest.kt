@@ -8,8 +8,8 @@ import io.hackle.android.internal.inappmessage.evaluation.InAppMessageLayoutReso
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType.TRIGGERED
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.ActivityState
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityState
 import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.support.InAppMessages

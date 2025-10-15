@@ -1,11 +1,9 @@
-package io.hackle.android.internal.model
+package io.hackle.android.internal.platform.device
 
 import android.content.Context
-import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.platform.AndroidPlatform
-import io.hackle.android.internal.platform.Platform
+import android.os.Build
 import java.util.Locale
-import java.util.UUID
+import java.util.TimeZone
 
 internal interface Device {
 
@@ -14,13 +12,25 @@ internal interface Device {
 
     companion object {
 
-        private const val ID_KEY = "device_id"
+        fun create(context: Context, deviceId: String): Device {
+            val displayMetrics = DeviceHelper.getDisplayMetrics(context)
 
-        fun create(context: Context, keyValueRepository: KeyValueRepository): Device {
-            val deviceId = keyValueRepository.getString(ID_KEY) { UUID.randomUUID().toString() }
             return DeviceImpl(
                 id = deviceId,
-                platform = AndroidPlatform(context),
+                deviceInfo = DeviceInfo(
+                    osName = "Android",
+                    osVersion = Build.VERSION.RELEASE,
+                    model = Build.MODEL,
+                    type = DeviceHelper.getDeviceType(context),
+                    brand = Build.BRAND,
+                    manufacturer = Build.MANUFACTURER,
+                    locale = DeviceHelper.getDeviceLocale(),
+                    timezone = TimeZone.getDefault(),
+                    screenInfo = DeviceInfo.ScreenInfo(
+                        width = displayMetrics.widthPixels,
+                        height = displayMetrics.heightPixels
+                    )
+                )
             )
         }
     }
@@ -28,18 +38,13 @@ internal interface Device {
 
 internal data class DeviceImpl(
     override val id: String,
-    val platform: Platform,
+    private val deviceInfo: DeviceInfo
 ) : Device {
 
     override val properties: Map<String, Any>
         get() {
-            val packageInfo = platform.getPackageInfo()
-            val deviceInfo = platform.getCurrentDeviceInfo()
             return mapOf(
                 "platform" to "Android",
-                "packageName" to packageInfo.packageName,
-                "versionName" to packageInfo.versionName,
-                "versionCode" to packageInfo.versionCode,
                 "osName" to deviceInfo.osName,
                 "osVersion" to deviceInfo.osVersion,
                 "deviceModel" to deviceInfo.model,
