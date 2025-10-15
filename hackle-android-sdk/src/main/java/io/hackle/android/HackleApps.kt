@@ -60,6 +60,7 @@ import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.session.SessionUserEventDecorator
 import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
@@ -179,6 +180,8 @@ internal object HackleApps {
         )
         userManager.addListener(sessionManager)
 
+        val sessionUserDecorator = SessionUserDecorator(sessionManager)
+
         // ScreenManager
 
         val screenManager = ScreenManager(
@@ -263,7 +266,7 @@ internal object HackleApps {
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
         eventProcessor.addFilter(dedupUserEventFilter)
 
-        val sessionUserEventDecorator = SessionUserEventDecorator(sessionManager)
+        val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
 
         if (config.mode == HackleAppMode.WEB_VIEW_WRAPPER) {
@@ -425,6 +428,7 @@ internal object HackleApps {
             activityProvider = activityLifecycleManager,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
+            sessionUserDecorator = sessionUserDecorator,
             identifierChecker = inAppMessageIdentifierChecker,
             layoutResolver = inAppMessageLayoutResolver,
             evaluateProcessor = inAppMessageEvaluateProcessor,

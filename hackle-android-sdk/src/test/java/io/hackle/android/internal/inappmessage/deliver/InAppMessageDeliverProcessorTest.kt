@@ -10,11 +10,13 @@ import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRespon
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType.TRIGGERED
 import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityState
+import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.support.InAppMessages
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
 import io.hackle.sdk.core.workspace.Workspace
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
 import io.mockk.MockKAnnotations
@@ -22,6 +24,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -37,6 +40,9 @@ class InAppMessageDeliverProcessorTest {
 
     @MockK
     private lateinit var userManager: UserManager
+
+    @MockK
+    private lateinit var sessionUserDecorator: SessionUserDecorator
 
     @MockK
     private lateinit var identifierChecker: InAppMessageIdentifierChecker
@@ -56,6 +62,9 @@ class InAppMessageDeliverProcessorTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
+        every { sessionUserDecorator.decorate(any()) } answers {
+            firstArg<HackleUser>().toBuilder().identifier(IdentifierType.SESSION, "session").build()
+        }
     }
 
     @Test
@@ -201,6 +210,13 @@ class InAppMessageDeliverProcessorTest {
 
         // then
         expectThat(actual) isEqualTo InAppMessageDeliverResponse.of(request, Code.PRESENT, presentResponse)
+        verify {
+            presentProcessor.process(withArg {
+                expectThat(it) {
+                    get { user.sessionId } isEqualTo "session"
+                }
+            })
+        }
     }
 
     @Test
