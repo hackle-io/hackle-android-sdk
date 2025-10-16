@@ -40,15 +40,18 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
-import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.internal.application.ApplicationEventTracker
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
-import io.hackle.android.internal.model.Device
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
 import io.hackle.android.internal.push.token.PushTokenManager
@@ -57,6 +60,7 @@ import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
+import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.session.SessionUserEventDecorator
 import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
@@ -113,14 +117,16 @@ internal object HackleApps {
         val globalKeyValueRepository = AndroidKeyValueRepository.create(context, PREFERENCES_NAME)
         val keyValueRepositoryBySdkKey =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_$sdkKey")
-        val device = Device.create(context, globalKeyValueRepository)
+
+        val platformManager = PlatformManager(context, globalKeyValueRepository)
+        val applicationInstallDeterminer = ApplicationInstallDeterminer()
 
         val httpClient = createHttpClient(context, sdk)
 
-        // Lifecycle, AppState
+        // Lifecycle
 
-        val lifecycleManager = LifecycleManager.instance
-        val appStateManager = AppStateManager.instance
+        val activityLifecycleManager = ActivityLifecycleManager.instance
+        val applicationLifecycleManager = ApplicationLifecycleManager.instance
 
         // Synchronizer
 
@@ -157,7 +163,8 @@ internal object HackleApps {
         val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
         val targetEventFetcher = UserTargetEventFetcher(config.sdkUri, httpClient)
         val userManager = UserManager(
-            device = device,
+            device = platformManager.device,
+            packageInfo = platformManager.packageInfo,
             repository = keyValueRepositoryBySdkKey,
             cohortFetcher = cohortFetcher,
             targetEventFetcher = targetEventFetcher
@@ -173,11 +180,13 @@ internal object HackleApps {
         )
         userManager.addListener(sessionManager)
 
+        val sessionUserDecorator = SessionUserDecorator(sessionManager)
+
         // ScreenManager
 
         val screenManager = ScreenManager(
             userManager = userManager,
-            activityProvider = lifecycleManager
+            activityProvider = activityLifecycleManager
         )
 
         // EngagementManager
@@ -221,7 +230,7 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            appStateManager = appStateManager,
+            applicationLifecycleManager = applicationLifecycleManager,
             screenUserEventDecorator = screenUserEventDecorator,
             eventBackoffController = eventBackoffController
         )
@@ -245,8 +254,8 @@ internal object HackleApps {
             clock
         )
 
-        appStateManager.addListener(rcEventDedupDeterminer)
-        appStateManager.addListener(exposureEventDedupDeterminer)
+        applicationLifecycleManager.addListener(rcEventDedupDeterminer)
+        applicationLifecycleManager.addListener(exposureEventDedupDeterminer)
 
         val eventDedupDeterminer = DelegatingUserEventDedupDeterminer(
             listOf(
@@ -257,7 +266,7 @@ internal object HackleApps {
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
         eventProcessor.addFilter(dedupUserEventFilter)
 
-        val sessionUserEventDecorator = SessionUserEventDecorator(sessionManager)
+        val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
 
         if (config.mode == HackleAppMode.WEB_VIEW_WRAPPER) {
@@ -299,13 +308,21 @@ internal object HackleApps {
             manualOverrideStorages = arrayOf(abOverrideStorage, ffOverrideStorage)
         )
 
-        // AppStateListener
+        // ApplicationLifecycleListener
 
-        appStateManager.setExecutor(eventExecutor)
-        appStateManager.addListener(pollingSynchronizer)
-        appStateManager.addListener(sessionManager)
-        appStateManager.addListener(userManager)
-        appStateManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
+        applicationLifecycleManager.setExecutor(eventExecutor)
+        applicationLifecycleManager.addListener(pollingSynchronizer)
+        applicationLifecycleManager.addListener(sessionManager)
+        applicationLifecycleManager.addListener(userManager)
+        applicationLifecycleManager.addListener(eventProcessor, order = Ordered.LOWEST - 1)
+
+        // ApplicationInstallStateListener
+
+        val applicationInstallStateManager = ApplicationInstallStateManager(
+            clock = clock,
+            platformManager = platformManager,
+            applicationInstallDeterminer = applicationInstallDeterminer
+        )
 
         // SessionEventTracker
 
@@ -332,6 +349,15 @@ internal object HackleApps {
             core = core
         )
         engagementManager.addListener(engagementEventTracker)
+
+        // ApplicationEventTracker
+
+        val applicationEventTracker = ApplicationEventTracker(
+            userManager = userManager,
+            core = core
+        )
+        applicationInstallStateManager.addListener(applicationEventTracker)
+        applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
 
         // InAppMessage
 
@@ -361,7 +387,7 @@ internal object HackleApps {
         )
         val imageLoader = GlideImageLoader()
         val inAppMessageUi = InAppMessageUi.create(
-            activityProvider = lifecycleManager,
+            activityProvider = activityLifecycleManager,
             messageControllerFactory = InAppMessageControllerFactory(InAppMessageViewFactory()),
             scheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
             eventHandler = inAppMessageEventHandler,
@@ -399,9 +425,10 @@ internal object HackleApps {
         )
 
         val inAppMessageDeliverProcessor = InAppMessageDeliverProcessor(
-            activityProvider = lifecycleManager,
+            activityProvider = activityLifecycleManager,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
+            sessionUserDecorator = sessionUserDecorator,
             identifierChecker = inAppMessageIdentifierChecker,
             layoutResolver = inAppMessageLayoutResolver,
             evaluateProcessor = inAppMessageEvaluateProcessor,
@@ -501,22 +528,28 @@ internal object HackleApps {
                 pushTokenManager = pushTokenManager,
                 devToolsApi = devToolsApi,
             ),
-            activityProvider = lifecycleManager
+            activityProvider = activityLifecycleManager
         )
 
         // Metrics
 
-        metricConfiguration(config, appStateManager, eventExecutor, httpExecutor, httpClient)
+        metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
+
+        // ApplicationLifecycleListener
+
+        applicationLifecycleManager.registerTo(context)
 
         // LifecycleListener
 
+        activityLifecycleManager.setExecutor(eventExecutor)
         if (config.automaticScreenTracking) {
-            lifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
+            activityLifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
         }
-        lifecycleManager.addListener(engagementManager, order = Ordered.HIGHEST + 1)
-        lifecycleManager.addListener(inAppMessageUi, order = Ordered.LOWEST)
-        lifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
-        lifecycleManager.registerTo(context)
+        activityLifecycleManager.addListener(engagementManager, order = Ordered.HIGHEST + 1)
+        activityLifecycleManager.addListener(inAppMessageUi, order = Ordered.LOWEST)
+        activityLifecycleManager.addListener(userExplorer, order = Ordered.LOWEST - 1)
+        activityLifecycleManager.registerTo(context)
+
 
         val throttleLimiter = ThrottleLimiter(
             intervalMillis = 60 * 1000,
@@ -540,7 +573,8 @@ internal object HackleApps {
             pushTokenManager = pushTokenManager,
             notificationManager = notificationManager,
             fetchThrottler = fetchThrottler,
-            device = device,
+            device = platformManager.device,
+            applicationInstallStateManager = applicationInstallStateManager,
             userExplorer = userExplorer,
         )
 
@@ -561,7 +595,7 @@ internal object HackleApps {
 
     private fun metricConfiguration(
         config: HackleConfig,
-        appStateManager: AppStateManager,
+        applicationLifecycleManager: ApplicationLifecycleManager,
         eventExecutor: Executor,
         httpExecutor: Executor,
         httpClient: OkHttpClient,
@@ -573,7 +607,7 @@ internal object HackleApps {
             httpClient = httpClient
         )
 
-        appStateManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
+        applicationLifecycleManager.addListener(monitoringMetricRegistry, order = Ordered.LOWEST)
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 

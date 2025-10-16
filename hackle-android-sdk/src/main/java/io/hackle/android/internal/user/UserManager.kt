@@ -1,15 +1,13 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.core.map
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
-import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateListener
-import io.hackle.android.internal.model.Device
+import io.hackle.android.internal.platform.device.Device
+import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.properties.operate
 import io.hackle.android.internal.sync.Synchronizer
 import io.hackle.android.internal.utils.json.parseJson
@@ -24,10 +22,11 @@ import io.hackle.sdk.core.user.IdentifierType
 
 internal class UserManager(
     private val device: Device,
+    private val packageInfo: PackageInfo,
     private val repository: KeyValueRepository,
     private val cohortFetcher: UserCohortFetcher,
     private val targetEventFetcher: UserTargetEventFetcher,
-) : ApplicationListenerRegistry<UserListener>(), Synchronizer, AppStateListener {
+) : ApplicationListenerRegistry<UserListener>(), Synchronizer, ApplicationLifecycleListener {
 
     private val defaultUser = User.builder().deviceId(device.id).build()
     private var context: UserContext = UserContext.of(defaultUser, UserCohorts.empty(), UserTargetEvents.empty())
@@ -77,7 +76,7 @@ internal class UserManager(
     }
     
     private fun hackleProperties(hackleAppContext: HackleAppContext, device: Device): Map<String, Any> {
-        return hackleAppContext.browserProperties + device.properties
+        return hackleAppContext.browserProperties + device.properties + packageInfo.properties
     }
 
     // Sync
@@ -255,11 +254,12 @@ internal class UserManager(
         }
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        return when (state) {
-            FOREGROUND -> Unit
-            BACKGROUND -> saveUser(currentUser)
-        }
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        // nothing to do
+    }
+
+    override fun onBackground(timestamp: Long) {
+        saveUser(currentUser)
     }
 
     data class UserModel(

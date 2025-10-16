@@ -1,4 +1,4 @@
-package io.hackle.android.internal.platform.model
+package io.hackle.android.internal.platform.device
 
 import java.util.Locale
 import java.util.TimeZone
@@ -14,8 +14,7 @@ internal data class DeviceInfo(
     val timezone: TimeZone,
     val screenInfo: ScreenInfo,
 ) {
-
-    data class ScreenInfo(
+    internal data class ScreenInfo(
         val width: Int,
         val height: Int,
     )

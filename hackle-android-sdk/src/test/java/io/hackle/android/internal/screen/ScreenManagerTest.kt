@@ -1,9 +1,9 @@
 package io.hackle.android.internal.screen
 
 import android.app.Activity
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.ActivityState
-import io.hackle.android.internal.lifecycle.Lifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityState
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
@@ -114,17 +114,17 @@ class ScreenManagerTest {
 
     @Test
     fun `onLifecycle - RESUME`() {
-        sut.onLifecycle(Lifecycle.RESUMED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.RESUMED, TestActivity(), 42)
         expectThat(sut.currentScreen).isEqualTo(Screen("TestActivity", "TestActivity"))
     }
 
     @Test
     fun `onLifecycle - do nothing`() {
-        sut.onLifecycle(Lifecycle.PAUSED, TestActivity(), 42)
-        sut.onLifecycle(Lifecycle.CREATED, TestActivity(), 42)
-        sut.onLifecycle(Lifecycle.STOPPED, TestActivity(), 42)
-        sut.onLifecycle(Lifecycle.STARTED, TestActivity(), 42)
-        sut.onLifecycle(Lifecycle.DESTROYED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.PAUSED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.CREATED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.STOPPED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.STARTED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.DESTROYED, TestActivity(), 42)
         expectThat(sut.currentScreen).isNull()
     }
 

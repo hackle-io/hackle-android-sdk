@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.model.AndroidBuild
@@ -24,7 +25,8 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import android.app.Activity
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.common.HacklePushSubscriptionStatus
-import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.ui.notification.NotificationHandler
 import android.content.Context
 import android.content.Intent
@@ -88,6 +90,9 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
+    
+    @RelaxedMockK
+    private lateinit var applicationInstallStateManager: ApplicationInstallStateManager
 
     @RelaxedMockK
     private lateinit var userExplorer: HackleUserExplorer
@@ -122,6 +127,7 @@ class HackleAppTest {
             notificationManager,
             fetchThrottler,
             MockDevice("hackle_device_id", emptyMap()),
+            applicationInstallStateManager,
             userExplorer,
         )
         
@@ -670,6 +676,8 @@ class HackleAppTest {
     @Test
     fun `initialize`() {
         val onReady = mockk<Runnable>(relaxed = true)
+        mockkObject(ApplicationInstallStateManager.Companion)
+
         sut.initialize(null, onReady)
 
         verify(exactly = 1) { userManager.initialize(null) }
@@ -677,16 +685,21 @@ class HackleAppTest {
         verify(exactly = 1) { eventProcessor.initialize() }
         verify(exactly = 1) { synchronizer.sync() }
         verify(exactly = 1) { onReady.run() }
+
+        unmockkObject(ApplicationInstallStateManager.Companion)
     }
 
     @Test
     fun `initialize - run onReady even if failed to initialize`() {
         every { synchronizer.sync() } throws IllegalArgumentException()
+        mockkObject(ApplicationInstallStateManager.Companion)
 
         val onReady = mockk<Runnable>(relaxed = true)
         sut.initialize(null, onReady)
 
         verify(exactly = 1) { onReady.run() }
+
+        unmockkObject(ApplicationInstallStateManager.Companion)
     }
 
     @Test
@@ -1180,17 +1193,23 @@ class HackleAppCompanionTest {
 
     @Test
     fun `registerActivityLifecycleCallbacks`() {
-        mockkObject(LifecycleManager.Companion)
-        val mockInstance = mockk<LifecycleManager>(relaxed = true)
-        every { LifecycleManager.instance } returns mockInstance
-        val context = mockk<Context>()
+        mockkObject(ApplicationLifecycleManager.Companion)
+        mockkObject(ActivityLifecycleManager.Companion)
+        val mockApplicationLifecycleManager = mockk<ApplicationLifecycleManager>(relaxed = true)
+        val mockActivityLifecycleManager = mockk<ActivityLifecycleManager>(relaxed = true)
+        every { ApplicationLifecycleManager.instance } returns mockApplicationLifecycleManager
+        every { ActivityLifecycleManager.instance } returns mockActivityLifecycleManager
 
-        HackleApp.registerActivityLifecycleCallbacks(context)
+        val mockContext = mockk<Context>()
+
+        HackleApp.registerActivityLifecycleCallbacks(mockContext)
 
         verify(exactly = 1) {
-            mockInstance.registerTo(context)
+            mockApplicationLifecycleManager.registerTo(mockContext)
+            mockActivityLifecycleManager.registerTo(mockContext)
         }
-        unmockkObject(LifecycleManager.Companion)
+        unmockkObject(ApplicationLifecycleManager.Companion)
+        unmockkObject(ActivityLifecycleManager.Companion)
     }
 
     @Test
