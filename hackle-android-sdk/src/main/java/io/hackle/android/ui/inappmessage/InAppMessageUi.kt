@@ -3,15 +3,10 @@ package io.hackle.android.ui.inappmessage
 import android.app.Activity
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.Lifecycle
-import io.hackle.android.internal.lifecycle.Lifecycle.CREATED
-import io.hackle.android.internal.lifecycle.Lifecycle.DESTROYED
-import io.hackle.android.internal.lifecycle.Lifecycle.PAUSED
-import io.hackle.android.internal.lifecycle.Lifecycle.RESUMED
-import io.hackle.android.internal.lifecycle.Lifecycle.STARTED
-import io.hackle.android.internal.lifecycle.Lifecycle.STOPPED
-import io.hackle.android.internal.lifecycle.LifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.DESTROYED
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
@@ -37,7 +32,7 @@ internal class InAppMessageUi(
     val scheduler: Scheduler,
     val eventHandler: InAppMessageEventHandler,
     val imageLoader: ImageLoader,
-) : InAppMessagePresenter, LifecycleListener {
+) : InAppMessagePresenter, ActivityLifecycleListener {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()
     val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
@@ -95,11 +90,11 @@ internal class InAppMessageUi(
     }
 
     override fun onLifecycle(
-        lifecycle: Lifecycle,
+        activityLifecycle: ActivityLifecycle,
         activity: Activity,
         timestamp: Long
     ) {
-        if (lifecycle != DESTROYED) {
+        if (activityLifecycle != DESTROYED) {
             return
         }
         val controller = currentMessageController ?: return

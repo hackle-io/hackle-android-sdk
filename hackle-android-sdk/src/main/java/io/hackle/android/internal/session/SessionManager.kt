@@ -1,11 +1,8 @@
 package io.hackle.android.internal.session
 
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.lifecycle.AppState
-import io.hackle.android.internal.lifecycle.AppState.BACKGROUND
-import io.hackle.android.internal.lifecycle.AppState.FOREGROUND
-import io.hackle.android.internal.lifecycle.AppStateListener
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
@@ -15,7 +12,7 @@ internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
     private val sessionTimeoutMillis: Long,
-) : ApplicationListenerRegistry<SessionListener>(), AppStateListener, UserListener {
+) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
 
@@ -100,19 +97,13 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
-    override fun onState(state: AppState, timestamp: Long) {
-        return when (state) {
-            FOREGROUND -> {
-                startNewSessionIfNeeded(userManager.currentUser, timestamp)
-                Unit
-            }
+    override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
+        startNewSessionIfNeeded(userManager.currentUser, timestamp)
+    }
 
-            BACKGROUND -> {
-                updateLastEventTime(timestamp)
-                currentSession?.let { saveSession(it) }
-                Unit
-            }
-        }
+    override fun onBackground(timestamp: Long) {
+        updateLastEventTime(timestamp)
+        currentSession?.let { saveSession(it) }
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
