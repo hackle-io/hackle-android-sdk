@@ -8,10 +8,10 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.lifecycle.AppStateManager
-import io.hackle.android.internal.lifecycle.LifecycleManager
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
@@ -62,7 +62,7 @@ class HackleApp internal constructor(
 
     /**
      * Shows the user explorer UI button.
-     * 
+     *
      * This is typically used for debugging purposes to view the current user's state.
      */
     fun showUserExplorer() {
@@ -322,15 +322,15 @@ class HackleApp internal constructor(
     fun setInAppMessageListener(listener: HackleInAppMessageListener?) {
         InAppMessageUi.instance.setListener(listener)
     }
-    
+
     /**
      * Sets whether the back button should dismiss the in-app message view.
-     * 
-     * When enabled (default), pressing the device's back button will close 
-     * the currently displayed in-app message. When disabled, back button 
+     *
+     * When enabled (default), pressing the device's back button will close
+     * the currently displayed in-app message. When disabled, back button
      * presses will be ignored by the in-app message view.
-     * 
-     * @param isDismisses true if the back button should dismiss the in-app message, 
+     *
+     * @param isDismisses true if the back button should dismiss the in-app message,
      *                    false otherwise. Default is true.
      */
     fun setBackButtonDismissesInAppMessageView(isDismisses: Boolean) {
@@ -496,7 +496,8 @@ class HackleApp internal constructor(
          */
         @JvmStatic
         fun registerActivityLifecycleCallbacks(context: Context) {
-            LifecycleManager.instance.registerTo(context)
+            ApplicationLifecycleManager.instance.registerTo(context)
+            ActivityLifecycleManager.instance.registerTo(context)
         }
 
         /**
@@ -594,7 +595,10 @@ class HackleApp internal constructor(
                     ?: HackleApps
                         .create(context.applicationContext, sdkKey, config)
                         .initialize(user, onReady)
-                        .also { AppStateManager.instance.publishStateIfNeeded() }
+                        .also {
+                            ApplicationLifecycleManager.instance.publishStateIfNeeded()
+                            ActivityLifecycleManager.instance.publishStateIfNeeded()
+                        }
                         .also { INSTANCE = it }
             }
         }

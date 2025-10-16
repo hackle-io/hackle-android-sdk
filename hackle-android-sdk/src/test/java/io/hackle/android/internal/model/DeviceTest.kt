@@ -1,11 +1,12 @@
 package io.hackle.android.internal.model
 
-import io.hackle.android.internal.platform.model.DeviceInfo
-import io.hackle.android.internal.platform.model.PackageInfo
-import io.hackle.android.mock.MockPlatform
+import io.hackle.android.internal.platform.device.DeviceImpl
+import io.hackle.android.internal.platform.device.DeviceInfo
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
+import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 class DeviceTest {
@@ -13,17 +14,13 @@ class DeviceTest {
     @Test
     fun `create device with static compare`() {
         val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
+        val deviceInfo = createTestDeviceInfo()
         val device = DeviceImpl(
             id = deviceId,
-            platform = platform,
+            deviceInfo = deviceInfo,
         )
         assertThat(device.id, `is`(deviceId))
         assertThat(device.properties["platform"], `is`("Android"))
-
-        assertThat(device.properties["packageName"], `is`("io.hackle.app"))
-        assertThat(device.properties["versionName"], `is`("1.1.1"))
-        assertThat(device.properties["versionCode"], `is`(10101L))
 
         assertThat(device.properties["osName"], `is`("DummyOS"))
         assertThat(device.properties["osVersion"], `is`("1.0.0"))
@@ -42,20 +39,13 @@ class DeviceTest {
     @Test
     fun `create device with normal case`() {
         val deviceId = UUID.randomUUID().toString()
-        val platform = MockPlatform()
+        val deviceInfo = createTestDeviceInfo()
         val device = DeviceImpl(
             id = deviceId,
-            platform = platform,
+            deviceInfo = deviceInfo,
         )
         assertThat(device.id, `is`(deviceId))
-        assertPackageProperties(device.properties, platform.getPackageInfo())
-        assertDeviceProperties(device.properties, platform.getCurrentDeviceInfo())
-    }
-
-    private fun assertPackageProperties(properties: Map<String, Any>, packageInfo: PackageInfo) {
-        assertThat(properties["packageName"], `is`(packageInfo.packageName))
-        assertThat(properties["versionName"], `is`(packageInfo.versionName))
-        assertThat(properties["versionCode"], `is`(packageInfo.versionCode))
+        assertDeviceProperties(device.properties, deviceInfo)
     }
 
     private fun assertDeviceProperties(properties: Map<String, Any>, deviceInfo: DeviceInfo) {
@@ -72,5 +62,20 @@ class DeviceTest {
         assertThat(properties["screenWidth"], `is`(deviceInfo.screenInfo.width))
         assertThat(properties["screenHeight"], `is`(deviceInfo.screenInfo.height))
         assertThat(properties["isApp"], `is`(true))
+    }
+
+
+    private fun createTestDeviceInfo(): DeviceInfo {
+        return DeviceInfo(
+            osName = "DummyOS",
+            osVersion = "1.0.0",
+            model = "hackle-123a",
+            type = "phone",
+            brand = "hackle",
+            manufacturer = "hackle manufacture",
+            locale = Locale("ko", "KR"),
+            timezone = TimeZone.getTimeZone("Asia/Seoul"),
+            screenInfo = DeviceInfo.ScreenInfo(1080, 1920)
+        )
     }
 }

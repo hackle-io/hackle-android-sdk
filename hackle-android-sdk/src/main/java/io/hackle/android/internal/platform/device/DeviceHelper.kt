@@ -1,4 +1,4 @@
-package io.hackle.android.internal.platform.helper
+package io.hackle.android.internal.platform.device
 
 import android.app.UiModeManager
 import android.content.Context

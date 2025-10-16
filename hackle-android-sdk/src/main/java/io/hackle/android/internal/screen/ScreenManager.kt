@@ -2,10 +2,10 @@ package io.hackle.android.internal.screen
 
 import android.app.Activity
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.lifecycle.ActivityProvider
-import io.hackle.android.internal.lifecycle.Lifecycle
-import io.hackle.android.internal.lifecycle.Lifecycle.*
-import io.hackle.android.internal.lifecycle.LifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.*
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Screen
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference
 internal class ScreenManager(
     private val userManager: UserManager,
     private val activityProvider: ActivityProvider,
-) : ApplicationListenerRegistry<ScreenListener>(), LifecycleListener {
+) : ApplicationListenerRegistry<ScreenListener>(), ActivityLifecycleListener {
 
     private val _currentScreen = AtomicReference<Screen?>()
     val currentScreen: Screen? get() = _currentScreen.get()
@@ -68,8 +68,8 @@ internal class ScreenManager(
         }
     }
 
-    override fun onLifecycle(lifecycle: Lifecycle, activity: Activity, timestamp: Long) {
-        return when (lifecycle) {
+    override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
+        return when (activityLifecycle) {
             RESUMED -> updateScreen(Screen.from(activity), timestamp)
             PAUSED, CREATED, STARTED, STOPPED, DESTROYED -> Unit
         }
