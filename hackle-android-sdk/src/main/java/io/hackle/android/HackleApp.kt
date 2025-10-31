@@ -290,6 +290,7 @@ class HackleApp internal constructor(
      * Injects the supplied Java object into this WebView.
      *
      * @param webView  Target [WebView]. MUST NOT be null
+     * @param webViewConfig the [HackleWebViewConfig] that contains WebView configuration
      */
     @SuppressLint("UseRequiresApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)

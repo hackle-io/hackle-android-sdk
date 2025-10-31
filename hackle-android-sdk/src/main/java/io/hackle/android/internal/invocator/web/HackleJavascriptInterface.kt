@@ -29,7 +29,7 @@ internal class HackleJavascriptInterface(
     fun getAppMode(): String {
         return mode.name
     }
-    
+
     @JavascriptInterface
     fun getWebViewConfig(): String {
         return gson.toJson(webViewConfig)
