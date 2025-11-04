@@ -1,9 +1,9 @@
 package io.hackle.android.internal.invocator.web
 
 import android.webkit.JavascriptInterface
-import com.google.gson.Gson
 import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.model.Sdk
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.HackleInvocator
 import io.hackle.sdk.common.HackleWebViewConfig
 
@@ -13,8 +13,6 @@ internal class HackleJavascriptInterface(
     private val mode: HackleAppMode,
     private val webViewConfig: HackleWebViewConfig
 ) {
-    internal val gson = Gson()
-
     @JavascriptInterface
     fun getAppSdkKey(): String {
         return sdk.key
@@ -32,7 +30,7 @@ internal class HackleJavascriptInterface(
 
     @JavascriptInterface
     fun getWebViewConfig(): String {
-        return gson.toJson(webViewConfig)
+        return webViewConfig.toJson()
     }
 
     @JavascriptInterface

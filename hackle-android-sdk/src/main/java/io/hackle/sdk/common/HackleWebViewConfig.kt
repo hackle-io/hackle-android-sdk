@@ -3,7 +3,7 @@ package io.hackle.sdk.common
 /**
  * Configuration class for WebView bridge settings.
  */
-data class HackleWebViewConfig(
+data class HackleWebViewConfig private constructor(
     /**
      * Whether automatic screen tracking is enabled for WebView.
      */
