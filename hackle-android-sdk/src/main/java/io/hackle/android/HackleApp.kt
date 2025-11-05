@@ -290,10 +290,11 @@ class HackleApp internal constructor(
      * Injects the supplied Java object into this WebView.
      *
      * @param webView  Target [WebView]. MUST NOT be null
+     * @param webViewConfig the [HackleWebViewConfig] that contains WebView configuration
      */
     @SuppressLint("UseRequiresApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    fun setWebViewBridge(webView: WebView) {
+    fun setWebViewBridge(webView: WebView, webViewConfig: HackleWebViewConfig = HackleWebViewConfig.DEFAULT) {
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
@@ -301,7 +302,7 @@ class HackleApp internal constructor(
             )
         }
         val invocator = invocator()
-        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode)
+        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode, webViewConfig)
         webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
     }
 
