@@ -3,14 +3,16 @@ package io.hackle.android.internal.invocator.web
 import android.webkit.JavascriptInterface
 import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.model.Sdk
+import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.HackleInvocator
+import io.hackle.sdk.common.HackleWebViewConfig
 
 internal class HackleJavascriptInterface(
     private val invocator: HackleInvocator,
     private val sdk: Sdk,
-    private val mode: HackleAppMode
+    private val mode: HackleAppMode,
+    private val webViewConfig: HackleWebViewConfig
 ) {
-
     @JavascriptInterface
     fun getAppSdkKey(): String {
         return sdk.key
@@ -24,6 +26,11 @@ internal class HackleJavascriptInterface(
     @JavascriptInterface
     fun getAppMode(): String {
         return mode.name
+    }
+
+    @JavascriptInterface
+    fun getWebViewConfig(): String {
+        return webViewConfig.toJson()
     }
 
     @JavascriptInterface
