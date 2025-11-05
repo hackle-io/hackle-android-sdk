@@ -6,7 +6,6 @@ import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.*
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
-import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
@@ -76,6 +75,6 @@ internal class ScreenManager(
     }
 
     companion object {
-        private val log = Logger<SessionManager>()
+        private val log = Logger<ScreenManager>()
     }
 }
