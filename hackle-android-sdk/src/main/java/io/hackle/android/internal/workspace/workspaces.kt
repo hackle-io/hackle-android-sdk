@@ -194,6 +194,17 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
 
         else -> return null
     }
+    val timetable = when (timetable?.type) {
+        "ALL" -> InAppMessage.Timetable.All
+        "CUSTOM" -> InAppMessage.Timetable.Custom(
+            slots = timetable.slots.map { InAppMessage.TimetableSlot(
+                dayOfWeek = DayOfWeek.valueOf(it.dayOfWeek),
+                startMillisInclusive = it.startMillisInclusive,
+                endMillisExclusive = it.endMillisExclusive
+            ) }
+        )
+        else -> InAppMessage.Timetable.All
+    }
     val messageContext = messageContext.toMessageContextOrNull() ?: return null
 
     val eventTriggerRules = eventTriggerRules.map { it.toTriggerRule() }
@@ -205,6 +216,7 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
         id = id,
         key = key,
         period = period,
+        timetable = timetable,
         status = status,
         eventTrigger = InAppMessage.EventTrigger(
             rules = eventTriggerRules,
