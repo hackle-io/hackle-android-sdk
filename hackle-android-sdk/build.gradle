@@ -74,6 +74,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation "io.mockk:mockk:1.12.0"
     testImplementation 'io.strikt:strikt-core:0.32.0'
+    testImplementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
@@ -196,3 +197,6 @@ dokkaHtml.configure {
         }
     }
 }
+
+// Apply external gradle scripts for better organization
+apply from: 'gradle/data-class-tests.gradle'
