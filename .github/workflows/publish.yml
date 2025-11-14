@@ -44,6 +44,32 @@ jobs:
             echo "sdk_version matches release.name"
           fi
 
+      - name: Verify no SNAPSHOT in 'implementation' or 'api' dependencies
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          echo "Checking for SNAPSHOT versions in critical dependencies (implementation, api, etc.)..."
+
+          BUILD_FILES=$(find ${{ github.workspace }} -name "build.gradle" -o -name "build.gradle.kts")
+
+          if [ -z "$BUILD_FILES" ]; then
+            echo "No build files found. Check project files."
+            exit 1
+          fi
+
+          PROBLEM_FILES=$(echo "$BUILD_FILES" | xargs grep -E '^\s*(implementation|api|compileOnly|runtimeOnly)\s+' | grep -l "SNAPSHOT")
+
+          if [ -n "$PROBLEM_FILES" ]; then
+            echo "================================================================"
+            echo "Error: SNAPSHOT version found in production dependency!"
+            echo "Release builds must not contain SNAPSHOTs in 'implementation', 'api', etc."
+            echo "Files and lines containing SNAPSHOT dependencies:"
+            echo "$PROBLEM_FILES" | xargs grep -nE '^\s*(implementation|api|compileOnly|runtimeOnly)\s+.*SNAPSHOT.*'
+            echo "================================================================"
+            exit 1
+          else
+            echo "No SNAPSHOT versions found in critical dependencies. Verification passed."
+          fi
+
       - name: Publish
         run: gradle :hackle-android-sdk:clean :hackle-android-sdk:build publishToSonatype closeAndReleaseSonatypeStagingRepository --info --configure-on-demand
         env:
