@@ -12,6 +12,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+          distribution: 'temurin'
+
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
@@ -27,19 +29,20 @@ jobs:
           JAVA_TOOL_OPTIONS: "-Dfile.encoding=UTF-8 -Djava.awt.headless=true"
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
         with:
-          name: Test Results
-          path: '**/build/test-results/testDebugUnitTest/TEST-*.xml'
-          reporter: java-junit
-          fail-on-error: true
-
+          files: '**/build/test-results/testDebugUnitTest/TEST-*.xml'
+          check_name: 'Test Results'
+          comment_title: 'Test Results'
+          comment_mode: changes
 
       - name: Coverage
         id: jacoco
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@v1.7.2
+        if: always()
         with:
           paths: ${{ github.workspace }}/hackle-android-sdk/build/reports/jacoco/coverageReport/coverageReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           title: Coverage
+          update-comment: true
