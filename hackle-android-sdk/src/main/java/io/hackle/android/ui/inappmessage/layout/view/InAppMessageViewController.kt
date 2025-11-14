@@ -51,7 +51,7 @@ internal class InAppMessageViewController(
         }
 
         lifecycle(BEFORE_CLOSE)
-        if(whenActivityDestroy) {
+        if (whenActivityDestroy) {
             closeWithoutViewRemove()
         } else {
             closeWithAnimation()
