@@ -52,16 +52,24 @@ internal class InAppMessageViewController(
 
         lifecycle(BEFORE_CLOSE)
         if(whenActivityDestroy) {
-            handle(InAppMessageEvent.Close)
-            ui.closeCurrent()
-            lifecycle(AFTER_CLOSE)
+            closeWithoutViewRemove()
         } else {
-            startAnimation(view.closeAnimator, completion = {
-                handle(InAppMessageEvent.Close)
-                removeView()
-                lifecycle(AFTER_CLOSE)
-            })
+            closeWithAnimation()
         }
+    }
+
+    private fun closeWithoutViewRemove() {
+        handle(InAppMessageEvent.Close)
+        ui.closeCurrent()
+        lifecycle(AFTER_CLOSE)
+    }
+
+    private fun closeWithAnimation() {
+        startAnimation(view.closeAnimator, completion = {
+            handle(InAppMessageEvent.Close)
+            removeView()
+            lifecycle(AFTER_CLOSE)
+        })
     }
 
     private fun lifecycle(lifecycle: InAppMessageLifecycle) {
