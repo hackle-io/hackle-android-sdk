@@ -196,13 +196,26 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
     }
     val timetable = when (timetable?.type) {
         "ALL" -> InAppMessage.Timetable.All
-        "CUSTOM" -> InAppMessage.Timetable.Custom(
-            slots = timetable.slots.map { InAppMessage.TimetableSlot(
-                dayOfWeek = DayOfWeek.valueOf(it.dayOfWeek),
-                startMillisInclusive = it.startMillisInclusive,
-                endMillisExclusive = it.endMillisExclusive
-            ) }
-        )
+        "CUSTOM" -> {
+            val slots = timetable.slots.mapNotNull { slot ->
+                try {
+                    InAppMessage.TimetableSlot(
+                        dayOfWeek = DayOfWeek.valueOf(slot.dayOfWeek),
+                        startMillisInclusive = slot.startMillisInclusive,
+                        endMillisExclusive = slot.endMillisExclusive
+                    )
+                } catch (_: Exception) {
+                    log.debug { "Invalid dayOfWeek[${slot.dayOfWeek}]. Skipping slot." }
+                    null
+                }
+            }
+            if (slots.isEmpty()) {
+                log.warn { "InAppMessage(id=$id, key=$key) All timetable slots are invalid. Falling back to Timetable.All" }
+                InAppMessage.Timetable.All
+            } else {
+                InAppMessage.Timetable.Custom(slots)
+            }
+        }
         else -> InAppMessage.Timetable.All
     }
     val messageContext = messageContext.toMessageContextOrNull() ?: return null
