@@ -44,23 +44,23 @@ internal class InAppMessageViewController(
         })
     }
 
-    override fun close(withAnimation: Boolean) {
+    override fun close(whenActivityDestroy: Boolean) {
         if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
             return
         }
 
         lifecycle(BEFORE_CLOSE)
-        if (withAnimation) {
+        if(whenActivityDestroy) {
+            handle(InAppMessageEvent.Close)
+            ui.closeCurrent()
+            lifecycle(AFTER_CLOSE)
+        } else {
             startAnimation(view.closeAnimator, completion = {
                 handle(InAppMessageEvent.Close)
                 removeView()
                 lifecycle(AFTER_CLOSE)
             })
-        } else {
-            handle(InAppMessageEvent.Close)
-            removeView()
-            lifecycle(AFTER_CLOSE)
         }
     }
 

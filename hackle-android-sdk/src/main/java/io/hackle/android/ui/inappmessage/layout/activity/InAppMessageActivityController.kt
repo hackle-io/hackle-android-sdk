@@ -41,7 +41,7 @@ internal class InAppMessageActivityController private constructor(
         handle(InAppMessageEvent.Impression)
     }
 
-    override fun close(withAnimation: Boolean) {
+    override fun close(whenActivityDestroy: Boolean) {
         if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
             log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
             return

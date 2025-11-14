@@ -104,7 +104,7 @@ internal class InAppMessageUi(
         }
         runOnUiThread {
             try {
-                controller.close(false)
+                controller.close(true)
             } catch (e: Exception) {
                 log.debug { "Failed to close message on destroyed activity: $e" }
             }
