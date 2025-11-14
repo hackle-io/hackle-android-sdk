@@ -98,8 +98,16 @@ internal class InAppMessageUi(
             return
         }
         val controller = currentMessageController ?: return
-        if (controller.layout.activity == activity) {
-            controller.close(false)
+        val controllerActivity = controller.layout.activity
+        if (controllerActivity != null && controllerActivity != activity) {
+            return
+        }
+        runOnUiThread {
+            try {
+                controller.close(false)
+            } catch (e: Exception) {
+                log.debug { "Failed to close message on destroyed activity: $e" }
+            }
         }
     }
 
