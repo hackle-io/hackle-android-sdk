@@ -1,5 +1,6 @@
 package io.hackle.android.internal.workspace.dto
 
+import io.hackle.sdk.core.model.DayOfWeek
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionType.*
 import io.hackle.sdk.core.model.InAppMessage.Behavior.CLICK
@@ -13,6 +14,7 @@ import io.hackle.sdk.core.model.InAppMessage.Orientation.HORIZONTAL
 import io.hackle.sdk.core.model.InAppMessage.Orientation.VERTICAL
 import io.hackle.sdk.core.model.InAppMessage.PlatformType.ANDROID
 import io.hackle.sdk.core.model.InAppMessage.PlatformType.IOS
+import io.hackle.sdk.core.model.InAppMessage.Timetable
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isA
@@ -33,6 +35,15 @@ internal class InAppMessageDtoTest {
         expectThat(iam.period).isA<InAppMessage.Period.Custom>().and {
             get { startMillisInclusive } isEqualTo 42000
             get { endMillisExclusive } isEqualTo 43000
+        }
+        expectThat(iam.timetable).isA<Timetable.Custom>().and {
+            get { slots.size } isEqualTo 2
+            get { slots[0].dayOfWeek } isEqualTo DayOfWeek.MONDAY
+            get { slots[0].startMillisInclusive } isEqualTo 0
+            get { slots[0].endMillisExclusive } isEqualTo 10
+            get { slots[1].dayOfWeek } isEqualTo DayOfWeek.FRIDAY
+            get { slots[1].startMillisInclusive } isEqualTo 10
+            get { slots[1].endMillisExclusive } isEqualTo 20
         }
 
         expectThat(iam.eventTrigger.frequencyCap!!.identifierCaps.size).isEqualTo(2)
@@ -133,11 +144,107 @@ internal class InAppMessageDtoTest {
     }
 
     @Test
-    fun `inAppMessage unsupported config test`() {
-        val workspace = ResourcesWorkspaceFetcher("iam_invalid.json").fetch()
-        expectThat(workspace.inAppMessages) {
-            get { size } isEqualTo 0
-        }
+    fun `inAppMessage with ALL timetable test`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
 
+        val iam = workspace.getInAppMessageOrNull(2)!!
+
+        expectThat(iam.id).isEqualTo(2)
+        expectThat(iam.key).isEqualTo(2)
+        expectThat(iam.status).isEqualTo(InAppMessage.Status.ACTIVE)
+        expectThat(iam.period).isA<InAppMessage.Period.Always>()
+        expectThat(iam.timetable).isA<Timetable.All>()
+    }
+
+    @Test
+    fun `invalid dayOfWeek should be skipped and keep valid slots`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(4)!!
+
+        expectThat(iam.id).isEqualTo(4)
+        expectThat(iam.timetable).isA<Timetable.Custom>().and {
+            get { slots.size } isEqualTo 2
+            get { slots[0].dayOfWeek } isEqualTo DayOfWeek.MONDAY
+            get { slots[0].startMillisInclusive } isEqualTo 1000
+            get { slots[0].endMillisExclusive } isEqualTo 2000
+            get { slots[1].dayOfWeek } isEqualTo DayOfWeek.FRIDAY
+            get { slots[1].startMillisInclusive } isEqualTo 5000
+            get { slots[1].endMillisExclusive } isEqualTo 6000
+        }
+    }
+
+    @Test
+    fun `all invalid slots should fallback to Timetable All`() {
+        val workspace = ResourcesWorkspaceFetcher("iam_invalid.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(5)!!
+
+        expectThat(iam.id).isEqualTo(5)
+        expectThat(iam.timetable).isA<Timetable.All>()
+    }
+
+    @Test
+    fun `empty slots in CUSTOM timetable should fallback to All`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(6)!!
+
+        expectThat(iam.id).isEqualTo(6)
+        expectThat(iam.timetable).isA<Timetable.All>()
+    }
+
+    @Test
+    fun `null timetable should default to Timetable All`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(7)!!
+
+        expectThat(iam.id).isEqualTo(7)
+        expectThat(iam.timetable).isA<Timetable.All>()
+    }
+
+    @Test
+    fun `unknown timetable type should default to All`() {
+        val workspace = ResourcesWorkspaceFetcher("iam_invalid.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(8)!!
+
+        expectThat(iam.id).isEqualTo(8)
+        expectThat(iam.timetable).isA<Timetable.All>()
+    }
+
+    @Test
+    fun `timetable slot with boundary time values`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(9)!!
+
+        expectThat(iam.id).isEqualTo(9)
+        expectThat(iam.timetable).isA<Timetable.Custom>().and {
+            get { slots.size } isEqualTo 1
+            get { slots[0].dayOfWeek } isEqualTo DayOfWeek.MONDAY
+            get { slots[0].startMillisInclusive } isEqualTo 0
+            get { slots[0].endMillisExclusive } isEqualTo 86400000
+        }
+    }
+
+    @Test
+    fun `timetable with all days of week`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(10)!!
+
+        expectThat(iam.id).isEqualTo(10)
+        expectThat(iam.timetable).isA<Timetable.Custom>().and {
+            get { slots.size } isEqualTo 7
+            get { slots[0].dayOfWeek } isEqualTo DayOfWeek.MONDAY
+            get { slots[1].dayOfWeek } isEqualTo DayOfWeek.TUESDAY
+            get { slots[2].dayOfWeek } isEqualTo DayOfWeek.WEDNESDAY
+            get { slots[3].dayOfWeek } isEqualTo DayOfWeek.THURSDAY
+            get { slots[4].dayOfWeek } isEqualTo DayOfWeek.FRIDAY
+            get { slots[5].dayOfWeek } isEqualTo DayOfWeek.SATURDAY
+            get { slots[6].dayOfWeek } isEqualTo DayOfWeek.SUNDAY
+        }
     }
 }

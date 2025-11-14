@@ -171,6 +171,40 @@ class InAppMessageDeliverProcessorTest {
         expectThat(actual) isEqualTo InAppMessageDeliverResponse.of(request, Code.INELIGIBLE)
     }
 
+    @Test
+    fun `INELIGIBLE when timetable check fails at deliver time`() {
+        // given
+        val request = InAppMessageDeliverRequest.of(InAppMessages.schedule().toRequest(TRIGGERED, 42))
+
+        every { activityProvider.currentState } returns ActivityState.ACTIVE
+
+        val workspace = mockk<Workspace>()
+        every { workspaceFetcher.fetch() } returns workspace
+
+        val inAppMessage = InAppMessages.create(
+            evaluateContext = InAppMessage.EvaluateContext(atDeliverTime = true)
+        )
+        every { workspace.getInAppMessageOrNull(any()) } returns inAppMessage
+
+        every { userManager.resolve(any(), any()) } returns HackleUser.builder().build()
+        every { identifierChecker.isIdentifierChanged(any(), any()) } returns false
+
+        val layoutEvaluation = InAppMessages.layoutEvaluation()
+        every { layoutResolver.resolve(any(), any(), any()) } returns layoutEvaluation
+
+        val eligibilityEvaluation = InAppMessages.eligibilityEvaluation(
+            isEligible = false,
+            reason = DecisionReason.NOT_IN_IN_APP_MESSAGE_TIMETABLE
+        )
+        every { evaluateProcessor.process(InAppMessageEvaluateType.DELIVER, any()) } returns eligibilityEvaluation
+
+        // when
+        val actual = sut.process(request)
+
+        // then
+        expectThat(actual) isEqualTo InAppMessageDeliverResponse.of(request, Code.INELIGIBLE)
+    }
+
 
     @Test
     fun `PRESENT`() {
