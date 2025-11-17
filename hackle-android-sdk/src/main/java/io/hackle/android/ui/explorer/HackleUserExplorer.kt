@@ -69,7 +69,9 @@ internal class HackleUserExplorer(
     override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
         if (activityLifecycle == ActivityLifecycle.RESUMED) {
             if (isShow) {
-                attach(activity)
+                runOnUiThread {
+                    attach(activity)
+                }
             }
         }
     }
