@@ -32,9 +32,9 @@ internal interface InAppMessageController {
 
     /**
      * Closes the [InAppMessageLayout].
-     * @param withAnimation Whether to animate the closing process.
+     * @param whenActivityDestroy Close the [InAppMessageLayout] when the activity is destroyed. Default is `false`.
      */
-    fun close(withAnimation: Boolean = true)
+    fun close(whenActivityDestroy: Boolean = false)
 }
 
 internal fun InAppMessageController.handle(event: InAppMessageEvent) {
