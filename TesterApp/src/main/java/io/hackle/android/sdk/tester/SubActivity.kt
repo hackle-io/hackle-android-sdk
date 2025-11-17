@@ -13,8 +13,9 @@ class SubActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sub)
-        findViewById<TextView>(R.id.sdk_status).setOnClickListener {
-            startActivity(Intent(applicationContext, SubActivity::class.java))
+        findViewById<Button>(R.id.second_button).setOnClickListener {
+            startActivity(Intent(applicationContext, MainActivity::class.java))
+            finish()
         }
     }
 }

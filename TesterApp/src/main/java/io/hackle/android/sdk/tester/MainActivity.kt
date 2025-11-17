@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.sdk_status).setOnClickListener {
             startActivity(Intent(this, SubActivity::class.java))
+            finish()
         }
 
         findViewById<Button>(R.id.ab_text_btn).setOnClickListener {
