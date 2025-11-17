@@ -11,6 +11,7 @@ import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
 import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Scheduler
@@ -98,8 +99,17 @@ internal class InAppMessageUi(
             return
         }
         val controller = currentMessageController ?: return
-        if (controller.layout.activity == activity) {
-            controller.close(false)
+        val controllerActivity = controller.layout.activity
+        if (controllerActivity != null && controllerActivity != activity) {
+            return
+        }
+        if (controllerActivity is InAppMessageActivity) {
+            return
+        }
+        try {
+            controller.close(true)
+        } catch (e: Exception) {
+            log.debug { "Failed to close message on destroyed activity: $e" }
         }
     }
 
