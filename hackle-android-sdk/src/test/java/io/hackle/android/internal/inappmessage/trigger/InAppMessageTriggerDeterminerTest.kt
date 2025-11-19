@@ -118,6 +118,41 @@ class InAppMessageTriggerDeterminerTest {
         }
     }
 
+    @Test
+    fun `NOT_IN_IN_APP_MESSAGE_TIMETABLE should skip message and find next eligible one`() {
+        // given
+        determine(
+            decision(isEventMatched = true, isEligible = false, reason = DecisionReason.NOT_IN_IN_APP_MESSAGE_TIMETABLE),
+            decision(isEventMatched = true, isEligible = true, reason = DecisionReason.IN_APP_MESSAGE_TARGET),
+        )
+        val event = UserEvents.track("test")
+
+        // when
+        val actual = sut.determine(event)
+
+        // then
+        expectThat(actual).isNotNull().and {
+            get { this.reason } isEqualTo DecisionReason.IN_APP_MESSAGE_TARGET
+            get { this.event } isEqualTo event
+        }
+    }
+
+    @Test
+    fun `NOT_IN_IN_APP_MESSAGE_TIMETABLE should return null when no eligible message exists`() {
+        // given
+        determine(
+            decision(isEventMatched = true, isEligible = false, reason = DecisionReason.NOT_IN_IN_APP_MESSAGE_TIMETABLE),
+            decision(isEventMatched = true, isEligible = false, reason = DecisionReason.NOT_IN_IN_APP_MESSAGE_PERIOD),
+        )
+        val event = UserEvents.track("test")
+
+        // when
+        val actual = sut.determine(event)
+
+        // then
+        expectThat(actual).isNull()
+    }
+
     private fun determine(vararg decisions: Decision) {
         every { eventMatcher.matches(any(), any(), any()) } returnsMany decisions.map { it.isEventMatched }
         every { evaluateProcessor.process(TRIGGER, any()) } returnsMany decisions.filter { it.isEventMatched }

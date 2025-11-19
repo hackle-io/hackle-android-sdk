@@ -23,6 +23,21 @@
       "endEpochTime": 43,
       "startEpochTimeMillis": 42000,
       "endEpochTimeMillis": 43000,
+      "timetable": {
+        "type": "CUSTOM",
+        "slots": [
+          {
+            "dayOfWeek": "MONDAY",
+            "startMillisInclusive": 0,
+            "endMillisExclusive": 10
+          },
+          {
+            "dayOfWeek": "FRIDAY",
+            "startMillisInclusive": 10,
+            "endMillisExclusive": 20
+          }
+        ]
+      },
       "status": "ACTIVE",
       "eventFrequencyCap": {
         "identifiers": [
@@ -264,6 +279,903 @@
                 }
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "key": 2,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "timetable": {
+        "type": "ALL",
+        "slots": []
+      },
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "in_app_trigger_event",
+          "targets": []
+        }
+      ],
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["IOS", "ANDROID", "WEB"],
+        "exposure": {
+          "type": "AB_TEST",
+          "key": 11
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "variationKey": "A",
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_TEXT",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "AAA",
+                "action": null
+              }
+            ],
+            "text": {
+              "title": {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#0000FF"
+                }
+              },
+              "body": {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#000000"
+                }
+              }
+            },
+            "buttons": [
+              {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              },
+              {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              }
+            ],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [
+              {
+                "alignment": {
+                  "horizontal": "CENTER",
+                  "vertical": "MIDDLE"
+                },
+                "button": {
+                  "text": "close",
+                  "style": {
+                    "textColor": "#000000",
+                    "bgColor": "#FFFFFF",
+                    "borderColor": "#FFFFFF"
+                  },
+                  "action": {
+                    "behavior": "CLICK",
+                    "type": "HIDDEN",
+                    "value": ""
+                  }
+                }
+              }
+            ],
+            "innerButtons": []
+          },
+          {
+            "variationKey": "B",
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_TEXT",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "BBB",
+                "action": null
+              }
+            ],
+            "text": {
+              "title": {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#0000FF"
+                }
+              },
+              "body": {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#000000"
+                }
+              }
+            },
+            "buttons": [
+              {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              },
+              {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              }
+            ],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [
+              {
+                "alignment": {
+                  "horizontal": "CENTER",
+                  "vertical": "MIDDLE"
+                },
+                "button": {
+                  "text": "close",
+                  "style": {
+                    "textColor": "#000000",
+                    "bgColor": "#FFFFFF",
+                    "borderColor": "#FFFFFF"
+                  },
+                  "action": {
+                    "behavior": "CLICK",
+                    "type": "HIDDEN",
+                    "value": ""
+                  }
+                }
+              }
+            ],
+            "innerButtons": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "key": 3,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "in_app_trigger_event",
+          "targets": []
+        }
+      ],
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["IOS", "ANDROID", "WEB"],
+        "exposure": {
+          "type": "AB_TEST",
+          "key": 11
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "variationKey": "A",
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_TEXT",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "AAA",
+                "action": null
+              }
+            ],
+            "text": {
+              "title": {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#0000FF"
+                }
+              },
+              "body": {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#000000"
+                }
+              }
+            },
+            "buttons": [
+              {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              },
+              {
+                "text": "AAA",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              }
+            ],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [
+              {
+                "alignment": {
+                  "horizontal": "CENTER",
+                  "vertical": "MIDDLE"
+                },
+                "button": {
+                  "text": "close",
+                  "style": {
+                    "textColor": "#000000",
+                    "bgColor": "#FFFFFF",
+                    "borderColor": "#FFFFFF"
+                  },
+                  "action": {
+                    "behavior": "CLICK",
+                    "type": "HIDDEN",
+                    "value": ""
+                  }
+                }
+              }
+            ],
+            "innerButtons": []
+          },
+          {
+            "variationKey": "B",
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_TEXT",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "BBB",
+                "action": null
+              }
+            ],
+            "text": {
+              "title": {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#0000FF"
+                }
+              },
+              "body": {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#000000"
+                }
+              }
+            },
+            "buttons": [
+              {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              },
+              {
+                "text": "BBB",
+                "style": {
+                  "textColor": "#000000",
+                  "bgColor": "#FFFFFF",
+                  "borderColor": "#FFFFFF"
+                },
+                "action": {
+                  "behavior": "CLICK",
+                  "type": "CLOSE",
+                  "value": ""
+                }
+              }
+            ],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [
+              {
+                "alignment": {
+                  "horizontal": "CENTER",
+                  "vertical": "MIDDLE"
+                },
+                "button": {
+                  "text": "close",
+                  "style": {
+                    "textColor": "#000000",
+                    "bgColor": "#FFFFFF",
+                    "borderColor": "#FFFFFF"
+                  },
+                  "action": {
+                    "behavior": "CLICK",
+                    "type": "HIDDEN",
+                    "value": ""
+                  }
+                }
+              }
+            ],
+            "innerButtons": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "key": 4,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "timetable": {
+        "type": "CUSTOM",
+        "slots": [
+          {
+            "dayOfWeek": "MONDAY",
+            "startMillisInclusive": 1000,
+            "endMillisExclusive": 2000
+          },
+          {
+            "dayOfWeek": "INVALID_DAY",
+            "startMillisInclusive": 3000,
+            "endMillisExclusive": 4000
+          },
+          {
+            "dayOfWeek": "FRIDAY",
+            "startMillisInclusive": 5000,
+            "endMillisExclusive": 6000
+          }
+        ]
+      },
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "test_event",
+          "targets": []
+        }
+      ],
+      "eventTriggerDelay": {
+        "type": "IMMEDIATE",
+        "afterCondition": null
+      },
+      "evaluateContext": {
+        "atDeliverTime": false
+      },
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["ANDROID"],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_ONLY",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "test.png",
+                "action": null
+              }
+            ],
+            "text": null,
+            "buttons": [],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [],
+            "innerButtons": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "key": 6,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "timetable": {
+        "type": "CUSTOM",
+        "slots": []
+      },
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "test_event",
+          "targets": []
+        }
+      ],
+      "eventTriggerDelay": {
+        "type": "IMMEDIATE",
+        "afterCondition": null
+      },
+      "evaluateContext": {
+        "atDeliverTime": false
+      },
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["ANDROID"],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_ONLY",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "test.png",
+                "action": null
+              }
+            ],
+            "text": null,
+            "buttons": [],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [],
+            "innerButtons": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "key": 7,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "timetable": null,
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "test_event",
+          "targets": []
+        }
+      ],
+      "eventTriggerDelay": {
+        "type": "IMMEDIATE",
+        "afterCondition": null
+      },
+      "evaluateContext": {
+        "atDeliverTime": false
+      },
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["ANDROID"],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_ONLY",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "test.png",
+                "action": null
+              }
+            ],
+            "text": null,
+            "buttons": [],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [],
+            "innerButtons": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "key": 9,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "timetable": {
+        "type": "CUSTOM",
+        "slots": [
+          {
+            "dayOfWeek": "MONDAY",
+            "startMillisInclusive": 0,
+            "endMillisExclusive": 86400000
+          }
+        ]
+      },
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "test_event",
+          "targets": []
+        }
+      ],
+      "eventTriggerDelay": {
+        "type": "IMMEDIATE",
+        "afterCondition": null
+      },
+      "evaluateContext": {
+        "atDeliverTime": false
+      },
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["ANDROID"],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_ONLY",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "test.png",
+                "action": null
+              }
+            ],
+            "text": null,
+            "buttons": [],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [],
+            "innerButtons": []
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "key": 10,
+      "timeUnit": "IMMEDIATE",
+      "startEpochTime": null,
+      "endEpochTime": null,
+      "startEpochTimeMillis": null,
+      "endEpochTimeMillis": null,
+      "timetable": {
+        "type": "CUSTOM",
+        "slots": [
+          {
+            "dayOfWeek": "MONDAY",
+            "startMillisInclusive": 0,
+            "endMillisExclusive": 10000
+          },
+          {
+            "dayOfWeek": "TUESDAY",
+            "startMillisInclusive": 10000,
+            "endMillisExclusive": 20000
+          },
+          {
+            "dayOfWeek": "WEDNESDAY",
+            "startMillisInclusive": 20000,
+            "endMillisExclusive": 30000
+          },
+          {
+            "dayOfWeek": "THURSDAY",
+            "startMillisInclusive": 30000,
+            "endMillisExclusive": 40000
+          },
+          {
+            "dayOfWeek": "FRIDAY",
+            "startMillisInclusive": 40000,
+            "endMillisExclusive": 50000
+          },
+          {
+            "dayOfWeek": "SATURDAY",
+            "startMillisInclusive": 50000,
+            "endMillisExclusive": 60000
+          },
+          {
+            "dayOfWeek": "SUNDAY",
+            "startMillisInclusive": 60000,
+            "endMillisExclusive": 70000
+          }
+        ]
+      },
+      "status": "ACTIVE",
+      "eventFrequencyCap": null,
+      "eventTriggerRules": [
+        {
+          "eventKey": "test_event",
+          "targets": []
+        }
+      ],
+      "eventTriggerDelay": {
+        "type": "IMMEDIATE",
+        "afterCondition": null
+      },
+      "evaluateContext": {
+        "atDeliverTime": false
+      },
+      "targetContext": {
+        "targets": [],
+        "overrides": []
+      },
+      "messageContext": {
+        "defaultLang": "ko",
+        "platformTypes": ["ANDROID"],
+        "exposure": {
+          "type": "DEFAULT",
+          "key": null
+        },
+        "orientations": ["VERTICAL"],
+        "messages": [
+          {
+            "lang": "ko",
+            "layout": {
+              "displayType": "MODAL",
+              "layoutType": "IMAGE_ONLY",
+              "alignment": {
+                "horizontal": "CENTER",
+                "vertical": "MIDDLE"
+              }
+            },
+            "images": [
+              {
+                "orientation": "VERTICAL",
+                "imagePath": "test.png",
+                "action": null
+              }
+            ],
+            "text": null,
+            "buttons": [],
+            "background": {
+              "color": "#FFFFFF"
+            },
+            "closeButton": {
+              "style": {
+                "color": "#000000"
+              },
+              "action": {
+                "behavior": "CLICK",
+                "type": "CLOSE",
+                "value": null
+              }
+            },
+            "outerButtons": [],
+            "innerButtons": []
           }
         ]
       }

@@ -36,7 +36,7 @@ allprojects {
     repositories {
         // NOTE: when use snapshot version, you need to add this repository
         // maven {
-        //     url "https://oss.sonatype.org/content/repositories/snapshots/"
+        //     url "https://central.sonatype.com/repository/maven-snapshots/"
         //     content {
         //         includeGroup "io.hackle"
         //     }
