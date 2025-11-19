@@ -175,6 +175,7 @@ internal data class InAppMessageDto(
     val timeUnit: String,
     val startEpochTimeMillis: Long?,
     val endEpochTimeMillis: Long?,
+    val timetable: TimetableDto?,
     val status: String,
     val eventTriggerRules: List<EventTriggerRuleDto>,
     val eventFrequencyCap: EventFrequencyCapDto?,
@@ -183,6 +184,16 @@ internal data class InAppMessageDto(
     val targetContext: TargetContextDto,
     val messageContext: MessageContextDto,
 ) {
+    data class TimetableDto(
+        val type: String,
+        val slots: List<TimetableSlotDto>,
+    )
+    
+    data class TimetableSlotDto(
+        val dayOfWeek: String,
+        val startMillisInclusive: Long,
+        val endMillisExclusive: Long,
+    )
 
     data class EventTriggerRuleDto(
         val eventKey: String,
