@@ -241,16 +241,11 @@ internal fun InAppMessageDto.TimetableDto.toTimetableOrNull(): InAppMessage.Time
 }
 
 internal fun InAppMessageDto.TimetableSlotDto.toTimetableSlotOrNull(): InAppMessage.TimetableSlot? {
-    return try {
-        InAppMessage.TimetableSlot(
-            dayOfWeek = DayOfWeek.valueOf(dayOfWeek),
-            startMillisInclusive = startMillisInclusive,
-            endMillisExclusive = endMillisExclusive
-        )
-    } catch (_: Exception) {
-        log.debug { "Invalid dayOfWeek[${dayOfWeek}]. Skipping slot." }
-        null
-    }
+    return InAppMessage.TimetableSlot(
+        dayOfWeek = parseEnumOrNull<DayOfWeek>(dayOfWeek) ?: return null,
+        startMillisInclusive = startMillisInclusive,
+        endMillisExclusive = endMillisExclusive
+    )
 }
 
 internal fun InAppMessageDto.EventTriggerRuleDto.toTriggerRule(): InAppMessage.EventTrigger.Rule {
