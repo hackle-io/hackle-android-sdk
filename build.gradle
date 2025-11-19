@@ -35,12 +35,12 @@ nexusPublishing {
 allprojects {
     repositories {
         // NOTE: when use snapshot version, you need to add this repository
-        maven {
-            url "https://central.sonatype.com/repository/maven-snapshots/"
-            content {
-                includeGroup "io.hackle"
-            }
-        }
+        // maven {
+        //     url "https://central.sonatype.com/repository/maven-snapshots/"
+        //     content {
+        //         includeGroup "io.hackle"
+        //     }
+        // }
         mavenCentral()
         google()
     }
