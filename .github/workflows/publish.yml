@@ -56,7 +56,7 @@ jobs:
             exit 1
           fi
 
-          PROBLEM_FILES=$(echo "$BUILD_FILES" | xargs grep -E '^\s*(implementation|api|compileOnly|runtimeOnly)\s+' | grep -l "SNAPSHOT")
+          PROBLEM_FILES=$(echo "$BUILD_FILES" | xargs grep -E '^\s*(implementation|api|compileOnly|runtimeOnly)\s+' | grep -l "SNAPSHOT" || true)
 
           if [ -n "$PROBLEM_FILES" ]; then
             echo "================================================================"
