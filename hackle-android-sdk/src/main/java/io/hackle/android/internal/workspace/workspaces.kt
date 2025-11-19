@@ -194,32 +194,10 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
 
         else -> return null
     }
-    val timetable = when (timetable?.type) {
-        "ALL" -> InAppMessage.Timetable.All
-        "CUSTOM" -> {
-            val slots = timetable.slots.mapNotNull { slot ->
-                try {
-                    InAppMessage.TimetableSlot(
-                        dayOfWeek = DayOfWeek.valueOf(slot.dayOfWeek),
-                        startMillisInclusive = slot.startMillisInclusive,
-                        endMillisExclusive = slot.endMillisExclusive
-                    )
-                } catch (_: Exception) {
-                    log.debug { "Invalid dayOfWeek[${slot.dayOfWeek}]. Skipping slot." }
-                    null
-                }
-            }
-            if (slots.isEmpty()) {
-                log.warn { "InAppMessage(id=$id, key=$key) All timetable slots are invalid. Falling back to Timetable.All" }
-                InAppMessage.Timetable.All
-            } else {
-                InAppMessage.Timetable.Custom(slots)
-            }
-        }
-        else -> InAppMessage.Timetable.All
-    }
+
     val messageContext = messageContext.toMessageContextOrNull() ?: return null
 
+    val timetable = timetable?.toTimetableOrNull() ?: InAppMessage.Timetable.All
     val eventTriggerRules = eventTriggerRules.map { it.toTriggerRule() }
     val eventFrequencyCap = eventFrequencyCap?.toFrequencyCap()
     val eventTriggerDelay = eventTriggerDelay?.let { it.toDelayOrNull() ?: return null }
@@ -242,7 +220,37 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessage? {
         targetContext = targetContext.toTargetContext(),
         messageContext = messageContext
     )
+}
 
+internal fun InAppMessageDto.TimetableDto.toTimetableOrNull(): InAppMessage.Timetable? {
+    return when (type) {
+        "ALL" -> InAppMessage.Timetable.All
+        "CUSTOM" -> {
+            val slots = slots.mapNotNull {
+                it.toTimetableSlotOrNull()
+            }
+            if (slots.isEmpty()) {
+                null
+            } else {
+                InAppMessage.Timetable.Custom(slots)
+            }
+        }
+
+        else -> null
+    }
+}
+
+internal fun InAppMessageDto.TimetableSlotDto.toTimetableSlotOrNull(): InAppMessage.TimetableSlot? {
+    return try {
+        InAppMessage.TimetableSlot(
+            dayOfWeek = DayOfWeek.valueOf(dayOfWeek),
+            startMillisInclusive = startMillisInclusive,
+            endMillisExclusive = endMillisExclusive
+        )
+    } catch (_: Exception) {
+        log.debug { "Invalid dayOfWeek[${dayOfWeek}]. Skipping slot." }
+        null
+    }
 }
 
 internal fun InAppMessageDto.EventTriggerRuleDto.toTriggerRule(): InAppMessage.EventTrigger.Rule {
