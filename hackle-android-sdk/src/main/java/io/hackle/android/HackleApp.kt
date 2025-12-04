@@ -294,6 +294,7 @@ class HackleApp internal constructor(
      */
     @SuppressLint("UseRequiresApi")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @JvmOverloads
     fun setWebViewBridge(webView: WebView, webViewConfig: HackleWebViewConfig = HackleWebViewConfig.DEFAULT) {
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
