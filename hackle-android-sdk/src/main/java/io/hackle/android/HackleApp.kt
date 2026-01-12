@@ -12,6 +12,7 @@ import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleMana
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.fragment.lifecycle.FragmentLifecycleManager
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
@@ -600,6 +601,7 @@ class HackleApp internal constructor(
                         .also {
                             ApplicationLifecycleManager.instance.publishStateIfNeeded()
                             ActivityLifecycleManager.instance.publishStateIfNeeded()
+                            FragmentLifecycleManager.instance.publishStateIfNeeded()
                         }
                         .also { INSTANCE = it }
             }

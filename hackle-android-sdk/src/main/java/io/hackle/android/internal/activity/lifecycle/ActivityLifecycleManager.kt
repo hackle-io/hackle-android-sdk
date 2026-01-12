@@ -4,7 +4,9 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
+import androidx.fragment.app.FragmentActivity
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
+import io.hackle.android.internal.fragment.lifecycle.FragmentLifecycleManager
 import io.hackle.android.ui.HackleActivity
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
@@ -72,6 +74,27 @@ internal class ActivityLifecycleManager(
         }
         resolveCurrentActivity(activityLifecycle, activity)
         publish(activityLifecycle, activity)
+        handleFragmentLifecycle(activityLifecycle, activity)
+    }
+
+    private fun handleFragmentLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity) {
+        when (activityLifecycle) {
+            ActivityLifecycle.CREATED -> {
+                // Activity 생성 시 FragmentManager 등록
+                if (activity is FragmentActivity) {
+                    FragmentLifecycleManager.instance.registerTo(activity.supportFragmentManager)
+                }
+            }
+
+            ActivityLifecycle.DESTROYED -> {
+                // Activity 파괴 시에만 해제 (현재 activity의 FragmentManager인 경우에만)
+                if (activity == currentActivity) {
+                    FragmentLifecycleManager.instance.unregister()
+                }
+            }
+
+            else -> Unit
+        }
     }
 
     private fun resolveCurrentActivity(activityLifecycle: ActivityLifecycle, activity: Activity) {
