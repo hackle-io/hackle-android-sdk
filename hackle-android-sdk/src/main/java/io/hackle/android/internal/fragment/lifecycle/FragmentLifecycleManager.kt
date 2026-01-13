@@ -33,12 +33,11 @@ internal class FragmentLifecycleManager(
         if (currentState != FragmentState.ACTIVE) {
             return
         }
-        // fragment가 존재하고 active 상태이면 resume
+
         publish(FragmentLifecycle.RESUMED, currentFragment)
     }
 
     fun registerTo(fragmentManager: FragmentManager) {
-        // 이전 FragmentManager와 동일하면 중복 등록 방지
         if (this.fragmentManager?.get() == fragmentManager) {
             return
         }

@@ -80,14 +80,18 @@ internal class ActivityLifecycleManager(
     private fun handleFragmentLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity) {
         when (activityLifecycle) {
             ActivityLifecycle.CREATED -> {
-                // Activity 생성 시 FragmentManager 등록
                 if (activity is FragmentActivity) {
                     FragmentLifecycleManager.instance.registerTo(activity.supportFragmentManager)
                 }
             }
 
-            ActivityLifecycle.DESTROYED -> {
-                // Activity 파괴 시에만 해제 (현재 activity의 FragmentManager인 경우에만)
+            ActivityLifecycle.RESUMED -> {
+                if (activity is FragmentActivity) {
+                    FragmentLifecycleManager.instance.registerTo(activity.supportFragmentManager)
+                }
+            }
+
+            ActivityLifecycle.PAUSED -> {
                 if (activity == currentActivity) {
                     FragmentLifecycleManager.instance.unregister()
                 }
