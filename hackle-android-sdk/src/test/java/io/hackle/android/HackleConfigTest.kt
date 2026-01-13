@@ -34,6 +34,7 @@ class HackleConfigTest {
         expectThat(result.pollingIntervalMillis).isEqualTo(-1) // NO_POLLING
         expectThat(result.sessionTracking).isEqualTo(true)
         expectThat(result.automaticScreenTracking).isEqualTo(true)
+        expectThat(result.automaticAppLifecycleTracking).isEqualTo(true)
     }
 
     @Test
@@ -148,6 +149,17 @@ class HackleConfigTest {
             HackleConfig::sessionTracking to false
         ) {
             mode(HackleAppMode.WEB_VIEW_WRAPPER)
+        }
+    }
+
+    @Test
+    fun `automaticAppLifecycleTracking`() {
+        configTests(HackleConfig::automaticAppLifecycleTracking to true)
+        configTests(HackleConfig::automaticAppLifecycleTracking to false) {
+            automaticAppLifecycleTracking(false)
+        }
+        configTests(HackleConfig::automaticAppLifecycleTracking to true) {
+            automaticAppLifecycleTracking(true)
         }
     }
 
