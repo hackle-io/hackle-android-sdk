@@ -8,9 +8,10 @@ import android.app.Activity
  * @property name the name of the screen
  * @property className the class name of the screen
  */
-data class Screen(
+data class Screen private constructor(
     val name: String,
     val className: String,
+    val properties: Map<String, Any>? = null
 ) {
 
     companion object {
@@ -23,6 +24,44 @@ data class Screen(
         internal fun from(activity: Activity): Screen {
             val name = activity::class.java.simpleName
             return Screen(name, name)
+        }
+
+        /**
+         * Creates a Builder instance for creating Screen instances.
+         * 
+         * @param name the name of the screen
+         * @param className the class name of the screen       
+         * @return a [Builder] instance       
+         */
+        @JvmStatic
+        fun builder(name: String, className: String): Builder {
+            return Builder(name, className)
+        }
+    }
+
+    /**
+     * Builder class for creating Screen instances.
+     */
+    class Builder(
+        private val name: String, 
+        private val className: String
+    ) {
+        private var properties: Map<String, Any>? = null
+
+        /**
+         * Sets the properties for the screen.
+         */
+        fun properties(properties: Map<String, Any>?) = apply {
+            this.properties = properties
+        }
+
+        /**
+         * Builds a Screen instance.
+         * 
+         * @return a [Screen] instance
+         */
+        fun build(): Screen {
+            return Screen(name, className, properties)
         }
     }
 }
