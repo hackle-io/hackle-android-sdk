@@ -14,6 +14,19 @@ data class Screen private constructor(
     val properties: Map<String, Any>? = null
 ) {
 
+    /**
+     * Creates a Screen instance.
+     */
+    @Deprecated(
+        message = "Use Screen.builder() instead.",
+        replaceWith = ReplaceWith("Screen.builder(screenName, className).build()"),
+        level = DeprecationLevel.WARNING
+    )
+    constructor(screenName: String, className: String) : this(
+        name = screenName,
+        className = className
+    )
+
     companion object {
         /**
          * Creates a Screen instance from an Activity.
