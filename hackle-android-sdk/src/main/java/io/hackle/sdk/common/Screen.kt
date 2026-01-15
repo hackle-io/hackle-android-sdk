@@ -7,6 +7,7 @@ import android.app.Activity
  *
  * @property name the name of the screen
  * @property className the class name of the screen
+ * @property properties additional metadata for the screen
  */
 data class Screen internal constructor(
     val name: String,
