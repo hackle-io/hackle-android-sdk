@@ -127,11 +127,6 @@ internal class HackleInvocatorImpl(
                 InvokeResponse.success(data)
             }
 
-            SET_CURRENT_SCREEN -> {
-                setCurrentScreen(parameters)
-                InvokeResponse.success()
-            }
-
             SHOW_USER_EXPLORER -> {
                 hackleAppCore.showUserExplorer()
                 InvokeResponse.success()
@@ -280,12 +275,5 @@ internal class HackleInvocatorImpl(
                 throw IllegalArgumentException("Valid parameter must be provided.")
             }
         }
-    }
-
-    private fun setCurrentScreen(parameters: HackleInvokeParameters) {
-        val screenName = checkNotNull(parameters.screenName())
-        val className = checkNotNull(parameters.className())
-
-        hackleAppCore.setCurrentScreen(Screen(screenName, className))
     }
 }
