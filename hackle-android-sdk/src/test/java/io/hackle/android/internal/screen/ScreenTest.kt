@@ -240,5 +240,154 @@ class ScreenTest {
         expectThat(screen.properties).isEqualTo(emptyMap())
     }
 
+    @Test
+    fun `equals - screens with same name and className but different properties are equal`() {
+        // given
+        val screen1 = Screen.builder("Home", "HomeVC")
+            .property("campaign_id", "A")
+            .build()
+
+        val screen2 = Screen.builder("Home", "HomeVC")
+            .property("campaign_id", "B")
+            .build()
+
+        // then - screens are equal (properties don't affect equality)
+        expectThat(screen1).isEqualTo(screen2)
+        expectThat(screen2).isEqualTo(screen1)
+    }
+
+    @Test
+    fun `equals - screens with same name and className have same hashCode regardless of properties`() {
+        // given
+        val screen1 = Screen.builder("Home", "HomeVC")
+            .property("entry_point", "push")
+            .build()
+
+        val screen2 = Screen.builder("Home", "HomeVC")
+            .property("entry_point", "deeplink")
+            .build()
+
+        // then - same hashCode (properties don't affect hashCode)
+        expectThat(screen1.hashCode()).isEqualTo(screen2.hashCode())
+    }
+
+    @Test
+    fun `equals - screens with different name are not equal even with same properties`() {
+        // given
+        val properties = mapOf("key" to "value")
+        val screen1 = Screen.builder("Home", "HomeVC")
+            .properties(properties)
+            .build()
+
+        val screen2 = Screen.builder("Profile", "HomeVC")
+            .properties(properties)
+            .build()
+
+        // then - not equal (different name)
+        expectThat(screen1 == screen2).isEqualTo(false)
+    }
+
+    @Test
+    fun `equals - screens with different className are not equal even with same properties`() {
+        // given
+        val properties = mapOf("key" to "value")
+        val screen1 = Screen.builder("Home", "HomeVC")
+            .properties(properties)
+            .build()
+
+        val screen2 = Screen.builder("Home", "MainVC")
+            .properties(properties)
+            .build()
+
+        // then - not equal (different className)
+        expectThat(screen1 == screen2).isEqualTo(false)
+    }
+
+    @Test
+    fun `equals - duplicate screens with different properties are treated as duplicates in Set`() {
+        // given - same screen with different properties
+        val screen1 = Screen.builder("Home", "HomeVC")
+            .property("campaign_id", "A")
+            .build()
+
+        val screen2 = Screen.builder("Home", "HomeVC")
+            .property("campaign_id", "B")
+            .build()
+
+        val screen3 = Screen.builder("Profile", "ProfileVC")
+            .build()
+
+        // when
+        val screenSet = setOf(screen1, screen2, screen3)
+
+        // then - screen1 and screen2 are considered duplicates, only 2 unique screens
+        expectThat(screenSet.size).isEqualTo(2)
+        expectThat(screenSet.contains(screen1)).isEqualTo(true)
+        expectThat(screenSet.contains(screen2)).isEqualTo(true)
+        expectThat(screenSet.contains(screen3)).isEqualTo(true)
+    }
+
+    @Test
+    fun `equals - screens with same identity but different properties work correctly as Map keys`() {
+        // given
+        val screen1 = Screen.builder("Home", "HomeVC")
+            .property("version", "1.0")
+            .build()
+
+        val screen2 = Screen.builder("Home", "HomeVC")
+            .property("version", "2.0")
+            .build()
+
+        // when
+        val map = mutableMapOf<Screen, String>()
+        map[screen1] = "first"
+        map[screen2] = "second"
+
+        // then - screen2 overwrites screen1 (same key because equals returns true)
+        expectThat(map.size).isEqualTo(1)
+        expectThat(map[screen1]).isEqualTo("second")
+        expectThat(map[screen2]).isEqualTo("second")
+    }
+
+    @Test
+    fun `equals - same screen reference is equal to itself`() {
+        // given
+        val screen = Screen.builder("Home", "HomeVC")
+            .property("key", "value")
+            .build()
+
+        // then
+        expectThat(screen).isEqualTo(screen)
+        expectThat(screen.hashCode()).isEqualTo(screen.hashCode())
+    }
+
+    @Test
+    fun `equals - screen is not equal to null or different type`() {
+        // given
+        val screen = Screen.builder("Home", "HomeVC").build()
+
+        // then
+        expectThat(screen.equals(null)).isEqualTo(false)
+        expectThat(screen.equals("Home")).isEqualTo(false)
+        expectThat(screen.equals(42)).isEqualTo(false)
+    }
+
+    @Test
+    fun `equals - iOS compatibility - same screen with different properties prevents duplicate page view events`() {
+        // given - simulating user entering same home screen from different entry points
+        val homeScreenFromPush = Screen.builder("Home", "HomeVC")
+            .property("entry_point", "push")
+            .build()
+
+        val homeScreenFromDeeplink = Screen.builder("Home", "HomeVC")
+            .property("entry_point", "deeplink")
+            .build()
+
+        // then - these should be considered the same screen
+        // This prevents duplicate $page_view events in ScreenManager
+        expectThat(homeScreenFromPush).isEqualTo(homeScreenFromDeeplink)
+        expectThat(homeScreenFromPush.hashCode()).isEqualTo(homeScreenFromDeeplink.hashCode())
+    }
+
     private class ScreenActivity : Activity()
 }
