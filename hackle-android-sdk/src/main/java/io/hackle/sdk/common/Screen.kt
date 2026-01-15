@@ -36,7 +36,7 @@ data class Screen private constructor(
          */
         internal fun from(activity: Activity): Screen {
             val name = activity::class.java.simpleName
-            return Screen(name, name)
+            return Screen(name, name, null)
         }
 
         /**
