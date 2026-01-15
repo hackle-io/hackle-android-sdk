@@ -8,10 +8,10 @@ import android.app.Activity
  * @property name the name of the screen
  * @property className the class name of the screen
  */
-data class Screen private constructor(
+data class Screen internal constructor(
     val name: String,
     val className: String,
-    val properties: Map<String, Any>? = null
+    val properties: Map<String, Any>
 ) {
 
     /**
@@ -24,7 +24,8 @@ data class Screen private constructor(
     )
     constructor(screenName: String, className: String) : this(
         name = screenName,
-        className = className
+        className = className,
+        properties = emptyMap()
     )
 
     companion object {
@@ -36,7 +37,7 @@ data class Screen private constructor(
          */
         internal fun from(activity: Activity): Screen {
             val name = activity::class.java.simpleName
-            return Screen(name, name, null)
+            return builder(name, name).build()
         }
 
         /**
@@ -59,13 +60,18 @@ data class Screen private constructor(
         private val name: String, 
         private val className: String
     ) {
-        private var properties: Map<String, Any>? = null
+        private var properties = PropertiesBuilder()
 
+        /**
+         * Sets a property for the screen.
+         */
+        fun property(key: String, value: Any?) = apply { this.properties.add(key, value) }
+        
         /**
          * Sets the properties for the screen.
          */
         fun properties(properties: Map<String, Any>?) = apply {
-            this.properties = properties
+            properties?.let { this.properties.add(it) }
         }
 
         /**
@@ -74,7 +80,7 @@ data class Screen private constructor(
          * @return a [Screen] instance
          */
         fun build(): Screen {
-            return Screen(name, className, properties)
+            return Screen(name, className, properties.build())
         }
     }
 }
