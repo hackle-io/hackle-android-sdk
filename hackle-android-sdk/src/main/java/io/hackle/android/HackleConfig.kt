@@ -45,6 +45,11 @@ class HackleConfig private constructor(builder: Builder) {
     val automaticScreenTracking: Boolean = builder.automaticScreenTracking
 
     /**
+     * Whether automatic app lifecycle tracking is enabled.
+     */
+    val automaticAppLifecycleTracking: Boolean = builder.automaticAppLifecycleTracking
+
+    /**
      * Whether session tracking is enabled.
      */
     val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
@@ -92,6 +97,7 @@ class HackleConfig private constructor(builder: Builder) {
         internal var mode: HackleAppMode = HackleAppMode.NATIVE
 
         internal var automaticScreenTracking: Boolean = true
+        internal var automaticAppLifecycleTracking: Boolean = true
 
         internal var sessionTracking: Boolean = true
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
@@ -173,6 +179,16 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun automaticScreenTracking(automaticScreenTracking: Boolean) = apply {
             this.automaticScreenTracking = automaticScreenTracking
+        }
+
+        /**
+         * Sets whether automatic app lifecycle tracking is enabled.
+         *
+         * @param automaticAppLifecycleTracking true to enable automatic app lifecycle tracking, false otherwise
+         * @return this builder instance
+         */
+        fun automaticAppLifecycleTracking(automaticAppLifecycleTracking: Boolean) = apply {
+            this.automaticAppLifecycleTracking = automaticAppLifecycleTracking
         }
 
         /**

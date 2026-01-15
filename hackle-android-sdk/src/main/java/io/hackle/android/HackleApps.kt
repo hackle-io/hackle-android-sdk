@@ -357,7 +357,9 @@ internal object HackleApps {
             core = core
         )
         applicationInstallStateManager.addListener(applicationEventTracker)
-        applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
+        if (config.automaticAppLifecycleTracking) {
+            applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
+        }
 
         // InAppMessage
 
