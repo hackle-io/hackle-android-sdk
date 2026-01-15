@@ -203,5 +203,42 @@ class ScreenTest {
         ))
     }
 
+    @Test
+    fun `backwards compatibility - deprecated constructor creates equivalent screen to builder without properties`() {
+        @Suppress("DEPRECATION")
+        val screenFromConstructor = Screen("TestScreen", "com.test.TestScreen")
+        val screenFromBuilder = Screen.builder("TestScreen", "com.test.TestScreen").build()
+
+        expectThat(screenFromConstructor.name).isEqualTo(screenFromBuilder.name)
+        expectThat(screenFromConstructor.className).isEqualTo(screenFromBuilder.className)
+        expectThat(screenFromConstructor.properties).isEqualTo(screenFromBuilder.properties)
+    }
+
+    @Test
+    fun `backwards compatibility - deprecated init produces same result as builder`() {
+        // given & when
+        @Suppress("DEPRECATION")
+        val screenFromDeprecatedInit = Screen("Test", "TestVC")
+        val screenFromBuilder = Screen.builder("Test", "TestVC").build()
+
+        // then
+        expectThat(screenFromDeprecatedInit).isEqualTo(screenFromBuilder)
+        expectThat(screenFromDeprecatedInit.name).isEqualTo(screenFromBuilder.name)
+        expectThat(screenFromDeprecatedInit.className).isEqualTo(screenFromBuilder.className)
+        expectThat(screenFromDeprecatedInit.properties).isEqualTo(emptyMap())
+        expectThat(screenFromBuilder.properties).isEqualTo(emptyMap())
+    }
+
+
+    @Test
+    fun `backwards compatibility - deprecated constructor creates screen with empty properties`() {
+        @Suppress("DEPRECATION")
+        val screen = Screen("TestScreen", "com.test.TestScreen")
+
+        expectThat(screen.name).isEqualTo("TestScreen")
+        expectThat(screen.className).isEqualTo("com.test.TestScreen")
+        expectThat(screen.properties).isEqualTo(emptyMap())
+    }
+
     private class ScreenActivity : Activity()
 }
