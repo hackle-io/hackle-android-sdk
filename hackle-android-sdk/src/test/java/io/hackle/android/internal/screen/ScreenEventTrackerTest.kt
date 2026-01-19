@@ -171,4 +171,31 @@ class ScreenEventTrackerTest {
             core.track(event, any(), 42)
         }
     }
+
+    @Test
+    fun `onScreenStarted - when screen properties contain page_name and page_class then they are overridden by screen name and className`() {
+        // given
+        every { userManager.toHackleUser(any()) } returns mockk()
+        val properties = mapOf(
+            "\$page_name" to "wrong_name_from_properties",
+            "\$page_class" to "wrong_class_from_properties",
+            "custom_key" to "custom_value"
+        )
+        val screen = Screen.builder("correct_screen_name", "correct_screen_class")
+            .properties(properties)
+            .build()
+
+        // when
+        sut.onScreenStarted(null, screen, User.of("test"), 42)
+
+        // then
+        val event = Event.builder("\$page_view")
+            .property("\$page_name", "correct_screen_name")
+            .property("\$page_class", "correct_screen_class")
+            .property("custom_key", "custom_value")
+            .build()
+        verify(exactly = 1) {
+            core.track(event, any(), 42)
+        }
+    }
 }

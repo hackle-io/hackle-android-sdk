@@ -12,11 +12,11 @@ internal class ScreenEventTracker(
 ) : ScreenListener {
     override fun onScreenStarted(previousScreen: Screen?, currentScreen: Screen, user: User, timestamp: Long) {
         val event = Event.builder(SCREEN_VIEW_EVENT_KEY)
+            .properties(currentScreen.properties)
             .property(SCREEN_NAME_PROPERTY_KEY, currentScreen.name)
             .property(SCREEN_CLASS_PROPERTY_KEY, currentScreen.className)
             .property(PREVIOUS_SCREEN_NAME_PROPERTY_KEY, previousScreen?.name)
             .property(PREVIOUS_SCREEN_CLASS_PROPERTY_KEY, previousScreen?.className)
-            .properties(currentScreen.properties)
             .build()
         val hackleUser = userManager.toHackleUser(user)
         core.track(event, hackleUser, timestamp)

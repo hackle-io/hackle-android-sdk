@@ -14,10 +14,10 @@ internal class EngagementEventTracker(
 
     override fun onEngagement(engagement: Engagement, user: User, timestamp: Long) {
         val trackEvent = Event.builder(ENGAGEMENT_EVENT_KEY)
+            .properties(engagement.screen.properties)
             .property(ENGAGEMENT_TIME_PROPERTY_KEY, engagement.durationMillis)
             .property(SCREEN_NAME_PROPERTY_KEY, engagement.screen.name)
             .property(SCREEN_CLASS_PROPERTY_KEY, engagement.screen.className)
-            .properties(engagement.screen.properties)
             .build()
         val hackleUser = userManager.toHackleUser(user)
         core.track(trackEvent, hackleUser, timestamp)
