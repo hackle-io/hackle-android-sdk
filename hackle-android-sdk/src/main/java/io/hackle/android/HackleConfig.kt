@@ -35,6 +35,11 @@ class HackleConfig private constructor(builder: Builder) {
     val monitoringUri: String = builder.monitoringUri
 
     /**
+     * Whether monitoring is enabled.
+     */
+    val enableMonitoring: Boolean = builder.enableMonitoring
+
+    /**
      * The application mode.
      */
     val mode: HackleAppMode = builder.mode
@@ -93,6 +98,7 @@ class HackleConfig private constructor(builder: Builder) {
         internal var eventUri: String = DEFAULT_EVENT_URI
         internal var apiUri: String = DEFAULT_API_URI
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
+        internal var enableMonitoring: Boolean = true
 
         internal var mode: HackleAppMode = HackleAppMode.NATIVE
 
@@ -159,6 +165,16 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun monitoringUri(monitoringUri: String) = apply {
             this.monitoringUri = monitoringUri
+        }
+
+        /** 
+         * Enables or disables monitoring feature.
+         *
+         * @param enableMonitoring true to enable monitoring, false to disable
+         * @return this builder instance
+         */
+        fun enableMonitoring(enableMonitoring: Boolean) = apply {
+            this.enableMonitoring = enableMonitoring
         }
 
         /**

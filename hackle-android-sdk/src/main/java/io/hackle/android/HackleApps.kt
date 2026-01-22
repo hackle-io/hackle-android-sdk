@@ -534,8 +534,9 @@ internal object HackleApps {
         )
 
         // Metrics
-
-        metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
+        if (config.enableMonitoring) {
+            metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
+        }
 
         // ApplicationLifecycleListener
 
