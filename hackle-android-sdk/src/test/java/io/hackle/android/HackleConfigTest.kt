@@ -163,6 +163,17 @@ class HackleConfigTest {
         }
     }
 
+    @Test
+    fun `enableMonitoring`() {
+        configTests(HackleConfig::enableMonitoring to true)
+        configTests(HackleConfig::enableMonitoring to false) {
+            enableMonitoring(false)
+        }
+        configTests(HackleConfig::enableMonitoring to true) {
+            enableMonitoring(true)
+        }
+    }
+
     private fun <T> configTests(
         vararg tests: Pair<(HackleConfig) -> T, T>,
         builder: HackleConfig.Builder.() -> Unit = {}
