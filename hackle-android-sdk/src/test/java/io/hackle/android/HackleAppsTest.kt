@@ -4,9 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.mock.MockDevice
+import io.hackle.sdk.core.internal.metrics.Metrics
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.junit.After
@@ -39,6 +41,8 @@ class HackleAppsTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
+
+        mockkObject(Metrics)
 
         // Context mocking setup
         every { context.applicationContext } returns application
@@ -83,6 +87,8 @@ class HackleAppsTest {
     fun tearDown() {
         unmockkObject(HackleApp)
         unmockkObject(Device)
+        unmockkObject(Metrics)
+        unmockkObject(ApplicationLifecycleManager)
         clearAllMocks()
     }
 
@@ -122,5 +128,29 @@ class HackleAppsTest {
         // then - verify that context was used for SharedPreferences access
         verify(atLeast = 1) { context.getSharedPreferences(any(), any()) }
         verify(atLeast = 1) { context.packageName }
+    }
+
+    @Test
+    fun `HackleApps create should initialize metricConfiguration when monitoring is enabled`() {
+        // given
+        val config = HackleConfig.builder().enableMonitoring(true).build()
+
+        // when
+        HackleApps.create(context, testSdkKey, config)
+
+        // then
+        verify(exactly = 1) { Metrics.addRegistry(ofType(MonitoringMetricRegistry::class)) }
+    }
+
+    @Test
+    fun `HackleApps create should not initialize metricConfiguration when monitoring is disabled`() {
+        // given
+        val config = HackleConfig.builder().enableMonitoring(false).build()
+
+        // when
+        HackleApps.create(context, testSdkKey, config)
+
+        // then
+        verify(exactly = 0) { Metrics.addRegistry(ofType(MonitoringMetricRegistry::class)) }
     }
 }

@@ -1631,7 +1631,7 @@ class HackleInvocationTest {
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.setCurrentScreen(
-                withArg { assertThat(it, `is`(Screen("mainActivity", "mainActivityClass"))) },
+                withArg { assertThat(it, `is`(Screen.builder("mainActivity", "mainActivityClass").build())) },
             )
         }
         result.parseJson<InvokeResponse>().apply {

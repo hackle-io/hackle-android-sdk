@@ -35,6 +35,11 @@ class HackleConfig private constructor(builder: Builder) {
     val monitoringUri: String = builder.monitoringUri
 
     /**
+     * Whether monitoring is enabled.
+     */
+    val enableMonitoring: Boolean = builder.enableMonitoring
+
+    /**
      * The application mode.
      */
     val mode: HackleAppMode = builder.mode
@@ -43,6 +48,11 @@ class HackleConfig private constructor(builder: Builder) {
      * Whether automatic screen tracking is enabled.
      */
     val automaticScreenTracking: Boolean = builder.automaticScreenTracking
+
+    /**
+     * Whether automatic app lifecycle tracking is enabled.
+     */
+    val automaticAppLifecycleTracking: Boolean = builder.automaticAppLifecycleTracking
 
     /**
      * Whether session tracking is enabled.
@@ -88,10 +98,12 @@ class HackleConfig private constructor(builder: Builder) {
         internal var eventUri: String = DEFAULT_EVENT_URI
         internal var apiUri: String = DEFAULT_API_URI
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
+        internal var enableMonitoring: Boolean = true
 
         internal var mode: HackleAppMode = HackleAppMode.NATIVE
 
         internal var automaticScreenTracking: Boolean = true
+        internal var automaticAppLifecycleTracking: Boolean = true
 
         internal var sessionTracking: Boolean = true
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
@@ -155,6 +167,16 @@ class HackleConfig private constructor(builder: Builder) {
             this.monitoringUri = monitoringUri
         }
 
+        /** 
+         * Enables or disables monitoring feature.
+         *
+         * @param enableMonitoring true to enable monitoring, false to disable
+         * @return this builder instance
+         */
+        fun enableMonitoring(enableMonitoring: Boolean) = apply {
+            this.enableMonitoring = enableMonitoring
+        }
+
         /**
          * Sets the application mode.
          *
@@ -173,6 +195,16 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun automaticScreenTracking(automaticScreenTracking: Boolean) = apply {
             this.automaticScreenTracking = automaticScreenTracking
+        }
+
+        /**
+         * Sets whether automatic app lifecycle tracking is enabled.
+         *
+         * @param automaticAppLifecycleTracking true to enable automatic app lifecycle tracking, false otherwise
+         * @return this builder instance
+         */
+        fun automaticAppLifecycleTracking(automaticAppLifecycleTracking: Boolean) = apply {
+            this.automaticAppLifecycleTracking = automaticAppLifecycleTracking
         }
 
         /**
