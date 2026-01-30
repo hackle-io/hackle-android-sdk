@@ -357,7 +357,9 @@ internal object HackleApps {
             core = core
         )
         applicationInstallStateManager.addListener(applicationEventTracker)
-        applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
+        if (config.automaticAppLifecycleTracking) {
+            applicationLifecycleManager.addListener(applicationEventTracker, order = Ordered.HIGHEST)
+        }
 
         // InAppMessage
 
@@ -532,8 +534,9 @@ internal object HackleApps {
         )
 
         // Metrics
-
-        metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
+        if (config.enableMonitoring) {
+            metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
+        }
 
         // ApplicationLifecycleListener
 

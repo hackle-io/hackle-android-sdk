@@ -5,6 +5,7 @@ import io.hackle.android.internal.invocator.model.*
 import io.hackle.android.internal.invocator.model.Invocation.Command.*
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.sdk.common.*
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.core.model.ValueType
 
@@ -286,6 +287,6 @@ internal class HackleInvocatorImpl(
         val screenName = checkNotNull(parameters.screenName())
         val className = checkNotNull(parameters.className())
 
-        hackleAppCore.setCurrentScreen(Screen(screenName, className))
+        hackleAppCore.setCurrentScreen(Screen.builder(screenName, className).build())
     }
 }

@@ -42,17 +42,18 @@ class HackleJavascriptInterfaceTest {
     @Test
     fun getWebViewConfig() {
         val webViewConfig = HackleWebViewConfig.builder()
+            .automaticRouteTracking(false)
             .automaticScreenTracking(true)
             .automaticEngagementTracking(true)
             .build()
         val sut = HackleJavascriptInterface(invocation(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.WEB_VIEW_WRAPPER, webViewConfig)
-        expectThat(sut.getWebViewConfig()).isEqualTo("{\"automaticScreenTracking\":true,\"automaticEngagementTracking\":true}")
+        expectThat(sut.getWebViewConfig()).isEqualTo("{\"automaticRouteTracking\":false,\"automaticScreenTracking\":true,\"automaticEngagementTracking\":true}")
     }
 
     @Test
     fun getWebViewConfigDefault() {
         val sut = HackleJavascriptInterface(invocation(), Sdk("SDK_KEY", "name", "version"), HackleAppMode.WEB_VIEW_WRAPPER, HackleWebViewConfig.DEFAULT)
-        expectThat(sut.getWebViewConfig()).isEqualTo("{\"automaticScreenTracking\":false,\"automaticEngagementTracking\":false}")
+        expectThat(sut.getWebViewConfig()).isEqualTo("{\"automaticRouteTracking\":true,\"automaticScreenTracking\":false,\"automaticEngagementTracking\":false}")
     }
 
     @Test
