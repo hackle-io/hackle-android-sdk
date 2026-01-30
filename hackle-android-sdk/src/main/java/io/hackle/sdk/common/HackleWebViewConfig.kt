@@ -5,6 +5,10 @@ package io.hackle.sdk.common
  */
 data class HackleWebViewConfig private constructor(
     /**
+     * Whether automatic route tracking is enabled for WebView.
+     */
+    val automaticRouteTracking: Boolean,
+    /**
      * Whether automatic screen tracking is enabled for WebView.
      */
     val automaticScreenTracking: Boolean,
@@ -31,9 +35,20 @@ data class HackleWebViewConfig private constructor(
      * Builder class for creating HackleWebViewConfig instances.
      */
     class Builder {
+        private var automaticRouteTracking: Boolean = true
         private var automaticScreenTracking: Boolean = false
         private var automaticEngagementTracking: Boolean = false
 
+        /**
+         * Sets whether automatic route tracking is enabled.
+         * 
+         * @param automaticRouteTracking true to enable automatic route tracking, false otherwise
+         * @return this Builder instance
+         */
+        fun automaticRouteTracking(automaticRouteTracking: Boolean) = apply {
+            this.automaticRouteTracking = automaticRouteTracking
+        }
+        
         /**
          * Sets whether automatic screen tracking is enabled.
          *
@@ -59,6 +74,10 @@ data class HackleWebViewConfig private constructor(
          *
          * @return a [HackleWebViewConfig] instance
          */
-        fun build() = HackleWebViewConfig(automaticScreenTracking, automaticEngagementTracking)
+        fun build() = HackleWebViewConfig(
+            automaticRouteTracking, 
+            automaticScreenTracking, 
+            automaticEngagementTracking
+        )
     }
 }
