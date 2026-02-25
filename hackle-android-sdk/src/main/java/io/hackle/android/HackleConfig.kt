@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
+import io.hackle.sdk.common.HackleSessionPolicy
 import java.util.Collections
 
 /**
@@ -58,7 +59,12 @@ class HackleConfig private constructor(builder: Builder) {
      * Whether session tracking is enabled.
      */
     val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
-    
+
+    /**
+     * The session policy that controls which identifier changes trigger session renewal.
+     */
+    val sessionPolicy: HackleSessionPolicy = builder.sessionPolicy
+
     /**
      * The session timeout in milliseconds.
      */
@@ -107,6 +113,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal var sessionTracking: Boolean = true
         internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
+        internal var sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT
 
         internal var pollingIntervalMillis: Int = DEFAULT_POLLING_INTERVAL_MILLIS
 
@@ -215,6 +222,16 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
             this.sessionTimeoutMillis = sessionTimeoutMillis
+        }
+
+        /**
+         * Sets the session policy that controls which identifier changes trigger session renewal.
+         *
+         * @param sessionPolicy the session policy to set
+         * @return this builder instance
+         */
+        fun sessionPolicy(sessionPolicy: HackleSessionPolicy) = apply {
+            this.sessionPolicy = sessionPolicy
         }
 
         /**
