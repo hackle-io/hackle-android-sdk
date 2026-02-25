@@ -3,8 +3,12 @@ package io.hackle.android.internal.session
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.user.IdentifierChange
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.identifierChanges
+import io.hackle.sdk.common.HackleSessionExpiry
+import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 
@@ -12,6 +16,7 @@ internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
     private val sessionTimeoutMillis: Long,
+    private val sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
 ) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
@@ -107,8 +112,24 @@ internal class SessionManager(
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-        endSession(oldUser)
-        newSession(newUser, timestamp)
+        startNewSessionIfNeeded(oldUser, newUser, timestamp)
+    }
+
+    fun startNewSessionIfNeeded(oldUser: User, newUser: User, timestamp: Long): Session {
+        val changes = oldUser.identifierChanges(newUser)
+        val shouldExpire = changes.any { it.toSessionExpiry() in sessionPolicy.expiredPolicy }
+        return if (shouldExpire) {
+            startNewSession(newUser, timestamp)
+        } else {
+            requiredSession
+        }
+    }
+
+    private fun IdentifierChange.toSessionExpiry(): HackleSessionExpiry = when (this) {
+        IdentifierChange.NULL_TO_USER_ID -> HackleSessionExpiry.NULL_TO_USER_ID
+        IdentifierChange.USER_ID_TO_NULL -> HackleSessionExpiry.USER_ID_TO_NULL
+        IdentifierChange.USER_ID_CHANGE -> HackleSessionExpiry.USER_ID_CHANGE
+        IdentifierChange.DEVICE_ID_CHANGE -> HackleSessionExpiry.DEVICE_ID_CHANGE
     }
 
     companion object {
