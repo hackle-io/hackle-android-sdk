@@ -204,7 +204,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any(), 42) }
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any(), any(), 42) }
     }
 
     @Test

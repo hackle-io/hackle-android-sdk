@@ -35,20 +35,32 @@ internal class SessionManager(
 
 
     fun startNewSession(user: User, timestamp: Long): Session {
-        endSession(user)
-        return newSession(user, timestamp)
+        return startNewSession(user, user, timestamp)
     }
 
-    fun startNewSessionIfNeeded(user: User, timestamp: Long): Session {
+    fun startNewSession(oldUser: User, newUser: User, timestamp: Long): Session {
+        endSession(oldUser)
+        return newSession(newUser, timestamp)
+    }
 
-        val lastEventTime = lastEventTime ?: return startNewSession(user, timestamp)
+    fun startNewSessionIfNeeded(oldUser: User, newUser: User, timestamp: Long): Session {
+        val identifierChanges = oldUser.identifierChanges(newUser)
+
+        if (identifierChanges.isNotEmpty()) {
+            val shouldExpire = identifierChanges.any { it.toSessionExpiry() in sessionPolicy.expiredPolicy }
+            if (shouldExpire) {
+                return startNewSession(oldUser, newUser, timestamp)
+            }
+        }
+
+        val lastEventTime = lastEventTime ?: return startNewSession(newUser, timestamp)
 
         val currentSession = currentSession
         return if (currentSession != null && timestamp - lastEventTime < sessionTimeoutMillis) {
             updateLastEventTime(timestamp)
             currentSession
         } else {
-            startNewSession(user, timestamp)
+            startNewSession(newUser, timestamp)
         }
     }
 
@@ -103,7 +115,8 @@ internal class SessionManager(
     }
 
     override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
-        startNewSessionIfNeeded(userManager.currentUser, timestamp)
+        val currentUser = userManager.currentUser
+        startNewSessionIfNeeded(currentUser, currentUser, timestamp)
     }
 
     override fun onBackground(timestamp: Long) {
@@ -113,16 +126,6 @@ internal class SessionManager(
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
         startNewSessionIfNeeded(oldUser, newUser, timestamp)
-    }
-
-    fun startNewSessionIfNeeded(oldUser: User, newUser: User, timestamp: Long): Session {
-        val changes = oldUser.identifierChanges(newUser)
-        val shouldExpire = changes.any { it.toSessionExpiry() in sessionPolicy.expiredPolicy }
-        return if (shouldExpire) {
-            startNewSession(newUser, timestamp)
-        } else {
-            requiredSession
-        }
     }
 
     private fun IdentifierChange.toSessionExpiry(): HackleSessionExpiry = when (this) {

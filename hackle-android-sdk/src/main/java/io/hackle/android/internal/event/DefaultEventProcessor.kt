@@ -174,7 +174,8 @@ internal class DefaultEventProcessor(
                 sessionManager.updateLastEventTime(event.timestamp)
             } else {
                 // Corner case when an event is processed between onPause and onResume
-                sessionManager.startNewSessionIfNeeded(userManager.currentUser, event.timestamp)
+                val currentUser = userManager.currentUser
+                sessionManager.startNewSessionIfNeeded(currentUser, currentUser, event.timestamp)
             }
         }
 
