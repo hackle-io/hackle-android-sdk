@@ -226,3 +226,190 @@
 //        }
 //    }
 //}
+
+package io.hackle.android.internal.session
+
+import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.android.internal.database.repository.MapKeyValueRepository
+import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
+import io.hackle.android.internal.user.UserManager
+import io.hackle.android.mock.MockDevice
+import io.hackle.android.mock.MockPackageInfo
+import io.hackle.sdk.common.HackleSessionExpiry
+import io.hackle.sdk.common.HackleSessionPolicy
+import io.hackle.sdk.common.User
+import io.mockk.mockk
+import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
+import strikt.assertions.isNotEqualTo
+
+class SessionManagerSessionPolicyTest {
+
+    private fun manager(
+        sessionTimeoutMillis: Long = 10000,
+        repository: KeyValueRepository = MapKeyValueRepository(),
+        sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
+        vararg listeners: SessionListener,
+    ): SessionManager {
+        return SessionManager(
+            userManager = UserManager(
+                MockDevice("test_id", emptyMap()),
+                MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
+                MapKeyValueRepository(),
+                mockk(),
+                mockk()
+            ),
+            keyValueRepository = repository,
+            sessionTimeoutMillis = sessionTimeoutMillis,
+            sessionPolicy = sessionPolicy,
+        ).also { listeners.forEach(it::addListener) }
+    }
+
+    @Test
+    fun `DEFAULT policy - userId change triggers new session`() {
+        val sut = manager()
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("B").deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isNotEqualTo session2.id
+    }
+
+    @Test
+    fun `DEFAULT policy - null to userId triggers new session`() {
+        val sut = manager()
+        val oldUser = User.builder().deviceId("d1").build()
+        val newUser = User.builder().userId("A").deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isNotEqualTo session2.id
+    }
+
+    @Test
+    fun `DEFAULT policy - userId to null triggers new session`() {
+        val sut = manager()
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isNotEqualTo session2.id
+    }
+
+    @Test
+    fun `DEFAULT policy - deviceId change triggers new session`() {
+        val sut = manager()
+        val oldUser = User.builder().deviceId("d1").build()
+        val newUser = User.builder().deviceId("d2").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isNotEqualTo session2.id
+    }
+
+    @Test
+    fun `custom policy - exclude NULL_TO_USER_ID keeps session on login`() {
+        val policy = HackleSessionPolicy.builder()
+            .expiredPolicy(
+                HackleSessionExpiry.USER_ID_CHANGE,
+                HackleSessionExpiry.DEVICE_ID_CHANGE,
+                HackleSessionExpiry.USER_ID_TO_NULL
+            )
+            .build()
+        val sut = manager(sessionPolicy = policy)
+        val oldUser = User.builder().deviceId("d1").build()
+        val newUser = User.builder().userId("A").deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isEqualTo session2.id
+    }
+
+    @Test
+    fun `custom policy - exclude USER_ID_TO_NULL keeps session on logout`() {
+        val policy = HackleSessionPolicy.builder()
+            .expiredPolicy(
+                HackleSessionExpiry.USER_ID_CHANGE,
+                HackleSessionExpiry.DEVICE_ID_CHANGE,
+                HackleSessionExpiry.NULL_TO_USER_ID
+            )
+            .build()
+        val sut = manager(sessionPolicy = policy)
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isEqualTo session2.id
+    }
+
+    @Test
+    fun `empty policy - all changes keep session`() {
+        val policy = HackleSessionPolicy.builder()
+            .expiredPolicy()
+            .build()
+        val sut = manager(sessionPolicy = policy)
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("B").deviceId("d2").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isEqualTo session2.id
+    }
+
+    @Test
+    fun `compound change - OR logic triggers session when any condition matches`() {
+        val policy = HackleSessionPolicy.builder()
+            .expiredPolicy(HackleSessionExpiry.DEVICE_ID_CHANGE)
+            .build()
+        val sut = manager(sessionPolicy = policy)
+
+        // userId change + deviceId change, but only DEVICE_ID_CHANGE in policy
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("B").deviceId("d2").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isNotEqualTo session2.id
+    }
+
+    @Test
+    fun `compound change - no matching condition keeps session`() {
+        val policy = HackleSessionPolicy.builder()
+            .expiredPolicy(HackleSessionExpiry.DEVICE_ID_CHANGE)
+            .build()
+        val sut = manager(sessionPolicy = policy)
+
+        // only userId change, but DEVICE_ID_CHANGE in policy
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("B").deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isEqualTo session2.id
+    }
+
+    @Test
+    fun `no identifier change - session is maintained`() {
+        val sut = manager()
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("A").deviceId("d1").build()
+
+        val session1 = sut.startNewSession(oldUser, 100)
+        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+
+        expectThat(session1.id) isEqualTo session2.id
+    }
+}
