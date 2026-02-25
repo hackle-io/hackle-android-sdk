@@ -84,6 +84,21 @@ internal class UserExtensionsTest {
     }
 
     @Test
+    fun `identifierChanges - both userId null with same deviceId`() {
+        val oldUser = User.builder().deviceId("d1").build()
+        val newUser = User.builder().deviceId("d1").build()
+        expectThat(oldUser.identifierChanges(newUser)).isEmpty()
+    }
+
+    @Test
+    fun `identifierChanges - both userId null with different deviceId`() {
+        val oldUser = User.builder().deviceId("d1").build()
+        val newUser = User.builder().deviceId("d2").build()
+        expectThat(oldUser.identifierChanges(newUser))
+            .containsExactlyInAnyOrder(IdentifierChange.DEVICE_ID_CHANGE)
+    }
+
+    @Test
     fun `mergeWith - null`() {
         val user = User.builder().build()
         expectThat(user.mergeWith(null)) isSameInstanceAs user

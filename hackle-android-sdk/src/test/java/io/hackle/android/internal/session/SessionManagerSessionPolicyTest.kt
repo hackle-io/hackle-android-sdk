@@ -5,8 +5,8 @@ import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
-import io.hackle.sdk.common.HackleSessionExpiry
-import io.hackle.sdk.common.HackleSessionExpiry.*
+import io.hackle.sdk.common.HackleSessionPersistPolicy
+import io.hackle.sdk.common.HackleSessionPersistPolicy.*
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
 import io.mockk.mockk
@@ -25,7 +25,7 @@ import org.junit.Test
  *   S6: deviceId changed, A → B (triggers: USER_ID_CHANGE, DEVICE_ID_CHANGE)
  *   S7: deviceId changed, A → null (triggers: USER_ID_TO_NULL, DEVICE_ID_CHANGE)
  *
- * O = session expires, X = session maintained.
+ * EXPIRED = session expires, MAINTAINED = session maintained.
  */
 class SessionManagerSessionPolicyTest {
 
@@ -56,18 +56,18 @@ class SessionManagerSessionPolicyTest {
         )
     }
 
-    private fun policy(vararg expiries: HackleSessionExpiry): HackleSessionPolicy {
-        return HackleSessionPolicy.builder().expiredPolicy(*expiries).build()
+    private fun policy(vararg conditions: HackleSessionPersistPolicy): HackleSessionPolicy {
+        return HackleSessionPolicy.builder().persistWhen(*conditions).build()
     }
 
-    private val O = true
-    private val X = false
+    private val EXPIRED = true
+    private val MAINTAINED = false
 
     private fun verifyPolicy(policy: HackleSessionPolicy, policyLabel: String, expected: List<Boolean>) {
         val failures = mutableListOf<String>()
         for ((i, scenario) in scenarios.withIndex()) {
             val sut = manager(policy)
-            val session1 = sut.startNewSession(scenario.oldUser, 100)
+            val session1 = sut.startNewSession(scenario.oldUser, scenario.oldUser, 100)
             val session2 = sut.startNewSessionIfNeeded(scenario.oldUser, scenario.newUser, 200)
             val sessionExpired = session1.id != session2.id
             if (sessionExpired != expected[i]) {
@@ -82,98 +82,98 @@ class SessionManagerSessionPolicyTest {
     }
 
     @Test
-    fun `#1 policy {N,U,T,D} - default, all changes expire session`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE, USER_ID_TO_NULL, DEVICE_ID_CHANGE),
-            "{N,U,T,D}", listOf(O, O, O, O, O, O, O))
-    }
-
-    @Test
-    fun `#2 policy {U,T,D} - exclude NULL_TO_USER_ID`() {
-        verifyPolicy(policy(USER_ID_CHANGE, USER_ID_TO_NULL, DEVICE_ID_CHANGE),
-            "{U,T,D}", listOf(X, O, O, O, O, O, O))
-    }
-
-    @Test
-    fun `#3 policy {N,T,D} - exclude USER_ID_CHANGE`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_TO_NULL, DEVICE_ID_CHANGE),
-            "{N,T,D}", listOf(O, X, O, O, O, O, O))
-    }
-
-    @Test
-    fun `#4 policy {N,U,D} - exclude USER_ID_TO_NULL`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE, DEVICE_ID_CHANGE),
-            "{N,U,D}", listOf(O, O, X, O, O, O, O))
-    }
-
-    @Test
-    fun `#5 policy {N,U,T} - exclude DEVICE_ID_CHANGE`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE, USER_ID_TO_NULL),
-            "{N,U,T}", listOf(O, O, O, X, O, O, O))
-    }
-
-    @Test
-    fun `#6 policy {T,D} - only USER_ID_TO_NULL and DEVICE_ID_CHANGE`() {
-        verifyPolicy(policy(USER_ID_TO_NULL, DEVICE_ID_CHANGE),
-            "{T,D}", listOf(X, X, O, O, O, O, O))
-    }
-
-    @Test
-    fun `#7 policy {U,D} - only USER_ID_CHANGE and DEVICE_ID_CHANGE`() {
-        verifyPolicy(policy(USER_ID_CHANGE, DEVICE_ID_CHANGE),
-            "{U,D}", listOf(X, O, X, O, O, O, O))
-    }
-
-    @Test
-    fun `#8 policy {U,T} - only USER_ID_CHANGE and USER_ID_TO_NULL`() {
-        verifyPolicy(policy(USER_ID_CHANGE, USER_ID_TO_NULL),
-            "{U,T}", listOf(X, O, O, X, X, O, O))
-    }
-
-    @Test
-    fun `#9 policy {N,D} - only NULL_TO_USER_ID and DEVICE_ID_CHANGE`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, DEVICE_ID_CHANGE),
-            "{N,D}", listOf(O, X, X, O, O, O, O))
-    }
-
-    @Test
-    fun `#10 policy {N,T} - only NULL_TO_USER_ID and USER_ID_TO_NULL`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_TO_NULL),
-            "{N,T}", listOf(O, X, O, X, O, X, O))
-    }
-
-    @Test
-    fun `#11 policy {N,U} - only NULL_TO_USER_ID and USER_ID_CHANGE`() {
-        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE),
-            "{N,U}", listOf(O, O, X, X, O, O, X))
-    }
-
-    @Test
-    fun `#12 policy {D} - only DEVICE_ID_CHANGE`() {
-        verifyPolicy(policy(DEVICE_ID_CHANGE),
-            "{D}", listOf(X, X, X, O, O, O, O))
-    }
-
-    @Test
-    fun `#13 policy {T} - only USER_ID_TO_NULL`() {
-        verifyPolicy(policy(USER_ID_TO_NULL),
-            "{T}", listOf(X, X, O, X, X, X, O))
-    }
-
-    @Test
-    fun `#14 policy {U} - only USER_ID_CHANGE`() {
-        verifyPolicy(policy(USER_ID_CHANGE),
-            "{U}", listOf(X, O, X, X, X, O, X))
-    }
-
-    @Test
-    fun `#15 policy {N} - only NULL_TO_USER_ID`() {
-        verifyPolicy(policy(NULL_TO_USER_ID),
-            "{N}", listOf(O, X, X, X, O, X, X))
-    }
-
-    @Test
-    fun `#16 policy {} - empty, no changes expire session`() {
+    fun `#1 persist {} - default, all changes expire session`() {
         verifyPolicy(policy(),
-            "{}", listOf(X, X, X, X, X, X, X))
+            "{}", listOf(EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#2 persist {N} - persist NULL_TO_USER_ID`() {
+        verifyPolicy(policy(NULL_TO_USER_ID),
+            "{N}", listOf(MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#3 persist {U} - persist USER_ID_CHANGE`() {
+        verifyPolicy(policy(USER_ID_CHANGE),
+            "{U}", listOf(EXPIRED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#4 persist {T} - persist USER_ID_TO_NULL`() {
+        verifyPolicy(policy(USER_ID_TO_NULL),
+            "{T}", listOf(EXPIRED, EXPIRED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#5 persist {D} - persist DEVICE_ID_CHANGE`() {
+        verifyPolicy(policy(DEVICE_ID_CHANGE),
+            "{D}", listOf(EXPIRED, EXPIRED, EXPIRED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#6 persist {N,U}`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE),
+            "{N,U}", listOf(MAINTAINED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#7 persist {N,T}`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_TO_NULL),
+            "{N,T}", listOf(MAINTAINED, EXPIRED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#8 persist {N,D}`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, DEVICE_ID_CHANGE),
+            "{N,D}", listOf(MAINTAINED, EXPIRED, EXPIRED, MAINTAINED, MAINTAINED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#9 persist {U,T}`() {
+        verifyPolicy(policy(USER_ID_CHANGE, USER_ID_TO_NULL),
+            "{U,T}", listOf(EXPIRED, MAINTAINED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#10 persist {U,D}`() {
+        verifyPolicy(policy(USER_ID_CHANGE, DEVICE_ID_CHANGE),
+            "{U,D}", listOf(EXPIRED, MAINTAINED, EXPIRED, MAINTAINED, EXPIRED, MAINTAINED, EXPIRED))
+    }
+
+    @Test
+    fun `#11 persist {T,D}`() {
+        verifyPolicy(policy(USER_ID_TO_NULL, DEVICE_ID_CHANGE),
+            "{T,D}", listOf(EXPIRED, EXPIRED, MAINTAINED, MAINTAINED, EXPIRED, EXPIRED, MAINTAINED))
+    }
+
+    @Test
+    fun `#12 persist {N,U,T}`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE, USER_ID_TO_NULL),
+            "{N,U,T}", listOf(MAINTAINED, MAINTAINED, MAINTAINED, EXPIRED, EXPIRED, EXPIRED, EXPIRED))
+    }
+
+    @Test
+    fun `#13 persist {N,U,D}`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE, DEVICE_ID_CHANGE),
+            "{N,U,D}", listOf(MAINTAINED, MAINTAINED, EXPIRED, MAINTAINED, MAINTAINED, MAINTAINED, EXPIRED))
+    }
+
+    @Test
+    fun `#14 persist {N,T,D}`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_TO_NULL, DEVICE_ID_CHANGE),
+            "{N,T,D}", listOf(MAINTAINED, EXPIRED, MAINTAINED, MAINTAINED, MAINTAINED, EXPIRED, MAINTAINED))
+    }
+
+    @Test
+    fun `#15 persist {U,T,D}`() {
+        verifyPolicy(policy(USER_ID_CHANGE, USER_ID_TO_NULL, DEVICE_ID_CHANGE),
+            "{U,T,D}", listOf(EXPIRED, MAINTAINED, MAINTAINED, MAINTAINED, EXPIRED, MAINTAINED, MAINTAINED))
+    }
+
+    @Test
+    fun `#16 persist {N,U,T,D} - all persist, no changes expire`() {
+        verifyPolicy(policy(NULL_TO_USER_ID, USER_ID_CHANGE, USER_ID_TO_NULL, DEVICE_ID_CHANGE),
+            "{N,U,T,D}", listOf(MAINTAINED, MAINTAINED, MAINTAINED, MAINTAINED, MAINTAINED, MAINTAINED, MAINTAINED))
     }
 }

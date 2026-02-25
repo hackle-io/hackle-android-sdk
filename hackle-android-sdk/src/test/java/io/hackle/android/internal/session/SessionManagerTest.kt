@@ -79,7 +79,7 @@ class SessionManagerTest {
         expectThat(sut.lastEventTime).isNull()
 
         val user1 = User.of("user1")
-        val session1 = sut.startNewSession(user1, 42)
+        val session1 = sut.startNewSession(user1, user1, 42)
 
         expectThat(session1.id).startsWith("42.")
         expectThat(sut.currentSession).isEqualTo(session1)
@@ -94,7 +94,7 @@ class SessionManagerTest {
 
 
         val user2 = User.of("user2")
-        val session2 = sut.startNewSession(user2, 43)
+        val session2 = sut.startNewSession(user2, user2, 43)
 
         expectThat(session2.id).startsWith("43.")
         expectThat(sut.currentSession).isEqualTo(session2)
@@ -118,7 +118,7 @@ class SessionManagerTest {
         val oldUser = User.builder().userId("A").deviceId("d1").build()
         val newUser = User.builder().userId("B").deviceId("d1").build()
 
-        sut.startNewSession(oldUser, 100)
+        sut.startNewSession(oldUser, oldUser, 100)
         listener.clear()
 
         val session = sut.startNewSession(oldUser, newUser, 200)
@@ -155,7 +155,7 @@ class SessionManagerTest {
 
         val user = User.of("hello")
 
-        val s1 = sut.startNewSession(user, 42)
+        val s1 = sut.startNewSession(user, user, 42)
         val s2 = sut.startNewSessionIfNeeded(user, user, 51)
 
         expectThat(s1) isSameInstanceAs s2
@@ -170,7 +170,7 @@ class SessionManagerTest {
 
         val user = User.of("hello")
 
-        val s1 = sut.startNewSession(user, 42)
+        val s1 = sut.startNewSession(user, user, 42)
         val s2 = sut.startNewSessionIfNeeded(user, user, 52)
 
         expectThat(s1) isNotEqualTo s2
@@ -192,10 +192,28 @@ class SessionManagerTest {
         val oldUser = User.builder().userId("A").deviceId("d1").build()
         val newUser = User.builder().userId("A").deviceId("d1").build()
 
-        val session1 = sut.startNewSession(oldUser, 100)
+        val session1 = sut.startNewSession(oldUser, oldUser, 100)
         val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
 
         expectThat(session1.id) isEqualTo session2.id
+    }
+
+    @Test
+    fun `onUserUpdated - default policy expires session on identifier change`() {
+        val listener = SessionListenerStub()
+        val sut = manager(listeners = *arrayOf(listener))
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("B").deviceId("d1").build()
+
+        sut.startNewSession(oldUser, oldUser, 100)
+        listener.clear()
+
+        sut.onUserUpdated(oldUser, newUser, 200)
+
+        expectThat(listener.ended).hasSize(1)
+        expectThat(listener.ended[0].second) isEqualTo oldUser
+        expectThat(listener.started).hasSize(1)
+        expectThat(listener.started[0].second) isEqualTo newUser
     }
 
     @Test
@@ -232,7 +250,8 @@ class SessionManagerTest {
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
         val sut = manager(10000, repository, listener)
-        val session = sut.startNewSession(User.of("hello"), 42)
+        val user = User.of("hello")
+        val session = sut.startNewSession(user, user, 42)
 
         // when
         sut.onBackground(320)

@@ -1,35 +1,28 @@
 package io.hackle.sdk.common
 
 /**
- * Configuration for session expiration policy.
- *
- * Controls which identifier changes trigger session renewal.
- * By default, all identifier changes cause session expiration.
- *
- * Can only be set at SDK initialization time via [io.hackle.android.HackleConfig].
+ * Configuration for session persistence policy.
  */
 class HackleSessionPolicy private constructor(builder: Builder) {
 
-    /**
-     * The set of conditions that trigger session expiration.
-     * If any of the conditions match, the session will be renewed.
-     */
-    val expiredPolicy: Set<HackleSessionExpiry> = builder.expiredPolicy.toSet()
+    val persistPolicy: Set<HackleSessionPersistPolicy> = builder.persistPolicy.toSet()
+
+    override fun toString(): String = "HackleSessionPolicy(persistPolicy=$persistPolicy)"
 
     /**
      * Builder for creating [HackleSessionPolicy] instances.
      */
     class Builder {
-        internal var expiredPolicy: Set<HackleSessionExpiry> = HackleSessionExpiry.values().toSet()
+        internal var persistPolicy: Set<HackleSessionPersistPolicy> = emptySet()
 
         /**
-         * Sets the conditions that trigger session expiration.
+         * Sets the conditions under which the session is persisted.
          *
-         * @param conditions the session expiry conditions to enable
+         * @param conditions the persisted conditions to enable
          * @return this builder instance
          */
-        fun expiredPolicy(vararg conditions: HackleSessionExpiry) = apply {
-            this.expiredPolicy = conditions.toSet()
+        fun persistWhen(vararg conditions: HackleSessionPersistPolicy) = apply {
+            this.persistPolicy = conditions.toSet()
         }
 
         /**

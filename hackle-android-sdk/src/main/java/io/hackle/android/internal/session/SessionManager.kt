@@ -7,7 +7,7 @@ import io.hackle.android.internal.user.IdentifierChange
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.user.identifierChanges
-import io.hackle.sdk.common.HackleSessionExpiry
+import io.hackle.sdk.common.HackleSessionPersistPolicy
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
@@ -33,34 +33,25 @@ internal class SessionManager(
         log.debug { "SessionManager initialized." }
     }
 
-
-    fun startNewSession(user: User, timestamp: Long): Session {
-        return startNewSession(user, user, timestamp)
-    }
-
     fun startNewSession(oldUser: User, newUser: User, timestamp: Long): Session {
         endSession(oldUser)
         return newSession(newUser, timestamp)
     }
 
     fun startNewSessionIfNeeded(oldUser: User, newUser: User, timestamp: Long): Session {
-        val identifierChanges = oldUser.identifierChanges(newUser)
-
-        if (identifierChanges.isNotEmpty()) {
-            val shouldExpire = identifierChanges.any { it.toSessionExpiry() in sessionPolicy.expiredPolicy }
-            if (shouldExpire) {
-                return startNewSession(oldUser, newUser, timestamp)
-            }
+        val changes = oldUser.identifierChanges(newUser)
+        if (shouldExpireSession(changes)) {
+            return startNewSession(oldUser, newUser, timestamp)
         }
 
-        val lastEventTime = lastEventTime ?: return startNewSession(newUser, timestamp)
+        val lastEventTime = lastEventTime ?: return startNewSession(oldUser, newUser, timestamp)
 
         val currentSession = currentSession
         return if (currentSession != null && timestamp - lastEventTime < sessionTimeoutMillis) {
             updateLastEventTime(timestamp)
             currentSession
         } else {
-            startNewSession(newUser, timestamp)
+            startNewSession(oldUser, newUser, timestamp)
         }
     }
 
@@ -128,11 +119,16 @@ internal class SessionManager(
         startNewSessionIfNeeded(oldUser, newUser, timestamp)
     }
 
-    private fun IdentifierChange.toSessionExpiry(): HackleSessionExpiry = when (this) {
-        IdentifierChange.NULL_TO_USER_ID -> HackleSessionExpiry.NULL_TO_USER_ID
-        IdentifierChange.USER_ID_TO_NULL -> HackleSessionExpiry.USER_ID_TO_NULL
-        IdentifierChange.USER_ID_CHANGE -> HackleSessionExpiry.USER_ID_CHANGE
-        IdentifierChange.DEVICE_ID_CHANGE -> HackleSessionExpiry.DEVICE_ID_CHANGE
+    private fun shouldExpireSession(changes: Set<IdentifierChange>): Boolean {
+        if (changes.isEmpty()) return false
+        return changes.any { it.toPersistPolicy() !in sessionPolicy.persistPolicy }
+    }
+
+    private fun IdentifierChange.toPersistPolicy(): HackleSessionPersistPolicy = when (this) {
+        IdentifierChange.NULL_TO_USER_ID -> HackleSessionPersistPolicy.NULL_TO_USER_ID
+        IdentifierChange.USER_ID_TO_NULL -> HackleSessionPersistPolicy.USER_ID_TO_NULL
+        IdentifierChange.USER_ID_CHANGE -> HackleSessionPersistPolicy.USER_ID_CHANGE
+        IdentifierChange.DEVICE_ID_CHANGE -> HackleSessionPersistPolicy.DEVICE_ID_CHANGE
     }
 
     companion object {
