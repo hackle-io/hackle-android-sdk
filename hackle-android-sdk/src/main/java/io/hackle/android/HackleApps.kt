@@ -177,6 +177,7 @@ internal object HackleApps {
             userManager = userManager,
             sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
             keyValueRepository = globalKeyValueRepository,
+            sessionPolicy = config.sessionPolicy,
         )
         userManager.addListener(sessionManager)
 
