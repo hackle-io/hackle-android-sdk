@@ -9,12 +9,12 @@ package io.hackle.sdk.common
 class HackleSessionPolicy private constructor(builder: Builder) {
 
     /** Condition for preserving the session on identifier change. `null` means always start a new session. */
-    val persistCondition: SessionPersistCondition? = builder.persistCondition
+    val persistCondition: HackleSessionPersistCondition? = builder.persistCondition
 
     override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition)"
 
     class Builder {
-        internal var persistCondition: SessionPersistCondition? = null
+        internal var persistCondition: HackleSessionPersistCondition? = null
 
         /**
          * Sets the condition for preserving the session when user identifiers change.
@@ -22,7 +22,7 @@ class HackleSessionPolicy private constructor(builder: Builder) {
          * @param condition the condition to evaluate on identifier change
          * @return this builder instance
          */
-        fun persistCondition(condition: SessionPersistCondition) = apply {
+        fun persistCondition(condition: HackleSessionPersistCondition) = apply {
             this.persistCondition = condition
         }
 

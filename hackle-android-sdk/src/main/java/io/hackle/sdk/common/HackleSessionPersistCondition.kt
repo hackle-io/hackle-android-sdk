@@ -12,7 +12,7 @@ package io.hackle.sdk.common
  * When [shouldPersist] returns `true`, the existing session is kept.
  * When it returns `false`, a new session is started.
  */
-fun interface SessionPersistCondition {
+fun interface HackleSessionPersistCondition {
 
     /**
      * Determines whether the current session should be preserved for the given user change.
@@ -32,7 +32,7 @@ fun interface SessionPersistCondition {
          * the session is still preserved as long as this condition is met.
          */
         @JvmField
-        val NULL_TO_USER_ID: SessionPersistCondition = SessionPersistCondition { oldUser, newUser ->
+        val NULL_TO_USER_ID: HackleSessionPersistCondition = HackleSessionPersistCondition { oldUser, newUser ->
             oldUser.userId == null && newUser.userId != null
         }
     }

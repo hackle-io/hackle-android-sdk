@@ -6,7 +6,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import org.junit.After
 import io.hackle.sdk.common.HackleSessionPolicy
-import io.hackle.sdk.common.SessionPersistCondition
+import io.hackle.sdk.common.HackleSessionPersistCondition
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Before
@@ -185,7 +185,7 @@ class HackleConfigTest {
 
         // custom
         val customPolicy = HackleSessionPolicy.builder()
-            .persistCondition(SessionPersistCondition.NULL_TO_USER_ID)
+            .persistCondition(HackleSessionPersistCondition.NULL_TO_USER_ID)
             .build()
         val customConfig = HackleConfig.builder()
             .sessionPolicy(customPolicy)

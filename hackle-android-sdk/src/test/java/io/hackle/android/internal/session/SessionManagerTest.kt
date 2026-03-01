@@ -7,7 +7,7 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
-import io.hackle.sdk.common.SessionPersistCondition
+import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.User
 import io.mockk.mockk
 import io.mockk.spyk
@@ -223,7 +223,7 @@ class SessionManagerTest {
     @Test
     fun `onUserUpdated - custom policy preserves session on null to userId change`() {
         val policy = HackleSessionPolicy.builder()
-            .persistCondition(SessionPersistCondition.NULL_TO_USER_ID)
+            .persistCondition(HackleSessionPersistCondition.NULL_TO_USER_ID)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))

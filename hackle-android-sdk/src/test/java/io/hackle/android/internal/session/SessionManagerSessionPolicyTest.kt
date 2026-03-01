@@ -6,7 +6,7 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
-import io.hackle.sdk.common.SessionPersistCondition
+import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.User
 import io.mockk.mockk
 import org.junit.Assert.fail
@@ -58,7 +58,7 @@ class SessionManagerSessionPolicyTest {
         )
     }
 
-    private fun policy(condition: SessionPersistCondition): HackleSessionPolicy {
+    private fun policy(condition: HackleSessionPersistCondition): HackleSessionPolicy {
         return HackleSessionPolicy.builder().persistCondition(condition).build()
     }
 
@@ -71,7 +71,7 @@ class SessionManagerSessionPolicyTest {
         userIdChange: Boolean = false,
         userIdToNull: Boolean = false,
         deviceIdChange: Boolean = false,
-    ): SessionPersistCondition = SessionPersistCondition { old, new ->
+    ): HackleSessionPersistCondition = HackleSessionPersistCondition { old, new ->
         val isNullToUserId = old.userId == null && new.userId != null
         val isUserIdChange = old.userId != null && new.userId != null && old.userId != new.userId
         val isUserIdToNull = old.userId != null && new.userId == null
@@ -203,7 +203,7 @@ class SessionManagerSessionPolicyTest {
 
     @Test
     fun `#17 NULL_TO_USER_ID companion constant`() {
-        verifyPolicy(policy(SessionPersistCondition.NULL_TO_USER_ID),
+        verifyPolicy(policy(HackleSessionPersistCondition.NULL_TO_USER_ID),
             "NULL_TO_USER_ID", listOf(MAINTAINED, EXPIRED, EXPIRED, EXPIRED, MAINTAINED, EXPIRED, EXPIRED))
     }
 }
