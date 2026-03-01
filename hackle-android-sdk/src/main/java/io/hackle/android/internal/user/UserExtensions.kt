@@ -10,27 +10,6 @@ import io.hackle.sdk.core.user.IdentifierType
 
 internal val HackleUser.hackleDeviceId: String? get() = identifiers[IdentifierType.HACKLE_DEVICE_ID.key]
 
-internal enum class IdentifierChange {
-    NULL_TO_USER_ID,
-    USER_ID_TO_NULL,
-    USER_ID_CHANGE,
-    DEVICE_ID_CHANGE
-}
-
-internal fun User.identifierChanges(other: User): Set<IdentifierChange> {
-    val changes = mutableSetOf<IdentifierChange>()
-    when {
-        this.userId == null && other.userId != null -> changes.add(IdentifierChange.NULL_TO_USER_ID)
-        this.userId != null && other.userId == null -> changes.add(IdentifierChange.USER_ID_TO_NULL)
-        this.userId != null && other.userId != null
-            && this.userId != other.userId -> changes.add(IdentifierChange.USER_ID_CHANGE)
-    }
-    if (this.deviceId != other.deviceId) {
-        changes.add(IdentifierChange.DEVICE_ID_CHANGE)
-    }
-    return changes
-}
-
 internal fun User.identifierEquals(other: User?): Boolean {
     if (other == null) {
         return false

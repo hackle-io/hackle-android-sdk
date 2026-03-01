@@ -1,50 +1,49 @@
 package io.hackle.sdk.common
 
 /**
- * Configuration for session persistence policy.
+ * Configures session-related policies.
+ *
+ * Use [Builder] to create an instance. Set [persistCondition] to control
+ * whether the session is preserved when user identifiers change.
  */
 class HackleSessionPolicy private constructor(builder: Builder) {
 
-    val persistPolicy: Set<HackleSessionPersistPolicy> = builder.persistPolicy.toSet()
+    /** Condition for preserving the session on identifier change. `null` means always start a new session. */
+    val persistCondition: SessionPersistCondition? = builder.persistCondition
 
-    override fun toString(): String = "HackleSessionPolicy(persistPolicy=$persistPolicy)"
+    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition)"
 
-    /**
-     * Builder for creating [HackleSessionPolicy] instances.
-     */
     class Builder {
-        internal var persistPolicy: Set<HackleSessionPersistPolicy> = emptySet()
+        internal var persistCondition: SessionPersistCondition? = null
 
         /**
-         * Sets the conditions under which the session is persisted.
+         * Sets the condition for preserving the session when user identifiers change.
          *
-         * @param conditions the persisted conditions to enable
+         * @param condition the condition to evaluate on identifier change
          * @return this builder instance
          */
-        fun persistWhen(vararg conditions: HackleSessionPersistPolicy) = apply {
-            this.persistPolicy = conditions.toSet()
+        fun persistCondition(condition: SessionPersistCondition) = apply {
+            this.persistCondition = condition
         }
 
         /**
-         * Builds the [HackleSessionPolicy] instance.
+         * Builds a [HackleSessionPolicy] instance.
          *
-         * @return the configured HackleSessionPolicy instance
+         * @return a [HackleSessionPolicy] instance
          */
         fun build(): HackleSessionPolicy = HackleSessionPolicy(this)
     }
 
     companion object {
         /**
-         * Creates a new [Builder] instance.
+         * Creates a new [Builder] instance for constructing a [HackleSessionPolicy].
          *
-         * @return a new Builder for creating HackleSessionPolicy
+         * @return a new [Builder] instance
          */
         @JvmStatic
         fun builder(): Builder = Builder()
 
-        /**
-         * Default policy that expires session on all identifier changes.
-         */
+        /** Default policy. Always starts a new session on identifier change. */
         val DEFAULT: HackleSessionPolicy = builder().build()
     }
 }

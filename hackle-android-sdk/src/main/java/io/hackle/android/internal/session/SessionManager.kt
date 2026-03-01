@@ -3,11 +3,9 @@ package io.hackle.android.internal.session
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.user.IdentifierChange
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.user.identifierChanges
-import io.hackle.sdk.common.HackleSessionPersistPolicy
+import io.hackle.android.internal.user.identifierEquals
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
@@ -39,8 +37,7 @@ internal class SessionManager(
     }
 
     fun startNewSessionIfNeeded(oldUser: User, newUser: User, timestamp: Long): Session {
-        val changes = oldUser.identifierChanges(newUser)
-        if (shouldExpireSession(changes)) {
+        if (shouldStartNewSession(oldUser, newUser)) {
             return startNewSession(oldUser, newUser, timestamp)
         }
 
@@ -119,16 +116,10 @@ internal class SessionManager(
         startNewSessionIfNeeded(oldUser, newUser, timestamp)
     }
 
-    private fun shouldExpireSession(changes: Set<IdentifierChange>): Boolean {
-        if (changes.isEmpty()) return false
-        return changes.any { it.toPersistPolicy() !in sessionPolicy.persistPolicy }
-    }
-
-    private fun IdentifierChange.toPersistPolicy(): HackleSessionPersistPolicy = when (this) {
-        IdentifierChange.NULL_TO_USER_ID -> HackleSessionPersistPolicy.NULL_TO_USER_ID
-        IdentifierChange.USER_ID_TO_NULL -> HackleSessionPersistPolicy.USER_ID_TO_NULL
-        IdentifierChange.USER_ID_CHANGE -> HackleSessionPersistPolicy.USER_ID_CHANGE
-        IdentifierChange.DEVICE_ID_CHANGE -> HackleSessionPersistPolicy.DEVICE_ID_CHANGE
+    private fun shouldStartNewSession(oldUser: User, newUser: User): Boolean {
+        if (oldUser.identifierEquals(newUser)) return false
+        val condition = sessionPolicy.persistCondition ?: return true
+        return !condition.shouldPersist(oldUser, newUser)
     }
 
     companion object {

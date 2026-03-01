@@ -5,7 +5,10 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import org.junit.After
+import io.hackle.sdk.common.HackleSessionPolicy
+import io.hackle.sdk.common.SessionPersistCondition
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -172,6 +175,22 @@ class HackleConfigTest {
         configTests(HackleConfig::enableMonitoring to true) {
             enableMonitoring(true)
         }
+    }
+
+    @Test
+    fun `sessionPolicy`() {
+        // default
+        val defaultConfig = HackleConfig.builder().build()
+        assertSame(HackleSessionPolicy.DEFAULT, defaultConfig.sessionPolicy)
+
+        // custom
+        val customPolicy = HackleSessionPolicy.builder()
+            .persistCondition(SessionPersistCondition.NULL_TO_USER_ID)
+            .build()
+        val customConfig = HackleConfig.builder()
+            .sessionPolicy(customPolicy)
+            .build()
+        assertSame(customPolicy, customConfig.sessionPolicy)
     }
 
     private fun <T> configTests(

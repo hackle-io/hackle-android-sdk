@@ -6,6 +6,8 @@ import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
+import io.hackle.sdk.common.HackleSessionPolicy
+import io.hackle.sdk.common.SessionPersistCondition
 import io.hackle.sdk.common.User
 import io.mockk.mockk
 import io.mockk.spyk
@@ -19,6 +21,7 @@ class SessionManagerTest {
     private fun manager(
         sessionTimeoutMillis: Long = 10000,
         repository: KeyValueRepository = MapKeyValueRepository(),
+        sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
         vararg listeners: SessionListener,
     ): SessionManager {
         return SessionManager(
@@ -31,6 +34,7 @@ class SessionManagerTest {
             ),
             keyValueRepository = repository,
             sessionTimeoutMillis = sessionTimeoutMillis,
+            sessionPolicy = sessionPolicy,
         ).also { listeners.forEach(it::addListener) }
     }
 
@@ -73,7 +77,7 @@ class SessionManagerTest {
     fun `startNewSession`() {
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10000, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10000, repository = repository, listeners = *arrayOf(listener))
 
         expectThat(sut.currentSession).isNull()
         expectThat(sut.lastEventTime).isNull()
@@ -135,7 +139,7 @@ class SessionManagerTest {
         // given
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10000, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10000, repository = repository, listeners = *arrayOf(listener))
 
         val user = User.of("hello")
 
@@ -151,7 +155,7 @@ class SessionManagerTest {
     fun `startNewSessionIfNeeded - 세션 만료전이면 기존 세션을 리턴한다`() {
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10, repository = repository, listeners = *arrayOf(listener))
 
         val user = User.of("hello")
 
@@ -166,7 +170,7 @@ class SessionManagerTest {
     fun `startNewSessionIfNeeded - 세션이 만료됐으면 새로운 세션을 시작한다`() {
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10, repository = repository, listeners = *arrayOf(listener))
 
         val user = User.of("hello")
 
@@ -217,10 +221,64 @@ class SessionManagerTest {
     }
 
     @Test
+    fun `onUserUpdated - custom policy preserves session on null to userId change`() {
+        val policy = HackleSessionPolicy.builder()
+            .persistCondition(SessionPersistCondition.NULL_TO_USER_ID)
+            .build()
+        val listener = SessionListenerStub()
+        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
+        val oldUser = User.builder().deviceId("d1").build()
+        val newUser = User.builder().userId("A").deviceId("d1").build()
+
+        sut.startNewSession(oldUser, oldUser, 100)
+        listener.clear()
+
+        sut.onUserUpdated(oldUser, newUser, 200)
+
+        expectThat(listener.ended).hasSize(0)
+        expectThat(listener.started).hasSize(0)
+    }
+
+    @Test
+    fun `onUserUpdated - same identifiers keeps session`() {
+        val listener = SessionListenerStub()
+        val sut = manager(listeners = *arrayOf(listener))
+        val user = User.builder().userId("A").deviceId("d1").build()
+        val sameUser = User.builder().userId("A").deviceId("d1").build()
+
+        sut.startNewSession(user, user, 100)
+        listener.clear()
+
+        sut.onUserUpdated(user, sameUser, 200)
+
+        expectThat(listener.ended).hasSize(0)
+        expectThat(listener.started).hasSize(0)
+    }
+
+    @Test
+    fun `onUserUpdated - policy preserves but timeout expired starts new session`() {
+        val policy = HackleSessionPolicy.builder()
+            .persistCondition { _, _ -> true }
+            .build()
+        val listener = SessionListenerStub()
+        val sut = manager(sessionTimeoutMillis = 100, sessionPolicy = policy, listeners = *arrayOf(listener))
+        val oldUser = User.builder().userId("A").deviceId("d1").build()
+        val newUser = User.builder().userId("B").deviceId("d1").build()
+
+        sut.startNewSession(oldUser, oldUser, 100)
+        listener.clear()
+
+        sut.onUserUpdated(oldUser, newUser, 300)
+
+        expectThat(listener.ended).hasSize(1)
+        expectThat(listener.started).hasSize(1)
+    }
+
+    @Test
     fun `updateLastEventTime`() {
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10, repository = repository, listeners = *arrayOf(listener))
 
         expectThat(sut.lastEventTime).isNull()
         sut.updateLastEventTime(42)
@@ -233,7 +291,7 @@ class SessionManagerTest {
         // given
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val manager = manager(10000, repository, listener)
+        val manager = manager(sessionTimeoutMillis = 10000, repository = repository, listeners = *arrayOf(listener))
 
         val sut = spyk(manager)
 
@@ -249,7 +307,7 @@ class SessionManagerTest {
         // given
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10000, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10000, repository = repository, listeners = *arrayOf(listener))
         val user = User.of("hello")
         val session = sut.startNewSession(user, user, 42)
 
@@ -264,7 +322,7 @@ class SessionManagerTest {
     fun `onBackground - 전달받은 timestamp 로 업데이트한다`() {
         val repository = MapKeyValueRepository()
         val listener = SessionListenerStub()
-        val sut = manager(10000, repository, listener)
+        val sut = manager(sessionTimeoutMillis = 10000, repository = repository, listeners = *arrayOf(listener))
         expectThat(sut.lastEventTime).isNull()
         sut.onBackground(42)
         expectThat(sut.lastEventTime) isEqualTo 42
