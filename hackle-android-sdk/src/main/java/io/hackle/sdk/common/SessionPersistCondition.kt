@@ -29,7 +29,7 @@ fun interface SessionPersistCondition {
          * Preserves the session when userId changes from `null` to a non-null value (e.g. `null` → `"A"`).
          *
          * If other identifier changes also occur (e.g. deviceId changes simultaneously),
-         * those changes are evaluated separately and may still cause session expiry.
+         * the session is still preserved as long as this condition is met.
          */
         @JvmField
         val NULL_TO_USER_ID: SessionPersistCondition = SessionPersistCondition { oldUser, newUser ->
