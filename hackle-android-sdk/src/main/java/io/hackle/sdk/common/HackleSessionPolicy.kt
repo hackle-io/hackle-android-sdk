@@ -11,10 +11,14 @@ class HackleSessionPolicy private constructor(builder: Builder) {
     /** Condition for preserving the session on identifier change. `null` means always start a new session. */
     val persistCondition: HackleSessionPersistCondition? = builder.persistCondition
 
-    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition)"
+    /** Session timeout in milliseconds. Defaults to 30 minutes. */
+    val timeoutMillis: Long = builder.timeoutMillis
+
+    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition, timeoutMillis=$timeoutMillis)"
 
     class Builder {
         internal var persistCondition: HackleSessionPersistCondition? = null
+        internal var timeoutMillis: Long = DEFAULT_SESSION_TIMEOUT_MILLIS
 
         /**
          * Sets the condition for preserving the session when user identifiers change.
@@ -27,11 +31,26 @@ class HackleSessionPolicy private constructor(builder: Builder) {
         }
 
         /**
+         * Sets the session timeout in milliseconds.
+         *
+         * @param timeoutMillis the session timeout in milliseconds
+         * @return this builder instance
+         */
+        fun timeoutMillis(timeoutMillis: Long) = apply {
+            this.timeoutMillis = timeoutMillis
+        }
+
+        /**
          * Builds a [HackleSessionPolicy] instance.
          *
          * @return a [HackleSessionPolicy] instance
          */
         fun build(): HackleSessionPolicy = HackleSessionPolicy(this)
+    }
+    
+    internal fun toBuilder(): Builder = Builder().apply {
+        this.persistCondition = this@HackleSessionPolicy.persistCondition
+        this.timeoutMillis = this@HackleSessionPolicy.timeoutMillis
     }
 
     companion object {
@@ -42,6 +61,8 @@ class HackleSessionPolicy private constructor(builder: Builder) {
          */
         @JvmStatic
         fun builder(): Builder = Builder()
+
+        internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000L * 60 * 30 // 30m
 
         /** Default policy. Always starts a new session on identifier change. */
         val DEFAULT: HackleSessionPolicy = builder().build()

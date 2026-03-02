@@ -13,7 +13,6 @@ import io.hackle.sdk.core.internal.log.Logger
 internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
-    private val sessionTimeoutMillis: Long,
     private val sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
 ) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
@@ -42,9 +41,8 @@ internal class SessionManager(
         }
 
         val lastEventTime = lastEventTime ?: return startNewSession(oldUser, newUser, timestamp)
-
         val currentSession = currentSession
-        return if (currentSession != null && timestamp - lastEventTime < sessionTimeoutMillis) {
+        return if (currentSession != null && timestamp - lastEventTime < sessionPolicy.timeoutMillis) {
             updateLastEventTime(timestamp)
             currentSession
         } else {

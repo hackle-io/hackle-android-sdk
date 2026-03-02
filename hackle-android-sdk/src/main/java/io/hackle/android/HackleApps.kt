@@ -175,7 +175,6 @@ internal object HackleApps {
 
         val sessionManager = SessionManager(
             userManager = userManager,
-            sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
             keyValueRepository = globalKeyValueRepository,
             sessionPolicy = config.sessionPolicy,
         )

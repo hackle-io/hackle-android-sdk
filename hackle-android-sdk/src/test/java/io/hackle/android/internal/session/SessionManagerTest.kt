@@ -21,9 +21,12 @@ class SessionManagerTest {
     private fun manager(
         sessionTimeoutMillis: Long = 10000,
         repository: KeyValueRepository = MapKeyValueRepository(),
-        sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
+        sessionPolicy: HackleSessionPolicy? = null,
         vararg listeners: SessionListener,
     ): SessionManager {
+        val policy = sessionPolicy ?: HackleSessionPolicy.builder()
+            .timeoutMillis(sessionTimeoutMillis)
+            .build()
         return SessionManager(
             userManager = UserManager(
                 MockDevice("test_id", emptyMap()),
@@ -33,8 +36,7 @@ class SessionManagerTest {
                 mockk()
             ),
             keyValueRepository = repository,
-            sessionTimeoutMillis = sessionTimeoutMillis,
-            sessionPolicy = sessionPolicy,
+            sessionPolicy = policy,
         ).also { listeners.forEach(it::addListener) }
     }
 
@@ -259,9 +261,10 @@ class SessionManagerTest {
     fun `onUserUpdated - policy preserves but timeout expired starts new session`() {
         val policy = HackleSessionPolicy.builder()
             .persistCondition { _, _ -> true }
+            .timeoutMillis(100)
             .build()
         val listener = SessionListenerStub()
-        val sut = manager(sessionTimeoutMillis = 100, sessionPolicy = policy, listeners = *arrayOf(listener))
+        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
         val oldUser = User.builder().userId("A").deviceId("d1").build()
         val newUser = User.builder().userId("B").deviceId("d1").build()
 
@@ -327,6 +330,34 @@ class SessionManagerTest {
         sut.onBackground(42)
         expectThat(sut.lastEventTime) isEqualTo 42
         expectThat(repository.getLong("last_event_time", -1)) isEqualTo 42L
+    }
+
+    @Test
+    fun `startNewSessionIfNeeded - policy timeout 사용하여 세션 만료 확인`() {
+        val policy = HackleSessionPolicy.builder()
+            .timeoutMillis(10)
+            .build()
+        val sut = manager(sessionPolicy = policy)
+
+        val user = User.of("hello")
+        val s1 = sut.startNewSession(user, user, 42)
+        val s2 = sut.startNewSessionIfNeeded(user, user, 52)
+
+        expectThat(s1) isNotEqualTo s2
+    }
+
+    @Test
+    fun `startNewSessionIfNeeded - policy timeout 사용하여 세션 유지 확인`() {
+        val policy = HackleSessionPolicy.builder()
+            .timeoutMillis(100)
+            .build()
+        val sut = manager(sessionPolicy = policy)
+
+        val user = User.of("hello")
+        val s1 = sut.startNewSession(user, user, 42)
+        val s2 = sut.startNewSessionIfNeeded(user, user, 51)
+
+        expectThat(s1) isSameInstanceAs s2
     }
 
     private class SessionListenerStub : SessionListener {

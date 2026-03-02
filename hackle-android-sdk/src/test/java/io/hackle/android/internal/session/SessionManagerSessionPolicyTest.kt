@@ -44,6 +44,9 @@ class SessionManagerSessionPolicyTest {
     )
 
     private fun manager(sessionPolicy: HackleSessionPolicy): SessionManager {
+        val policy = sessionPolicy.toBuilder()
+            .timeoutMillis(10000)
+            .build()
         return SessionManager(
             userManager = UserManager(
                 MockDevice("test_id", emptyMap()),
@@ -53,8 +56,7 @@ class SessionManagerSessionPolicyTest {
                 mockk()
             ),
             keyValueRepository = MapKeyValueRepository(),
-            sessionTimeoutMillis = 10000,
-            sessionPolicy = sessionPolicy,
+            sessionPolicy = policy,
         )
     }
 

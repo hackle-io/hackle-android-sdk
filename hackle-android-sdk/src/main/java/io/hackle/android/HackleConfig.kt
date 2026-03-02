@@ -68,7 +68,12 @@ class HackleConfig private constructor(builder: Builder) {
     /**
      * The session timeout in milliseconds.
      */
-    val sessionTimeoutMillis: Int = builder.sessionTimeoutMillis
+    @Deprecated(
+        message = "Use sessionPolicy.timeoutMillis instead",
+        replaceWith = ReplaceWith("sessionPolicy.timeoutMillis.toInt()")
+    )
+    val sessionTimeoutMillis: Int
+        get() = sessionPolicy.timeoutMillis.toInt()
 
     /**
      * The polling interval in milliseconds.
@@ -112,7 +117,6 @@ class HackleConfig private constructor(builder: Builder) {
         internal var automaticAppLifecycleTracking: Boolean = true
 
         internal var sessionTracking: Boolean = true
-        internal var sessionTimeoutMillis: Int = DEFAULT_SESSION_TIMEOUT_MILLIS
         internal var sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT
 
         internal var pollingIntervalMillis: Int = DEFAULT_POLLING_INTERVAL_MILLIS
@@ -220,8 +224,12 @@ class HackleConfig private constructor(builder: Builder) {
          * @param sessionTimeoutMillis the session timeout in milliseconds
          * @return this builder instance
          */
+        @Deprecated(
+            message = "Use HackleSessionPolicy.Builder.timeoutMillis() instead. " +
+                "See HackleSessionPolicy.builder() for details."
+        )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
-            this.sessionTimeoutMillis = sessionTimeoutMillis
+            this.sessionPolicy = this.sessionPolicy.toBuilder().timeoutMillis(sessionTimeoutMillis.toLong()).build()
         }
 
         /**
@@ -312,6 +320,13 @@ class HackleConfig private constructor(builder: Builder) {
                 this.eventFlushThreshold = DEFAULT_EVENT_FLUSH_THRESHOLD
             }
 
+            if (sessionPolicy.timeoutMillis <= 0) {
+                log.warn { "Session timeout is outside allowed value. Setting to default value[${HackleSessionPolicy.DEFAULT_SESSION_TIMEOUT_MILLIS}ms]." }
+                this.sessionPolicy = this.sessionPolicy.toBuilder()
+                    .timeoutMillis(HackleSessionPolicy.DEFAULT_SESSION_TIMEOUT_MILLIS)
+                    .build()
+            }
+
             return HackleConfig(this)
         }
     }
@@ -324,8 +339,6 @@ class HackleConfig private constructor(builder: Builder) {
         internal const val DEFAULT_EVENT_URI = "https://event-api.hackle.io"
         internal const val DEFAULT_API_URI = "https://api.hackle.io"
         internal const val DEFAULT_MONITORING_URI = "https://monitoring.hackle.io"
-
-        internal const val DEFAULT_SESSION_TIMEOUT_MILLIS = 1000 * 60 * 30 // 30m
 
         internal const val NO_POLLING = -1
         internal const val DEFAULT_POLLING_INTERVAL_MILLIS = NO_POLLING
