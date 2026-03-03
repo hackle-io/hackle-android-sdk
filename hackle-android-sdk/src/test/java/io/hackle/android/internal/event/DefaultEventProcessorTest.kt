@@ -151,7 +151,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<User>(), any<Long>()) }
+        verify(exactly = 0) { sessionManager.resolveSession(any<User>(), any<Long>()) }
     }
 
 
@@ -166,7 +166,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<User>(), any<Long>()) }
+        verify(exactly = 0) { sessionManager.resolveSession(any<User>(), any<Long>()) }
     }
 
 
@@ -181,7 +181,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<User>(), 42L) }
+        verify(exactly = 1) { sessionManager.resolveSession(any<User>(), 42L) }
     }
 
     @Test
@@ -195,7 +195,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<User>(), 42L) }
+        verify(exactly = 1) { sessionManager.resolveSession(any<User>(), 42L) }
     }
 
     @Test

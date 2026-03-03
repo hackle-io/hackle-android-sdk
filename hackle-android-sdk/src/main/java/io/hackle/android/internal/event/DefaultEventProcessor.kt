@@ -168,7 +168,7 @@ internal class DefaultEventProcessor(
             }
 
             val currentUser = userManager.currentUser
-            sessionManager.startNewSessionIfNeeded(currentUser, event.timestamp)
+            sessionManager.resolveSession(currentUser, event.timestamp)
         }
 
         private fun save(event: UserEvent) {

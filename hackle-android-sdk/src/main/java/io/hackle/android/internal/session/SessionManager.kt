@@ -53,7 +53,7 @@ internal class SessionManager(
         }
     }
 
-    fun startNewSessionIfNeeded(user: User, timestamp: Long): Session {
+    fun resolveSession(user: User, timestamp: Long): Session {
         val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
         return if (!isBackground) {
             updateLastEventTime(timestamp)
