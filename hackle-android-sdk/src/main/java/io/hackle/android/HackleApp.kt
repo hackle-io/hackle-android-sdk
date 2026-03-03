@@ -58,6 +58,13 @@ class HackleApp internal constructor(
      */
     val user: User get() = hackleAppCore.user
 
+    /**
+     * Current opt-out status.
+     *
+     * @return the current opt-out status
+     */
+    val isOptOut: Boolean get() = hackleAppCore.isOptOut
+
     internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
 
     /**

@@ -61,6 +61,7 @@ internal class HackleAppCore(
     val deviceId: String get() = device.id
     val sessionId: String get() = sessionManager.requiredSession.id
     val user: User get() = userManager.currentUser
+    val isOptOut: Boolean get() = optOutManager.isOptOut
     val userExplorerService: HackleUserExplorerService get() = userExplorer.explorerService
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {

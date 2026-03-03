@@ -18,6 +18,7 @@ import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
+import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
@@ -100,6 +101,9 @@ class HackleAppTest {
     @RelaxedMockK
     private lateinit var fetchThrottler: Throttler
 
+    @RelaxedMockK
+    private lateinit var optOutManager: OptOutManager
+
     private lateinit var sut: HackleApp
 
     @Before
@@ -129,6 +133,7 @@ class HackleAppTest {
             MockDevice("hackle_device_id", emptyMap()),
             applicationInstallStateManager,
             userExplorer,
+            optOutManager,
         )
         
         sut = HackleApp(
@@ -168,6 +173,24 @@ class HackleAppTest {
         val user = User.builder().build()
         every { userManager.currentUser } returns user
         expectThat(sut.user).isSameInstanceAs(user)
+    }
+
+    @Test
+    fun `isOptOut`() {
+        every { optOutManager.isOptOut } returns false
+        expectThat(sut.isOptOut).isEqualTo(false)
+    }
+
+    @Test
+    fun `setOptOutTracking`() {
+        sut.setOptOutTracking(true)
+        verify(exactly = 1) { optOutManager.setOptOutTracking(true) }
+    }
+
+    @Test
+    fun `setOptOutTracking - false`() {
+        sut.setOptOutTracking(false)
+        verify(exactly = 1) { optOutManager.setOptOutTracking(false) }
     }
 
     @Test
