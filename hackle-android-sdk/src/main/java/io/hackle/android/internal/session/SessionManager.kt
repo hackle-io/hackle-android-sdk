@@ -39,7 +39,7 @@ internal class SessionManager(
     }
 
     fun startNewSessionIfNeeded(context: SessionContext): Session {
-        if (context.checkApplicationState && shouldSkipByApplicationState(context.timestamp)) {
+        if (context.checkApplicationState && handleApplicationStateCheck(context.timestamp)) {
             return requiredSession
         }
 
@@ -101,7 +101,7 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
-    private fun shouldSkipByApplicationState(timestamp: Long): Boolean {
+    private fun handleApplicationStateCheck(timestamp: Long): Boolean {
         val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
         if (!isBackground) {
             updateLastEventTime(timestamp)
