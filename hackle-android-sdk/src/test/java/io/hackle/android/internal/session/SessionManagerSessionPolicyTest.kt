@@ -9,8 +9,9 @@ import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.User
 import io.mockk.mockk
-import org.junit.Assert.fail
 import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEmpty
 
 /**
  * Truth table: 16 policy combinations × 7 scenarios = 112 cases.
@@ -101,9 +102,9 @@ class SessionManagerSessionPolicyTest {
                 failures.add("  ${scenario.label}: expected=$exp, actual=$act")
             }
         }
-        if (failures.isNotEmpty()) {
-            fail("Policy $policyLabel mismatches:\n${failures.joinToString("\n")}")
-        }
+        expectThat(failures)
+            .describedAs("Policy $policyLabel mismatches:\n${failures.joinToString("\n")}")
+            .isEmpty()
     }
 
     //                                           S1       S2       S3       S4       S5       S6       S7
