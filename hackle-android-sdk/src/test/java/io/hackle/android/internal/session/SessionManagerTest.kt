@@ -360,7 +360,7 @@ class SessionManagerTest {
         expectThat(s1) isSameInstanceAs s2
     }
 
-    // === enableExpiredOnBackground = true (기본값) ===
+    // === expireOnBackground = true (기본값) ===
 
     @Test
     fun `startNewSessionIfNeeded with isBackground - foreground 이벤트는 lastEventTime만 갱신한다`() {
@@ -379,10 +379,10 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded with isBackground - background 이벤트 + enableExpiredOnBackground true + 세션 만료 시 새로운 세션 시작`() {
+    fun `startNewSessionIfNeeded with isBackground - background 이벤트 + expireOnBackground true + 세션 만료 시 새로운 세션 시작`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(10)
-            .enableExpiredOnBackground(true)
+            .expireOnBackground(true)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -398,10 +398,10 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded with isBackground - background 이벤트 + enableExpiredOnBackground true + 세션 미만료 시 세션 유지`() {
+    fun `startNewSessionIfNeeded with isBackground - background 이벤트 + expireOnBackground true + 세션 미만료 시 세션 유지`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(1000)
-            .enableExpiredOnBackground(true)
+            .expireOnBackground(true)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -417,13 +417,13 @@ class SessionManagerTest {
         expectThat(sut.lastEventTime) isEqualTo 200
     }
 
-    // === enableExpiredOnBackground = false ===
+    // === expireOnBackground = false ===
 
     @Test
-    fun `startNewSessionIfNeeded with isBackground - background 이벤트 + enableExpiredOnBackground false + 세션 만료 시에도 세션 유지`() {
+    fun `startNewSessionIfNeeded with isBackground - background 이벤트 + expireOnBackground false + 세션 만료 시에도 세션 유지`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(10)
-            .enableExpiredOnBackground(false)
+            .expireOnBackground(false)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -441,10 +441,10 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded with isBackground - foreground 이벤트는 enableExpiredOnBackground 값과 무관하게 lastEventTime 갱신`() {
+    fun `startNewSessionIfNeeded with isBackground - foreground 이벤트는 expireOnBackground 값과 무관하게 lastEventTime 갱신`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(10)
-            .enableExpiredOnBackground(false)
+            .expireOnBackground(false)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -459,10 +459,10 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `onUserUpdated - enableExpiredOnBackground false 이어도 식별자 변경 시 세션 재시작`() {
+    fun `onUserUpdated - expireOnBackground false 이어도 식별자 변경 시 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(10)
-            .enableExpiredOnBackground(false)
+            .expireOnBackground(false)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -479,10 +479,10 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `onForeground - enableExpiredOnBackground false 이어도 포그라운드 전환 시 세션 재시작 가능`() {
+    fun `onForeground - expireOnBackground false 이어도 포그라운드 전환 시 세션 재시작 가능`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(10)
-            .enableExpiredOnBackground(false)
+            .expireOnBackground(false)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -500,10 +500,10 @@ class SessionManagerTest {
     // === 통합 시나리오 테스트 ===
 
     @Test
-    fun `enableExpiredOnBackground false - 백그라운드 이벤트 후 포그라운드 전환 시 세션 재시작`() {
+    fun `expireOnBackground false - 백그라운드 이벤트 후 포그라운드 전환 시 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(50)
-            .enableExpiredOnBackground(false)
+            .expireOnBackground(false)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -517,7 +517,7 @@ class SessionManagerTest {
         sut.onBackground(100)
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
-        //    enableExpiredOnBackground = false이므로 세션 유지
+        //    expireOnBackground = false이므로 세션 유지
         sut.startNewSessionIfNeeded(user, 200, isBackground = true)
         expectThat(listener.started).hasSize(0)
         expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
@@ -530,10 +530,10 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `enableExpiredOnBackground true - 백그라운드 이벤트로 세션 재시작`() {
+    fun `expireOnBackground true - 백그라운드 이벤트로 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
             .timeoutMillis(50)
-            .enableExpiredOnBackground(true)
+            .expireOnBackground(true)
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -547,7 +547,7 @@ class SessionManagerTest {
         sut.onBackground(100)
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
-        //    enableExpiredOnBackground = true이므로 세션 재시작
+        //    expireOnBackground = true이므로 세션 재시작
         sut.startNewSessionIfNeeded(user, 200, isBackground = true)
         expectThat(listener.ended).hasSize(1)
         expectThat(listener.started).hasSize(1)

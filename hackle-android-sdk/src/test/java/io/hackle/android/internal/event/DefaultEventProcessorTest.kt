@@ -159,7 +159,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<User>(), any<Long>(), any<Boolean>()) }
     }
 
 
@@ -174,12 +174,12 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<User>(), any<Long>(), any<Boolean>()) }
     }
 
 
     @Test
-    fun `process - last event time update`() {
+    fun `process - FOREGROUND인 경우 startNewSessionIfNeeded 호출`() {
         // given
         val sut = processor()
         val user = HackleUser.of("id")
@@ -189,11 +189,11 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.updateLastEventTime(42) }
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<User>(), 42L, false) }
     }
 
     @Test
-    fun `process - FOREGOURND가 아닌경우 세션초기화 시도`() {
+    fun `process - BACKGROUND인 경우 startNewSessionIfNeeded 호출`() {
         // given
         val sut = processor()
         val user = HackleUser.of("id")
@@ -204,7 +204,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any(), any(), 42) }
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<User>(), 42L, true) }
     }
 
     @Test

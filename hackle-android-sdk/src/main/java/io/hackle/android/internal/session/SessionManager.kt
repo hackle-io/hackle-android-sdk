@@ -50,11 +50,14 @@ internal class SessionManager(
         }
     }
 
-    fun startNewSessionIfNeeded(user: User, timestamp: Long, isBackground: Boolean) {
-        if (!isBackground) {
+    fun startNewSessionIfNeeded(user: User, timestamp: Long, isBackground: Boolean): Session {
+        return if (!isBackground) {
             updateLastEventTime(timestamp)
-        } else if (sessionPolicy.enableExpiredOnBackground) {
+            requiredSession
+        } else if (sessionPolicy.expireOnBackground) {
             startNewSessionIfNeeded(user, user, timestamp)
+        } else {
+            requiredSession
         }
     }
 

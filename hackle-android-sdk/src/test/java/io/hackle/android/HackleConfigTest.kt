@@ -259,10 +259,12 @@ class HackleConfigTest {
         val original = HackleSessionPolicy.builder()
             .persistCondition(HackleSessionPersistCondition.NULL_TO_USER_ID)
             .timeoutMillis(42000)
+            .expireOnBackground(false)
             .build()
         val copy = original.toBuilder().build()
         expectThat(copy.persistCondition).isSameInstanceAs(original.persistCondition)
         expectThat(copy.timeoutMillis).isEqualTo(original.timeoutMillis)
+        expectThat(copy.expireOnBackground).isEqualTo(original.expireOnBackground)
     }
 
     @Test

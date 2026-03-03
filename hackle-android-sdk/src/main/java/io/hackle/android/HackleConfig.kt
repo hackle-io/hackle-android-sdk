@@ -222,6 +222,10 @@ class HackleConfig private constructor(builder: Builder) {
         /**
          * Sets the session timeout in milliseconds.
          *
+         * If [sessionPolicy] is called after this method, the timeout set here will be overridden.
+         * If this method is called after [sessionPolicy], the existing policy's other settings
+         * (e.g. persistCondition) are preserved and only the timeout is updated.
+         *
          * @param sessionTimeoutMillis the session timeout in milliseconds
          * @return this builder instance
          */
