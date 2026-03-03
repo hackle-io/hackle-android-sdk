@@ -170,13 +170,9 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            if (applicationLifecycleManager.currentState == ApplicationState.FOREGROUND) {
-                sessionManager.updateLastEventTime(event.timestamp)
-            } else {
-                // Corner case when an event is processed between onPause and onResume
-                val currentUser = userManager.currentUser
-                sessionManager.startNewSessionIfNeeded(currentUser, currentUser, event.timestamp)
-            }
+            val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
+            val currentUser = userManager.currentUser
+            sessionManager.startNewSessionIfNeeded(currentUser, event.timestamp, isBackground)
         }
 
         private fun save(event: UserEvent) {

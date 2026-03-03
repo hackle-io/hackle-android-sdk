@@ -50,6 +50,14 @@ internal class SessionManager(
         }
     }
 
+    fun startNewSessionIfNeeded(user: User, timestamp: Long, isBackground: Boolean) {
+        if (!isBackground) {
+            updateLastEventTime(timestamp)
+        } else if (sessionPolicy.enableExpiredOnBackground) {
+            startNewSessionIfNeeded(user, user, timestamp)
+        }
+    }
+
     fun updateLastEventTime(timestamp: Long) {
         lastEventTime = timestamp
         keyValueRepository.putLong(LAST_EVENT_TIME_KEY, timestamp)

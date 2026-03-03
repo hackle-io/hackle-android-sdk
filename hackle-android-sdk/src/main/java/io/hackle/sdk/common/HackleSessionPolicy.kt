@@ -14,11 +14,15 @@ class HackleSessionPolicy private constructor(builder: Builder) {
     /** Session timeout in milliseconds. Defaults to 30 minutes. */
     val timeoutMillis: Long = builder.timeoutMillis
 
-    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition, timeoutMillis=$timeoutMillis)"
+    /** Whether session expiration is enabled when the app is in the background. */
+    val enableExpiredOnBackground: Boolean = builder.enableExpiredOnBackground
+
+    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition, timeoutMillis=$timeoutMillis, enableExpiredOnBackground=$enableExpiredOnBackground)"
 
     class Builder {
         internal var persistCondition: HackleSessionPersistCondition? = null
         internal var timeoutMillis: Long = DEFAULT_SESSION_TIMEOUT_MILLIS
+        internal var enableExpiredOnBackground: Boolean = true
 
         /**
          * Sets the condition for preserving the session when user identifiers change.
@@ -41,16 +45,27 @@ class HackleSessionPolicy private constructor(builder: Builder) {
         }
 
         /**
+         * Sets whether session expiration is enabled when the app is in the background.
+         *
+         * @param enableExpiredOnBackground true to allow session restart on background events, false to prevent it
+         * @return this builder instance
+         */
+        fun enableExpiredOnBackground(enableExpiredOnBackground: Boolean) = apply {
+            this.enableExpiredOnBackground = enableExpiredOnBackground
+        }
+
+        /**
          * Builds a [HackleSessionPolicy] instance.
          *
          * @return a [HackleSessionPolicy] instance
          */
         fun build(): HackleSessionPolicy = HackleSessionPolicy(this)
     }
-    
+
     internal fun toBuilder(): Builder = Builder().apply {
         this.persistCondition = this@HackleSessionPolicy.persistCondition
         this.timeoutMillis = this@HackleSessionPolicy.timeoutMillis
+        this.enableExpiredOnBackground = this@HackleSessionPolicy.enableExpiredOnBackground
     }
 
     companion object {
