@@ -1,6 +1,8 @@
 package io.hackle.android.internal.session
 
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.user.UserListener
@@ -13,6 +15,7 @@ import io.hackle.sdk.core.internal.log.Logger
 internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
+    private val applicationLifecycleManager: ApplicationLifecycleManager,
     private val sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
 ) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
@@ -50,7 +53,8 @@ internal class SessionManager(
         }
     }
 
-    fun startNewSessionIfNeeded(user: User, timestamp: Long, isBackground: Boolean): Session {
+    fun startNewSessionIfNeeded(user: User, timestamp: Long): Session {
+        val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
         return if (!isBackground) {
             updateLastEventTime(timestamp)
             requiredSession

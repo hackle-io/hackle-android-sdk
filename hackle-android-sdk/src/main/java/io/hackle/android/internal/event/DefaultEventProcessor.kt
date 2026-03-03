@@ -1,8 +1,6 @@
 package io.hackle.android.internal.event
 
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
@@ -34,7 +32,6 @@ internal class DefaultEventProcessor(
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
-    private val applicationLifecycleManager: ApplicationLifecycleManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
 ) : EventProcessor, ApplicationLifecycleListener, Closeable {
@@ -170,9 +167,8 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
             val currentUser = userManager.currentUser
-            sessionManager.startNewSessionIfNeeded(currentUser, event.timestamp, isBackground)
+            sessionManager.startNewSessionIfNeeded(currentUser, event.timestamp)
         }
 
         private fun save(event: UserEvent) {

@@ -57,6 +57,7 @@ class SessionManagerSessionPolicyTest {
                 mockk()
             ),
             keyValueRepository = MapKeyValueRepository(),
+            applicationLifecycleManager = mockk(relaxed = true),
             sessionPolicy = policy,
         )
     }

@@ -1,5 +1,7 @@
 package io.hackle.android.internal.session
 
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
@@ -9,6 +11,7 @@ import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.User
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
@@ -22,6 +25,9 @@ class SessionManagerTest {
         sessionTimeoutMillis: Long = 10000,
         repository: KeyValueRepository = MapKeyValueRepository(),
         sessionPolicy: HackleSessionPolicy? = null,
+        applicationLifecycleManager: ApplicationLifecycleManager = mockk {
+            every { currentState } returns ApplicationState.FOREGROUND
+        },
         vararg listeners: SessionListener,
     ): SessionManager {
         val policy = sessionPolicy ?: HackleSessionPolicy.builder()
@@ -36,6 +42,7 @@ class SessionManagerTest {
                 mockk()
             ),
             keyValueRepository = repository,
+            applicationLifecycleManager = applicationLifecycleManager,
             sessionPolicy = policy,
         ).also { listeners.forEach(it::addListener) }
     }
@@ -371,7 +378,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeeded(user, 200, isBackground = false)
+        sut.startNewSessionIfNeeded(user, 200)
 
         expectThat(sut.lastEventTime) isEqualTo 200
         expectThat(listener.started).hasSize(0)
@@ -384,14 +391,17 @@ class SessionManagerTest {
             .timeoutMillis(10)
             .expireOnBackground(true)
             .build()
+        val backgroundMock = mockk<ApplicationLifecycleManager> {
+            every { currentState } returns ApplicationState.BACKGROUND
+        }
         val listener = SessionListenerStub()
-        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
+        val sut = manager(sessionPolicy = policy, applicationLifecycleManager = backgroundMock, listeners = *arrayOf(listener))
         val user = User.of("hello")
 
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeeded(user, 200, isBackground = true)
+        sut.startNewSessionIfNeeded(user, 200)
 
         expectThat(listener.started).hasSize(1)
         expectThat(listener.ended).hasSize(1)
@@ -403,14 +413,17 @@ class SessionManagerTest {
             .timeoutMillis(1000)
             .expireOnBackground(true)
             .build()
+        val backgroundMock = mockk<ApplicationLifecycleManager> {
+            every { currentState } returns ApplicationState.BACKGROUND
+        }
         val listener = SessionListenerStub()
-        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
+        val sut = manager(sessionPolicy = policy, applicationLifecycleManager = backgroundMock, listeners = *arrayOf(listener))
         val user = User.of("hello")
 
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeeded(user, 200, isBackground = true)
+        sut.startNewSessionIfNeeded(user, 200)
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -425,14 +438,17 @@ class SessionManagerTest {
             .timeoutMillis(10)
             .expireOnBackground(false)
             .build()
+        val backgroundMock = mockk<ApplicationLifecycleManager> {
+            every { currentState } returns ApplicationState.BACKGROUND
+        }
         val listener = SessionListenerStub()
-        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
+        val sut = manager(sessionPolicy = policy, applicationLifecycleManager = backgroundMock, listeners = *arrayOf(listener))
         val user = User.of("hello")
 
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeeded(user, 200, isBackground = true)
+        sut.startNewSessionIfNeeded(user, 200)
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -453,7 +469,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeeded(user, 200, isBackground = false)
+        sut.startNewSessionIfNeeded(user, 200)
 
         expectThat(sut.lastEventTime) isEqualTo 200
     }
@@ -505,8 +521,11 @@ class SessionManagerTest {
             .timeoutMillis(50)
             .expireOnBackground(false)
             .build()
+        val backgroundMock = mockk<ApplicationLifecycleManager> {
+            every { currentState } returns ApplicationState.BACKGROUND
+        }
         val listener = SessionListenerStub()
-        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
+        val sut = manager(sessionPolicy = policy, applicationLifecycleManager = backgroundMock, listeners = *arrayOf(listener))
         val user = User.of("hello")
 
         // 1. 세션 시작
@@ -518,7 +537,7 @@ class SessionManagerTest {
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
         //    expireOnBackground = false이므로 세션 유지
-        sut.startNewSessionIfNeeded(user, 200, isBackground = true)
+        sut.startNewSessionIfNeeded(user, 200)
         expectThat(listener.started).hasSize(0)
         expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
 
@@ -535,8 +554,11 @@ class SessionManagerTest {
             .timeoutMillis(50)
             .expireOnBackground(true)
             .build()
+        val backgroundMock = mockk<ApplicationLifecycleManager> {
+            every { currentState } returns ApplicationState.BACKGROUND
+        }
         val listener = SessionListenerStub()
-        val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
+        val sut = manager(sessionPolicy = policy, applicationLifecycleManager = backgroundMock, listeners = *arrayOf(listener))
         val user = User.of("hello")
 
         // 1. 세션 시작
@@ -548,7 +570,7 @@ class SessionManagerTest {
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
         //    expireOnBackground = true이므로 세션 재시작
-        sut.startNewSessionIfNeeded(user, 200, isBackground = true)
+        sut.startNewSessionIfNeeded(user, 200)
         expectThat(listener.ended).hasSize(1)
         expectThat(listener.started).hasSize(1)
         expectThat(sut.currentSession).isNotNull().isNotEqualTo(session1)

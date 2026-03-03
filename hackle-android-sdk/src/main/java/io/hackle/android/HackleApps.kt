@@ -176,6 +176,7 @@ internal object HackleApps {
         val sessionManager = SessionManager(
             userManager = userManager,
             keyValueRepository = globalKeyValueRepository,
+            applicationLifecycleManager = applicationLifecycleManager,
             sessionPolicy = config.sessionPolicy,
         )
         userManager.addListener(sessionManager)
@@ -230,7 +231,6 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            applicationLifecycleManager = applicationLifecycleManager,
             screenUserEventDecorator = screenUserEventDecorator,
             eventBackoffController = eventBackoffController
         )
