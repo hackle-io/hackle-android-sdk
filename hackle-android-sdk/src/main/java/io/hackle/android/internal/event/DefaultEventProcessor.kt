@@ -6,8 +6,6 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.session.SessionEventTracker
-import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.core.event.EventProcessor
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
@@ -30,8 +28,6 @@ internal class DefaultEventProcessor(
     private val eventFlushThreshold: Int,
     private val eventFlushMaxBatchSize: Int,
     private val eventDispatcher: EventDispatcher,
-    private val sessionManager: SessionManager,
-    private val userManager: UserManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
 ) : EventProcessor, ApplicationLifecycleListener, Closeable {
@@ -166,9 +162,6 @@ internal class DefaultEventProcessor(
             if (SessionEventTracker.isSessionEvent(event) || PushEventTracker.isPushTokenEvent(event)) {
                 return
             }
-
-            val currentUser = userManager.currentUser
-            sessionManager.resolveSession(currentUser, event.timestamp)
         }
 
         private fun save(event: UserEvent) {
