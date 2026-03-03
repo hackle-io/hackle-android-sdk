@@ -59,11 +59,12 @@ class HackleApp internal constructor(
     val user: User get() = hackleAppCore.user
 
     /**
-     * Current opt-out status.
+     * Whether opt-out tracking is currently enabled.
+     * When true, all event tracking is blocked.
      *
-     * @return the current opt-out status
+     * @return true if the user has opted out of tracking
      */
-    val isOptOut: Boolean get() = hackleAppCore.isOptOut
+    val isOptOutTracking: Boolean get() = hackleAppCore.isOptOutTracking
 
     internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
 

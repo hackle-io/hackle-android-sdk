@@ -85,7 +85,8 @@ class HackleConfig private constructor(builder: Builder) {
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
     /**
-     * Whether opt-out tracking is enabled.
+     * Whether the user has opted out of event tracking.
+     * When true, all event tracking (local storage and network dispatch) is blocked.
      */
     val optOutTracking: Boolean = builder.optOutTracking
 
@@ -267,6 +268,10 @@ class HackleConfig private constructor(builder: Builder) {
         /**
          * Sets whether opt-out tracking is enabled.
          * When enabled, all event tracking (local storage and network dispatch) will be blocked.
+         *
+         * Once enabled (true), the opt-out state is persisted locally. Even if this config is
+         * later set to false, previously opted-out users remain opted out until
+         * [HackleApp.setOptOutTracking] is called with false at runtime.
          *
          * @param optOutTracking true to opt out of tracking, false to opt in (default)
          * @return this builder instance

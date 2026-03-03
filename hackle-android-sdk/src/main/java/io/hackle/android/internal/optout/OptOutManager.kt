@@ -10,29 +10,33 @@ internal class OptOutManager(
     configOptOutTracking: Boolean,
 ) {
 
+    private val lock = Any()
+
     @Volatile
-    var isOptOut: Boolean = false
+    var isOptOutTracking: Boolean = false
         private set
 
     init {
         val savedOptOut = keyValueRepository.getString(OPT_OUT_KEY)?.toBoolean() ?: false
-        isOptOut = configOptOutTracking || savedOptOut
-        save(isOptOut)
+        isOptOutTracking = configOptOutTracking || savedOptOut
+        save(isOptOutTracking)
     }
 
     fun setOptOutTracking(optOut: Boolean) {
-        if (optOut == isOptOut) {
-            return
-        }
+        synchronized(lock) {
+            if (optOut == isOptOutTracking) {
+                return
+            }
 
-        if (optOut) {
-            // optIn -> optOut 전환: 기존 로컬 이벤트를 flush한 후 차단
-            eventProcessor.flush()
-        }
+            if (optOut) {
+                // optIn -> optOut 전환: 기존 로컬 이벤트를 best-effort flush한 후 차단
+                eventProcessor.flush()
+            }
 
-        isOptOut = optOut
-        save(optOut)
-        log.info { "OptOutTracking changed to $optOut" }
+            isOptOutTracking = optOut
+            save(optOut)
+            log.info { "OptOutTracking changed to $optOut" }
+        }
     }
 
     private fun save(optOut: Boolean) {

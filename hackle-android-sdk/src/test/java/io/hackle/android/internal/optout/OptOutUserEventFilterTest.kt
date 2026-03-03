@@ -4,8 +4,9 @@ import io.hackle.android.internal.event.UserEventFilter
 import io.hackle.sdk.core.event.UserEvent
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.Assert.assertEquals
 import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 
 class OptOutUserEventFilterTest {
 
@@ -14,15 +15,15 @@ class OptOutUserEventFilterTest {
 
     @Test
     fun `when optOut is true, returns BLOCK`() {
-        every { optOutManager.isOptOut } returns true
+        every { optOutManager.isOptOutTracking } returns true
         val event = mockk<UserEvent>()
-        assertEquals(UserEventFilter.Result.BLOCK, filter.check(event))
+        expectThat(filter.check(event)).isEqualTo(UserEventFilter.Result.BLOCK)
     }
 
     @Test
     fun `when optOut is false, returns PASS`() {
-        every { optOutManager.isOptOut } returns false
+        every { optOutManager.isOptOutTracking } returns false
         val event = mockk<UserEvent>()
-        assertEquals(UserEventFilter.Result.PASS, filter.check(event))
+        expectThat(filter.check(event)).isEqualTo(UserEventFilter.Result.PASS)
     }
 }

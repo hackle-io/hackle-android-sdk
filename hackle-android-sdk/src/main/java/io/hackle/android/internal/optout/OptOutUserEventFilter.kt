@@ -8,7 +8,7 @@ internal class OptOutUserEventFilter(
 ) : UserEventFilter {
 
     override fun check(event: UserEvent): UserEventFilter.Result {
-        return if (optOutManager.isOptOut) {
+        return if (optOutManager.isOptOutTracking) {
             UserEventFilter.Result.BLOCK
         } else {
             UserEventFilter.Result.PASS

@@ -176,9 +176,15 @@ class HackleAppTest {
     }
 
     @Test
-    fun `isOptOut`() {
-        every { optOutManager.isOptOut } returns false
-        expectThat(sut.isOptOut).isEqualTo(false)
+    fun `isOptOutTracking - false`() {
+        every { optOutManager.isOptOutTracking } returns false
+        expectThat(sut.isOptOutTracking).isEqualTo(false)
+    }
+
+    @Test
+    fun `isOptOutTracking - true`() {
+        every { optOutManager.isOptOutTracking } returns true
+        expectThat(sut.isOptOutTracking).isEqualTo(true)
     }
 
     @Test
@@ -191,6 +197,12 @@ class HackleAppTest {
     fun `setOptOutTracking - false`() {
         sut.setOptOutTracking(false)
         verify(exactly = 1) { optOutManager.setOptOutTracking(false) }
+    }
+
+    @Test
+    fun `setOptOutTracking - does not throw when exception occurs`() {
+        every { optOutManager.setOptOutTracking(any()) } throws RuntimeException()
+        sut.setOptOutTracking(true)
     }
 
     @Test
