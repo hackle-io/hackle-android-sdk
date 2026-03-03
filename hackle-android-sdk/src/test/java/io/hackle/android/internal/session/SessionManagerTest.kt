@@ -153,7 +153,7 @@ class SessionManagerTest {
         val user = User.of("hello")
 
         // when
-        val actual = sut.startNewSessionIfNeeded(user, user, 42)
+        val actual = sut.startNewSessionIfNeeded(SessionContext.of(user, 42))
 
         // then
         expectThat(actual.id).startsWith("42.")
@@ -169,7 +169,7 @@ class SessionManagerTest {
         val user = User.of("hello")
 
         val s1 = sut.startNewSession(user, user, 42)
-        val s2 = sut.startNewSessionIfNeeded(user, user, 51)
+        val s2 = sut.startNewSessionIfNeeded(SessionContext.of(user, 51))
 
         expectThat(s1) isSameInstanceAs s2
         expectThat(sut.lastEventTime) isEqualTo 51
@@ -184,7 +184,7 @@ class SessionManagerTest {
         val user = User.of("hello")
 
         val s1 = sut.startNewSession(user, user, 42)
-        val s2 = sut.startNewSessionIfNeeded(user, user, 52)
+        val s2 = sut.startNewSessionIfNeeded(SessionContext.of(user, 52))
 
         expectThat(s1) isNotEqualTo s2
         expectThat(sut.lastEventTime) isEqualTo 52
@@ -206,7 +206,7 @@ class SessionManagerTest {
         val newUser = User.builder().userId("A").deviceId("d1").build()
 
         val session1 = sut.startNewSession(oldUser, oldUser, 100)
-        val session2 = sut.startNewSessionIfNeeded(oldUser, newUser, 200)
+        val session2 = sut.startNewSessionIfNeeded(SessionContext.of(oldUser, newUser, 200))
 
         expectThat(session1.id) isEqualTo session2.id
     }
@@ -309,7 +309,7 @@ class SessionManagerTest {
         sut.onForeground(42, false)
 
         // then
-        verify(exactly = 1) { sut.startNewSessionIfNeeded(any(), any(), 42) }
+        verify(exactly = 1) { sut.startNewSessionIfNeeded(any<SessionContext>()) }
     }
 
     @Test
@@ -348,7 +348,7 @@ class SessionManagerTest {
 
         val user = User.of("hello")
         val s1 = sut.startNewSession(user, user, 42)
-        val s2 = sut.startNewSessionIfNeeded(user, user, 52)
+        val s2 = sut.startNewSessionIfNeeded(SessionContext.of(user, 52))
 
         expectThat(s1) isNotEqualTo s2
     }
@@ -362,7 +362,7 @@ class SessionManagerTest {
 
         val user = User.of("hello")
         val s1 = sut.startNewSession(user, user, 42)
-        val s2 = sut.startNewSessionIfNeeded(user, user, 51)
+        val s2 = sut.startNewSessionIfNeeded(SessionContext.of(user, 51))
 
         expectThat(s1) isSameInstanceAs s2
     }
@@ -378,7 +378,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
 
         expectThat(sut.lastEventTime) isEqualTo 200
         expectThat(listener.started).hasSize(0)
@@ -401,7 +401,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
 
         expectThat(listener.started).hasSize(1)
         expectThat(listener.ended).hasSize(1)
@@ -423,7 +423,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -448,7 +448,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -469,7 +469,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
 
         expectThat(sut.lastEventTime) isEqualTo 200
     }
@@ -537,7 +537,7 @@ class SessionManagerTest {
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
         //    expireOnBackground = false이므로 세션 유지
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
         expectThat(listener.started).hasSize(0)
         expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
 
@@ -570,7 +570,7 @@ class SessionManagerTest {
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
         //    expireOnBackground = true이므로 세션 재시작
-        sut.startNewSessionIfNeededOnEvent(user, 200)
+        sut.startNewSessionIfNeeded(SessionContext.of(user, 200, checkApplicationState = true))
         expectThat(listener.ended).hasSize(1)
         expectThat(listener.started).hasSize(1)
         expectThat(sut.currentSession).isNotNull().isNotEqualTo(session1)

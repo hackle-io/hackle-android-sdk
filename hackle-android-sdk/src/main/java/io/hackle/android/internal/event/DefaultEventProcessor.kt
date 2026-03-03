@@ -5,6 +5,7 @@ import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.push.PushEventTracker
+import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -168,7 +169,9 @@ internal class DefaultEventProcessor(
             }
 
             val currentUser = userManager.currentUser
-            sessionManager.startNewSessionIfNeededOnEvent(currentUser, event.timestamp)
+            sessionManager.startNewSessionIfNeeded(
+                SessionContext.of(currentUser, event.timestamp, checkApplicationState = true)
+            )
         }
 
         private fun save(event: UserEvent) {

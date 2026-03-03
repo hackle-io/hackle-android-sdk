@@ -9,6 +9,7 @@ import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
+import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.session.SessionUserEventDecorator
@@ -151,7 +152,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.startNewSessionIfNeededOnEvent(any<User>(), any<Long>()) }
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
     }
 
     @Test
@@ -165,7 +166,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.startNewSessionIfNeededOnEvent(any<User>(), any<Long>()) }
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
     }
 
     @Test
@@ -179,7 +180,7 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.startNewSessionIfNeededOnEvent(any<User>(), 42L) }
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
     }
 
     @Test

@@ -95,7 +95,7 @@ class SessionManagerSessionPolicyTest {
         for ((i, scenario) in scenarios.withIndex()) {
             val sut = manager(policy)
             val session1 = sut.startNewSession(scenario.oldUser, scenario.oldUser, 100)
-            val session2 = sut.startNewSessionIfNeeded(scenario.oldUser, scenario.newUser, 200)
+            val session2 = sut.startNewSessionIfNeeded(SessionContext.of(scenario.oldUser, scenario.newUser, 200))
             val sessionExpired = session1.id != session2.id
             if (sessionExpired != expected[i]) {
                 val exp = if (expected[i]) "O (expire)" else "X (maintain)"

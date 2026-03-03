@@ -38,27 +38,17 @@ internal class SessionManager(
         return newSession(newUser, timestamp)
     }
 
-    fun startNewSessionIfNeeded(oldUser: User, newUser: User, timestamp: Long): Session {
-        return if (shouldStartNewSession(oldUser, newUser, timestamp)) {
-            startNewSession(oldUser, newUser, timestamp)
+    fun startNewSessionIfNeeded(context: SessionContext): Session {
+        if (context.checkApplicationState && shouldSkipByApplicationState(context.timestamp)) {
+            return requiredSession
+        }
+
+        return if (shouldStartNewSession(context.oldUser, context.newUser, context.timestamp)) {
+            startNewSession(context.oldUser, context.newUser, context.timestamp)
         } else {
-            updateLastEventTime(timestamp)
+            updateLastEventTime(context.timestamp)
             requiredSession
         }
-    }
-
-    fun startNewSessionIfNeededOnEvent(user: User, timestamp: Long) {
-        val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
-        if (!isBackground) {
-            updateLastEventTime(timestamp)
-            return
-        }
-
-        if (!sessionPolicy.expireOnBackground) {
-            return
-        }
-
-        startNewSessionIfNeeded(user, user, timestamp)
     }
 
     fun updateLastEventTime(timestamp: Long) {
@@ -111,6 +101,20 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
+    private fun shouldSkipByApplicationState(timestamp: Long): Boolean {
+        val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
+        if (!isBackground) {
+            updateLastEventTime(timestamp)
+            return true
+        }
+
+        if (!sessionPolicy.expireOnBackground) {
+            return true
+        }
+
+        return false
+    }
+
     private fun shouldStartNewSession(oldUser: User, newUser: User, timestamp: Long): Boolean {
         val lastEventTime = lastEventTime ?: return true
         if (currentSession == null) return true
@@ -125,7 +129,7 @@ internal class SessionManager(
 
     override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
         val currentUser = userManager.currentUser
-        startNewSessionIfNeeded(currentUser, currentUser, timestamp)
+        startNewSessionIfNeeded(SessionContext.of(currentUser, timestamp))
     }
 
     override fun onBackground(timestamp: Long) {
@@ -134,7 +138,7 @@ internal class SessionManager(
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-        startNewSessionIfNeeded(oldUser, newUser, timestamp)
+        startNewSessionIfNeeded(SessionContext.of(oldUser, newUser, timestamp))
     }
 
     companion object {
