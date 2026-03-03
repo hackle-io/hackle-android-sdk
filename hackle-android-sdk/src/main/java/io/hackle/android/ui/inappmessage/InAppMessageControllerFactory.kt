@@ -3,9 +3,9 @@ package io.hackle.android.ui.inappmessage
 import android.app.Activity
 import androidx.core.view.ViewCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.view.BaseInAppMessageView
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewController
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.sdk.core.model.InAppMessage.DisplayType.*
 
 internal class InAppMessageControllerFactory(
@@ -28,7 +28,7 @@ internal class InAppMessageControllerFactory(
         activity: Activity,
     ): InAppMessageViewController {
         val view = viewFactory.create(context, activity)
-        val controller = InAppMessageViewController(view, context, ui)
+        val controller = InAppMessageViewController(view, ui)
         view.setController(controller)
         setOnApplyWindowInsetsListener(view)
 
@@ -38,9 +38,9 @@ internal class InAppMessageControllerFactory(
 
     // add margin when enableEdgeToEdge
     // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
-    private fun setOnApplyWindowInsetsListener(view: InAppMessageView) {
+    private fun setOnApplyWindowInsetsListener(view: BaseInAppMessageView) {
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-            (v as? InAppMessageView)?.onApplyWindowInsets(windowInsets)
+            (v as? BaseInAppMessageView)?.onApplyWindowInsets(windowInsets)
             windowInsets
         }
     }

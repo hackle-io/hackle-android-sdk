@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.ui.inappmessage.DefaultInAppMessageListener
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -40,7 +40,7 @@ class InAppMessageActionEventProcessorTest {
         val listener = mockk<HackleInAppMessageListener>()
         every { listener.onInAppMessageClick(any(), any(), any()) } returns true
 
-        val layout = layout(listener, InAppMessageLayout.State.OPENED)
+        val layout = layout(listener, InAppMessageView.State.OPENED)
         val event = InAppMessageEvent.buttonAction(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
@@ -64,7 +64,7 @@ class InAppMessageActionEventProcessorTest {
         val listener = mockk<HackleInAppMessageListener>()
         every { listener.onInAppMessageClick(any(), any(), any()) } returns false
 
-        val layout = layout(listener, InAppMessageLayout.State.CLOSED)
+        val layout = layout(listener, InAppMessageView.State.CLOSED)
         val event = InAppMessageEvent.buttonAction(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
@@ -82,7 +82,7 @@ class InAppMessageActionEventProcessorTest {
     @Test
     fun `process - when cannot found handler then do nothing`() {
         // given
-        val layout = layout(DefaultInAppMessageListener, InAppMessageLayout.State.OPENED)
+        val layout = layout(DefaultInAppMessageListener, InAppMessageView.State.OPENED)
         val event = InAppMessageEvent.buttonAction(mockk(), mockk())
         every { actionHandlerFactory.get(any()) } returns null
 
@@ -93,7 +93,7 @@ class InAppMessageActionEventProcessorTest {
     @Test
     fun `process - handle`() {
         // given
-        val layout = layout(DefaultInAppMessageListener, InAppMessageLayout.State.OPENED)
+        val layout = layout(DefaultInAppMessageListener, InAppMessageView.State.OPENED)
         val event = InAppMessageEvent.buttonAction(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
@@ -109,7 +109,7 @@ class InAppMessageActionEventProcessorTest {
     }
 
 
-    private fun layout(listener: HackleInAppMessageListener, state: InAppMessageLayout.State): InAppMessageLayout {
+    private fun layout(listener: HackleInAppMessageListener, state: InAppMessageView.State): InAppMessageView {
         return mockk(relaxed = true) {
             every { this@mockk.state } returns state
             every { controller } returns mockk {

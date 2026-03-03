@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.util.AttributeSet
@@ -7,14 +7,14 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import io.hackle.android.R
 import io.hackle.android.ui.inappmessage.images
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView.AspectRatio
+import io.hackle.android.ui.inappmessage.view.InAppMessageImageView.AspectRatio
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
 internal class InAppMessageImageContainerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 
     private val imageView: InAppMessageImageView
@@ -48,7 +48,7 @@ internal class InAppMessageImageContainerView @JvmOverloads constructor(
     }
 
     fun configure(inAppMessageView: InAppMessageView, orientation: InAppMessage.Orientation) {
-        val images = inAppMessageView.context.images(orientation)
+        val images = inAppMessageView.presentationContext.images(orientation)
         when (images.size) {
             0 -> {
                 visibility = GONE

@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view.modal
+package io.hackle.android.ui.inappmessage.view.modal
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -15,9 +15,8 @@ import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.core.CornerRadii
 import io.hackle.android.ui.core.Drawables
 import io.hackle.android.ui.inappmessage.*
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
-import io.hackle.android.ui.inappmessage.layout.view.*
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView.AspectRatio
+import io.hackle.android.ui.inappmessage.view.*
+import io.hackle.android.ui.inappmessage.view.InAppMessageImageView.AspectRatio
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 import io.hackle.sdk.core.model.InAppMessage.Orientation.HORIZONTAL
@@ -26,8 +25,8 @@ import io.hackle.sdk.core.model.InAppMessage.Orientation.VERTICAL
 internal class InAppMessageModalView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : InAppMessageView(context, attrs, defStyleAttr) {
+    defStyleAttr: Int = 0,
+) : BaseInAppMessageView(context, attrs, defStyleAttr) {
 
     // Attribute
     private val cornerRadius get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_corner_radius)
@@ -115,7 +114,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
 
         // CloseButton
         val closeButton = message.closeButton
-        if (context.images(requiredOrientation).size < 2 && closeButton != null) {
+        if (presentationContext.images(requiredOrientation).size < 2 && closeButton != null) {
             closeButtonView.configure(this, closeButton)
         } else {
             closeButtonView.visibility = View.GONE

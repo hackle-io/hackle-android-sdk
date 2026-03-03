@@ -1,15 +1,15 @@
-package io.hackle.android.ui.inappmessage.layout.view.sheet
+package io.hackle.android.ui.inappmessage.view.sheet
 
 import android.content.Context
 import android.util.AttributeSet
 import io.hackle.android.R
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageContainerView
+import io.hackle.android.ui.inappmessage.view.InAppMessageContainerView
 import kotlin.math.min
 
 internal class InAppMessageBottomSheetContainerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : InAppMessageContainerView(context, attrs, defStyleAttr) {
 
     // Attributes

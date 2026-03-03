@@ -1,11 +1,10 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.view.KeyEvent
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
 import io.mockk.*
 import org.junit.Before
 import org.junit.Test
@@ -25,7 +24,7 @@ class InAppMessageViewTest {
         
         view = TestInAppMessageView(activity)
         view.setController(controller)
-        view.setContext(context)
+        view.setPresentationContext(context)
         view.setActivity(activity)
         
         mockkObject(InAppMessageUi)
@@ -72,7 +71,7 @@ class InAppMessageViewTest {
     }
 
     // Test implementation of InAppMessageView for testing purposes
-    private class TestInAppMessageView(context: android.content.Context) : InAppMessageView(context) {
+    private class TestInAppMessageView(context: android.content.Context) : BaseInAppMessageView(context) {
         override val openAnimator: InAppMessageAnimator? = null
         override val closeAnimator: InAppMessageAnimator? = null
         override fun configure() {}

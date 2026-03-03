@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.graphics.Canvas
@@ -11,7 +11,7 @@ import io.hackle.android.ui.core.CornerRadii
 internal open class InAppMessageContainerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : RelativeLayout(context, attrs, defStyleAttr) {
 
     private val path = Path()

@@ -1,28 +1,28 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
-import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerImageView
-import io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView
-import io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView
-import io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetView
+import io.hackle.android.ui.inappmessage.view.banner.InAppMessageBannerImageView
+import io.hackle.android.ui.inappmessage.view.banner.InAppMessageBannerView
+import io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalView
+import io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 
 internal class InAppMessageViewFactory {
 
-    fun create(context: InAppMessagePresentationContext, activity: Activity): InAppMessageView {
+    fun create(context: InAppMessagePresentationContext, activity: Activity): BaseInAppMessageView {
         val view = when (context.message.layout.displayType) {
             InAppMessage.DisplayType.NONE -> throw IllegalArgumentException("Unsupported in-app message display type [${context.inAppMessage.id}, ${context.message.layout.displayType}]")
             InAppMessage.DisplayType.MODAL -> InAppMessageModalView.create(activity)
             InAppMessage.DisplayType.BANNER -> createBannerView(context, activity)
             InAppMessage.DisplayType.BOTTOM_SHEET -> InAppMessageBottomSheetView.create(activity)
         }
-        view.setContext(context)
+        view.setPresentationContext(context)
         return view
     }
 
-    private fun createBannerView(context: InAppMessagePresentationContext, activity: Activity): InAppMessageView {
+    private fun createBannerView(context: InAppMessagePresentationContext, activity: Activity): BaseInAppMessageView {
         return when (context.message.layout.layoutType) {
             NONE -> throw IllegalArgumentException("Unsupported in-app message layout type [${context.inAppMessage.id}, ${context.message.layout.layoutType}]")
             IMAGE_ONLY, IMAGE -> InAppMessageBannerImageView.create(activity)
