@@ -27,7 +27,7 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : BaseInAppMessageView(context, attrs, defStyleAttr) {
+) : InAppMessageBaseView(context, attrs, defStyleAttr) {
 
     // Attribute
     private val maxWidth get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_banner_max_width)

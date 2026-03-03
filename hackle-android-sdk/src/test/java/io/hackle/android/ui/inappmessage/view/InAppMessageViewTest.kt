@@ -71,7 +71,7 @@ class InAppMessageViewTest {
     }
 
     // Test implementation of InAppMessageView for testing purposes
-    private class TestInAppMessageView(context: android.content.Context) : BaseInAppMessageView(context) {
+    private class TestInAppMessageView(context: android.content.Context) : InAppMessageBaseView(context) {
         override val openAnimator: InAppMessageAnimator? = null
         override val closeAnimator: InAppMessageAnimator? = null
         override fun configure() {}

@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 
 internal class InAppMessageViewController(
-    override val view: BaseInAppMessageView,
+    override val view: InAppMessageBaseView,
     override val ui: InAppMessageUi,
 ) : InAppMessageController {
 

@@ -11,7 +11,7 @@ import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 
 internal class InAppMessageViewFactory {
 
-    fun create(context: InAppMessagePresentationContext, activity: Activity): BaseInAppMessageView {
+    fun create(context: InAppMessagePresentationContext, activity: Activity): InAppMessageBaseView {
         val view = when (context.message.layout.displayType) {
             InAppMessage.DisplayType.NONE -> throw IllegalArgumentException("Unsupported in-app message display type [${context.inAppMessage.id}, ${context.message.layout.displayType}]")
             InAppMessage.DisplayType.MODAL -> InAppMessageModalView.create(activity)
@@ -22,7 +22,7 @@ internal class InAppMessageViewFactory {
         return view
     }
 
-    private fun createBannerView(context: InAppMessagePresentationContext, activity: Activity): BaseInAppMessageView {
+    private fun createBannerView(context: InAppMessagePresentationContext, activity: Activity): InAppMessageBaseView {
         return when (context.message.layout.layoutType) {
             NONE -> throw IllegalArgumentException("Unsupported in-app message layout type [${context.inAppMessage.id}, ${context.message.layout.layoutType}]")
             IMAGE_ONLY, IMAGE -> InAppMessageBannerImageView.create(activity)

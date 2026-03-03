@@ -11,7 +11,7 @@ import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import java.lang.ref.WeakReference
 
-internal abstract class BaseInAppMessageView @JvmOverloads constructor(
+internal abstract class InAppMessageBaseView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
@@ -22,8 +22,8 @@ internal abstract class BaseInAppMessageView @JvmOverloads constructor(
     private var _activity: WeakReference<Activity>? = null
 
     override val state: InAppMessageView.State get() = controller.state
-    override val controller: InAppMessageViewController get() = requireNotNull(_controller) { "InAppMessageController is not set on BaseInAppMessageView." }
-    override val presentationContext: InAppMessagePresentationContext get() = requireNotNull(_presentationContext) { "InAppMessagePresentationContext is not set on BaseInAppMessageView." }
+    override val controller: InAppMessageViewController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageBaseView." }
+    override val presentationContext: InAppMessagePresentationContext get() = requireNotNull(_presentationContext) { "InAppMessagePresentationContext is not set on InAppMessageBaseView." }
     override val activity: Activity? get() = _activity?.get()
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

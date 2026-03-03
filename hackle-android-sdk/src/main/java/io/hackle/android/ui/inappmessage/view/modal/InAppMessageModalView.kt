@@ -26,7 +26,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : BaseInAppMessageView(context, attrs, defStyleAttr) {
+) : InAppMessageBaseView(context, attrs, defStyleAttr) {
 
     // Attribute
     private val cornerRadius get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_modal_corner_radius)
