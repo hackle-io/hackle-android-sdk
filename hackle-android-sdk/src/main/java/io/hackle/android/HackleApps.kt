@@ -217,7 +217,6 @@ internal object HackleApps {
         )
 
         val eventPublisher = UserEventPublisher()
-        eventPublisher.add(sessionManager)
         val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
         val eventProcessor = DefaultEventProcessor(
@@ -230,6 +229,8 @@ internal object HackleApps {
             eventFlushThreshold = config.eventFlushThreshold,
             eventFlushMaxBatchSize = config.eventFlushThreshold * 2 + 1,
             eventDispatcher = eventDispatcher,
+            sessionManager = sessionManager,
+            userManager = userManager,
             screenUserEventDecorator = screenUserEventDecorator,
             eventBackoffController = eventBackoffController
         )

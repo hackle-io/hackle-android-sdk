@@ -12,7 +12,10 @@ import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.session.SessionUserEventDecorator
+import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.Screen
+import io.hackle.sdk.common.User
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.user.HackleUser
@@ -49,6 +52,12 @@ class DefaultEventProcessorTest {
     private lateinit var eventDispatcher: EventDispatcher
 
     @RelaxedMockK
+    private lateinit var sessionManager: SessionManager
+
+    @RelaxedMockK
+    private lateinit var userManager: UserManager
+
+    @RelaxedMockK
     private lateinit var screenManager: ScreenManager
 
     @RelaxedMockK
@@ -59,6 +68,8 @@ class DefaultEventProcessorTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
         every { eventDedupDeterminer.isDedupTarget(any()) } returns false
+        every { sessionManager.currentSession } returns null
+        every { userManager.currentUser } returns User.of("id")
         every { screenManager.currentScreen } returns null
     }
 
@@ -73,6 +84,8 @@ class DefaultEventProcessorTest {
         eventFlushThreshold: Int = 10,
         eventFlushMaxBatchSize: Int = 21,
         eventDispatcher: EventDispatcher = this.eventDispatcher,
+        sessionManager: SessionManager = this.sessionManager,
+        userManager: UserManager = this.userManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
     ): DefaultEventProcessor {
@@ -86,6 +99,8 @@ class DefaultEventProcessorTest {
             eventFlushThreshold = eventFlushThreshold,
             eventFlushMaxBatchSize = eventFlushMaxBatchSize,
             eventDispatcher = eventDispatcher,
+            sessionManager = sessionManager,
+            userManager = userManager,
             screenUserEventDecorator = ScreenUserEventDecorator(screenManager),
             eventBackoffController = eventBackoffController
         )
@@ -123,6 +138,51 @@ class DefaultEventProcessorTest {
     }
 
     @Test
+    fun `process - SessionEvent 인 경우 startSessionIfNeededOnEvent 를 호출하지 않는다`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
+        val event = mockk<UserEvent.Track> {
+            every { event } returns Event.of("\$session_start")
+            every { this@mockk.user } returns user
+        }
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeededOnEvent(any<User>(), any<Long>()) }
+    }
+
+    @Test
+    fun `process - PushTokenEvent 인 경우 startSessionIfNeededOnEvent 를 호출하지 않는다`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
+        val event = UserEvents.track("\$push_token", user = user)
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeededOnEvent(any<User>(), any<Long>()) }
+    }
+
+    @Test
+    fun `process - startSessionIfNeededOnEvent 호출`() {
+        // given
+        val sut = processor()
+        val user = HackleUser.of("id")
+        val event = event(user = user, timestamp = 42)
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeededOnEvent(any<User>(), 42L) }
+    }
+
+    @Test
     fun `process - 중복제거 대상이면 이벤트를 추가하지 않는다`() {
         // given
         val sut = processor()
@@ -156,7 +216,6 @@ class DefaultEventProcessorTest {
     @Test
     fun `process - currentSession 의 sessionId 를 추가한다`() {
         // given
-        val sessionManager = mockk<SessionManager>(relaxed = true)
         val sut = processor()
         sut.addDecorator(SessionUserEventDecorator(SessionUserDecorator(sessionManager)))
         var savedEvent: UserEvent? = null

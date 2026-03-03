@@ -11,7 +11,6 @@ import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.event.UserEvent
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -379,7 +378,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
 
         expectThat(sut.lastEventTime) isEqualTo 200
         expectThat(listener.started).hasSize(0)
@@ -402,7 +401,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
 
         expectThat(listener.started).hasSize(1)
         expectThat(listener.ended).hasSize(1)
@@ -424,7 +423,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -449,7 +448,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -470,7 +469,7 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
 
         expectThat(sut.lastEventTime) isEqualTo 200
     }
@@ -538,7 +537,7 @@ class SessionManagerTest {
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
         //    expireOnBackground = false이므로 세션 유지
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
         expectThat(listener.started).hasSize(0)
         expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
 
@@ -571,7 +570,7 @@ class SessionManagerTest {
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
         //    expireOnBackground = true이므로 세션 재시작
-        sut.onEvent(userEvent(200))
+        sut.startNewSessionIfNeededOnEvent(user, 200)
         expectThat(listener.ended).hasSize(1)
         expectThat(listener.started).hasSize(1)
         expectThat(sut.currentSession).isNotNull().isNotEqualTo(session1)
@@ -594,9 +593,5 @@ class SessionManagerTest {
             started.clear()
             ended.clear()
         }
-    }
-
-    private fun userEvent(timestamp: Long): UserEvent = mockk {
-        every { this@mockk.timestamp } returns timestamp
     }
 }

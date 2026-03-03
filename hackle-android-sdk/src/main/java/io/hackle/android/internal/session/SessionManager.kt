@@ -5,13 +5,11 @@ import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleMana
 import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
-import io.hackle.android.internal.event.UserEventListener
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.user.identifierEquals
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
-import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class SessionManager(
@@ -19,7 +17,7 @@ internal class SessionManager(
     private val keyValueRepository: KeyValueRepository,
     private val applicationLifecycleManager: ApplicationLifecycleManager,
     private val sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
-) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener, UserEventListener {
+) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
 
@@ -47,6 +45,20 @@ internal class SessionManager(
             updateLastEventTime(timestamp)
             requiredSession
         }
+    }
+
+    fun startNewSessionIfNeededOnEvent(user: User, timestamp: Long) {
+        val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
+        if (!isBackground) {
+            updateLastEventTime(timestamp)
+            return
+        }
+
+        if (!sessionPolicy.expireOnBackground) {
+            return
+        }
+
+        startNewSessionIfNeeded(user, user, timestamp)
     }
 
     fun updateLastEventTime(timestamp: Long) {
@@ -119,21 +131,6 @@ internal class SessionManager(
     override fun onBackground(timestamp: Long) {
         updateLastEventTime(timestamp)
         currentSession?.let { saveSession(it) }
-    }
-
-    override fun onEvent(event: UserEvent) {
-        val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
-        if (!isBackground) {
-            updateLastEventTime(event.timestamp)
-            return
-        }
-
-        if (!sessionPolicy.expireOnBackground) {
-            return
-        }
-
-        val currentUser = userManager.currentUser
-        startNewSessionIfNeeded(currentUser, currentUser, event.timestamp)
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
