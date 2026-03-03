@@ -61,7 +61,8 @@ class HackleConfig private constructor(builder: Builder) {
     val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
 
     /**
-     * The session policy that controls which identifier changes trigger session renewal.
+     * The session policy for controlling session behavior, including timeout, identifier-change handling,
+     * and background expiration.
      */
     val sessionPolicy: HackleSessionPolicy = builder.sessionPolicy
 
@@ -70,10 +71,10 @@ class HackleConfig private constructor(builder: Builder) {
      */
     @Deprecated(
         message = "Use sessionPolicy.timeoutMillis instead",
-        replaceWith = ReplaceWith("sessionPolicy.timeoutMillis.toInt()")
+        replaceWith = ReplaceWith("sessionPolicy.timeoutMillis")
     )
     val sessionTimeoutMillis: Int
-        get() = sessionPolicy.timeoutMillis.toInt()
+        get() = sessionPolicy.timeoutMillis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
 
     /**
      * The polling interval in milliseconds.
@@ -226,14 +227,21 @@ class HackleConfig private constructor(builder: Builder) {
          */
         @Deprecated(
             message = "Use HackleSessionPolicy.Builder.timeoutMillis() instead. " +
-                "See HackleSessionPolicy.builder() for details."
+                "See HackleSessionPolicy.builder() for details.",
+            replaceWith = ReplaceWith(
+                "sessionPolicy(HackleSessionPolicy.builder().timeoutMillis(sessionTimeoutMillis.toLong()).build())",
+                "io.hackle.sdk.common.HackleSessionPolicy"
+            )
         )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
             this.sessionPolicy = this.sessionPolicy.toBuilder().timeoutMillis(sessionTimeoutMillis.toLong()).build()
         }
 
         /**
-         * Sets the session policy that controls which identifier changes trigger session renewal.
+         * Sets the session policy for controlling session behavior.
+         *
+         * Note: This replaces the entire session policy. If [sessionTimeoutMillis] was called before this method,
+         * that timeout value will be overridden by the policy's own timeout.
          *
          * @param sessionPolicy the session policy to set
          * @return this builder instance
