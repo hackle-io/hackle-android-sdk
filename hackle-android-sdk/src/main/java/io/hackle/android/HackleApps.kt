@@ -51,6 +51,8 @@ import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.optout.OptOutManager
+import io.hackle.android.internal.optout.OptOutUserEventFilter
 import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
@@ -265,6 +267,15 @@ internal object HackleApps {
         )
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
         eventProcessor.addFilter(dedupUserEventFilter)
+
+        // OptOutManager
+        val optOutManager = OptOutManager(
+            keyValueRepository = keyValueRepositoryBySdkKey,
+            eventProcessor = eventProcessor,
+            configOptOutTracking = config.optOutTracking,
+        )
+        val optOutUserEventFilter = OptOutUserEventFilter(optOutManager)
+        eventProcessor.addFilter(optOutUserEventFilter)
 
         val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
@@ -579,6 +590,7 @@ internal object HackleApps {
             device = platformManager.device,
             applicationInstallStateManager = applicationInstallStateManager,
             userExplorer = userExplorer,
+            optOutManager = optOutManager,
         )
 
         val hackleInvocator = HackleInvocatorImpl(hackleAppCore)

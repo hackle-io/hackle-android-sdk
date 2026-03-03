@@ -133,6 +133,12 @@ internal class HackleInvocatorImpl(
                 InvokeResponse.success()
             }
 
+            SET_OPT_OUT_TRACKING -> {
+                val optOut = checkNotNull(parameters.optOut())
+                hackleAppCore.setOptOutTracking(optOut)
+                InvokeResponse.success()
+            }
+
             SHOW_USER_EXPLORER -> {
                 hackleAppCore.showUserExplorer()
                 InvokeResponse.success()

@@ -359,6 +359,22 @@ class HackleApp internal constructor(
     }
 
     /**
+     * Sets whether opt-out tracking is enabled.
+     *
+     * When opt-out is enabled (true), all event tracking (local storage and network dispatch)
+     * will be blocked. When switching from opt-in to opt-out, any pending events will be flushed
+     * before blocking begins.
+     *
+     * Once opt-out is enabled, it persists across app restarts and can only be disabled
+     * by calling this method with false.
+     *
+     * @param optOut true to opt out of all event tracking, false to opt back in
+     */
+    fun setOptOutTracking(optOut: Boolean) {
+        hackleAppCore.setOptOutTracking(optOut)
+    }
+
+    /**
      * Closes the HackleApp and releases resources.
      */
     override fun close() {

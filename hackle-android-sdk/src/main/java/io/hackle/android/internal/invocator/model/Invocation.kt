@@ -26,6 +26,7 @@ internal class Invocation(string: String) {
         TRACK("track"),
         REMOTE_CONFIG("remoteConfig"),
         SET_CURRENT_SCREEN("setCurrentScreen"),
+        SET_OPT_OUT_TRACKING("setOptOutTracking"),
         SHOW_USER_EXPLORER("showUserExplorer"),
         HIDE_USER_EXPLORER("hideUserExplorer");
 

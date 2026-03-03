@@ -183,6 +183,13 @@ fun Hackle.updateKakaoSubscriptions(operations: HackleSubscriptionOperations) = 
 fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
 
 /**
+ * Sets whether opt-out tracking is enabled.
+ *
+ * @param optOut true to opt out of all event tracking, false to opt back in
+ */
+fun Hackle.setOptOutTracking(optOut: Boolean) = app.setOptOutTracking(optOut)
+
+/**
  * Gets the remote config instance for a specific user.
  *
  * @param user the [User] for remote config
