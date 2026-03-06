@@ -2,10 +2,12 @@ package io.hackle.android.internal.optout
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
 import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
@@ -29,7 +31,7 @@ class OptOutManagerTest {
     @Test
     fun `config true saves to local`() {
         OptOutManager(repository, eventProcessor, true)
-        expectThat(repository.getString("opt_out_tracking")?.toBoolean() == true).isTrue()
+        expectThat(repository.getString("opt_out_tracking")).isEqualTo("true")
     }
 
     @Test
@@ -54,6 +56,13 @@ class OptOutManagerTest {
     }
 
     @Test
+    fun `config false and saved false makes optOut false`() {
+        repository.putString("opt_out_tracking", "false")
+        val manager = OptOutManager(repository, eventProcessor, false)
+        expectThat(manager.isOptOutTracking).isFalse()
+    }
+
+    @Test
     fun `setOptOutTracking true flushes events then blocks`() {
         val manager = OptOutManager(repository, eventProcessor, false)
         manager.setOptOutTracking(true)
@@ -62,10 +71,22 @@ class OptOutManagerTest {
     }
 
     @Test
+    fun `setOptOutTracking true flushes before state change`() {
+        val manager = OptOutManager(repository, eventProcessor, false)
+        every { eventProcessor.flush() } answers {
+            // flush 호출 시점에 아직 optOut이 false여야 한다
+            expectThat(manager.isOptOutTracking).isFalse()
+        }
+        manager.setOptOutTracking(true)
+        verify(exactly = 1) { eventProcessor.flush() }
+        expectThat(manager.isOptOutTracking).isTrue()
+    }
+
+    @Test
     fun `setOptOutTracking true saves to local`() {
         val manager = OptOutManager(repository, eventProcessor, false)
         manager.setOptOutTracking(true)
-        expectThat(repository.getString("opt_out_tracking")?.toBoolean() == true).isTrue()
+        expectThat(repository.getString("opt_out_tracking")).isEqualTo("true")
     }
 
     @Test
@@ -80,7 +101,7 @@ class OptOutManagerTest {
     fun `setOptOutTracking false saves to local`() {
         val manager = OptOutManager(repository, eventProcessor, true)
         manager.setOptOutTracking(false)
-        expectThat(repository.getString("opt_out_tracking")?.toBoolean() == false).isTrue()
+        expectThat(repository.getString("opt_out_tracking")).isEqualTo("false")
     }
 
     @Test

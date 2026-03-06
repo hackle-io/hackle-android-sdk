@@ -1669,6 +1669,39 @@ class HackleInvocationTest {
         }
     }
 
+    @Test
+    fun `invoke setOptOutTracking with true`() {
+        val parameters = mapOf("optOut" to true)
+        val jsonString = createJsonString("setOptOutTracking", parameters)
+        val result = invocation.invoke(jsonString)
+        verify(exactly = 1) { app.setOptOutTracking(true) }
+        result.parseJson<InvokeResponse>().apply {
+            assertThat(success, `is`(true))
+        }
+    }
+
+    @Test
+    fun `invoke setOptOutTracking with false`() {
+        val parameters = mapOf("optOut" to false)
+        val jsonString = createJsonString("setOptOutTracking", parameters)
+        val result = invocation.invoke(jsonString)
+        verify(exactly = 1) { app.setOptOutTracking(false) }
+        result.parseJson<InvokeResponse>().apply {
+            assertThat(success, `is`(true))
+        }
+    }
+
+    @Test
+    fun `invoke setOptOutTracking without parameter returns error`() {
+        val parameters = emptyMap<String, Any>()
+        val jsonString = createJsonString("setOptOutTracking", parameters)
+        val result = invocation.invoke(jsonString)
+        result.parseJson<InvokeResponse>().apply {
+            assertThat(success, `is`(false))
+            assertThat(message.isNullOrEmpty(), `is`(false))
+        }
+    }
+
     private fun createJsonString(
         command: String,
         parameters: HackleInvokeParameters? = null,
