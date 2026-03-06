@@ -190,6 +190,12 @@ fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
 fun Hackle.setOptOutTracking(optOut: Boolean) = app.setOptOutTracking(optOut)
 
 /**
+ * Whether opt-out tracking is currently enabled.
+ * When true, all event tracking is blocked.
+ */
+val Hackle.isOptOutTracking: Boolean get() = app.isOptOutTracking
+
+/**
  * Gets the remote config instance for a specific user.
  *
  * @param user the [User] for remote config
