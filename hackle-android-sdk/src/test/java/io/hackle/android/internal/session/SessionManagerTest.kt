@@ -206,6 +206,7 @@ class SessionManagerTest {
         sut.onUserUpdated(oldUser, newUser, 200)
 
         expectThat(sut.currentSession!!.id) isEqualTo session1.id
+        expectThat(sut.lastEventTime) isEqualTo 200
     }
 
     @Test
@@ -224,6 +225,7 @@ class SessionManagerTest {
         expectThat(listener.ended[0].second) isEqualTo oldUser
         expectThat(listener.started).hasSize(1)
         expectThat(listener.started[0].second) isEqualTo newUser
+        expectThat(sut.lastEventTime) isEqualTo 200
     }
 
     @Test
@@ -243,6 +245,7 @@ class SessionManagerTest {
 
         expectThat(listener.ended).hasSize(0)
         expectThat(listener.started).hasSize(0)
+        expectThat(sut.lastEventTime) isEqualTo 200
     }
 
     @Test
@@ -259,6 +262,7 @@ class SessionManagerTest {
 
         expectThat(listener.ended).hasSize(0)
         expectThat(listener.started).hasSize(0)
+        expectThat(sut.lastEventTime) isEqualTo 200
     }
 
     @Test
@@ -334,6 +338,20 @@ class SessionManagerTest {
         sut.onBackground(42)
         expectThat(sut.lastEventTime) isEqualTo 42
         expectThat(repository.getLong("last_event_time", -1)) isEqualTo 42L
+    }
+
+    @Test
+    fun `startNewSessionIfNeeded - currentSession이 null이면 새로운 세션을 시작한다`() {
+        val listener = SessionListenerStub()
+        val sut = manager(listeners = *arrayOf(listener))
+        val user = User.of("hello")
+
+        val session = sut.startNewSessionIfNeeded(SessionContext.of(user, 100))
+
+        expectThat(sut.currentSession).isNotNull()
+        expectThat(session.id).startsWith("100.")
+        expectThat(listener.started).hasSize(1)
+        expectThat(sut.lastEventTime) isEqualTo 100
     }
 
     @Test
@@ -448,7 +466,7 @@ class SessionManagerTest {
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
-        expectThat(sut.lastEventTime) isEqualTo 100
+        expectThat(sut.lastEventTime) isEqualTo 200
     }
 
     @Test
@@ -470,8 +488,7 @@ class SessionManagerTest {
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
-        // lastEventTime은 갱신되지 않아야 함 (포그라운드 전환 시 정확한 timeout 체크를 위해)
-        expectThat(sut.lastEventTime) isEqualTo 100
+        expectThat(sut.lastEventTime) isEqualTo 200
     }
 
     @Test
@@ -610,7 +627,7 @@ class SessionManagerTest {
         //    enableOnBackground = false이므로 세션 유지
         sut.startNewSessionIfNeeded(SessionContext.of(user, 200))
         expectThat(listener.started).hasSize(0)
-        expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
+        expectThat(sut.lastEventTime) isEqualTo 200
 
         // 4. 포그라운드로 전환 → 세션 만료 확인 후 새로운 세션 시작
         appState = ApplicationState.FOREGROUND

@@ -1,5 +1,8 @@
 package io.hackle.sdk.common
 
+/**
+ * Configuration for session timeout behavior.
+ */
 class HackleSessionTimeout private constructor(builder: Builder) {
 
     val millis: Long = builder.millis

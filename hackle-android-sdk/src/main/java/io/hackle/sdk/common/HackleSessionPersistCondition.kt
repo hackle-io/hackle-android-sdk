@@ -2,15 +2,6 @@ package io.hackle.sdk.common
 
 /**
  * Defines a condition under which the current session is preserved when user identifiers change.
- *
- * This condition is evaluated only when `userId` or `deviceId` changes.
- * Changes to other user properties (e.g., custom identifiers) do not trigger evaluation.
- *
- * Note: Even when [shouldPersist] returns `true`, the session may still expire
- * due to session timeout. This condition only controls identifier-change-based session renewal.
- *
- * When [shouldPersist] returns `true`, the existing session is kept.
- * When it returns `false`, a new session is started.
  */
 fun interface HackleSessionPersistCondition {
 

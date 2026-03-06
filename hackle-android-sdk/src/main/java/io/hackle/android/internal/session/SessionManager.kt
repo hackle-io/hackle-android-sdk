@@ -97,10 +97,13 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
-    private fun isTimeoutEnabled(context: SessionContext): Boolean {
-        if (context.isApplicationStateChange) return sessionPolicy.timeout.enableOnApplicationStateChange
-        val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
-        return if (isBackground) sessionPolicy.timeout.enableOnBackground else sessionPolicy.timeout.enableOnForeground
+    private fun isTimeoutEnabled(context: SessionContext): Boolean = when {
+        // foreground/background 전환 시
+        context.isApplicationStateChange -> sessionPolicy.timeout.enableOnApplicationStateChange
+        // background 상태에서 이벤트 발생 시
+        applicationLifecycleManager.currentState != ApplicationState.FOREGROUND -> sessionPolicy.timeout.enableOnBackground
+        // foreground 상태에서 이벤트 발생 시
+        else -> sessionPolicy.timeout.enableOnForeground
     }
 
     private fun isSessionTimedOut(timestamp: Long): Boolean {

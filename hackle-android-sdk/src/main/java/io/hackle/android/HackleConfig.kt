@@ -231,7 +231,12 @@ class HackleConfig private constructor(builder: Builder) {
          * @return this builder instance
          */
         @Deprecated(
-            message = "Use sessionPolicy() with HackleSessionTimeout.builder().millis() instead."
+            message = "Use sessionPolicy() with HackleSessionTimeout.builder().millis() instead.",
+            replaceWith = ReplaceWith(
+                "sessionPolicy(HackleSessionPolicy.builder().timeout(HackleSessionTimeout.builder().millis(sessionTimeoutMillis.toLong()).build()).build())",
+                "io.hackle.sdk.common.HackleSessionPolicy",
+                "io.hackle.sdk.common.HackleSessionTimeout"
+            )
         )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
             this.sessionPolicy = this.sessionPolicy.toBuilder()

@@ -2,10 +2,6 @@ package io.hackle.sdk.common
 
 /**
  * Configures session-related policies.
- *
- * Use [Builder] to create an instance:
- * - [persistCondition]: Controls whether the session is preserved when user identifiers change.
- * - [timeout]: Configures session timeout duration and per-state applicability.
  */
 class HackleSessionPolicy private constructor(builder: Builder) {
 

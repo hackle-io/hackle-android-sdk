@@ -175,12 +175,18 @@ class DefaultEventProcessorTest {
         val sut = processor()
         val user = HackleUser.of("id")
         val event = event(user = user, timestamp = 42)
+        val contextSlot = slot<SessionContext>()
+        every { sessionManager.startNewSessionIfNeeded(capture(contextSlot)) } returns mockk()
 
         // when
         sut.process(event)
 
         // then
         verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
+        expectThat(contextSlot.captured) {
+            get { timestamp } isEqualTo 42
+            get { isApplicationStateChange } isEqualTo false
+        }
     }
 
     @Test
