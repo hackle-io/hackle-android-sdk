@@ -102,7 +102,7 @@ internal class SessionManager(
 
     private fun isTimeoutEnabled(): Boolean {
         val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
-        return if (isBackground) sessionPolicy.timeout.onBackground else sessionPolicy.timeout.onForeground
+        return if (isBackground) sessionPolicy.timeout.enableOnBackground else sessionPolicy.timeout.enableOnForeground
     }
 
     private fun isSessionTimedOut(timestamp: Long): Boolean {

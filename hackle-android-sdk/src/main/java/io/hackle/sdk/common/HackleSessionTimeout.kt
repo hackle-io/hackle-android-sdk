@@ -3,27 +3,27 @@ package io.hackle.sdk.common
 class HackleSessionTimeout private constructor(builder: Builder) {
 
     val millis: Long = builder.millis
-    val onForeground: Boolean = builder.onForeground
-    val onBackground: Boolean = builder.onBackground
+    val enableOnForeground: Boolean = builder.enableOnForeground
+    val enableOnBackground: Boolean = builder.enableOnBackground
 
     override fun toString(): String =
-        "HackleSessionTimeout(millis=$millis, onForeground=$onForeground, onBackground=$onBackground)"
+        "HackleSessionTimeout(millis=$millis, enableOnForeground=$enableOnForeground, enableOnBackground=$enableOnBackground)"
 
     class Builder {
         internal var millis: Long = DEFAULT_SESSION_TIMEOUT_MILLIS
-        internal var onForeground: Boolean = true
-        internal var onBackground: Boolean = true
+        internal var enableOnForeground: Boolean = false
+        internal var enableOnBackground: Boolean = true
 
         fun millis(millis: Long) = apply { this.millis = millis }
-        fun onForeground(onForeground: Boolean) = apply { this.onForeground = onForeground }
-        fun onBackground(onBackground: Boolean) = apply { this.onBackground = onBackground }
+        fun enableOnForeground(enableOnForeground: Boolean) = apply { this.enableOnForeground = enableOnForeground }
+        fun enableOnBackground(enableOnBackground: Boolean) = apply { this.enableOnBackground = enableOnBackground }
         fun build(): HackleSessionTimeout = HackleSessionTimeout(this)
     }
 
     fun toBuilder(): Builder = Builder().apply {
         this.millis = this@HackleSessionTimeout.millis
-        this.onForeground = this@HackleSessionTimeout.onForeground
-        this.onBackground = this@HackleSessionTimeout.onBackground
+        this.enableOnForeground = this@HackleSessionTimeout.enableOnForeground
+        this.enableOnBackground = this@HackleSessionTimeout.enableOnBackground
     }
 
     companion object {

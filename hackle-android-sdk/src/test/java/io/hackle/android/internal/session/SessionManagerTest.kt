@@ -32,7 +32,7 @@ class SessionManagerTest {
         vararg listeners: SessionListener,
     ): SessionManager {
         val policy = sessionPolicy ?: HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(sessionTimeoutMillis).build())
+            .timeout(HackleSessionTimeout.builder().millis(sessionTimeoutMillis).enableOnForeground(true).build())
             .build()
         return SessionManager(
             userManager = UserManager(
@@ -265,7 +265,7 @@ class SessionManagerTest {
     fun `onUserUpdated - policy preserves but timeout expired starts new session`() {
         val policy = HackleSessionPolicy.builder()
             .persistCondition { _, _ -> true }
-            .timeout(HackleSessionTimeout.builder().millis(100).build())
+            .timeout(HackleSessionTimeout.builder().millis(100).enableOnForeground(true).build())
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -339,7 +339,7 @@ class SessionManagerTest {
     @Test
     fun `startNewSessionIfNeeded - foreground + 타임아웃 만료 시 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(true).build())
             .build()
         val sut = manager(sessionPolicy = policy)
 
@@ -354,7 +354,7 @@ class SessionManagerTest {
     @Test
     fun `startNewSessionIfNeeded - foreground + 타임아웃 미만료 시 세션 유지`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(100).build())
+            .timeout(HackleSessionTimeout.builder().millis(100).enableOnForeground(true).build())
             .build()
         val sut = manager(sessionPolicy = policy)
 
@@ -366,12 +366,12 @@ class SessionManagerTest {
         expectThat(s1) isSameInstanceAs s2
     }
 
-    // === onForeground flag ===
+    // === enableOnForeground flag ===
 
     @Test
-    fun `startNewSessionIfNeeded - foreground + onForeground false 이면 lastEventTime만 갱신한다`() {
+    fun `startNewSessionIfNeeded - foreground + enableOnForeground false 이면 lastEventTime만 갱신한다`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onForeground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(false).build())
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -388,9 +388,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded - foreground + onForeground false 이어도 식별자 변경 시 세션 재시작`() {
+    fun `startNewSessionIfNeeded - foreground + enableOnForeground false 이어도 식별자 변경 시 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onForeground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(false).build())
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -406,12 +406,12 @@ class SessionManagerTest {
         expectThat(listener.started).hasSize(1)
     }
 
-    // === onBackground flag ===
+    // === enableOnBackground flag ===
 
     @Test
-    fun `startNewSessionIfNeeded - background + onBackground true + 세션 만료 시 새로운 세션 시작`() {
+    fun `startNewSessionIfNeeded - background + enableOnBackground true + 세션 만료 시 새로운 세션 시작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onBackground(true).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnBackground(true).build())
             .build()
         val backgroundMock = mockk<ApplicationLifecycleManager> {
             every { currentState } returns ApplicationState.BACKGROUND
@@ -430,9 +430,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded - background + onBackground true + 세션 미만료 시 세션 유지`() {
+    fun `startNewSessionIfNeeded - background + enableOnBackground true + 세션 미만료 시 세션 유지`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(1000).onBackground(true).build())
+            .timeout(HackleSessionTimeout.builder().millis(1000).enableOnBackground(true).build())
             .build()
         val backgroundMock = mockk<ApplicationLifecycleManager> {
             every { currentState } returns ApplicationState.BACKGROUND
@@ -452,9 +452,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded - background + onBackground false + 세션 만료 시에도 세션 유지`() {
+    fun `startNewSessionIfNeeded - background + enableOnBackground false + 세션 만료 시에도 세션 유지`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onBackground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnBackground(false).build())
             .build()
         val backgroundMock = mockk<ApplicationLifecycleManager> {
             every { currentState } returns ApplicationState.BACKGROUND
@@ -475,9 +475,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded - background + onBackground false 이어도 식별자 변경 시 세션 재시작`() {
+    fun `startNewSessionIfNeeded - background + enableOnBackground false 이어도 식별자 변경 시 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onBackground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnBackground(false).build())
             .build()
         val backgroundMock = mockk<ApplicationLifecycleManager> {
             every { currentState } returns ApplicationState.BACKGROUND
@@ -497,9 +497,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `onForeground - onBackground false 이어도 포그라운드 전환 시 세션 재시작 가능`() {
+    fun `onForeground - enableOnBackground false 이어도 포그라운드 전환 시 세션 재시작 가능`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onBackground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(true).enableOnBackground(false).build())
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -515,9 +515,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `onForeground - onForeground false 이면 타임아웃으로 세션 만료되지 않는다`() {
+    fun `onForeground - enableOnForeground false 이면 타임아웃으로 세션 만료되지 않는다`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onForeground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(false).build())
             .build()
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, listeners = *arrayOf(listener))
@@ -534,9 +534,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `onForeground - onForeground false + onBackground false 이면 타임아웃으로 세션 만료되지 않는다`() {
+    fun `onForeground - enableOnForeground false + enableOnBackground false 이면 타임아웃으로 세션 만료되지 않는다`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onForeground(false).onBackground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(false).enableOnBackground(false).build())
             .build()
         val backgroundMock = mockk<ApplicationLifecycleManager> {
             every { currentState } returns ApplicationState.BACKGROUND
@@ -556,9 +556,9 @@ class SessionManagerTest {
     }
 
     @Test
-    fun `startNewSessionIfNeeded - onForeground false + onBackground true 이면 백그라운드에서만 타임아웃 동작`() {
+    fun `startNewSessionIfNeeded - enableOnForeground false + enableOnBackground true 이면 백그라운드에서만 타임아웃 동작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(10).onForeground(false).onBackground(true).build())
+            .timeout(HackleSessionTimeout.builder().millis(10).enableOnForeground(false).enableOnBackground(true).build())
             .build()
         var appState = ApplicationState.BACKGROUND
         val lifecycleMock = mockk<ApplicationLifecycleManager> {
@@ -571,13 +571,13 @@ class SessionManagerTest {
         sut.startNewSession(user, user, 100)
         listener.clear()
 
-        // 백그라운드 이벤트 → onBackground=true → 타임아웃 체크 → 만료
+        // 백그라운드 이벤트 → enableOnBackground=true → 타임아웃 체크 → 만료
         sut.startNewSessionIfNeeded(SessionContext.of(user, 200))
         expectThat(listener.started).hasSize(1)
         expectThat(listener.ended).hasSize(1)
         listener.clear()
 
-        // 포그라운드 전환 → onForeground=false → 타임아웃 체크 안함
+        // 포그라운드 전환 → enableOnForeground=false → 타임아웃 체크 안함
         appState = ApplicationState.FOREGROUND
         sut.onForeground(300, true)
         expectThat(listener.started).hasSize(0)
@@ -589,7 +589,7 @@ class SessionManagerTest {
     @Test
     fun `onBackground false - 백그라운드 이벤트 후 포그라운드 전환 시 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(50).onBackground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(50).enableOnForeground(true).enableOnBackground(false).build())
             .build()
         var appState = ApplicationState.BACKGROUND
         val lifecycleMock = mockk<ApplicationLifecycleManager> {
@@ -607,7 +607,7 @@ class SessionManagerTest {
         sut.onBackground(100)
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
-        //    onBackground = false이므로 세션 유지
+        //    enableOnBackground = false이므로 세션 유지
         sut.startNewSessionIfNeeded(SessionContext.of(user, 200))
         expectThat(listener.started).hasSize(0)
         expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
@@ -623,7 +623,7 @@ class SessionManagerTest {
     @Test
     fun `onBackground true - 백그라운드 이벤트로 세션 재시작`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(50).onBackground(true).build())
+            .timeout(HackleSessionTimeout.builder().millis(50).enableOnForeground(true).enableOnBackground(true).build())
             .build()
         val backgroundMock = mockk<ApplicationLifecycleManager> {
             every { currentState } returns ApplicationState.BACKGROUND
@@ -640,7 +640,7 @@ class SessionManagerTest {
         sut.onBackground(100)
 
         // 3. 백그라운드에서 이벤트 발생 (세션 만료 시간 이후)
-        //    onBackground = true이므로 세션 재시작
+        //    enableOnBackground = true이므로 세션 재시작
         sut.startNewSessionIfNeeded(SessionContext.of(user, 200))
         expectThat(listener.ended).hasSize(1)
         expectThat(listener.started).hasSize(1)
