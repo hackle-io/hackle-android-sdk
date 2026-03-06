@@ -259,12 +259,13 @@ class HackleConfigTest {
     fun `HackleSessionPolicy toBuilder - 모든 필드가 정확히 복사된다`() {
         val original = HackleSessionPolicy.builder()
             .persistCondition(HackleSessionPersistCondition.NULL_TO_USER_ID)
-            .timeout(HackleSessionTimeout.builder().millis(42000).enableOnBackground(false).build())
+            .timeout(HackleSessionTimeout.builder().millis(42000).enableOnBackground(false).enableOnApplicationStateChange(true).build())
             .build()
         val copy = original.toBuilder().build()
         expectThat(copy.persistCondition).isSameInstanceAs(original.persistCondition)
         expectThat(copy.timeout.millis).isEqualTo(original.timeout.millis)
         expectThat(copy.timeout.enableOnBackground).isEqualTo(original.timeout.enableOnBackground)
+        expectThat(copy.timeout.enableOnApplicationStateChange).isEqualTo(original.timeout.enableOnApplicationStateChange)
     }
 
     @Test

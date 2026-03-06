@@ -39,13 +39,10 @@ internal class SessionManager(
     }
 
     fun startNewSessionIfNeeded(context: SessionContext): Session {
-        return if (shouldStartNewSession(context.oldUser, context.newUser, context.timestamp)) {
+        return if (shouldStartNewSession(context)) {
             startNewSession(context.oldUser, context.newUser, context.timestamp)
         } else {
-            val isForeground = applicationLifecycleManager.currentState == ApplicationState.FOREGROUND
-            if (isForeground) {
-                updateLastEventTime(context.timestamp)
-            }
+            updateLastEventTime(context.timestamp)
             requiredSession
         }
     }
@@ -100,7 +97,8 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
-    private fun isTimeoutEnabled(): Boolean {
+    private fun isTimeoutEnabled(context: SessionContext): Boolean {
+        if (context.isApplicationStateChange) return sessionPolicy.timeout.enableOnApplicationStateChange
         val isBackground = applicationLifecycleManager.currentState != ApplicationState.FOREGROUND
         return if (isBackground) sessionPolicy.timeout.enableOnBackground else sessionPolicy.timeout.enableOnForeground
     }
@@ -110,20 +108,20 @@ internal class SessionManager(
         return timestamp - lastEventTime >= sessionPolicy.timeout.millis
     }
 
-    private fun shouldStartNewSession(oldUser: User, newUser: User, timestamp: Long): Boolean {
+    private fun shouldStartNewSession(context: SessionContext): Boolean {
         if (currentSession == null) return true
 
-        if (!oldUser.identifierEquals(newUser)) {
+        if (!context.oldUser.identifierEquals(context.newUser)) {
             val condition = sessionPolicy.persistCondition ?: return true
-            if (!condition.shouldPersist(oldUser, newUser)) return true
+            if (!condition.shouldPersist(context.oldUser, context.newUser)) return true
         }
 
-        return isTimeoutEnabled() && isSessionTimedOut(timestamp)
+        return isTimeoutEnabled(context) && isSessionTimedOut(context.timestamp)
     }
 
     override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
         val currentUser = userManager.currentUser
-        startNewSessionIfNeeded(SessionContext.of(currentUser, timestamp))
+        startNewSessionIfNeeded(SessionContext.of(currentUser, timestamp, isApplicationStateChange = true))
     }
 
     override fun onBackground(timestamp: Long) {
