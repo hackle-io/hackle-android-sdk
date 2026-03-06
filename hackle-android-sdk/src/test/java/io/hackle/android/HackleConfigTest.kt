@@ -7,7 +7,7 @@ import io.mockk.unmockkStatic
 import org.junit.After
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
-import io.hackle.sdk.common.HackleSessionTimeout
+import io.hackle.sdk.common.HackleSessionTimeoutCondition
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -192,37 +192,37 @@ class HackleConfigTest {
         val config = HackleConfig.builder()
             .sessionTimeoutMillis(60000)
             .build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(60000L)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(60000L)
     }
 
     @Test
     fun `sessionPolicy timeout millis - policy timeout 설정하면 config timeout을 무시한다`() {
         val policy = HackleSessionPolicy.builder()
-            .timeout(HackleSessionTimeout.builder().millis(60000).build())
+            .timeoutCondition(HackleSessionTimeoutCondition.builder().millis(60000).build())
             .build()
         val config = HackleConfig.builder()
             .sessionTimeoutMillis(120000)
             .sessionPolicy(policy)
             .build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(60000L)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(60000L)
     }
 
     @Test
     fun `sessionPolicy timeout millis - 아무것도 설정하지 않으면 기본값이 policy에 복사된다`() {
         val config = HackleConfig.builder().build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(1000L * 60 * 30)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(1000L * 60 * 30)
     }
 
     @Test
     fun `sessionPolicy timeout millis - policy에 persistCondition과 함께 사용`() {
         val policy = HackleSessionPolicy.builder()
             .persistCondition(HackleSessionPersistCondition.NULL_TO_USER_ID)
-            .timeout(HackleSessionTimeout.builder().millis(60000).build())
+            .timeoutCondition(HackleSessionTimeoutCondition.builder().millis(60000).build())
             .build()
         val config = HackleConfig.builder()
             .sessionPolicy(policy)
             .build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(60000L)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(60000L)
         expectThat(config.sessionPolicy.persistCondition).isSameInstanceAs(HackleSessionPersistCondition.NULL_TO_USER_ID)
     }
 
@@ -235,7 +235,7 @@ class HackleConfigTest {
             .sessionPolicy(policy)
             .sessionTimeoutMillis(60000)
             .build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(60000L)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(60000L)
         expectThat(config.sessionPolicy.persistCondition).isSameInstanceAs(HackleSessionPersistCondition.NULL_TO_USER_ID)
     }
 
@@ -259,29 +259,29 @@ class HackleConfigTest {
     fun `HackleSessionPolicy toBuilder - 모든 필드가 정확히 복사된다`() {
         val original = HackleSessionPolicy.builder()
             .persistCondition(HackleSessionPersistCondition.NULL_TO_USER_ID)
-            .timeout(HackleSessionTimeout.builder().millis(42000).enableOnBackground(false).enableOnApplicationStateChange(true).build())
+            .timeoutCondition(HackleSessionTimeoutCondition.builder().millis(42000).enableOnBackground(false).enableOnApplicationStateChange(true).build())
             .build()
         val copy = original.toBuilder().build()
         expectThat(copy.persistCondition).isSameInstanceAs(original.persistCondition)
-        expectThat(copy.timeout.millis).isEqualTo(original.timeout.millis)
-        expectThat(copy.timeout.enableOnBackground).isEqualTo(original.timeout.enableOnBackground)
-        expectThat(copy.timeout.enableOnApplicationStateChange).isEqualTo(original.timeout.enableOnApplicationStateChange)
+        expectThat(copy.timeoutCondition.timeoutMillis).isEqualTo(original.timeoutCondition.timeoutMillis)
+        expectThat(copy.timeoutCondition.onBackground).isEqualTo(original.timeoutCondition.onBackground)
+        expectThat(copy.timeoutCondition.onApplicationStateChange).isEqualTo(original.timeoutCondition.onApplicationStateChange)
     }
 
     @Test
     fun `sessionPolicy timeout millis - 0 이하의 값은 기본값으로 대체된다`() {
         val config = HackleConfig.builder()
-            .sessionPolicy(HackleSessionPolicy.builder().timeout(HackleSessionTimeout.builder().millis(0).build()).build())
+            .sessionPolicy(HackleSessionPolicy.builder().timeoutCondition(HackleSessionTimeoutCondition.builder().millis(0).build()).build())
             .build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(1000L * 60 * 30)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(1000L * 60 * 30)
     }
 
     @Test
     fun `sessionPolicy timeout millis - 음수값은 기본값으로 대체된다`() {
         val config = HackleConfig.builder()
-            .sessionPolicy(HackleSessionPolicy.builder().timeout(HackleSessionTimeout.builder().millis(-1000).build()).build())
+            .sessionPolicy(HackleSessionPolicy.builder().timeoutCondition(HackleSessionTimeoutCondition.builder().millis(-1000).build()).build())
             .build()
-        expectThat(config.sessionPolicy.timeout.millis).isEqualTo(1000L * 60 * 30)
+        expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(1000L * 60 * 30)
     }
 
     private fun <T> configTests(

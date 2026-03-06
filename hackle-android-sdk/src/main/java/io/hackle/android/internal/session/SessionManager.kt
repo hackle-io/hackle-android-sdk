@@ -99,16 +99,16 @@ internal class SessionManager(
 
     private fun isTimeoutEnabled(context: SessionContext): Boolean = when {
         // foreground/background 전환 시
-        context.isApplicationStateChange -> sessionPolicy.timeout.enableOnApplicationStateChange
+        context.isApplicationStateChange -> sessionPolicy.timeoutCondition.onApplicationStateChange
         // background 상태에서 이벤트 발생 시
-        applicationLifecycleManager.currentState != ApplicationState.FOREGROUND -> sessionPolicy.timeout.enableOnBackground
+        applicationLifecycleManager.currentState != ApplicationState.FOREGROUND -> sessionPolicy.timeoutCondition.onBackground
         // foreground 상태에서 이벤트 발생 시
-        else -> sessionPolicy.timeout.enableOnForeground
+        else -> sessionPolicy.timeoutCondition.onForeground
     }
 
     private fun isSessionTimedOut(timestamp: Long): Boolean {
         val lastEventTime = lastEventTime ?: return true
-        return timestamp - lastEventTime >= sessionPolicy.timeout.millis
+        return timestamp - lastEventTime >= sessionPolicy.timeoutCondition.timeoutMillis
     }
 
     private fun shouldStartNewSession(context: SessionContext): Boolean {

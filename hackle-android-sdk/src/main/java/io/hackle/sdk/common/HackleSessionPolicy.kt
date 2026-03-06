@@ -9,20 +9,20 @@ class HackleSessionPolicy private constructor(builder: Builder) {
     val persistCondition: HackleSessionPersistCondition? = builder.persistCondition
 
     /** Session timeout configuration. */
-    val timeout: HackleSessionTimeout = builder.timeout
+    val timeoutCondition: HackleSessionTimeoutCondition = builder.timeoutCondition
 
-    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition, timeout=$timeout)"
+    override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition, timeout=$timeoutCondition)"
 
     class Builder {
         internal var persistCondition: HackleSessionPersistCondition? = null
-        internal var timeout: HackleSessionTimeout = HackleSessionTimeout.DEFAULT
+        internal var timeoutCondition: HackleSessionTimeoutCondition = HackleSessionTimeoutCondition.DEFAULT
 
-        fun persistCondition(condition: HackleSessionPersistCondition) = apply {
-            this.persistCondition = condition
+        fun persistCondition(persistCondition: HackleSessionPersistCondition) = apply {
+            this.persistCondition = persistCondition
         }
 
-        fun timeout(timeout: HackleSessionTimeout) = apply {
-            this.timeout = timeout
+        fun timeoutCondition(timeoutCondition: HackleSessionTimeoutCondition) = apply {
+            this.timeoutCondition = timeoutCondition
         }
 
         fun build(): HackleSessionPolicy = HackleSessionPolicy(this)
@@ -30,7 +30,7 @@ class HackleSessionPolicy private constructor(builder: Builder) {
 
     fun toBuilder(): Builder = Builder().apply {
         this.persistCondition = this@HackleSessionPolicy.persistCondition
-        this.timeout = this@HackleSessionPolicy.timeout
+        this.timeoutCondition = this@HackleSessionPolicy.timeoutCondition
     }
 
     companion object {

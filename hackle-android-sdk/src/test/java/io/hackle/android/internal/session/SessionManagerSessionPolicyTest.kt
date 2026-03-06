@@ -7,7 +7,6 @@ import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
-import io.hackle.sdk.common.HackleSessionTimeout
 import io.hackle.sdk.common.User
 import io.mockk.mockk
 import org.junit.Test
@@ -47,7 +46,7 @@ class SessionManagerSessionPolicyTest {
 
     private fun manager(sessionPolicy: HackleSessionPolicy): SessionManager {
         val policy = sessionPolicy.toBuilder()
-            .timeout(sessionPolicy.timeout.toBuilder().millis(10000).build())
+            .timeoutCondition(sessionPolicy.timeoutCondition.toBuilder().millis(10000).build())
             .build()
         return SessionManager(
             userManager = UserManager(

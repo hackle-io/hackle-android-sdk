@@ -3,7 +3,7 @@ package io.hackle.android
 import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.sdk.common.HackleSessionPolicy
-import io.hackle.sdk.common.HackleSessionTimeout
+import io.hackle.sdk.common.HackleSessionTimeoutCondition
 import java.util.Collections
 
 /**
@@ -75,7 +75,7 @@ class HackleConfig private constructor(builder: Builder) {
         replaceWith = ReplaceWith("sessionPolicy.timeout.millis")
     )
     val sessionTimeoutMillis: Int
-        get() = sessionPolicy.timeout.millis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
+        get() = sessionPolicy.timeoutCondition.timeoutMillis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
 
     /**
      * The polling interval in milliseconds.
@@ -240,8 +240,8 @@ class HackleConfig private constructor(builder: Builder) {
         )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
             this.sessionPolicy = this.sessionPolicy.toBuilder()
-                .timeout(
-                    this.sessionPolicy.timeout.toBuilder()
+                .timeoutCondition(
+                    this.sessionPolicy.timeoutCondition.toBuilder()
                         .millis(sessionTimeoutMillis.toLong())
                         .build()
                 )
@@ -339,12 +339,12 @@ class HackleConfig private constructor(builder: Builder) {
                 this.eventFlushThreshold = DEFAULT_EVENT_FLUSH_THRESHOLD
             }
 
-            if (sessionPolicy.timeout.millis <= 0) {
-                log.warn { "Session timeout is outside allowed value. Setting to default value[${HackleSessionTimeout.DEFAULT_SESSION_TIMEOUT_MILLIS}ms]." }
+            if (sessionPolicy.timeoutCondition.timeoutMillis <= 0) {
+                log.warn { "Session timeout is outside allowed value. Setting to default value[${HackleSessionTimeoutCondition.DEFAULT_SESSION_TIMEOUT_MILLIS}ms]." }
                 this.sessionPolicy = this.sessionPolicy.toBuilder()
-                    .timeout(
-                        this.sessionPolicy.timeout.toBuilder()
-                            .millis(HackleSessionTimeout.DEFAULT_SESSION_TIMEOUT_MILLIS)
+                    .timeoutCondition(
+                        this.sessionPolicy.timeoutCondition.toBuilder()
+                            .millis(HackleSessionTimeoutCondition.DEFAULT_SESSION_TIMEOUT_MILLIS)
                             .build()
                     )
                     .build()
