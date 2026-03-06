@@ -170,7 +170,7 @@ internal class DefaultEventProcessor(
 
             val currentUser = userManager.currentUser
             sessionManager.startNewSessionIfNeeded(
-                SessionContext.of(currentUser, event.timestamp, checkApplicationState = true)
+                SessionContext.of(currentUser, event.timestamp)
             )
         }
 

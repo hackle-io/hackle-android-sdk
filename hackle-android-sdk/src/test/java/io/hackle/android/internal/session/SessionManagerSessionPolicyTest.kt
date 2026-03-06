@@ -7,6 +7,7 @@ import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
+import io.hackle.sdk.common.HackleSessionTimeout
 import io.hackle.sdk.common.User
 import io.mockk.mockk
 import org.junit.Test
@@ -46,7 +47,7 @@ class SessionManagerSessionPolicyTest {
 
     private fun manager(sessionPolicy: HackleSessionPolicy): SessionManager {
         val policy = sessionPolicy.toBuilder()
-            .timeoutMillis(10000)
+            .timeout(sessionPolicy.timeout.toBuilder().millis(10000).build())
             .build()
         return SessionManager(
             userManager = UserManager(
@@ -95,8 +96,8 @@ class SessionManagerSessionPolicyTest {
         for ((i, scenario) in scenarios.withIndex()) {
             val sut = manager(policy)
             val session1 = sut.startNewSession(scenario.oldUser, scenario.oldUser, 100)
-            val session2 = sut.startNewSessionIfNeeded(SessionContext.of(scenario.oldUser, scenario.newUser, 200))
-            val sessionExpired = session1.id != session2.id
+            sut.onUserUpdated(scenario.oldUser, scenario.newUser, 200)
+            val sessionExpired = session1.id != sut.currentSession?.id
             if (sessionExpired != expected[i]) {
                 val exp = if (expected[i]) "O (expire)" else "X (maintain)"
                 val act = if (sessionExpired) "O (expired)" else "X (maintained)"

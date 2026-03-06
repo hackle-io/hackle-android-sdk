@@ -3,6 +3,7 @@ package io.hackle.android
 import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.sdk.common.HackleSessionPolicy
+import io.hackle.sdk.common.HackleSessionTimeout
 import java.util.Collections
 
 /**
@@ -70,11 +71,11 @@ class HackleConfig private constructor(builder: Builder) {
      * The session timeout in milliseconds.
      */
     @Deprecated(
-        message = "Use sessionPolicy.timeoutMillis instead",
-        replaceWith = ReplaceWith("sessionPolicy.timeoutMillis")
+        message = "Use sessionPolicy.timeout.millis instead",
+        replaceWith = ReplaceWith("sessionPolicy.timeout.millis")
     )
     val sessionTimeoutMillis: Int
-        get() = sessionPolicy.timeoutMillis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
+        get() = sessionPolicy.timeout.millis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
 
     /**
      * The polling interval in milliseconds.
@@ -230,15 +231,22 @@ class HackleConfig private constructor(builder: Builder) {
          * @return this builder instance
          */
         @Deprecated(
-            message = "Use HackleSessionPolicy.Builder.timeoutMillis() instead. " +
-                "See HackleSessionPolicy.builder() for details.",
+            message = "Use HackleSessionTimeout.Builder.millis() instead. " +
+                "See HackleSessionTimeout.builder() for details.",
             replaceWith = ReplaceWith(
-                "sessionPolicy(HackleSessionPolicy.builder().timeoutMillis(sessionTimeoutMillis.toLong()).build())",
-                "io.hackle.sdk.common.HackleSessionPolicy"
+                "sessionPolicy(HackleSessionPolicy.builder().timeout(HackleSessionTimeout.builder().millis(sessionTimeoutMillis.toLong()).build()).build())",
+                "io.hackle.sdk.common.HackleSessionPolicy",
+                "io.hackle.sdk.common.HackleSessionTimeout"
             )
         )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
-            this.sessionPolicy = this.sessionPolicy.toBuilder().timeoutMillis(sessionTimeoutMillis.toLong()).build()
+            this.sessionPolicy = this.sessionPolicy.toBuilder()
+                .timeout(
+                    this.sessionPolicy.timeout.toBuilder()
+                        .millis(sessionTimeoutMillis.toLong())
+                        .build()
+                )
+                .build()
         }
 
         /**
@@ -332,10 +340,14 @@ class HackleConfig private constructor(builder: Builder) {
                 this.eventFlushThreshold = DEFAULT_EVENT_FLUSH_THRESHOLD
             }
 
-            if (sessionPolicy.timeoutMillis <= 0) {
-                log.warn { "Session timeout is outside allowed value. Setting to default value[${HackleSessionPolicy.DEFAULT_SESSION_TIMEOUT_MILLIS}ms]." }
+            if (sessionPolicy.timeout.millis <= 0) {
+                log.warn { "Session timeout is outside allowed value. Setting to default value[${HackleSessionTimeout.DEFAULT_SESSION_TIMEOUT_MILLIS}ms]." }
                 this.sessionPolicy = this.sessionPolicy.toBuilder()
-                    .timeoutMillis(HackleSessionPolicy.DEFAULT_SESSION_TIMEOUT_MILLIS)
+                    .timeout(
+                        this.sessionPolicy.timeout.toBuilder()
+                            .millis(HackleSessionTimeout.DEFAULT_SESSION_TIMEOUT_MILLIS)
+                            .build()
+                    )
                     .build()
             }
 
