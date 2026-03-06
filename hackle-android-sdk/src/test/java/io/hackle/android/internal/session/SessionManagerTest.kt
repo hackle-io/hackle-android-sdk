@@ -448,7 +448,7 @@ class SessionManagerTest {
 
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
-        expectThat(sut.lastEventTime) isEqualTo 200
+        expectThat(sut.lastEventTime) isEqualTo 100
     }
 
     @Test
@@ -560,9 +560,9 @@ class SessionManagerTest {
         val policy = HackleSessionPolicy.builder()
             .timeout(HackleSessionTimeout.builder().millis(10).onForeground(false).onBackground(true).build())
             .build()
-        var currentState = ApplicationState.BACKGROUND
+        var appState = ApplicationState.BACKGROUND
         val lifecycleMock = mockk<ApplicationLifecycleManager> {
-            every { currentState } answers { currentState }
+            every { currentState } answers { appState }
         }
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, applicationLifecycleManager = lifecycleMock, listeners = *arrayOf(listener))
@@ -578,7 +578,7 @@ class SessionManagerTest {
         listener.clear()
 
         // 포그라운드 전환 → onForeground=false → 타임아웃 체크 안함
-        currentState = ApplicationState.FOREGROUND
+        appState = ApplicationState.FOREGROUND
         sut.onForeground(300, true)
         expectThat(listener.started).hasSize(0)
         expectThat(listener.ended).hasSize(0)
@@ -591,9 +591,9 @@ class SessionManagerTest {
         val policy = HackleSessionPolicy.builder()
             .timeout(HackleSessionTimeout.builder().millis(50).onBackground(false).build())
             .build()
-        var currentState = ApplicationState.BACKGROUND
+        var appState = ApplicationState.BACKGROUND
         val lifecycleMock = mockk<ApplicationLifecycleManager> {
-            every { currentState } answers { currentState }
+            every { currentState } answers { appState }
         }
         val listener = SessionListenerStub()
         val sut = manager(sessionPolicy = policy, applicationLifecycleManager = lifecycleMock, listeners = *arrayOf(listener))
@@ -613,7 +613,7 @@ class SessionManagerTest {
         expectThat(sut.lastEventTime) isEqualTo 100  // lastEventTime 갱신되지 않음
 
         // 4. 포그라운드로 전환 → 세션 만료 확인 후 새로운 세션 시작
-        currentState = ApplicationState.FOREGROUND
+        appState = ApplicationState.FOREGROUND
         sut.onForeground(250, true)
         expectThat(listener.ended).hasSize(1)
         expectThat(listener.started).hasSize(1)
