@@ -11,7 +11,7 @@ class HackleSessionTimeoutCondition private constructor(builder: Builder) {
     val onApplicationStateChange: Boolean = builder.onApplicationStateChange
 
     override fun toString(): String =
-        "HackleSessionTimeout(millis=${this@HackleSessionTimeoutCondition.timeoutMillis}, enableOnForeground=${this@HackleSessionTimeoutCondition.onForeground}, enableOnBackground=${this@HackleSessionTimeoutCondition.onBackground}, enableOnApplicationStateChange=${this@HackleSessionTimeoutCondition.onApplicationStateChange})"
+        "HackleSessionTimeout(millis=${this@HackleSessionTimeoutCondition.timeoutMillis}, onForeground=${this@HackleSessionTimeoutCondition.onForeground}, onBackground=${this@HackleSessionTimeoutCondition.onBackground}, onApplicationStateChange=${this@HackleSessionTimeoutCondition.onApplicationStateChange})"
 
     class Builder {
         internal var timeoutMillis: Long = DEFAULT_SESSION_TIMEOUT_MILLIS
@@ -20,9 +20,9 @@ class HackleSessionTimeoutCondition private constructor(builder: Builder) {
         internal var onApplicationStateChange: Boolean = true
 
         fun millis(millis: Long) = apply { this.timeoutMillis = millis }
-        fun enableOnForeground(enableOnForeground: Boolean) = apply { this.onForeground = enableOnForeground }
-        fun enableOnBackground(enableOnBackground: Boolean) = apply { this.onBackground = enableOnBackground }
-        fun enableOnApplicationStateChange(enableOnApplicationStateChange: Boolean) = apply { this.onApplicationStateChange = enableOnApplicationStateChange }
+        fun onForeground(onForeground: Boolean) = apply { this.onForeground = onForeground }
+        fun onBackground(onBackground: Boolean) = apply { this.onBackground = onBackground }
+        fun onApplicationStateChange(onApplicationStateChange: Boolean) = apply { this.onApplicationStateChange = onApplicationStateChange }
         fun build(): HackleSessionTimeoutCondition = HackleSessionTimeoutCondition(this)
     }
 
