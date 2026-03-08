@@ -3,6 +3,11 @@ package io.hackle.android
 import android.content.Context
 import android.os.Build
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.application.ApplicationEventTracker
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -40,11 +45,8 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
-import io.hackle.android.internal.application.ApplicationEventTracker
-import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.application.install.ApplicationInstallStateManager
-import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
+import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
@@ -581,7 +583,9 @@ internal object HackleApps {
             userExplorer = userExplorer,
         )
 
-        val hackleInvocator = HackleInvocatorImpl(hackleAppCore)
+        val handlerFactory = InvocationHandlerFactory(hackleAppCore)
+        val processor = InvocationProcessor(handlerFactory)
+        val hackleInvocator = HackleInvocatorImpl(processor)
 
         return HackleApp(
             hackleAppCore = hackleAppCore,
