@@ -1,12 +1,11 @@
 package io.hackle.android.internal.event
 
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.push.PushEventTracker
+import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -34,7 +33,6 @@ internal class DefaultEventProcessor(
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
-    private val applicationLifecycleManager: ApplicationLifecycleManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
 ) : EventProcessor, ApplicationLifecycleListener, Closeable {
@@ -170,12 +168,10 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            if (applicationLifecycleManager.currentState == ApplicationState.FOREGROUND) {
-                sessionManager.updateLastEventTime(event.timestamp)
-            } else {
-                // Corner case when an event is processed between onPause and onResume
-                sessionManager.startNewSessionIfNeeded(userManager.currentUser, event.timestamp)
-            }
+            val currentUser = userManager.currentUser
+            sessionManager.startNewSessionIfNeeded(
+                SessionContext.of(currentUser, event.timestamp)
+            )
         }
 
         private fun save(event: UserEvent) {

@@ -190,3 +190,9 @@ internal fun InvocationParameters.screenName(): String? = this["screenName"] as?
  * @return 클래스 이름 또는 `null`
  */
 internal fun InvocationParameters.className(): String? = this["className"] as? String
+
+/**
+ * opt-out 추적 여부를 반환합니다.
+ * @return opt-out 여부 또는 `null`
+ */
+internal fun InvocationParameters.optOut(): Boolean? = this["optOut"] as? Boolean
