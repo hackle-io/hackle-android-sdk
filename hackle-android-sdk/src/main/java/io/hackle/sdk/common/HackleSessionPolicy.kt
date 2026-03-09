@@ -5,8 +5,8 @@ package io.hackle.sdk.common
  */
 class HackleSessionPolicy private constructor(builder: Builder) {
 
-    /** Condition for preserving the session on identifier change. `null` means always start a new session. */
-    val persistCondition: HackleSessionPersistCondition? = builder.persistCondition
+    /** Condition for preserving the session on identifier change. */
+    val persistCondition: HackleSessionPersistCondition = builder.persistCondition
 
     /** Session timeout configuration. */
     val timeoutCondition: HackleSessionTimeoutCondition = builder.timeoutCondition
@@ -14,7 +14,7 @@ class HackleSessionPolicy private constructor(builder: Builder) {
     override fun toString(): String = "HackleSessionPolicy(persistCondition=$persistCondition, timeout=$timeoutCondition)"
 
     class Builder {
-        internal var persistCondition: HackleSessionPersistCondition? = null
+        internal var persistCondition: HackleSessionPersistCondition = HackleSessionPersistCondition.ALWAYS_NEW_SESSION
         internal var timeoutCondition: HackleSessionTimeoutCondition = HackleSessionTimeoutCondition.DEFAULT
 
         fun persistCondition(persistCondition: HackleSessionPersistCondition) = apply {

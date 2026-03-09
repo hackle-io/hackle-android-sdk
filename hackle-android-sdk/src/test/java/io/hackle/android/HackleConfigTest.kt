@@ -175,7 +175,7 @@ class HackleConfigTest {
     fun `sessionPolicy`() {
         // default
         val defaultConfig = HackleConfig.builder().build()
-        expectThat(defaultConfig.sessionPolicy.persistCondition).isNull()
+        expectThat(defaultConfig.sessionPolicy.persistCondition).isSameInstanceAs(HackleSessionPersistCondition.ALWAYS_NEW_SESSION)
 
         // custom
         val customPolicy = HackleSessionPolicy.builder()

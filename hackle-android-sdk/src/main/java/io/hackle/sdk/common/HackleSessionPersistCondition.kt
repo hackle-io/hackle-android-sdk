@@ -17,6 +17,13 @@ fun interface HackleSessionPersistCondition {
     companion object {
 
         /**
+         * Always starts a new session when any identifier changes.
+         * This is the default behavior.
+         */
+        @JvmField
+        val ALWAYS_NEW_SESSION: HackleSessionPersistCondition = HackleSessionPersistCondition { _, _ -> false }
+
+        /**
          * Preserves the session when userId changes from `null` to a non-null value (e.g. `null` → `"A"`).
          *
          * If other identifier changes also occur (e.g. deviceId changes simultaneously),
