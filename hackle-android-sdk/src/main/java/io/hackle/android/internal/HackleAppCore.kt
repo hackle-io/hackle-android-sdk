@@ -7,6 +7,7 @@ import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.pii.PIIProperty
 import io.hackle.android.internal.pii.toSecuredEvent
 import io.hackle.android.internal.push.token.PushTokenManager
@@ -54,11 +55,13 @@ internal class HackleAppCore(
     private val device: Device,
     private val applicationInstallStateManager: ApplicationInstallStateManager,
     private val userExplorer: HackleUserExplorer,
+    private val optOutManager: OptOutManager,
 ) : Closeable {
 
     val deviceId: String get() = device.id
     val sessionId: String get() = sessionManager.requiredSession.id
     val user: User get() = userManager.currentUser
+    val isOptOutTracking: Boolean get() = optOutManager.isOptOutTracking
     val userExplorerService: HackleUserExplorerService get() = userExplorer.explorerService
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
@@ -303,6 +306,14 @@ internal class HackleAppCore(
 
     fun setCurrentScreen(screen: Screen) {
         screenManager.setCurrentScreen(screen, clock.currentMillis())
+    }
+
+    fun setOptOutTracking(optOut: Boolean) {
+        try {
+            optOutManager.setOptOutTracking(optOut)
+        } catch (e: Exception) {
+            log.error { "Unexpected exception while setting opt-out tracking: $e" }
+        }
     }
 
     private fun syncIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {

@@ -97,6 +97,12 @@ class HackleConfig private constructor(builder: Builder) {
      */
     val exposureEventDedupIntervalMillis: Int = builder.exposureEventDedupIntervalMillis
 
+    /**
+     * Whether the user has opted out of event tracking.
+     * When true, all event tracking (local storage and network dispatch) is blocked.
+     */
+    val optOutTracking: Boolean = builder.optOutTracking
+
     private val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
 
     internal operator fun get(key: String): String? = extra[key]
@@ -127,6 +133,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal var eventFlushThreshold: Int = DEFAULT_EVENT_FLUSH_THRESHOLD
 
         internal var exposureEventDedupIntervalMillis: Int = DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
+
+        internal var optOutTracking: Boolean = false
 
         internal val extra = hashMapOf<String, String>()
 
@@ -299,6 +307,21 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun exposureEventDedupIntervalMillis(exposureEventDedupIntervalMillis: Int) = apply {
             this.exposureEventDedupIntervalMillis = exposureEventDedupIntervalMillis
+        }
+
+        /**
+         * Sets whether opt-out tracking is enabled.
+         * When enabled, all event tracking (local storage and network dispatch) will be blocked.
+         *
+         * Once enabled (true), the opt-out state is persisted locally. Even if this config is
+         * later set to false, previously opted-out users remain opted out until
+         * [HackleApp.setOptOutTracking] is called with false at runtime.
+         *
+         * @param optOutTracking true to opt out of tracking, false to opt in (default)
+         * @return this builder instance
+         */
+        fun optOutTracking(optOutTracking: Boolean) = apply {
+            this.optOutTracking = optOutTracking
         }
 
         /**
