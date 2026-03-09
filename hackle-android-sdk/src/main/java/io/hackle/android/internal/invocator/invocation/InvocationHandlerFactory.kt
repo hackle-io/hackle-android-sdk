@@ -42,6 +42,7 @@ internal class InvocationHandlerFactory(
             TRACK -> TrackInvocationHandler(core)
             REMOTE_CONFIG -> RemoteConfigInvocationHandler(core)
             SET_CURRENT_SCREEN -> SetCurrentScreenInvocationHandler(core)
+            SET_OPT_OUT_TRACKING -> SetOptOutTrackingInvocationHandler(core)
             SHOW_USER_EXPLORER -> ShowUserExplorerInvocationHandler(core)
             HIDE_USER_EXPLORER -> HideUserExplorerInvocationHandler(core)
         }

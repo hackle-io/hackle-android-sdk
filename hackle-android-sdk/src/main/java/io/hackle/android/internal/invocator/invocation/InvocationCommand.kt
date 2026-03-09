@@ -44,6 +44,9 @@ internal enum class InvocationCommand(val command: String) {
     // Screen
     SET_CURRENT_SCREEN("setCurrentScreen"),
 
+    // Configuration
+    SET_OPT_OUT_TRACKING("setOptOutTracking"),
+
     // DevTools
     SHOW_USER_EXPLORER("showUserExplorer"),
     HIDE_USER_EXPLORER("hideUserExplorer"),

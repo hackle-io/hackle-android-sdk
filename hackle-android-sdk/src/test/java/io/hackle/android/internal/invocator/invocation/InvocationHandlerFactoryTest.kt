@@ -34,6 +34,7 @@ class InvocationHandlerFactoryTest {
                     InvocationCommand.TRACK -> isA<TrackInvocationHandler>()
                     InvocationCommand.REMOTE_CONFIG -> isA<RemoteConfigInvocationHandler>()
                     InvocationCommand.SET_CURRENT_SCREEN -> isA<SetCurrentScreenInvocationHandler>()
+                    InvocationCommand.SET_OPT_OUT_TRACKING -> isA<SetOptOutTrackingInvocationHandler>()
                     InvocationCommand.SHOW_USER_EXPLORER -> isA<ShowUserExplorerInvocationHandler>()
                     InvocationCommand.HIDE_USER_EXPLORER -> isA<HideUserExplorerInvocationHandler>()
                 }
