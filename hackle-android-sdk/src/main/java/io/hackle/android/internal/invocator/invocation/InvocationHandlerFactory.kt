@@ -8,7 +8,19 @@ internal class InvocationHandlerFactory(
     private val core: HackleAppCore,
 ) {
 
+    private val handlers = HashMap<InvocationCommand, InvocationHandler<*>>()
+
+    init {
+        for (command in InvocationCommand.values()) {
+            handlers[command] = create(command)
+        }
+    }
+
     fun get(command: InvocationCommand): InvocationHandler<*> {
+        return requireNotNull(handlers[command]) { "Not found InvocationHandler [$command]" }
+    }
+
+    private fun create(command: InvocationCommand): InvocationHandler<*> {
         return when (command) {
             GET_SESSION_ID -> GetSessionIdInvocationHandler(core)
             GET_USER -> GetUserInvocationHandler(core)

@@ -18,19 +18,3 @@ internal class SetCurrentScreenInvocationHandler(private val core: HackleAppCore
         return InvocationResponse.success()
     }
 }
-
-// DevTools
-
-internal class ShowUserExplorerInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
-    override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        core.showUserExplorer()
-        return InvocationResponse.success()
-    }
-}
-
-internal class HideUserExplorerInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
-    override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        core.hideUserExplorer()
-        return InvocationResponse.success()
-    }
-}
