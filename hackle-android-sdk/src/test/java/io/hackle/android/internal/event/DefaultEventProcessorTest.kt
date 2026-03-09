@@ -1,7 +1,5 @@
 package io.hackle.android.internal.event
 
-import io.hackle.android.internal.application.lifecycle.ApplicationState
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
@@ -11,6 +9,7 @@ import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
+import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.session.SessionUserEventDecorator
@@ -60,9 +59,6 @@ class DefaultEventProcessorTest {
     private lateinit var userManager: UserManager
 
     @RelaxedMockK
-    private lateinit var applicationLifecycleManager: ApplicationLifecycleManager
-
-    @RelaxedMockK
     private lateinit var screenManager: ScreenManager
 
     @RelaxedMockK
@@ -74,7 +70,6 @@ class DefaultEventProcessorTest {
         every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
         every { eventDedupDeterminer.isDedupTarget(any()) } returns false
         every { sessionManager.currentSession } returns null
-        every { applicationLifecycleManager.currentState } returns ApplicationState.FOREGROUND
         every { userManager.currentUser } returns User.of("id")
         every { screenManager.currentScreen } returns null
     }
@@ -92,7 +87,6 @@ class DefaultEventProcessorTest {
         eventDispatcher: EventDispatcher = this.eventDispatcher,
         sessionManager: SessionManager = this.sessionManager,
         userManager: UserManager = this.userManager,
-        applicationLifecycleManager: ApplicationLifecycleManager = this.applicationLifecycleManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
     ): DefaultEventProcessor {
@@ -108,7 +102,6 @@ class DefaultEventProcessorTest {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            applicationLifecycleManager = applicationLifecycleManager,
             screenUserEventDecorator = ScreenUserEventDecorator(screenManager),
             eventBackoffController = eventBackoffController
         )
@@ -146,7 +139,7 @@ class DefaultEventProcessorTest {
     }
 
     @Test
-    fun `process - SessionEvent 인 경우 last event time 을 업데이트 하지 않는다`() {
+    fun `process - SessionEvent 인 경우 startSessionIfNeededOnEvent 를 호출하지 않는다`() {
         // given
         val sut = processor()
         val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
@@ -159,12 +152,11 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
     }
 
-
     @Test
-    fun `process - PushTokenEvent 인 경우 last event time 을 업데이트 하지 않는다`() {
+    fun `process - PushTokenEvent 인 경우 startSessionIfNeededOnEvent 를 호출하지 않는다`() {
         // given
         val sut = processor()
         val user = HackleUser.builder().identifier(IdentifierType.ID, "id").build()
@@ -174,37 +166,27 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
-        verify(exactly = 0) { sessionManager.updateLastEventTime(any()) }
+        verify(exactly = 0) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
     }
 
-
     @Test
-    fun `process - last event time update`() {
+    fun `process - startSessionIfNeededOnEvent 호출`() {
         // given
         val sut = processor()
         val user = HackleUser.of("id")
         val event = event(user = user, timestamp = 42)
+        val contextSlot = slot<SessionContext>()
+        every { sessionManager.startNewSessionIfNeeded(capture(contextSlot)) } returns mockk()
 
         // when
         sut.process(event)
 
         // then
-        verify(exactly = 1) { sessionManager.updateLastEventTime(42) }
-    }
-
-    @Test
-    fun `process - FOREGOURND가 아닌경우 세션초기화 시도`() {
-        // given
-        val sut = processor()
-        val user = HackleUser.of("id")
-        val event = event(user = user, timestamp = 42)
-        every { applicationLifecycleManager.currentState } returns ApplicationState.BACKGROUND
-
-        // when
-        sut.process(event)
-
-        // then
-        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any(), 42) }
+        verify(exactly = 1) { sessionManager.startNewSessionIfNeeded(any<SessionContext>()) }
+        expectThat(contextSlot.captured) {
+            get { timestamp } isEqualTo 42
+            get { isApplicationStateChange } isEqualTo false
+        }
     }
 
     @Test
