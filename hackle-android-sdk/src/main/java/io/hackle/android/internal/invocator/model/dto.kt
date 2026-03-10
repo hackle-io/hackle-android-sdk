@@ -11,6 +11,30 @@ import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.core.internal.utils.enumValueOfOrNull
 
+internal data class InvocationRequestDto(
+    @SerializedName(KEY_HACKLE)
+    val hackle: HackleData?,
+) {
+    data class HackleData(
+
+        @SerializedName(KEY_COMMAND)
+        val command: String?,
+
+        @SerializedName(KEY_PARAMETERS)
+        val parameters: Map<String, Any?>?,
+
+        @SerializedName(KEY_BROWSER_PROPERTIES)
+        val browserProperties: Map<String, Any>?,
+    )
+
+    companion object {
+        const val KEY_HACKLE = "_hackle"
+        const val KEY_COMMAND = "command"
+        const val KEY_PARAMETERS = "parameters"
+        const val KEY_BROWSER_PROPERTIES = "browserProperties"
+    }
+}
+
 internal data class UserDto(
     @SerializedName(KEY_ID)
     val id: String?,
@@ -21,7 +45,7 @@ internal data class UserDto(
     @SerializedName(KEY_IDENTIFIERS)
     val identifiers: Map<String, String>,
     @SerializedName(KEY_PROPERTIES)
-    val properties: Map<String, Any>
+    val properties: Map<String, Any>,
 ) {
 
     companion object {
@@ -50,7 +74,7 @@ internal data class DecisionDto(
     @SerializedName("reason")
     val reason: String,
     @SerializedName("config")
-    val config: Map<String, Any>
+    val config: Map<String, Any>,
 )
 
 internal data class FeatureFlagDecisionDto(
@@ -59,7 +83,7 @@ internal data class FeatureFlagDecisionDto(
     @SerializedName("reason")
     val reason: String,
     @SerializedName("config")
-    val config: Map<String, Any>
+    val config: Map<String, Any>,
 )
 
 internal data class EventDto(
@@ -68,7 +92,7 @@ internal data class EventDto(
     @SerializedName(KEY_VALUE)
     val value: Double?,
     @SerializedName(KEY_PROPERTIES)
-    val properties: Map<String, Any>?
+    val properties: Map<String, Any>?,
 ) {
 
     companion object {

@@ -8,23 +8,21 @@ import android.content.Intent
 import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
-import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.context.HackleAppContext
+import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
-import io.hackle.sdk.common.Screen
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
-import io.hackle.sdk.common.HacklePushSubscriptionStatus
 import io.hackle.sdk.common.Variation.Companion.CONTROL
-import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.core.internal.log.Logger
 import java.io.Closeable
 
@@ -307,7 +305,7 @@ class HackleApp internal constructor(
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                        "JavaScript can use reflection to manipulate application"
+                    "JavaScript can use reflection to manipulate application"
             )
         }
         val invocator = invocator()

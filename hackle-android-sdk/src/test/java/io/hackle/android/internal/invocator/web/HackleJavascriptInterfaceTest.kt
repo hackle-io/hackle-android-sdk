@@ -3,6 +3,8 @@ package io.hackle.android.internal.invocator.web
 import io.hackle.android.HackleAppMode
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
+import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
+import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.model.Sdk
 import io.hackle.sdk.common.HackleWebViewConfig
 import io.mockk.every
@@ -10,7 +12,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isContainedIn
 import strikt.assertions.isEqualTo
 
 class HackleJavascriptInterfaceTest {
@@ -74,6 +75,7 @@ class HackleJavascriptInterfaceTest {
     }
 
     private fun invocation(): HackleInvocatorImpl {
-        return HackleInvocatorImpl(mockk<HackleAppCore>(),)
+        val handlerFactory = InvocationHandlerFactory(mockk<HackleAppCore>())
+        return HackleInvocatorImpl(InvocationProcessor(handlerFactory))
     }
 }

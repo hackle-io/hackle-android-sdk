@@ -45,6 +45,8 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
+import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
+import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
@@ -593,7 +595,9 @@ internal object HackleApps {
             optOutManager = optOutManager,
         )
 
-        val hackleInvocator = HackleInvocatorImpl(hackleAppCore)
+        val handlerFactory = InvocationHandlerFactory(hackleAppCore)
+        val processor = InvocationProcessor(handlerFactory)
+        val hackleInvocator = HackleInvocatorImpl(processor)
 
         return HackleApp(
             hackleAppCore = hackleAppCore,
