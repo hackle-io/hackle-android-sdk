@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.graphics.Canvas
@@ -7,7 +7,6 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.widget.ImageView
 import io.hackle.android.ui.core.CornerRadii
-import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
@@ -15,7 +14,7 @@ import kotlin.math.min
 internal class InAppMessageImageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : ImageView(context, attrs, defStyleAttr) {
 
     private var path = Path()
@@ -87,9 +86,5 @@ internal class InAppMessageImageView @JvmOverloads constructor(
 }
 
 internal fun InAppMessageImageView.render(image: InAppMessage.Message.Image, view: InAppMessageView) {
-    view.controller.ui.imageLoader.renderTo(view.getContext(), image.imagePath, this)
-}
-
-internal fun InAppMessageImageView.render(image: InAppMessage.Message.Image, activity: InAppMessageActivity) {
-    activity.controller.ui.imageLoader.renderTo(activity, image.imagePath, this)
+    view.controller.ui.imageLoader.renderTo(this.context, image.imagePath, this)
 }

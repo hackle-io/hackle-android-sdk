@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.content.res.TypedArray
@@ -9,7 +9,7 @@ import io.hackle.sdk.core.model.InAppMessage
 internal class InAppMessagePositionalButtonView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : InAppMessageButtonView(context, attrs, defStyleAttr) {
 
     val alignment: InAppMessage.Message.Alignment

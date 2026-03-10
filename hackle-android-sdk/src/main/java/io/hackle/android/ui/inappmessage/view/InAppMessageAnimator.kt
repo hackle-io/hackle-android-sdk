@@ -1,9 +1,9 @@
-package io.hackle.android.ui.inappmessage.layout
+package io.hackle.android.ui.inappmessage.view
 
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.Animation.AnimationListener
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator.Listener
+import io.hackle.android.ui.inappmessage.view.InAppMessageAnimator.Listener
 import java.util.concurrent.atomic.AtomicInteger
 
 internal interface InAppMessageAnimator {
@@ -28,7 +28,7 @@ internal interface InAppMessageAnimator {
 
 internal class InAppMessageViewAnimator(
     private val view: View,
-    private val animation: Animation
+    private val animation: Animation,
 ) : InAppMessageAnimator {
 
     override fun start() {
@@ -52,7 +52,7 @@ internal class InAppMessageViewAnimator(
 }
 
 internal class CompositeInAppMessageAnimator(
-    private val animators: List<InAppMessageAnimator>
+    private val animators: List<InAppMessageAnimator>,
 ) : InAppMessageAnimator, Listener {
 
     private val endCount = AtomicInteger()

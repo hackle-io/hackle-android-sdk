@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.util.AttributeSet
@@ -14,8 +14,6 @@ import io.hackle.android.R
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.handle
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.model.InAppMessage
@@ -25,8 +23,8 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 internal class InAppMessageScrollImageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : RelativeLayout(context, attrs, defStyleAttr), InAppMessageLayout.LifecycleListener {
+    defStyleAttr: Int = 0,
+) : RelativeLayout(context, attrs, defStyleAttr), InAppMessageView.LifecycleListener {
 
     private val recyclerView: RecyclerView
     private val pageView: TextView

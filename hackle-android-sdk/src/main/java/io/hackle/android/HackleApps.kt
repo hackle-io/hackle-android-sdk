@@ -3,6 +3,11 @@ package io.hackle.android
 import android.content.Context
 import android.os.Build
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.application.ApplicationEventTracker
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -40,11 +45,6 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
-import io.hackle.android.internal.application.ApplicationEventTracker
-import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.application.install.ApplicationInstallStateManager
-import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
@@ -83,7 +83,7 @@ import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Com
 import io.hackle.android.ui.inappmessage.InAppMessageControllerFactory
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.*
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext

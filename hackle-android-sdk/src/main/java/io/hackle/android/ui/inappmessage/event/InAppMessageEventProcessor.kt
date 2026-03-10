@@ -1,11 +1,12 @@
 package io.hackle.android.ui.inappmessage.event
 
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.listener
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.inAppMessage
+import io.hackle.android.ui.inappmessage.view.listener
 
 internal interface InAppMessageEventProcessor<EVENT : InAppMessageEvent> {
     fun supports(event: InAppMessageEvent): Boolean
-    fun process(layout: InAppMessageLayout, event: EVENT, timestamp: Long)
+    fun process(view: InAppMessageView, event: EVENT, timestamp: Long)
 }
 
 internal class InAppMessageEventProcessorFactory(private val processors: List<InAppMessageEventProcessor<out InAppMessageEvent>>) {
@@ -20,11 +21,7 @@ internal class InAppMessageImpressionEventProcessor : InAppMessageEventProcessor
         return event is InAppMessageEvent.Impression
     }
 
-    override fun process(
-        layout: InAppMessageLayout,
-        event: InAppMessageEvent.Impression,
-        timestamp: Long,
-    ) {
+    override fun process(view: InAppMessageView, event: InAppMessageEvent.Impression, timestamp: Long) {
         // Do nothing.
     }
 }
@@ -36,23 +33,18 @@ internal class InAppMessageActionEventProcessor(
         return event is InAppMessageEvent.Action
     }
 
-    override fun process(
-        layout: InAppMessageLayout,
-        event: InAppMessageEvent.Action,
-        timestamp: Long,
-    ) {
-        val isProcessed =
-            layout.listener.onInAppMessageClick(layout.context.inAppMessage, layout, event.action)
+    override fun process(view: InAppMessageView, event: InAppMessageEvent.Action, timestamp: Long) {
+        val isProcessed = view.listener.onInAppMessageClick(view.inAppMessage, view, event.action)
         if (isProcessed) {
             return
         }
 
-        if (layout.state == InAppMessageLayout.State.CLOSED) {
+        if (view.state == InAppMessageView.State.CLOSED) {
             return
         }
 
         val handler = actionHandlerFactory.get(event.action) ?: return
-        handler.handle(layout, event.action)
+        handler.handle(view, event.action)
     }
 }
 
@@ -62,11 +54,7 @@ internal class InAppMessageCloseEventProcessor :
         return event is InAppMessageEvent.Close
     }
 
-    override fun process(
-        layout: InAppMessageLayout,
-        event: InAppMessageEvent.Close,
-        timestamp: Long,
-    ) {
-        // Do nothing. This method is called after the layout is closed.
+    override fun process(view: InAppMessageView, event: InAppMessageEvent.Close, timestamp: Long) {
+        // Do nothing. This method is called after the view is closed.
     }
 }

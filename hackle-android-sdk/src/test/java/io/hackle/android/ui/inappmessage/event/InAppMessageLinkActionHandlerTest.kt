@@ -2,7 +2,7 @@ package io.hackle.android.ui.inappmessage.event
 
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionType.WEB_LINK
 import io.mockk.Called
@@ -41,9 +41,9 @@ internal class InAppMessageLinkActionHandlerTest {
     @Test
     fun `handle - when activity is null then do nothing`() {
         // given
-        val view = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { activity } returns null
-            every { context } returns mockk(relaxed = true)
+            every { presentationContext } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = WEB_LINK)
 
@@ -57,9 +57,9 @@ internal class InAppMessageLinkActionHandlerTest {
     @Test
     fun `when action value is null then do nothing`() {
         // given
-        val view = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { activity } returns mockk()
-            every { context } returns mockk(relaxed = true)
+            every { presentationContext } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = WEB_LINK, value = null)
 
@@ -74,9 +74,9 @@ internal class InAppMessageLinkActionHandlerTest {
     fun `handle uri`() {
         // given
         val activity = mockk<Activity>()
-        val view = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { this@mockk.activity } returns activity
-            every { context } returns mockk(relaxed = true)
+            every { presentationContext } returns mockk(relaxed = true)
         }
         val action = InAppMessages.action(type = WEB_LINK, value = "gogo")
 

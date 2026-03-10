@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView xmlns:android="http://schemas.android.com/apk/res/android"
+<io.hackle.android.ui.inappmessage.view.banner.InAppMessageBannerView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/hackle_iam_banner_view"
     android:layout_width="match_parent"
     android:layout_height="@dimen/hackle_iam_banner_max_height"
@@ -17,7 +17,7 @@
         android:layout_toStartOf="@+id/hackle_iam_banner_close_button"
         android:layout_toLeftOf="@+id/hackle_iam_banner_close_button">
 
-        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
+        <io.hackle.android.ui.inappmessage.view.InAppMessageImageView
             android:id="@+id/hackle_iam_banner_image_view"
             android:layout_width="@dimen/hackle_iam_banner_content_height"
             android:layout_height="@dimen/hackle_iam_banner_content_height"
@@ -27,7 +27,7 @@
             android:layout_marginRight="@dimen/hackle_iam_banner_spacing"
             android:adjustViewBounds="true" />
 
-        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextView
+        <io.hackle.android.ui.inappmessage.view.InAppMessageTextView
             android:id="@+id/hackle_iam_banner_text_view"
             android:layout_width="match_parent"
             android:layout_height="@dimen/hackle_iam_banner_content_height"
@@ -40,7 +40,7 @@
             android:textSize="14sp" />
     </RelativeLayout>
 
-    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
+    <io.hackle.android.ui.inappmessage.view.InAppMessageCloseButtonView
         android:id="@+id/hackle_iam_banner_close_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
@@ -57,4 +57,4 @@
         android:text="@string/hackle_iam_close_button_text"
         android:textSize="16sp" />
 
-</io.hackle.android.ui.inappmessage.layout.view.banner.InAppMessageBannerView>
+</io.hackle.android.ui.inappmessage.view.banner.InAppMessageBannerView>

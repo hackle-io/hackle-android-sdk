@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView xmlns:android="http://schemas.android.com/apk/res/android"
+<io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:background="@color/hackle_iam_modal_frame_background" />
 
-    <io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContentView
+    <io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalContentView
         android:id="@+id/hackle_iam_banner_content_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,7 +23,7 @@
         android:layout_marginRight="@dimen/hackle_iam_modal_margin"
         android:orientation="vertical">
 
-        <io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContainerView
+        <io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalContainerView
             android:id="@+id/hackle_iam_modal_container_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageContainerView
+                <io.hackle.android.ui.inappmessage.view.InAppMessageImageContainerView
                     android:id="@+id/hackle_iam_modal_image_container_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
@@ -51,7 +51,7 @@
                     android:paddingEnd="@dimen/hackle_iam_modal_padding"
                     android:paddingRight="@dimen/hackle_iam_modal_padding">
 
-                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextView
+                    <io.hackle.android.ui.inappmessage.view.InAppMessageTextView
                         android:id="@+id/hackle_iam_modal_title_text_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                         android:textStyle="bold"
                         tools:text="IN APP MESSAGE TITLE TEXT" />
 
-                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageTextView
+                    <io.hackle.android.ui.inappmessage.view.InAppMessageTextView
                         android:id="@+id/hackle_iam_modal_body_text_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -76,7 +76,7 @@
                     android:orientation="horizontal"
                     android:padding="@dimen/hackle_iam_modal_padding">
 
-                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
+                    <io.hackle.android.ui.inappmessage.view.InAppMessageButtonView
                         android:id="@+id/hackle_iam_modal_first_button"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="0dp"
@@ -90,7 +90,7 @@
                         android:textStyle="bold"
                         tools:text="BUTTON 1" />
 
-                    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageButtonView
+                    <io.hackle.android.ui.inappmessage.view.InAppMessageButtonView
                         android:id="@+id/hackle_iam_modal_second_button"
                         style="?android:attr/borderlessButtonStyle"
                         android:layout_width="0dp"
@@ -107,7 +107,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
+            <io.hackle.android.ui.inappmessage.view.InAppMessageCloseButtonView
                 android:id="@+id/hackle_iam_modal_close_button_view"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -118,14 +118,14 @@
                 android:text="@string/hackle_iam_close_button_text"
                 android:textAlignment="center"
                 android:textSize="16sp" />
-        </io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContainerView>
+        </io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalContainerView>
 
         <RelativeLayout
             android:id="@+id/hackle_iam_modal_bottom_outer_button_container_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+            <io.hackle.android.ui.inappmessage.view.InAppMessagePositionalButtonView
                 android:id="@+id/hackle_iam_modal_left_bottom_outer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -142,7 +142,7 @@
                 app:alignVertical="bottom"
                 tools:text="OUTER BUTTON 1" />
 
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+            <io.hackle.android.ui.inappmessage.view.InAppMessagePositionalButtonView
                 android:id="@+id/hackle_iam_modal_right_bottom_outer_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -161,5 +161,5 @@
                 tools:text="OUTER BUTTON 2" />
 
         </RelativeLayout>
-    </io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalContentView>
-</io.hackle.android.ui.inappmessage.layout.view.modal.InAppMessageModalView>
+    </io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalContentView>
+</io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalView>

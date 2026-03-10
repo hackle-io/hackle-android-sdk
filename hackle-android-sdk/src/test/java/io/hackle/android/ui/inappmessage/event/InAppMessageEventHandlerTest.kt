@@ -1,7 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.support.InAppMessages
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.MockKAnnotations
 import io.mockk.every
@@ -39,8 +39,8 @@ internal class InAppMessageEventHandlerTest {
     fun `track`() {
         // given
         val context = InAppMessages.context()
-        val view = mockk<InAppMessageLayout> {
-            every { this@mockk.context } returns context
+        val view = mockk<InAppMessageView> {
+            every { this@mockk.presentationContext } returns context
         }
         val event = InAppMessageEvent.Impression
 
@@ -57,8 +57,8 @@ internal class InAppMessageEventHandlerTest {
     fun `when cannot found event processor the do not process`() {
         // given
         val context = InAppMessages.context()
-        val view = mockk<InAppMessageLayout> {
-            every { this@mockk.context } returns context
+        val view = mockk<InAppMessageView> {
+            every { this@mockk.presentationContext } returns context
         }
         val event = InAppMessageEvent.Impression
 
@@ -72,8 +72,8 @@ internal class InAppMessageEventHandlerTest {
     fun `process event`() {
         // given
         val context = InAppMessages.context()
-        val view = mockk<InAppMessageLayout> {
-            every { this@mockk.context } returns context
+        val view = mockk<InAppMessageView> {
+            every { this@mockk.presentationContext } returns context
         }
         val event = InAppMessageEvent.Impression
 

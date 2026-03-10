@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout
+package io.hackle.android.ui.inappmessage.view
 
 import io.mockk.mockk
 import io.mockk.verify
