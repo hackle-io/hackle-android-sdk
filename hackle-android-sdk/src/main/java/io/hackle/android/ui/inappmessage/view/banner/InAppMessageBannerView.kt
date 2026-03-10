@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view.banner
+package io.hackle.android.ui.inappmessage.view.banner
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -7,12 +7,9 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.view.WindowInsets
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView.ScaleType.FIT_CENTER
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import io.hackle.android.R
@@ -21,17 +18,16 @@ import io.hackle.android.ui.core.CornerRadii
 import io.hackle.android.ui.core.Drawables
 import io.hackle.android.ui.inappmessage.backgroundColor
 import io.hackle.android.ui.inappmessage.imageOrNull
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
-import io.hackle.android.ui.inappmessage.layout.view.*
 import io.hackle.android.ui.inappmessage.requiredOrientation
+import io.hackle.android.ui.inappmessage.view.*
 import io.hackle.sdk.core.model.InAppMessage
 import kotlin.math.min
 
 internal class InAppMessageBannerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : InAppMessageView(context, attrs, defStyleAttr) {
+    defStyleAttr: Int = 0,
+) : InAppMessageBaseView(context, attrs, defStyleAttr) {
 
     // Attribute
     private val maxWidth get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_banner_max_width)
@@ -68,7 +64,7 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
         this.setOnClickListener(createMessageClickListener())
 
         // Image
-        val image = context.imageOrNull(requiredOrientation)
+        val image = presentationContext.imageOrNull(requiredOrientation)
         if (image != null) {
             imageView.configure(this, image, FIT_CENTER)
             imageView.setCornerRadius(imageCornerRadius.toFloat())
@@ -89,7 +85,7 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
     }
 
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {
-        val inAppMessageAlignment = controller.context.message.layout.alignment?.vertical
+        val inAppMessageAlignment = message.layout.alignment?.vertical
 
         if (inAppMessageAlignment == InAppMessage.Message.Alignment.Vertical.TOP) {
             updateLayoutParams<MarginLayoutParams> {

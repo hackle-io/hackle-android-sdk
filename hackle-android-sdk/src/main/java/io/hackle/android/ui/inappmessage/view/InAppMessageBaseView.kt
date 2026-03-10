@@ -1,40 +1,30 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.KeyEvent
-import android.view.View.OnClickListener
 import android.widget.RelativeLayout
 import androidx.core.view.WindowInsetsCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.handle
-import io.hackle.android.ui.inappmessage.layout.publishInAppMessageLifecycle
-import io.hackle.sdk.core.model.InAppMessage
 import java.lang.ref.WeakReference
 
-internal abstract class InAppMessageView @JvmOverloads constructor(
+internal abstract class InAppMessageBaseView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : RelativeLayout(context, attrs, defStyleAttr), InAppMessageLayout {
+) : RelativeLayout(context, attrs, defStyleAttr), InAppMessageView {
 
     private var _controller: InAppMessageViewController? = null
-    private var _context: InAppMessagePresentationContext? = null
+    private var _presentationContext: InAppMessagePresentationContext? = null
     private var _activity: WeakReference<Activity>? = null
 
-    override val state: InAppMessageLayout.State get() = controller.state
-    override val controller: InAppMessageViewController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageView." }
-    override val context: InAppMessagePresentationContext get() = requireNotNull(_context) { "InAppMessagePresentationContext is not set on InAppMessageView." }
+    override val state: InAppMessageView.State get() = controller.state
+    override val controller: InAppMessageViewController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageBaseView." }
+    override val presentationContext: InAppMessagePresentationContext get() = requireNotNull(_presentationContext) { "InAppMessagePresentationContext is not set on InAppMessageBaseView." }
     override val activity: Activity? get() = _activity?.get()
-
-    val inAppMessage: InAppMessage get() = context.inAppMessage
-    val message: InAppMessage.Message get() = context.message
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && InAppMessageUi.instance.isBackButtonDismisses) {
@@ -48,8 +38,8 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
         _controller = controller
     }
 
-    fun setContext(context: InAppMessagePresentationContext) {
-        _context = context
+    fun setPresentationContext(context: InAppMessagePresentationContext) {
+        _presentationContext = context
     }
 
     fun setActivity(activity: Activity) {
@@ -76,26 +66,5 @@ internal abstract class InAppMessageView @JvmOverloads constructor(
      */
     open fun onApplyWindowInsets(insets: WindowInsetsCompat) {
         // nothing to do
-    }
-}
-
-internal fun InAppMessageView.createCloseListener(): OnClickListener {
-    return OnClickListener { close() }
-}
-
-internal fun InAppMessageView.createMessageClickListener(): OnClickListener {
-    return OnClickListener {
-        val action = message.action ?: return@OnClickListener
-        handle(InAppMessageEvent.messageAction(action))
-    }
-}
-
-internal fun InAppMessageView.createImageClickListener(
-    image: InAppMessage.Message.Image,
-    order: Int?,
-): OnClickListener {
-    return OnClickListener {
-        val action = image.action ?: return@OnClickListener
-        handle(InAppMessageEvent.imageAction(action, image, order))
     }
 }

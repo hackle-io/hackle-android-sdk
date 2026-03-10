@@ -1,29 +1,25 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.core.setActivityRequestedOrientation
 import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout.State
+import io.hackle.android.ui.inappmessage.view.InAppMessageView.State
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicReference
 
 
 internal class InAppMessageViewController(
-    val view: InAppMessageView,
-    override val context: InAppMessagePresentationContext,
+    override val view: InAppMessageBaseView,
     override val ui: InAppMessageUi,
 ) : InAppMessageController {
 
-    override val layout: InAppMessageView get() = view
     private var originalOrientation: Int? = null
 
     private val _state = AtomicReference(State.CLOSED)
@@ -31,7 +27,7 @@ internal class InAppMessageViewController(
 
     override fun open(activity: Activity) {
         if (!_state.compareAndSet(State.CLOSED, State.OPENED)) {
-            log.debug { "InAppMessage is already open (key=${context.inAppMessage.key})" }
+            log.debug { "InAppMessage is already open (key=${view.inAppMessage.key})" }
             return
         }
 
@@ -46,7 +42,7 @@ internal class InAppMessageViewController(
 
     override fun close(whenActivityDestroy: Boolean) {
         if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
-            log.debug { "InAppMessage is already close (key=${context.inAppMessage.key})" }
+            log.debug { "InAppMessage is already close (key=${view.inAppMessage.key})" }
             return
         }
 
@@ -74,7 +70,7 @@ internal class InAppMessageViewController(
 
     private fun lifecycle(lifecycle: InAppMessageLifecycle) {
         view.publish(lifecycle)
-        ui.listener.onLifecycle(lifecycle, context.inAppMessage)
+        ui.listener.onLifecycle(lifecycle, view.inAppMessage)
     }
 
     private fun addView(activity: Activity) {

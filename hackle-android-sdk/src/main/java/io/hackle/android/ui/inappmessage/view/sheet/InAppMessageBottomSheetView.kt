@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view.sheet
+package io.hackle.android.ui.inappmessage.view.sheet
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -16,15 +16,14 @@ import io.hackle.android.ui.core.Drawables
 import io.hackle.android.ui.inappmessage.backgroundColor
 import io.hackle.android.ui.inappmessage.buttonOrNull
 import io.hackle.android.ui.inappmessage.images
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator
-import io.hackle.android.ui.inappmessage.layout.view.*
 import io.hackle.android.ui.inappmessage.requiredOrientation
+import io.hackle.android.ui.inappmessage.view.*
 
 internal class InAppMessageBottomSheetView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : InAppMessageView(context, attrs, defStyleAttr) {
+    defStyleAttr: Int = 0,
+) : InAppMessageBaseView(context, attrs, defStyleAttr) {
 
     // Attribute
     private val cornerRadius get() = resources.getDimensionPixelSize(R.dimen.hackle_iam_bottom_sheet_radius)
@@ -84,7 +83,7 @@ internal class InAppMessageBottomSheetView @JvmOverloads constructor(
 
         // CloseButton
         val closeButton = message.closeButton
-        if (context.images(requiredOrientation).size < 2 && closeButton != null) {
+        if (presentationContext.images(requiredOrientation).size < 2 && closeButton != null) {
             closeButtonView.configure(this, closeButton)
         } else {
             closeButtonView.visibility = View.GONE

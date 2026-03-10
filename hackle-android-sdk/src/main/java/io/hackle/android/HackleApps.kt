@@ -85,7 +85,7 @@ import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Com
 import io.hackle.android.ui.inappmessage.InAppMessageControllerFactory
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.event.*
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext

@@ -1,8 +1,8 @@
-package io.hackle.android.ui.inappmessage.layout
+package io.hackle.android.ui.inappmessage.view
 
 import android.view.View
 import android.view.animation.Animation
-import io.hackle.android.ui.inappmessage.layout.InAppMessageAnimator.Listener
+import io.hackle.android.ui.inappmessage.view.InAppMessageAnimator.Listener
 import io.mockk.*
 import org.junit.Test
 import strikt.api.expectThat

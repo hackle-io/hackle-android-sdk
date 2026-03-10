@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.layout.view
+package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.util.AttributeSet
@@ -9,7 +9,7 @@ import io.hackle.sdk.core.model.InAppMessage
 internal class InAppMessageTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : TextView(context, attrs, defStyleAttr) {
 
     fun configure(attribute: InAppMessage.Message.Text.Attribute) {

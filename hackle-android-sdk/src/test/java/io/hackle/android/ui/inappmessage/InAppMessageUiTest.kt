@@ -7,8 +7,7 @@ import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.model.InAppMessage
@@ -173,32 +172,14 @@ class InAppMessageUiTest {
     }
 
     @Test
-    fun `when InAppMessageActivity destroyed then do not close`() {
+    fun `when controller view activity is null then do close`() {
         // given
         val context = InAppMessages.context()
         sut.present(context)
-        val inAppMessageActivity = mockk<InAppMessageActivity>()
-        val layout = mockk<InAppMessageLayout> {
-            every { this@mockk.activity } returns inAppMessageActivity
-        }
-        every { controller.layout } returns layout
-
-        // when
-        sut.onLifecycle(ActivityLifecycle.DESTROYED, inAppMessageActivity, System.currentTimeMillis())
-
-        // then
-        verify(exactly = 0) { controller.close(any()) }
-    }
-
-    @Test
-    fun `when controller layout activity is null then do close`() {
-        // given
-        val context = InAppMessages.context()
-        sut.present(context)
-        val layout = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { this@mockk.activity } returns null
         }
-        every { controller.layout } returns layout
+        every { controller.view } returns view
 
         // when
         sut.onLifecycle(ActivityLifecycle.DESTROYED, activity, System.currentTimeMillis())
@@ -208,15 +189,15 @@ class InAppMessageUiTest {
     }
 
     @Test
-    fun `when controller layout activity is this activity then do close`() {
+    fun `when controller view activity is this activity then do close`() {
         // given
         val context = InAppMessages.context()
         val mockkActivity = mockk<Activity>()
         sut.present(context)
-        val layout = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { this@mockk.activity } returns mockkActivity
         }
-        every { controller.layout } returns layout
+        every { controller.view } returns view
 
         // when
         sut.onLifecycle(ActivityLifecycle.DESTROYED, mockkActivity, System.currentTimeMillis())

@@ -1,7 +1,8 @@
-package io.hackle.android.ui.inappmessage.layout
+package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.core.view.children
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
@@ -13,27 +14,27 @@ import io.hackle.sdk.common.HackleInAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 
 /**
- * Base layout interface for [InAppMessage].
+ * Base view interface for [InAppMessage].
  */
-internal interface InAppMessageLayout : HackleInAppMessageView {
+internal interface InAppMessageView : HackleInAppMessageView {
 
     /**
-     * The current state of the [InAppMessageLayout]
+     * The current state of the [InAppMessageView]
      */
     val state: State
 
     /**
-     * The controller that manages the lifecycle and interactions of this [InAppMessageLayout].
+     * The controller that manages the lifecycle and interactions of this [InAppMessageView].
      */
     val controller: InAppMessageController
 
     /**
-     * The context in which this [InAppMessageLayout] is presented.
+     * The context in which this [InAppMessageView] is presented.
      */
-    val context: InAppMessagePresentationContext
+    val presentationContext: InAppMessagePresentationContext
 
     /**
-     * The [Activity] where [InAppMessageLayout] is presented.
+     * The [Activity] where [InAppMessageView] is presented.
      */
     val activity: Activity?
 
@@ -43,7 +44,7 @@ internal interface InAppMessageLayout : HackleInAppMessageView {
     fun publish(lifecycle: InAppMessageLifecycle)
 
     /**
-     * Closes the [InAppMessageLayout]
+     * Closes the [InAppMessageView]
      */
     override fun close() {
         controller.close()
@@ -62,7 +63,7 @@ internal interface InAppMessageLayout : HackleInAppMessageView {
 }
 
 internal fun View.publishInAppMessageLifecycle(lifecycle: InAppMessageLifecycle) {
-    if (this is InAppMessageLayout.LifecycleListener) {
+    if (this is InAppMessageView.LifecycleListener) {
         onLifeCycle(lifecycle)
     }
 
@@ -73,7 +74,7 @@ internal fun View.publishInAppMessageLifecycle(lifecycle: InAppMessageLifecycle)
     }
 }
 
-internal fun InAppMessageLayout.LifecycleListener.onLifeCycle(lifecycle: InAppMessageLifecycle) {
+internal fun InAppMessageView.LifecycleListener.onLifeCycle(lifecycle: InAppMessageLifecycle) {
     return when (lifecycle) {
         InAppMessageLifecycle.BEFORE_OPEN -> beforeInAppMessageOpen()
         InAppMessageLifecycle.AFTER_OPEN -> afterInAppMessageOpen()
@@ -82,8 +83,32 @@ internal fun InAppMessageLayout.LifecycleListener.onLifeCycle(lifecycle: InAppMe
     }
 }
 
-internal fun InAppMessageLayout.handle(event: InAppMessageEvent) {
+internal val InAppMessageView.inAppMessage: InAppMessage get() = presentationContext.inAppMessage
+internal val InAppMessageView.message: InAppMessage.Message get() = presentationContext.message
+
+internal fun InAppMessageView.handle(event: InAppMessageEvent) {
     controller.handle(event)
 }
 
-internal val InAppMessageLayout.listener get() = controller.ui.listener
+internal val InAppMessageView.listener get() = controller.ui.listener
+
+internal fun InAppMessageView.createCloseListener(): OnClickListener {
+    return OnClickListener { close() }
+}
+
+internal fun InAppMessageView.createMessageClickListener(): OnClickListener {
+    return OnClickListener {
+        val action = message.action ?: return@OnClickListener
+        handle(InAppMessageEvent.messageAction(action))
+    }
+}
+
+internal fun InAppMessageView.createImageClickListener(
+    image: InAppMessage.Message.Image,
+    order: Int?,
+): OnClickListener {
+    return OnClickListener {
+        val action = image.action ?: return@OnClickListener
+        handle(InAppMessageEvent.imageAction(action, image, order))
+    }
+}
