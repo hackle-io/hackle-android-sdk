@@ -74,6 +74,6 @@ class InAppMessageViewTest {
     private class TestInAppMessageView(context: android.content.Context) : InAppMessageBaseView(context) {
         override val openAnimator: InAppMessageAnimator? = null
         override val closeAnimator: InAppMessageAnimator? = null
-        override fun configure() {}
+        override fun onConfigure(listener: InAppMessageView.ReadyListener) {}
     }
 }

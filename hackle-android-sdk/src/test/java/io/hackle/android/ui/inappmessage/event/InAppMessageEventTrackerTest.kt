@@ -1,6 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.inappmessage.event.track.InAppMessageEventTracker
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.model.InAppMessage
@@ -144,7 +145,7 @@ class InAppMessageEventTrackerTest {
             properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
-        sut.track(context, InAppMessageEvent.buttonAction(action, message.buttons[0]), 42)
+        sut.track(context, InAppMessageEvent.action(action, message.buttons[0]), 42)
 
         verify(exactly = 1) {
             core.track(

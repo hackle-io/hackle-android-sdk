@@ -4,12 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.KeyEvent
+import android.view.View.OnClickListener
 import android.widget.RelativeLayout
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
 import io.hackle.android.ui.inappmessage.InAppMessageUi
+import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.sdk.core.model.InAppMessage
 import java.lang.ref.WeakReference
+import java.util.UUID
 
 internal abstract class InAppMessageBaseView @JvmOverloads constructor(
     context: Context,
@@ -21,6 +26,7 @@ internal abstract class InAppMessageBaseView @JvmOverloads constructor(
     private var _presentationContext: InAppMessagePresentationContext? = null
     private var _activity: WeakReference<Activity>? = null
 
+    override val id: String = UUID.randomUUID().toString()
     override val state: InAppMessageView.State get() = controller.state
     override val controller: InAppMessageViewController get() = requireNotNull(_controller) { "InAppMessageController is not set on InAppMessageBaseView." }
     override val presentationContext: InAppMessagePresentationContext get() = requireNotNull(_presentationContext) { "InAppMessagePresentationContext is not set on InAppMessageBaseView." }
@@ -53,7 +59,21 @@ internal abstract class InAppMessageBaseView @JvmOverloads constructor(
     abstract val openAnimator: InAppMessageAnimator?
     abstract val closeAnimator: InAppMessageAnimator?
 
-    abstract fun configure()
+    override fun configure(listener: InAppMessageView.ReadyListener) {
+        applyWindowInsetsListener()
+        onConfigure(listener)
+    }
+
+    protected abstract fun onConfigure(listener: InAppMessageView.ReadyListener)
+
+    // add margin when enableEdgeToEdge
+    // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
+    private fun applyWindowInsetsListener() {
+        ViewCompat.setOnApplyWindowInsetsListener(this) { v, windowInsets ->
+            (v as? InAppMessageBaseView)?.onApplyWindowInsets(windowInsets)
+            windowInsets
+        }
+    }
 
     /**
      * Called to apply window insets to the view.
@@ -66,5 +86,36 @@ internal abstract class InAppMessageBaseView @JvmOverloads constructor(
      */
     open fun onApplyWindowInsets(insets: WindowInsetsCompat) {
         // nothing to do
+    }
+}
+
+
+internal fun InAppMessageView.createCloseListener(): OnClickListener {
+    return OnClickListener { close() }
+}
+
+internal fun InAppMessageView.createButtonClickListener(button: InAppMessage.Message.Button): OnClickListener {
+    return OnClickListener {
+        val event = InAppMessageEvent.action(this, button.action, button)
+        handle(event)
+    }
+}
+
+internal fun InAppMessageView.createMessageClickListener(): OnClickListener {
+    return OnClickListener {
+        val action = message.action ?: return@OnClickListener
+        val event = InAppMessageEvent.action(this, action, InAppMessage.ActionArea.MESSAGE)
+        handle(event)
+    }
+}
+
+internal fun InAppMessageView.createImageClickListener(
+    image: InAppMessage.Message.Image,
+    order: Int?,
+): OnClickListener {
+    return OnClickListener {
+        val action = image.action ?: return@OnClickListener
+        val event = InAppMessageEvent.action(this, action, image, order)
+        handle(event)
     }
 }

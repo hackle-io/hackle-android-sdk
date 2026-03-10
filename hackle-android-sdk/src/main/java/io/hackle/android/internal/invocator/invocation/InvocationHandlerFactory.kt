@@ -3,9 +3,11 @@ package io.hackle.android.internal.invocator.invocation
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.invocator.invocation.InvocationCommand.*
 import io.hackle.android.internal.invocator.invocation.handlers.*
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 
 internal class InvocationHandlerFactory(
     private val core: HackleAppCore,
+    private val inAppMessageViewProvider: InAppMessageViewProvider,
 ) {
 
     private val handlers = HashMap<InvocationCommand, InvocationHandler<*>>()
@@ -45,6 +47,9 @@ internal class InvocationHandlerFactory(
             SET_OPT_OUT_TRACKING -> SetOptOutTrackingInvocationHandler(core)
             SHOW_USER_EXPLORER -> ShowUserExplorerInvocationHandler(core)
             HIDE_USER_EXPLORER -> HideUserExplorerInvocationHandler(core)
+            GET_CURRENT_IN_APP_MESSAGE_VIEW -> GetCurrentInAppMessageViewInvocationHandler(inAppMessageViewProvider)
+            CLOSE_IN_APP_MESSAGE_VIEW -> CloseInAppMessageViewInvocationHandler(inAppMessageViewProvider)
+            HANDLE_IN_APP_MESSAGE_VIEW -> HandleInAppMessageViewInvocationHandler(inAppMessageViewProvider)
         }
     }
 }

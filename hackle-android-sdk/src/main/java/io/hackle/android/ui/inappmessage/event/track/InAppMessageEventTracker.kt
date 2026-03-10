@@ -1,6 +1,7 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.track
 
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
+import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
 
@@ -37,7 +38,7 @@ internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationCon
         is InAppMessageEvent.Action -> Event.builder("\$in_app_action")
             .properties(context)
             .property("action_type", action.actionType.name)
-            .property("action_area", area.name)
+            .property("action_area", area?.name)
             .property("action_value", action.value)
             .property("button_text", button?.text)
             .property("image_url", image?.imagePath)

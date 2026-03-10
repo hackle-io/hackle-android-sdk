@@ -1,10 +1,9 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.action
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.inAppMessage
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
 import io.hackle.sdk.core.internal.log.Logger

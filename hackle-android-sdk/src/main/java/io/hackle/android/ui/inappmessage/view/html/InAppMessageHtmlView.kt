@@ -1,0 +1,139 @@
+package io.hackle.android.ui.inappmessage.view.html
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.graphics.Color
+import android.os.Build
+import android.util.AttributeSet
+import android.webkit.WebView
+import io.hackle.android.Hackle
+import io.hackle.android.R
+import io.hackle.android.app
+import io.hackle.android.internal.task.TaskExecutors.runOnBackground
+import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
+import io.hackle.android.ui.core.Animations
+import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandleType
+import io.hackle.android.ui.inappmessage.view.*
+import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.model.InAppMessage
+
+internal class InAppMessageHtmlView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : InAppMessageBaseView(context, attrs, defStyleAttr) {
+
+    // View
+    private val webView: InAppMessageWebView get() = findViewById(R.id.hackle_iam_html_webview)
+
+    // Model
+    private val html: InAppMessage.Message.Html get() = requireNotNull(message.html) { "Not found Html [${inAppMessage.id}]" }
+
+    // Animation
+    override val openAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeIn(100))
+    override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(100))
+
+    private var _contentResolverFactory: InAppMessageHtmlContentResolverFactory? = null
+    private val contentResolverFactory get() = requireNotNull(_contentResolverFactory) { "InAppMessageHtmlContentResolverFactory is not set on InAppMessageHtmlView." }
+
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onConfigure(listener: InAppMessageView.ReadyListener) {
+
+        // WebViewClient
+        val pageListener = HtmlPageListener(listener)
+        val webViewClient = InAppMessageWebViewClient(pageListener)
+
+        // WebView
+        webView.webViewClient = webViewClient
+        webView.setBackgroundColor(Color.TRANSPARENT)
+        webView.settings.javaScriptEnabled = true
+        webView.settings.useWideViewPort = true
+        webView.settings.loadWithOverviewMode = true
+        webView.settings.displayZoomControls = false
+        webView.settings.domStorageEnabled = true
+        webView.settings.allowFileAccess = false
+        webView.settings.allowContentAccess = false
+
+        val javascriptInterface = InAppMessageViewJavascriptInterface(Hackle.app, this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            javascriptInterface.addTo(webView)
+        } else {
+            throw IllegalStateException("TODO: message")
+        }
+
+        // Load html
+        runOnBackground {
+            resolveAndLoad()
+        }
+    }
+
+    private fun resolveAndLoad() {
+        try {
+            val contentResolver = contentResolverFactory.get(html.resourceType)
+            val content = contentResolver.resolve(html) // blocking
+            runOnUiThread {
+                webView.load(content)
+            }
+        } catch (e: Exception) {
+            log.error { "Failed to resolve Html content: $e [${inAppMessage.id}]" }
+            runOnUiThread { close() }
+        }
+    }
+
+    inner class HtmlPageListener(
+        private val readyListener: InAppMessageView.ReadyListener
+    ) : InAppMessageWebViewClient.PageListener {
+
+        /**
+         * Finalizes html view configuration.
+         * - Evaluates bridge script. (Javascript SDK initialize)
+         * - Notifies that the InAppMessageView is ready to be shown.
+         */
+        override fun onPageFinished(view: WebView, url: String) {
+            webView.evaluate(JAVASCRIPT_SDK_INITIALIZE_SCRIPT)
+            readyListener.onReady()
+        }
+
+        /**
+         * TODO: docs
+         */
+        override fun onUrlLoading(url: String): Boolean {
+            val action = InAppMessage.Action(InAppMessage.Behavior.CLICK, InAppMessage.ActionType.WEB_LINK, url)
+            val event = InAppMessageEvent.action(this@InAppMessageHtmlView, action, null)
+            handle(event, InAppMessageEventHandleType.ACTION)
+            return true
+        }
+    }
+
+    companion object {
+        private val log = Logger<InAppMessageHtmlView>()
+
+        private const val JAVASCRIPT_SDK_URL = "http://local.hackledev.com/index.browser.umd.min.js"
+
+        private const val JAVASCRIPT_SDK_INITIALIZE_SCRIPT = """
+            (function() {
+                var s = document.createElement('script');
+                s.src = '$JAVASCRIPT_SDK_URL';
+                s.onload = function() {
+                    Hackle.setWebAppInAppMessageHtmlBridge();
+                };
+                document.head.appendChild(s);
+            })();
+        """
+
+        @SuppressLint("InflateParams")
+        fun create(
+            activity: Activity,
+            contentResolverFactory: InAppMessageHtmlContentResolverFactory,
+        ): InAppMessageHtmlView {
+            val view = activity.layoutInflater.inflate(R.layout.hackle_iam_html, null)
+            return (view as InAppMessageHtmlView).also {
+                it._contentResolverFactory = contentResolverFactory
+            }
+        }
+    }
+}

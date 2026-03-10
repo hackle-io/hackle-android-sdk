@@ -1,6 +1,9 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageEventActor
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageEventActorFactory
+import io.hackle.android.ui.inappmessage.event.track.InAppMessageEventTracker
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.MockKAnnotations
@@ -14,7 +17,7 @@ import org.junit.Before
 import org.junit.Test
 
 
-internal class InAppMessageEventHandlerTest {
+internal class InAppMessageEventHandleProcessorTest {
 
     @MockK
     private lateinit var clock: Clock
@@ -23,10 +26,10 @@ internal class InAppMessageEventHandlerTest {
     private lateinit var eventTracker: InAppMessageEventTracker
 
     @MockK
-    private lateinit var processorFactory: InAppMessageEventProcessorFactory
+    private lateinit var processorFactory: InAppMessageEventActorFactory
 
     @InjectMockKs
-    private lateinit var sut: InAppMessageEventHandler
+    private lateinit var sut: InAppMessageEventHandleProcessor
 
     @Before
     fun before() {
@@ -77,7 +80,7 @@ internal class InAppMessageEventHandlerTest {
         }
         val event = InAppMessageEvent.Impression
 
-        val eventProcessor = mockk<InAppMessageEventProcessor<InAppMessageEvent>>(relaxUnitFun = true)
+        val eventProcessor = mockk<InAppMessageEventActor<InAppMessageEvent>>(relaxUnitFun = true)
         every { processorFactory.get(any()) } returns eventProcessor
 
         // when
@@ -85,7 +88,7 @@ internal class InAppMessageEventHandlerTest {
 
         // then
         verify(exactly = 1) {
-            eventProcessor.process(view, event, 42)
+            eventProcessor.action(view, event, 42)
         }
     }
 }

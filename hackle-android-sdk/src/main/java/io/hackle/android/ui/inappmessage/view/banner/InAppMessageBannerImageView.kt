@@ -49,7 +49,7 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
         setMeasuredDimension(newWidth, imageAspectRatio.calculateHeight(newWidth))
     }
 
-    override fun configure() {
+    override fun onConfigure(listener: InAppMessageView.ReadyListener) {
 
         // Frame
         this.layoutParams = messageLayoutParams
@@ -68,6 +68,8 @@ internal class InAppMessageBannerImageView @JvmOverloads constructor(
         } else {
             closeButtonView.visibility = View.GONE
         }
+
+        listener.onReady()
     }
 
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {

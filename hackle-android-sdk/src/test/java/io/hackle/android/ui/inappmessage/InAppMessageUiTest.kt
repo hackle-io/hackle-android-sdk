@@ -6,7 +6,7 @@ import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.core.ImageLoader
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
+import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandleProcessor
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.scheduler.Scheduler
@@ -34,7 +34,7 @@ class InAppMessageUiTest {
     private lateinit var scheduler: Scheduler
 
     @RelaxedMockK
-    private lateinit var eventHandler: InAppMessageEventHandler
+    private lateinit var eventHandler: InAppMessageEventHandleProcessor
 
     @RelaxedMockK
     private lateinit var imageLoader: ImageLoader

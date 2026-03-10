@@ -192,7 +192,8 @@ internal class InAppMessageScrollImageView @JvmOverloads constructor(
             val image = images[index]
             val isFirstImpression = impressions.putIfAbsent(image, true) == null
             if (isFirstImpression) {
-                inAppMessageView.handle(InAppMessageEvent.ImageImpression(image, index + 1))
+                val event = InAppMessageEvent.imageImpression(inAppMessageView, image, index + 1)
+                inAppMessageView.handle(event)
             }
         }
     }

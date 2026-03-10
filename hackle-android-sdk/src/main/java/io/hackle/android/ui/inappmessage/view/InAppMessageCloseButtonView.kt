@@ -16,7 +16,8 @@ internal class InAppMessageCloseButtonView @JvmOverloads constructor(
     fun configure(inAppMessageView: InAppMessageView, closeButton: InAppMessage.Message.Button) {
         setTextColor(closeButton.textColor)
         setOnClickListener {
-            inAppMessageView.handle(InAppMessageEvent.closeButtonAction(closeButton.action))
+            val event = InAppMessageEvent.action(inAppMessageView, closeButton.action, InAppMessage.ActionArea.X_BUTTON)
+            inAppMessageView.handle(event)
         }
     }
 }

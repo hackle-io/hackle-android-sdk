@@ -1,6 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageCloseActionHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage.ActionType.CLOSE
 import io.hackle.sdk.core.model.InAppMessage.ActionType.WEB_LINK

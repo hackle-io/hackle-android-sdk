@@ -188,7 +188,7 @@ internal data class InAppMessageDto(
         val type: String,
         val slots: List<TimetableSlotDto>,
     )
-    
+
     data class TimetableSlotDto(
         val dayOfWeek: String,
         val startMillisInclusive: Long,
@@ -258,6 +258,7 @@ internal data class InAppMessageDto(
             val action: ActionDto?,
             val outerButtons: List<PositionalButtonDto>,
             val innerButtons: List<PositionalButtonDto>,
+            val html: HtmlDto?,
         ) {
 
             data class LayoutDto(
@@ -324,6 +325,12 @@ internal data class InAppMessageDto(
             data class ExposureDto(
                 val type: String,
                 val key: Long?,
+            )
+
+            data class HtmlDto(
+                val resourceType: String,
+                val text: String?,
+                val path: String?,
             )
         }
 

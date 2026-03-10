@@ -2,6 +2,9 @@ package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
 import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandleType
+import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandleType.ACTION
+import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandleType.TRACK
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 
 /**
@@ -31,6 +34,12 @@ internal interface InAppMessageController {
     fun close(whenActivityDestroy: Boolean = false)
 }
 
-internal fun InAppMessageController.handle(event: InAppMessageEvent) {
-    ui.eventHandler.handle(view, event)
+/**
+ * Handles the [event] with the given [types].
+ */
+internal fun InAppMessageController.handle(
+    event: InAppMessageEvent,
+    types: List<InAppMessageEventHandleType> = listOf(TRACK, ACTION)
+) {
+    ui.eventHandleProcessor.process(view, event, types)
 }

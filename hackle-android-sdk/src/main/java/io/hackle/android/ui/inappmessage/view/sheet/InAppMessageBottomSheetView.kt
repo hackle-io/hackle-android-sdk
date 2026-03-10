@@ -54,7 +54,7 @@ internal class InAppMessageBottomSheetView @JvmOverloads constructor(
         }
 
     // Configuration
-    override fun configure() {
+    override fun onConfigure(listener: InAppMessageView.ReadyListener) {
         // FrameView (outside of bottom sheet)
         frameView.setOnClickListener(createCloseListener())
 
@@ -88,6 +88,8 @@ internal class InAppMessageBottomSheetView @JvmOverloads constructor(
         } else {
             closeButtonView.visibility = View.GONE
         }
+
+        listener.onReady()
     }
 
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {

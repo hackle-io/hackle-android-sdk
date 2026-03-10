@@ -336,8 +336,17 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InA
         ),
         action = action?.let { it.toActionOrNull() ?: return null },
         outerButtons = outerButtons.map { it.toPositionalButtonOrNull() ?: return null },
-        innerButtons = innerButtons.map { it.toPositionalButtonOrNull() ?: return null }
+        innerButtons = innerButtons.map { it.toPositionalButtonOrNull() ?: return null },
+        html = html?.toHtmlOrNull()
     )
+}
+
+internal fun InAppMessageDto.MessageContextDto.MessageDto.HtmlDto.toHtmlOrNull(): InAppMessage.Message.Html? {
+    val resourceType = parseEnumOrNull<InAppMessage.Message.Html.ResourceType>(resourceType) ?: return null
+    return when (resourceType) {
+        InAppMessage.Message.Html.ResourceType.TEXT -> InAppMessage.Message.Html.TextHtml(text = text ?: return null)
+        InAppMessage.Message.Html.ResourceType.PATH -> InAppMessage.Message.Html.PathHtml(path = path ?: return null)
+    }
 }
 
 internal fun InAppMessageDto.MessageContextDto.MessageDto.LayoutDto.toLayoutOrNull(): InAppMessage.Message.Layout? {
