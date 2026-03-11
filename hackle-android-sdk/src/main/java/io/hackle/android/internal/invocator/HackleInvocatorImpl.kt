@@ -139,6 +139,10 @@ internal class HackleInvocatorImpl(
                 InvokeResponse.success()
             }
 
+            IS_OPT_OUT_TRACKING -> {
+                InvokeResponse.success(hackleAppCore.isOptOutTracking)
+            }
+
             SHOW_USER_EXPLORER -> {
                 hackleAppCore.showUserExplorer()
                 InvokeResponse.success()
