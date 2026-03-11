@@ -2,6 +2,8 @@ package io.hackle.android.ui.inappmessage.event
 
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageLinkAndCloseActionHandler
+import io.hackle.android.ui.inappmessage.event.action.UriHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*

@@ -1,6 +1,9 @@
 package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.ui.inappmessage.DefaultInAppMessageListener
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageActionViewEventActor
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageActionHandler
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageActionHandlerFactory
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.mockk.MockKAnnotations
@@ -15,13 +18,13 @@ import strikt.api.expectThat
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
-class InAppMessageActionEventProcessorTest {
+class InAppMessageActionEventActorTest {
 
     @MockK
     private lateinit var actionHandlerFactory: InAppMessageActionHandlerFactory
 
     @InjectMockKs
-    private lateinit var sut: InAppMessageActionEventProcessor
+    private lateinit var sut: InAppMessageActionViewEventActor
 
     @Before
     fun before() {
@@ -30,8 +33,8 @@ class InAppMessageActionEventProcessorTest {
 
     @Test
     fun `supports`() {
-        expectThat(sut.supports(InAppMessageEvent.buttonAction(mockk(), mockk()))).isTrue()
-        expectThat(sut.supports(InAppMessageEvent.Impression)).isFalse()
+        expectThat(sut.supports(InAppMessageViewEvent.action(mockk(), mockk()))).isTrue()
+        expectThat(sut.supports(InAppMessageViewEvent.Impression)).isFalse()
     }
 
     @Test
@@ -41,13 +44,13 @@ class InAppMessageActionEventProcessorTest {
         every { listener.onInAppMessageClick(any(), any(), any()) } returns true
 
         val layout = layout(listener, InAppMessageView.State.OPENED)
-        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
+        val event = InAppMessageViewEvent.action(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
         every { actionHandlerFactory.get(any()) } returns handler
 
         // when
-        sut.process(layout, event, 42)
+        sut.action(layout, event, 42)
 
         // then
         verify(exactly = 1) {
@@ -65,13 +68,13 @@ class InAppMessageActionEventProcessorTest {
         every { listener.onInAppMessageClick(any(), any(), any()) } returns false
 
         val layout = layout(listener, InAppMessageView.State.CLOSED)
-        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
+        val event = InAppMessageViewEvent.action(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
         every { actionHandlerFactory.get(any()) } returns handler
 
         // when
-        sut.process(layout, event, 42)
+        sut.action(layout, event, 42)
 
         // then
         verify(exactly = 0) {
@@ -83,24 +86,24 @@ class InAppMessageActionEventProcessorTest {
     fun `process - when cannot found handler then do nothing`() {
         // given
         val layout = layout(DefaultInAppMessageListener, InAppMessageView.State.OPENED)
-        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
+        val event = InAppMessageViewEvent.action(mockk(), mockk())
         every { actionHandlerFactory.get(any()) } returns null
 
         // when
-        sut.process(layout, event, 42)
+        sut.action(layout, event, 42)
     }
 
     @Test
     fun `process - handle`() {
         // given
         val layout = layout(DefaultInAppMessageListener, InAppMessageView.State.OPENED)
-        val event = InAppMessageEvent.buttonAction(mockk(), mockk())
+        val event = InAppMessageViewEvent.action(mockk(), mockk())
 
         val handler = mockk<InAppMessageActionHandler>(relaxUnitFun = true)
         every { actionHandlerFactory.get(any()) } returns handler
 
         // when
-        sut.process(layout, event, 42)
+        sut.action(layout, event, 42)
 
         // then
         verify(exactly = 1) {

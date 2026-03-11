@@ -1,10 +1,9 @@
 package io.hackle.android.internal.invocator.model
 
 import com.google.gson.annotations.SerializedName
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.PropertyOperation
-import io.hackle.sdk.common.PropertyOperations
-import io.hackle.sdk.common.User
+import io.hackle.android.internal.workspace.InAppMessageDto
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
@@ -185,3 +184,45 @@ internal fun HackleSubscriptionOperations.Companion.from(dto: HackleSubscription
     }
     return builder.build()
 }
+
+internal class HackleInAppMessageDto(
+    @SerializedName("key")
+    val key: Long,
+)
+
+internal class HackleInAppMessageViewDto(
+    @SerializedName("id")
+    val id: String,
+    @SerializedName("inAppMessage")
+    val inAppMessage: HackleInAppMessageDto,
+)
+
+internal fun HackleInAppMessage.toDto(): HackleInAppMessageDto {
+    return HackleInAppMessageDto(
+        key = key
+    )
+}
+
+internal fun InAppMessageView.toDto(): HackleInAppMessageViewDto {
+    return HackleInAppMessageViewDto(
+        id = id,
+        inAppMessage = inAppMessage.toDto()
+    )
+}
+
+internal class HandleInAppMessageViewInvocationDto(
+    val viewId: String,
+    val handleTypes: List<String>,
+    val event: InAppMessageViewEventDto,
+)
+
+internal class InAppMessageViewEventDto(
+    val type: String,
+    val action: InAppMessageDto.MessageContextDto.ActionDto?,
+    val element: InAppMessageElementDto?
+)
+
+internal class InAppMessageElementDto(
+    val elementId: String?,
+    val area: String?,
+)

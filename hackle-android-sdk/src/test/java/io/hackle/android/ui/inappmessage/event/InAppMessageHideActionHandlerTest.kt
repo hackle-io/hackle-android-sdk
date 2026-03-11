@@ -2,6 +2,7 @@ package io.hackle.android.ui.inappmessage.event
 
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageHideActionHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.internal.time.Clock

@@ -5,11 +5,7 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process.THREAD_PRIORITY_BACKGROUND
 import io.hackle.sdk.core.internal.threads.NamedThreadFactory
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.SynchronousQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 internal object TaskExecutors {
 
@@ -33,7 +29,11 @@ internal object TaskExecutors {
     }
 
     fun runOnUiThread(block: () -> Unit) {
-        MAIN_HANDLER.post(block)
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            block()
+        } else {
+            MAIN_HANDLER.post(block)
+        }
     }
 
     fun runOnBackground(block: () -> Unit) {

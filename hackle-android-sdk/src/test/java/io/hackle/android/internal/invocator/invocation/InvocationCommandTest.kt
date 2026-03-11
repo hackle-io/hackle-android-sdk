@@ -33,6 +33,9 @@ class InvocationCommandTest {
             "setCurrentScreen" to InvocationCommand.SET_CURRENT_SCREEN,
             "showUserExplorer" to InvocationCommand.SHOW_USER_EXPLORER,
             "hideUserExplorer" to InvocationCommand.HIDE_USER_EXPLORER,
+            "getCurrentInAppMessageView" to InvocationCommand.GET_CURRENT_IN_APP_MESSAGE_VIEW,
+            "closeInAppMessageView" to InvocationCommand.CLOSE_IN_APP_MESSAGE_VIEW,
+            "trackInAppMessageViewClick" to InvocationCommand.HANDLE_IN_APP_MESSAGE_VIEW,
         )
 
         for ((commandString, expected) in testCases) {

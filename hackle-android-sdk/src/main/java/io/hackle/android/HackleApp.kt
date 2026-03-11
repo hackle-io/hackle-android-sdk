@@ -57,6 +57,11 @@ class HackleApp internal constructor(
     val user: User get() = hackleAppCore.user
 
     /**
+     * TODO: docs
+     */
+    val displayedInAppMessageView: HackleInAppMessageView? get() = hackleAppCore.currentInAppMessageView
+
+    /**
      * Whether opt-out tracking is currently enabled.
      * When true, all event tracking is blocked.
      *
@@ -308,9 +313,8 @@ class HackleApp internal constructor(
                     "JavaScript can use reflection to manipulate application"
             )
         }
-        val invocator = invocator()
-        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode, webViewConfig)
-        webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
+        val javascriptInterface = HackleJavascriptInterface(this, webViewConfig)
+        javascriptInterface.addTo(webView)
     }
 
     /**

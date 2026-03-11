@@ -15,7 +15,7 @@ import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
 
-class InAppMessageEventMatcherTest {
+class InAppMessageViewEventMatcherTest {
 
     @MockK
     private lateinit var ruleMatcher: InAppMessageEventTriggerRuleMatcher
