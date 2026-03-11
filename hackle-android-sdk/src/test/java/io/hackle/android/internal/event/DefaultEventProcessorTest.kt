@@ -193,7 +193,7 @@ class DefaultEventProcessorTest {
     fun `process - 중복제거 대상이면 이벤트를 추가하지 않는다`() {
         // given
         val sut = processor()
-        sut.addFilter(DedupUserEventFilter(eventDedupDeterminer))
+        sut.addEvaluationFilter(DedupUserEventFilter(eventDedupDeterminer))
         every { eventDedupDeterminer.isDedupTarget(any()) } returns true
         val event = event()
 
@@ -201,6 +201,34 @@ class DefaultEventProcessorTest {
         sut.process(event)
 
         // then
+        verify { eventRepository wasNot Called }
+    }
+
+    @Test
+    fun `process - evaluationFilter가 BLOCK이면 이벤트를 저장하지 않고 publish하지 않는다`() {
+        val sut = processor()
+        sut.addEvaluationFilter(DedupUserEventFilter(eventDedupDeterminer))
+        every { eventDedupDeterminer.isDedupTarget(any()) } returns true
+        val event = event()
+
+        sut.process(event)
+
+        verify { eventRepository wasNot Called }
+        verify { eventPublisher wasNot Called }
+    }
+
+    @Test
+    fun `process - trackingFilter가 BLOCK이면 publish는 하지만 이벤트를 저장하지 않는다`() {
+        val sut = processor()
+        val blockFilter = mockk<UserEventFilter> {
+            every { check(any()) } returns UserEventFilter.Result.BLOCK
+        }
+        sut.addTrackingFilter(blockFilter)
+        val event = event()
+
+        sut.process(event)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
         verify { eventRepository wasNot Called }
     }
 

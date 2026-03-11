@@ -39,13 +39,18 @@ internal class DefaultEventProcessor(
 
     private var flushingJob: ScheduledJob? = null
 
-    private val filters = CopyOnWriteArrayList<UserEventFilter>()
+    private val evaluationFilters = CopyOnWriteArrayList<UserEventFilter>()
+    private val trackingFilters = CopyOnWriteArrayList<UserEventFilter>()
     private val decorators = CopyOnWriteArrayList<UserEventDecorator>()
 
+    fun addEvaluationFilter(filter: UserEventFilter) {
+        evaluationFilters.add(filter)
+        log.debug { "UserEventEvaluationFilter added [${filter.javaClass.simpleName}]" }
+    }
 
-    fun addFilter(filter: UserEventFilter) {
-        filters.add(filter)
-        log.debug { "UserEventFilter added [${filter.javaClass.simpleName}]" }
+    fun addTrackingFilter(filter: UserEventFilter) {
+        trackingFilters.add(filter)
+        log.debug { "UserEventTrackingFilter added [${filter.javaClass.simpleName}]" }
     }
 
     fun addDecorator(decorator: UserEventDecorator) {
@@ -149,15 +154,19 @@ internal class DefaultEventProcessor(
         override fun run() {
             try {
                 update(event)
-                if (filters.any { it.check(event).isBlock }) {
+                if (evaluationFilters.any { it.check(event).isBlock }) {
                     return
                 }
 
                 val decoratedEvent =
                     decorators.fold(event) { userEvent, decorator -> decorator.decorate(userEvent) }
 
-                save(decoratedEvent)
                 eventPublisher.publish(decoratedEvent)
+
+                if (trackingFilters.any { it.check(event).isBlock }) {
+                    return
+                }
+                save(decoratedEvent)
             } catch (e: Exception) {
                 log.error { "Failed to add event: $e" }
             }
