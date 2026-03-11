@@ -202,23 +202,12 @@ class DefaultEventProcessorTest {
 
         // then
         verify { eventRepository wasNot Called }
-    }
-
-    @Test
-    fun `process - evaluationFilter가 BLOCK이면 이벤트를 저장하지 않고 publish하지 않는다`() {
-        val sut = processor()
-        sut.addEvaluationFilter(DedupUserEventFilter(eventDedupDeterminer))
-        every { eventDedupDeterminer.isDedupTarget(any()) } returns true
-        val event = event()
-
-        sut.process(event)
-
-        verify { eventRepository wasNot Called }
         verify { eventPublisher wasNot Called }
     }
 
     @Test
     fun `process - trackingFilter가 BLOCK이면 publish는 하지만 이벤트를 저장하지 않는다`() {
+        // given
         val sut = processor()
         val blockFilter = mockk<UserEventFilter> {
             every { check(any()) } returns UserEventFilter.Result.BLOCK
@@ -226,8 +215,10 @@ class DefaultEventProcessorTest {
         sut.addTrackingFilter(blockFilter)
         val event = event()
 
+        // when
         sut.process(event)
 
+        // then
         verify(exactly = 1) { eventPublisher.publish(any()) }
         verify { eventRepository wasNot Called }
     }
@@ -398,6 +389,22 @@ class DefaultEventProcessorTest {
 
 
         verify(exactly = 1) { eventPublisher.publish(any()) }
+    }
+
+    @Test
+    fun `process - publish가 save보다 먼저 호출된다`() {
+        // given
+        val sut = processor()
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verifyOrder {
+            eventPublisher.publish(any())
+            eventRepository.save(any())
+        }
     }
 
     @Test

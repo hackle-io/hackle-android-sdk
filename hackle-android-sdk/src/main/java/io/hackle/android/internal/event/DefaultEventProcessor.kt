@@ -161,9 +161,11 @@ internal class DefaultEventProcessor(
                 val decoratedEvent =
                     decorators.fold(event) { userEvent, decorator -> decorator.decorate(userEvent) }
 
+                // NOTE: publish는 trackingFilter 이전에 실행한다.
+                // trackingFilter가 BLOCK해도 InAppMessage 등 내부 구독자는 이벤트를 수신해야 하기 때문이다.
                 eventPublisher.publish(decoratedEvent)
 
-                if (trackingFilters.any { it.check(event).isBlock }) {
+                if (trackingFilters.any { it.check(decoratedEvent).isBlock }) {
                     return
                 }
                 save(decoratedEvent)
@@ -185,7 +187,6 @@ internal class DefaultEventProcessor(
 
         private fun save(event: UserEvent) {
             eventRepository.save(event)
-
 
             val totalCount = eventRepository.count()
             if (totalCount > eventRepositoryMaxSize) {
