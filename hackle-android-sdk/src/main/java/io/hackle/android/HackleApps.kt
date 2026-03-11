@@ -266,7 +266,7 @@ internal object HackleApps {
             )
         )
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
-        eventProcessor.addFilter(dedupUserEventFilter)
+        eventProcessor.addEvaluationFilter(dedupUserEventFilter)
 
         // OptOutManager
         val optOutManager = OptOutManager(
@@ -275,13 +275,13 @@ internal object HackleApps {
             configOptOutTracking = config.optOutTracking,
         )
         val optOutUserEventFilter = OptOutUserEventFilter(optOutManager)
-        eventProcessor.addFilter(optOutUserEventFilter)
+        eventProcessor.addTrackingFilter(optOutUserEventFilter)
 
         val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
 
         if (config.mode == HackleAppMode.WEB_VIEW_WRAPPER) {
-            eventProcessor.addFilter(WebViewWrapperUserEventFilter())
+            eventProcessor.addEvaluationFilter(WebViewWrapperUserEventFilter())
             eventProcessor.addDecorator(WebViewWrapperUserEventDecorator())
         }
 
