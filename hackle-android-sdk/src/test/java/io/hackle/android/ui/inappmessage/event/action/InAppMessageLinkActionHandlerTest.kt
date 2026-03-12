@@ -41,7 +41,7 @@ internal class InAppMessageLinkActionHandlerTest {
     @Test
     fun `handle - when activity is null then do nothing`() {
         // given
-        val view = mockk<InAppMessageView> {
+        val view = mockk<InAppMessageView>(relaxed = true) {
             every { activity } returns null
             every { presentationContext } returns mockk(relaxed = true)
         }
@@ -57,7 +57,7 @@ internal class InAppMessageLinkActionHandlerTest {
     @Test
     fun `when action value is null then do nothing`() {
         // given
-        val view = mockk<InAppMessageView> {
+        val view = mockk<InAppMessageView>(relaxed = true) {
             every { activity } returns mockk()
             every { presentationContext } returns mockk(relaxed = true)
         }
@@ -74,7 +74,7 @@ internal class InAppMessageLinkActionHandlerTest {
     fun `handle uri`() {
         // given
         val activity = mockk<Activity>()
-        val view = mockk<InAppMessageView> {
+        val view = mockk<InAppMessageView>(relaxed = true) {
             every { this@mockk.activity } returns activity
             every { presentationContext } returns mockk(relaxed = true)
         }
