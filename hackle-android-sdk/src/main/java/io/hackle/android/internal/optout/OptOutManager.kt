@@ -1,11 +1,9 @@
 package io.hackle.android.internal.optout
 
-import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class OptOutManager(
-    private val keyValueRepository: KeyValueRepository,
     private val eventProcessor: DefaultEventProcessor,
     configOptOutTracking: Boolean,
 ) {
@@ -13,14 +11,8 @@ internal class OptOutManager(
     private val lock = Any()
 
     @Volatile
-    var isOptOutTracking: Boolean = false
+    var isOptOutTracking: Boolean = configOptOutTracking
         private set
-
-    init {
-        val savedOptOut = keyValueRepository.getString(OPT_OUT_KEY)?.toBoolean() ?: false
-        isOptOutTracking = configOptOutTracking || savedOptOut
-        save(isOptOutTracking)
-    }
 
     fun setOptOutTracking(optOut: Boolean) {
         synchronized(lock) {
@@ -34,17 +26,11 @@ internal class OptOutManager(
             }
 
             isOptOutTracking = optOut
-            save(optOut)
             log.info { "OptOutTracking changed to $optOut" }
         }
     }
 
-    private fun save(optOut: Boolean) {
-        keyValueRepository.putString(OPT_OUT_KEY, optOut.toString())
-    }
-
     companion object {
         private val log = Logger<OptOutManager>()
-        private const val OPT_OUT_KEY = "opt_out_tracking"
     }
 }

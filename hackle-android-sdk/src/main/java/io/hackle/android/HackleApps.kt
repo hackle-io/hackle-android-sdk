@@ -270,7 +270,6 @@ internal object HackleApps {
 
         // OptOutManager
         val optOutManager = OptOutManager(
-            keyValueRepository = keyValueRepositoryBySdkKey,
             eventProcessor = eventProcessor,
             configOptOutTracking = config.optOutTracking,
         )

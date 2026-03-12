@@ -313,9 +313,9 @@ class HackleConfig private constructor(builder: Builder) {
          * Sets whether opt-out tracking is enabled.
          * When enabled, all event tracking (local storage and network dispatch) will be blocked.
          *
-         * Once enabled (true), the opt-out state is persisted locally. Even if this config is
-         * later set to false, previously opted-out users remain opted out until
-         * [HackleApp.setOptOutTracking] is called with false at runtime.
+         * When opt-out is enabled (true), all event tracking will be blocked from app launch.
+         * To change the opt-out state at runtime, use [HackleApp.setOptOutTracking].
+         * Runtime changes are not persisted and will be reset to this config value on next launch.
          *
          * @param optOutTracking true to opt out of tracking, false to opt in (default)
          * @return this builder instance
