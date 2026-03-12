@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.Button
-import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
 import io.hackle.android.ui.inappmessage.textColor
 import io.hackle.sdk.core.model.InAppMessage
 
@@ -18,8 +17,6 @@ internal open class InAppMessageButtonView @JvmOverloads constructor(
         this.text = button.text
         this.setTextColor(button.textColor)
         this.background = background
-        this.setOnClickListener {
-            inAppMessageView.handle(InAppMessageEvent.buttonAction(button.action, button))
-        }
+        this.setOnClickListener(inAppMessageView.createButtonClickListener(button))
     }
 }

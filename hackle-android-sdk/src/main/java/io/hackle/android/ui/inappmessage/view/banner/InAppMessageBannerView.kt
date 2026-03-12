@@ -56,7 +56,7 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
         setMeasuredDimension(min(maxWidth, measuredWidth), maxHeight)
     }
 
-    override fun configure() {
+    override fun onConfigure(listener: InAppMessageView.ReadyListener) {
 
         // ContainerView (inside of banner)
         this.layoutParams = messageLayoutParams
@@ -82,6 +82,8 @@ internal class InAppMessageBannerView @JvmOverloads constructor(
         } else {
             closeButtonView.visibility = View.GONE
         }
+
+        listener.onReady()
     }
 
     override fun onApplyWindowInsets(insets: WindowInsetsCompat) {

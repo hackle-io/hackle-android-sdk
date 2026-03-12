@@ -8,7 +8,7 @@ internal class InvocationHandlerFactory(
     private val core: HackleAppCore,
 ) {
 
-    private val handlers = HashMap<InvocationCommand, InvocationHandler<*>>()
+    private val handlers = HashMap<InvocationCommand, InvocationHandler<Any>>()
 
     init {
         for (command in InvocationCommand.values()) {
@@ -16,11 +16,11 @@ internal class InvocationHandlerFactory(
         }
     }
 
-    fun get(command: InvocationCommand): InvocationHandler<*> {
+    fun get(command: InvocationCommand): InvocationHandler<Any> {
         return requireNotNull(handlers[command]) { "Not found InvocationHandler [$command]" }
     }
 
-    private fun create(command: InvocationCommand): InvocationHandler<*> {
+    private fun create(command: InvocationCommand): InvocationHandler<Any> {
         return when (command) {
             GET_SESSION_ID -> GetSessionIdInvocationHandler(core)
             GET_USER -> GetUserInvocationHandler(core)
@@ -45,6 +45,9 @@ internal class InvocationHandlerFactory(
             SET_OPT_OUT_TRACKING -> SetOptOutTrackingInvocationHandler(core)
             SHOW_USER_EXPLORER -> ShowUserExplorerInvocationHandler(core)
             HIDE_USER_EXPLORER -> HideUserExplorerInvocationHandler(core)
+            GET_CURRENT_IN_APP_MESSAGE_VIEW -> GetCurrentInAppMessageViewInvocationHandler(core)
+            CLOSE_IN_APP_MESSAGE_VIEW -> CloseInAppMessageViewInvocationHandler(core)
+            HANDLE_IN_APP_MESSAGE_VIEW -> HandleInAppMessageViewInvocationHandler(core)
         }
     }
 }

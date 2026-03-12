@@ -1,15 +1,23 @@
 package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
+import android.os.Build
+import io.hackle.android.Hackle
+import io.hackle.android.app
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.view.banner.InAppMessageBannerImageView
 import io.hackle.android.ui.inappmessage.view.banner.InAppMessageBannerView
+import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlContentResolverFactory
+import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlView
+import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlBridgeScript
 import io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalView
 import io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 
-internal class InAppMessageViewFactory {
+internal class InAppMessageViewFactory(
+    private val htmlContentResolverFactory: InAppMessageHtmlContentResolverFactory,
+) {
 
     fun create(context: InAppMessagePresentationContext, activity: Activity): InAppMessageBaseView {
         val view = when (context.message.layout.displayType) {
@@ -17,6 +25,7 @@ internal class InAppMessageViewFactory {
             InAppMessage.DisplayType.MODAL -> InAppMessageModalView.create(activity)
             InAppMessage.DisplayType.BANNER -> createBannerView(context, activity)
             InAppMessage.DisplayType.BOTTOM_SHEET -> InAppMessageBottomSheetView.create(activity)
+            InAppMessage.DisplayType.HTML -> createHtmlView(activity)
         }
         view.setPresentationContext(context)
         return view
@@ -28,5 +37,15 @@ internal class InAppMessageViewFactory {
             IMAGE_ONLY, IMAGE -> InAppMessageBannerImageView.create(activity)
             IMAGE_TEXT, TEXT_ONLY -> InAppMessageBannerView.create(activity)
         }
+    }
+
+
+    private fun createHtmlView(activity: Activity): InAppMessageHtmlView {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            val bridgeScript = InAppMessageHtmlBridgeScript.create(Hackle.app.config)
+            return InAppMessageHtmlView.create(activity, bridgeScript, htmlContentResolverFactory)
+        }
+
+        throw IllegalStateException("InAppMessageHtmlView required API 17+ (current: ${Build.VERSION.SDK_INT})")
     }
 }

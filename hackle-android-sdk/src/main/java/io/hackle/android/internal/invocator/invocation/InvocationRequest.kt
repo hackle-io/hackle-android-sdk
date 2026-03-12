@@ -6,6 +6,7 @@ import io.hackle.android.internal.invocator.model.InvocationRequestDto
 import io.hackle.android.internal.invocator.model.InvocationRequestDto.Companion.KEY_COMMAND
 import io.hackle.android.internal.invocator.model.InvocationRequestDto.Companion.KEY_HACKLE
 import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.internal.utils.json.toJson
 
 internal class InvocationRequest private constructor(
     val command: InvocationCommand,
@@ -46,4 +47,8 @@ internal class InvocationRequest private constructor(
             }
         }
     }
+}
+
+internal inline fun <reified T> InvocationRequest.parameters(): T {
+    return parameters.toJson().parseJson<T>()
 }

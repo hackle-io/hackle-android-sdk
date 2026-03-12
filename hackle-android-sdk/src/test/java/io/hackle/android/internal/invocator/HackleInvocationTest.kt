@@ -896,7 +896,7 @@ class HackleInvocationTest {
                     assertThat(it.properties["string"], `is`("text"))
                     val array = it.properties["array"] as ArrayList<*>
                     assertThat(array.size, `is`(2))
-                    assertThat(array[0], `is`(123.0))
+                    assertThat(array[0], `is`(123L))
                     assertThat(array[1], `is`("123"))
                 },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }

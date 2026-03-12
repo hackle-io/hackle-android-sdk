@@ -19,7 +19,7 @@ import strikt.api.expectThat
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
 
-class InAppMessageEventTriggerRuleMatcherTest {
+class InAppMessageViewEventTriggerRuleMatcherTest {
     @MockK
     private lateinit var targetMatcher: TargetMatcher
 

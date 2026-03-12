@@ -5,13 +5,16 @@ import android.content.pm.ActivityInfo
 import android.os.Build
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.setActivityRequestedOrientation
 import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.*
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle.*
-import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.view.InAppMessageView.State
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.scheduler.ScheduledJob
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import java.util.concurrent.atomic.AtomicReference
 
 
@@ -20,49 +23,91 @@ internal class InAppMessageViewController(
     override val ui: InAppMessageUi,
 ) : InAppMessageController {
 
-    private var originalOrientation: Int? = null
-
-    private val _state = AtomicReference(State.CLOSED)
+    private val _state = AtomicReference(State.CREATED)
     val state: State get() = _state.get()
 
+    private var openingTimeout: ScheduledJob? = null
+    private var originalOrientation: Int? = null
+
     override fun open(activity: Activity) {
-        if (!_state.compareAndSet(State.CLOSED, State.OPENED)) {
-            log.debug { "InAppMessage is already open (key=${view.inAppMessage.key})" }
+        if (!_state.compareAndSet(State.CREATED, State.OPENING)) {
+            log.debug { "InAppMessage cannot be opened (state=${state}, key=${view.inAppMessage.key})" }
             return
         }
 
-        lifecycle(BEFORE_OPEN)
-        addView(activity)
-        startAnimation(view.openAnimator, completion = {
-            handle(InAppMessageEvent.Impression)
-            lifecycle(AFTER_OPEN)
-            view.setFocusableInTouchModeAndRequestFocus()
-        })
+        setTimeout {
+            runOnUiThread { present(activity) }
+        }
+
+        view.configure {
+            runOnUiThread { present(activity) }
+        }
+    }
+
+    private fun present(activity: Activity) {
+        clearTimeout()
+
+        if (!_state.compareAndSet(State.OPENING, State.OPENED)) {
+            log.debug { "InAppMessage is not opening (state=${state}, key=${view.inAppMessage.key})" }
+            return
+        }
+
+        try {
+            lifecycle(BEFORE_OPEN)
+            addView(activity)
+            startAnimation(view.openAnimator, completion = {
+                handle(InAppMessageViewEvent.impression(view))
+                lifecycle(AFTER_OPEN)
+                view.setFocusableInTouchModeAndRequestFocus()
+            })
+        } catch (e: Throwable) {
+            log.error { "Failed to present InAppMessage: $e" }
+            close()
+        }
     }
 
     override fun close(whenActivityDestroy: Boolean) {
-        if (!_state.compareAndSet(State.OPENED, State.CLOSED)) {
-            log.debug { "InAppMessage is already close (key=${view.inAppMessage.key})" }
-            return
-        }
+        clearTimeout()
 
-        lifecycle(BEFORE_CLOSE)
-        if (whenActivityDestroy) {
-            closeWithoutViewRemove()
-        } else {
-            closeWithAnimation()
+        val prev: State = _state.getAndSet(State.CLOSED)
+        return when (prev) {
+            State.CREATED, State.OPENING -> {
+                ui.closeCurrent()
+            }
+
+            State.OPENED -> {
+                lifecycle(BEFORE_CLOSE)
+                if (whenActivityDestroy) {
+                    closeWithoutViewRemove()
+                } else {
+                    closeWithAnimation()
+                }
+            }
+
+            State.CLOSED -> {
+                log.debug { "InAppMessage is already closed (key=${view.inAppMessage.key})" }
+            }
         }
     }
 
+    private fun setTimeout(fallback: () -> Unit) {
+        openingTimeout = ui.scheduler.schedule(TIMEOUT_MILLIS, MILLISECONDS, fallback)
+    }
+
+    private fun clearTimeout() {
+        openingTimeout?.cancel()
+        openingTimeout = null
+    }
+
     private fun closeWithoutViewRemove() {
-        handle(InAppMessageEvent.Close)
+        handle(InAppMessageViewEvent.close(view))
         ui.closeCurrent()
         lifecycle(AFTER_CLOSE)
     }
 
     private fun closeWithAnimation() {
         startAnimation(view.closeAnimator, completion = {
-            handle(InAppMessageEvent.Close)
+            handle(InAppMessageViewEvent.close(view))
             removeView()
             lifecycle(AFTER_CLOSE)
         })
@@ -124,5 +169,7 @@ internal class InAppMessageViewController(
 
     companion object {
         private val log = Logger<InAppMessageViewController>()
+
+        private const val TIMEOUT_MILLIS: Long = 5000
     }
 }

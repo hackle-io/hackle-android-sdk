@@ -32,7 +32,7 @@ import java.io.Closeable
 class HackleApp internal constructor(
     private val hackleAppCore: HackleAppCore,
     internal val sdk: Sdk,
-    internal val mode: HackleAppMode,
+    internal val config: HackleConfig,
     internal val invocator: HackleInvocator,
 ) : Closeable {
     /**
@@ -55,6 +55,14 @@ class HackleApp internal constructor(
      * @return the current [User] instance
      */
     val user: User get() = hackleAppCore.user
+
+    /**
+     * Get displayed InAppMessage view.
+     *
+     * @return [HackleInAppMessageView],
+     *         null if there is no displayed InAppMessage
+     */
+    val displayedInAppMessageView: HackleInAppMessageView? get() = hackleAppCore.currentInAppMessageView
 
     /**
      * Whether opt-out tracking is currently enabled.
@@ -308,9 +316,8 @@ class HackleApp internal constructor(
                     "JavaScript can use reflection to manipulate application"
             )
         }
-        val invocator = invocator()
-        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode, webViewConfig)
-        webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
+        val javascriptInterface = HackleJavascriptInterface(this, webViewConfig)
+        javascriptInterface.addTo(webView)
     }
 
     /**

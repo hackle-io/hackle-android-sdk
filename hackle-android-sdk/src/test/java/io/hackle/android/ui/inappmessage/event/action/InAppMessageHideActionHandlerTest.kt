@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.action
 
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.support.InAppMessages
@@ -46,7 +46,7 @@ internal class InAppMessageHideActionHandlerTest {
     fun `handle`() {
         // given
         val context = InAppMessages.context()
-        val view = mockk<InAppMessageView>(relaxUnitFun = true) {
+        val view = mockk<InAppMessageView>(relaxed = true) {
             every { this@mockk.presentationContext } returns context
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.HIDDEN)

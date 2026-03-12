@@ -9,7 +9,7 @@ import strikt.assertions.message
 class InvocationCommandTest {
 
     @Test
-    fun `from - 유효한 command 문자열로 InvocationCommand를 반환한다`() {
+    fun `command`() {
         val testCases = mapOf(
             "getSessionId" to InvocationCommand.GET_SESSION_ID,
             "getUser" to InvocationCommand.GET_USER,
@@ -33,6 +33,9 @@ class InvocationCommandTest {
             "setCurrentScreen" to InvocationCommand.SET_CURRENT_SCREEN,
             "showUserExplorer" to InvocationCommand.SHOW_USER_EXPLORER,
             "hideUserExplorer" to InvocationCommand.HIDE_USER_EXPLORER,
+            "getCurrentInAppMessageView" to InvocationCommand.GET_CURRENT_IN_APP_MESSAGE_VIEW,
+            "closeInAppMessageView" to InvocationCommand.CLOSE_IN_APP_MESSAGE_VIEW,
+            "handleInAppMessageView" to InvocationCommand.HANDLE_IN_APP_MESSAGE_VIEW,
         )
 
         for ((commandString, expected) in testCases) {
@@ -41,14 +44,14 @@ class InvocationCommandTest {
     }
 
     @Test
-    fun `from - 지원하지 않는 command 문자열이면 예외를 던진다`() {
+    fun `invalid command`() {
         expectThrows<IllegalArgumentException> {
             InvocationCommand.from("unknownCommand")
         }.message.isEqualTo("Unsupported InvocationCommand [unknownCommand]")
     }
 
     @Test
-    fun `from - 빈 문자열이면 예외를 던진다`() {
+    fun `empty command`() {
         expectThrows<IllegalArgumentException> {
             InvocationCommand.from("")
         }

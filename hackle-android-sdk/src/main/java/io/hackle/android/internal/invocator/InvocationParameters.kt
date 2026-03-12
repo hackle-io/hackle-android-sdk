@@ -196,3 +196,9 @@ internal fun InvocationParameters.className(): String? = this["className"] as? S
  * @return opt-out 여부 또는 `null`
  */
 internal fun InvocationParameters.optOut(): Boolean? = this["optOut"] as? Boolean
+
+/**
+ * InAppMessageView의 id를 반환합니다
+ * @return InAppMessageView.id or `null`
+ */
+internal fun InvocationParameters.viewId(): String? = this["viewId"] as? String

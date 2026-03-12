@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.action
 
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
