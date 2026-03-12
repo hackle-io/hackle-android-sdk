@@ -6,6 +6,7 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
+import io.hackle.android.internal.optout.OptOutState
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
@@ -89,6 +90,7 @@ class DefaultEventProcessorTest {
         userManager: UserManager = this.userManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
+        optOutState: OptOutState = OptOutState(false),
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             eventPublisher = eventPublisher,
@@ -103,7 +105,8 @@ class DefaultEventProcessorTest {
             sessionManager = sessionManager,
             userManager = userManager,
             screenUserEventDecorator = ScreenUserEventDecorator(screenManager),
-            eventBackoffController = eventBackoffController
+            eventBackoffController = eventBackoffController,
+            optOutState = optOutState
         )
     }
 
@@ -552,6 +555,49 @@ class DefaultEventProcessorTest {
         } catch (e: Exception) {
             fail()
         }
+    }
+
+    @Test
+    fun `process - optOut 상태이면 save 를 호출하지 않는다`() {
+        // given
+        val optOutState = OptOutState(true)
+        val sut = processor(optOutState = optOutState)
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 0) { eventRepository.save(any()) }
+    }
+
+    @Test
+    fun `process - optOut 상태이면 publish 는 호출한다`() {
+        // given
+        val optOutState = OptOutState(true)
+        val sut = processor(optOutState = optOutState)
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { eventPublisher.publish(any()) }
+    }
+
+    @Test
+    fun `process - optOut 이 아니면 save 와 publish 모두 호출한다`() {
+        // given
+        val optOutState = OptOutState(false)
+        val sut = processor(optOutState = optOutState)
+        val event = event()
+
+        // when
+        sut.process(event)
+
+        // then
+        verify(exactly = 1) { eventRepository.save(any()) }
+        verify(exactly = 1) { eventPublisher.publish(any()) }
     }
 
 
