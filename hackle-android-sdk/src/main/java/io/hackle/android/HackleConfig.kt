@@ -71,8 +71,8 @@ class HackleConfig private constructor(builder: Builder) {
      * The session timeout in milliseconds.
      */
     @Deprecated(
-        message = "Use sessionPolicy.timeout.millis instead",
-        replaceWith = ReplaceWith("sessionPolicy.timeout.millis")
+        message = "Use sessionPolicy.timeoutCondition.timeoutMillis instead",
+        replaceWith = ReplaceWith("sessionPolicy.timeoutCondition.timeoutMillis")
     )
     val sessionTimeoutMillis: Int
         get() = sessionPolicy.timeoutCondition.timeoutMillis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
@@ -239,11 +239,11 @@ class HackleConfig private constructor(builder: Builder) {
          * @return this builder instance
          */
         @Deprecated(
-            message = "Use sessionPolicy() with HackleSessionTimeout.builder().millis() instead.",
+            message = "Use sessionPolicy() with HackleSessionTimeoutCondition.builder().millis() instead.",
             replaceWith = ReplaceWith(
-                "sessionPolicy(HackleSessionPolicy.builder().timeout(HackleSessionTimeout.builder().millis(sessionTimeoutMillis.toLong()).build()).build())",
+                "sessionPolicy(HackleSessionPolicy.builder().timeoutCondition(HackleSessionTimeoutCondition.builder().millis(sessionTimeoutMillis.toLong()).build()).build())",
                 "io.hackle.sdk.common.HackleSessionPolicy",
-                "io.hackle.sdk.common.HackleSessionTimeout"
+                "io.hackle.sdk.common.HackleSessionTimeoutCondition"
             )
         )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
@@ -313,9 +313,9 @@ class HackleConfig private constructor(builder: Builder) {
          * Sets whether opt-out tracking is enabled.
          * When enabled, all event tracking (local storage and network dispatch) will be blocked.
          *
-         * Once enabled (true), the opt-out state is persisted locally. Even if this config is
-         * later set to false, previously opted-out users remain opted out until
-         * [HackleApp.setOptOutTracking] is called with false at runtime.
+         * When opt-out is enabled (true), all event tracking will be blocked from app launch.
+         * To change the opt-out state at runtime, use [HackleApp.setOptOutTracking].
+         * Runtime changes are not persisted and will be reset to this config value on next launch.
          *
          * @param optOutTracking true to opt out of tracking, false to opt in (default)
          * @return this builder instance
