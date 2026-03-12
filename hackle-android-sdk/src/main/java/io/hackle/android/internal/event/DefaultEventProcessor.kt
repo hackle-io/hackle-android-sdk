@@ -4,6 +4,7 @@ import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleList
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.optout.OptOutState
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionEventTracker
@@ -35,6 +36,7 @@ internal class DefaultEventProcessor(
     private val userManager: UserManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
+    private val optOutState: OptOutState,
 ) : EventProcessor, ApplicationLifecycleListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
@@ -156,7 +158,9 @@ internal class DefaultEventProcessor(
                 val decoratedEvent =
                     decorators.fold(event) { userEvent, decorator -> decorator.decorate(userEvent) }
 
-                save(decoratedEvent)
+                if (!optOutState.isOptOutTracking) {
+                    save(decoratedEvent)
+                }
                 eventPublisher.publish(decoratedEvent)
             } catch (e: Exception) {
                 log.error { "Failed to add event: $e" }

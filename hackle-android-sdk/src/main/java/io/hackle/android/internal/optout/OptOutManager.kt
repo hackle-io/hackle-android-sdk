@@ -5,18 +5,16 @@ import io.hackle.sdk.core.internal.log.Logger
 
 internal class OptOutManager(
     private val eventProcessor: DefaultEventProcessor,
-    configOptOutTracking: Boolean,
+    private val optOutState: OptOutState,
 ) {
 
     private val lock = Any()
 
-    @Volatile
-    var isOptOutTracking: Boolean = configOptOutTracking
-        private set
+    val isOptOutTracking: Boolean get() = optOutState.isOptOutTracking
 
     fun setOptOutTracking(optOut: Boolean) {
         synchronized(lock) {
-            if (optOut == isOptOutTracking) {
+            if (optOut == optOutState.isOptOutTracking) {
                 return
             }
 
@@ -25,7 +23,7 @@ internal class OptOutManager(
                 eventProcessor.flush()
             }
 
-            isOptOutTracking = optOut
+            optOutState.isOptOutTracking = optOut
             log.info { "OptOutTracking changed to $optOut" }
         }
     }

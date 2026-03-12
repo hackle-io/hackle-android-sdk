@@ -51,8 +51,8 @@ import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.optout.OptOutState
 import io.hackle.android.internal.optout.OptOutManager
-import io.hackle.android.internal.optout.OptOutUserEventFilter
 import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
@@ -221,6 +221,8 @@ internal object HackleApps {
         val eventPublisher = UserEventPublisher()
         val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
+        val optOutState = OptOutState(config.optOutTracking)
+
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
@@ -234,7 +236,8 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             screenUserEventDecorator = screenUserEventDecorator,
-            eventBackoffController = eventBackoffController
+            eventBackoffController = eventBackoffController,
+            optOutState = optOutState
         )
 
         val rcEventDedupRepository =
@@ -271,10 +274,8 @@ internal object HackleApps {
         // OptOutManager
         val optOutManager = OptOutManager(
             eventProcessor = eventProcessor,
-            configOptOutTracking = config.optOutTracking,
+            optOutState = optOutState,
         )
-        val optOutUserEventFilter = OptOutUserEventFilter(optOutManager)
-        eventProcessor.addFilter(optOutUserEventFilter)
 
         val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
