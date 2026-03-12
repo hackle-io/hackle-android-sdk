@@ -11,7 +11,7 @@ class HackleSessionTimeoutCondition private constructor(builder: Builder) {
     val onApplicationStateChange: Boolean = builder.onApplicationStateChange
 
     override fun toString(): String =
-        "HackleSessionTimeout(millis=${this@HackleSessionTimeoutCondition.timeoutMillis}, onForeground=${this@HackleSessionTimeoutCondition.onForeground}, onBackground=${this@HackleSessionTimeoutCondition.onBackground}, onApplicationStateChange=${this@HackleSessionTimeoutCondition.onApplicationStateChange})"
+        "HackleSessionTimeoutCondition(millis=${this@HackleSessionTimeoutCondition.timeoutMillis}, onForeground=${this@HackleSessionTimeoutCondition.onForeground}, onBackground=${this@HackleSessionTimeoutCondition.onBackground}, onApplicationStateChange=${this@HackleSessionTimeoutCondition.onApplicationStateChange})"
 
     class Builder {
         internal var timeoutMillis: Long = DEFAULT_SESSION_TIMEOUT_MILLIS

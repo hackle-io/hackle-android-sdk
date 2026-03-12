@@ -71,8 +71,8 @@ class HackleConfig private constructor(builder: Builder) {
      * The session timeout in milliseconds.
      */
     @Deprecated(
-        message = "Use sessionPolicy.timeout.millis instead",
-        replaceWith = ReplaceWith("sessionPolicy.timeout.millis")
+        message = "Use sessionPolicy.timeoutCondition.timeoutMillis instead",
+        replaceWith = ReplaceWith("sessionPolicy.timeoutCondition.timeoutMillis")
     )
     val sessionTimeoutMillis: Int
         get() = sessionPolicy.timeoutCondition.timeoutMillis.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
@@ -239,11 +239,11 @@ class HackleConfig private constructor(builder: Builder) {
          * @return this builder instance
          */
         @Deprecated(
-            message = "Use sessionPolicy() with HackleSessionTimeout.builder().millis() instead.",
+            message = "Use sessionPolicy() with HackleSessionTimeoutCondition.builder().millis() instead.",
             replaceWith = ReplaceWith(
-                "sessionPolicy(HackleSessionPolicy.builder().timeout(HackleSessionTimeout.builder().millis(sessionTimeoutMillis.toLong()).build()).build())",
+                "sessionPolicy(HackleSessionPolicy.builder().timeoutCondition(HackleSessionTimeoutCondition.builder().millis(sessionTimeoutMillis.toLong()).build()).build())",
                 "io.hackle.sdk.common.HackleSessionPolicy",
-                "io.hackle.sdk.common.HackleSessionTimeout"
+                "io.hackle.sdk.common.HackleSessionTimeoutCondition"
             )
         )
         fun sessionTimeoutMillis(sessionTimeoutMillis: Int) = apply {
