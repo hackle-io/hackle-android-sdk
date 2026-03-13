@@ -51,7 +51,6 @@ import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
-import io.hackle.android.internal.optout.OptOutState
 import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
@@ -221,7 +220,7 @@ internal object HackleApps {
         val eventPublisher = UserEventPublisher()
         val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
-        val optOutState = OptOutState(config.optOutTracking)
+        val optOutManager = OptOutManager(config.optOutTracking)
 
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
@@ -237,8 +236,9 @@ internal object HackleApps {
             userManager = userManager,
             screenUserEventDecorator = screenUserEventDecorator,
             eventBackoffController = eventBackoffController,
-            optOutState = optOutState
+            optOutManager = optOutManager
         )
+        optOutManager.addListener(eventProcessor)
 
         val rcEventDedupRepository =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
@@ -270,12 +270,6 @@ internal object HackleApps {
         )
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
         eventProcessor.addFilter(dedupUserEventFilter)
-
-        // OptOutManager
-        val optOutManager = OptOutManager(
-            eventProcessor = eventProcessor,
-            optOutState = optOutState,
-        )
 
         val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
