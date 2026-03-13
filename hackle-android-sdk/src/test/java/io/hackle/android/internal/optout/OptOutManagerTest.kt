@@ -47,7 +47,7 @@ class OptOutManagerTest {
         val manager = OptOutManager(false)
         manager.addListener(listener)
         manager.setOptOutTracking(false)
-        verify(exactly = 0) { listener.onOptOutChanged(any(), any()) }
+        verify(exactly = 0) { listener.onOptOutChanged(any()) }
     }
 
     @Test
@@ -55,7 +55,7 @@ class OptOutManagerTest {
         val manager = OptOutManager(true)
         manager.addListener(listener)
         manager.setOptOutTracking(true)
-        verify(exactly = 0) { listener.onOptOutChanged(any(), any()) }
+        verify(exactly = 0) { listener.onOptOutChanged(any()) }
     }
 
     @Test
