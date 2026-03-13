@@ -6,7 +6,7 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
-import io.hackle.android.internal.optout.OptOutState
+import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
 import io.hackle.android.internal.session.Session
@@ -90,7 +90,7 @@ class DefaultEventProcessorTest {
         userManager: UserManager = this.userManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
-        optOutState: OptOutState = OptOutState(false),
+        optOutManager: OptOutManager = OptOutManager(false),
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             eventPublisher = eventPublisher,
@@ -106,7 +106,7 @@ class DefaultEventProcessorTest {
             userManager = userManager,
             screenUserEventDecorator = ScreenUserEventDecorator(screenManager),
             eventBackoffController = eventBackoffController,
-            optOutState = optOutState
+            optOutManager = optOutManager
         )
     }
 
@@ -560,8 +560,8 @@ class DefaultEventProcessorTest {
     @Test
     fun `process - optOut 상태이면 save 를 호출하지 않는다`() {
         // given
-        val optOutState = OptOutState(true)
-        val sut = processor(optOutState = optOutState)
+        val optOutManager = OptOutManager(true)
+        val sut = processor(optOutManager = optOutManager)
         val event = event()
 
         // when
@@ -574,8 +574,8 @@ class DefaultEventProcessorTest {
     @Test
     fun `process - optOut 상태이면 publish 는 호출한다`() {
         // given
-        val optOutState = OptOutState(true)
-        val sut = processor(optOutState = optOutState)
+        val optOutManager = OptOutManager(true)
+        val sut = processor(optOutManager = optOutManager)
         val event = event()
 
         // when
@@ -588,8 +588,8 @@ class DefaultEventProcessorTest {
     @Test
     fun `process - optOut 이 아니면 save 와 publish 모두 호출한다`() {
         // given
-        val optOutState = OptOutState(false)
-        val sut = processor(optOutState = optOutState)
+        val optOutManager = OptOutManager(false)
+        val sut = processor(optOutManager = optOutManager)
         val event = event()
 
         // when
@@ -598,6 +598,30 @@ class DefaultEventProcessorTest {
         // then
         verify(exactly = 1) { eventRepository.save(any()) }
         verify(exactly = 1) { eventPublisher.publish(any()) }
+    }
+
+    @Test
+    fun `onOptOutChanged - optIn에서 optOut 전환 시 flush 호출`() {
+        // given
+        val sut = processor()
+
+        // when
+        sut.onOptOutChanged(previous = false, current = true)
+
+        // then
+        verify(exactly = 1) { eventExecutor.execute(any()) }
+    }
+
+    @Test
+    fun `onOptOutChanged - optOut에서 optIn 전환 시 flush 미호출`() {
+        // given
+        val sut = processor()
+
+        // when
+        sut.onOptOutChanged(previous = true, current = false)
+
+        // then
+        verify(exactly = 0) { eventExecutor.execute(any()) }
     }
 
 
