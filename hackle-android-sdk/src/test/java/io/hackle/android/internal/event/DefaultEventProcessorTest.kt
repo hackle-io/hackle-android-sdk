@@ -601,24 +601,24 @@ class DefaultEventProcessorTest {
     }
 
     @Test
-    fun `onOptOutChanged - optIn에서 optOut 전환 시 flush 호출`() {
+    fun `onOptOutChanged - optOut 전환 시 flush 호출`() {
         // given
         val sut = processor()
 
         // when
-        sut.onOptOutChanged(previous = false, current = true)
+        sut.onOptOutChanged(current = true)
 
         // then
         verify(exactly = 1) { eventExecutor.execute(any()) }
     }
 
     @Test
-    fun `onOptOutChanged - optOut에서 optIn 전환 시 flush 미호출`() {
+    fun `onOptOutChanged - optIn 전환 시 flush 미호출`() {
         // given
         val sut = processor()
 
         // when
-        sut.onOptOutChanged(previous = true, current = false)
+        sut.onOptOutChanged(current = false)
 
         // then
         verify(exactly = 0) { eventExecutor.execute(any()) }

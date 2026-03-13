@@ -136,8 +136,9 @@ internal class DefaultEventProcessor(
         stop()
     }
 
-    override fun onOptOutChanged(previous: Boolean, current: Boolean) {
-        if (!previous && current) {
+    override fun onOptOutChanged(current: Boolean) {
+        // NOTE: optout false -> true로 변경된 경우 flush 호출
+        if (current) {
             flush()
         }
     }

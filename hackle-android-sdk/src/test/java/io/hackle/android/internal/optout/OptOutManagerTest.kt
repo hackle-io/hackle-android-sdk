@@ -30,7 +30,7 @@ class OptOutManagerTest {
         manager.addListener(listener)
         manager.setOptOutTracking(true)
         expectThat(manager.isOptOutTracking).isTrue()
-        verify(exactly = 1) { listener.onOptOutChanged(false, true) }
+        verify(exactly = 1) { listener.onOptOutChanged(true) }
     }
 
     @Test
@@ -39,7 +39,7 @@ class OptOutManagerTest {
         manager.addListener(listener)
         manager.setOptOutTracking(false)
         expectThat(manager.isOptOutTracking).isFalse()
-        verify(exactly = 1) { listener.onOptOutChanged(true, false) }
+        verify(exactly = 1) { listener.onOptOutChanged(false) }
     }
 
     @Test
@@ -63,7 +63,7 @@ class OptOutManagerTest {
         val manager = OptOutManager(false)
         val verifyingListener = object : OptOutListener {
             var stateAtNotification: Boolean = false
-            override fun onOptOutChanged(previous: Boolean, current: Boolean) {
+            override fun onOptOutChanged(current: Boolean) {
                 stateAtNotification = manager.isOptOutTracking
             }
         }

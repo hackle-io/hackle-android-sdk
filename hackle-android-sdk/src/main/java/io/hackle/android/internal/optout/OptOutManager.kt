@@ -14,16 +14,14 @@ internal class OptOutManager(
         private set
 
     fun setOptOutTracking(optOut: Boolean) {
-        val previous: Boolean
         synchronized(lock) {
             if (isOptOutTracking == optOut) return
-            previous = isOptOutTracking
             isOptOutTracking = optOut
         }
         log.info { "OptOutTracking changed to $optOut" }
         for (listener in listeners) {
             try {
-                listener.onOptOutChanged(previous, optOut)
+                listener.onOptOutChanged(optOut)
             } catch (e: Exception) {
                 log.error { "Unexpected exception while notifying OptOutListener: $e" }
             }
