@@ -600,31 +600,6 @@ class DefaultEventProcessorTest {
         verify(exactly = 1) { eventPublisher.publish(any()) }
     }
 
-    @Test
-    fun `onOptOutChanged - optIn에서 optOut 전환 시 flush 호출`() {
-        // given
-        val sut = processor()
-
-        // when
-        sut.onOptOutChanged(previous = false, current = true)
-
-        // then
-        verify(exactly = 1) { eventExecutor.execute(any()) }
-    }
-
-    @Test
-    fun `onOptOutChanged - optOut에서 optIn 전환 시 flush 미호출`() {
-        // given
-        val sut = processor()
-
-        // when
-        sut.onOptOutChanged(previous = true, current = false)
-
-        // then
-        verify(exactly = 0) { eventExecutor.execute(any()) }
-    }
-
-
     private fun event(
         timestamp: Long = System.currentTimeMillis(),
         user: HackleUser = HackleUser.of("test_user_id"),

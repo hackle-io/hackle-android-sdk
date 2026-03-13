@@ -238,8 +238,6 @@ internal object HackleApps {
             eventBackoffController = eventBackoffController,
             optOutManager = optOutManager
         )
-        optOutManager.addListener(eventProcessor)
-
         val rcEventDedupRepository =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
         val exposureEventDedupRepository =

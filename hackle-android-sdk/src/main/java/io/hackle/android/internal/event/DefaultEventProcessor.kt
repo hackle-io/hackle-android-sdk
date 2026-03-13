@@ -4,7 +4,6 @@ import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleList
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
-import io.hackle.android.internal.optout.OptOutListener
 import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.session.SessionContext
@@ -38,7 +37,7 @@ internal class DefaultEventProcessor(
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
     private val optOutManager: OptOutManager,
-) : EventProcessor, ApplicationLifecycleListener, OptOutListener, Closeable {
+) : EventProcessor, ApplicationLifecycleListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
@@ -134,12 +133,6 @@ internal class DefaultEventProcessor(
 
     override fun onBackground(timestamp: Long) {
         stop()
-    }
-
-    override fun onOptOutChanged(previous: Boolean, current: Boolean) {
-        if (!previous && current) {
-            flush()
-        }
     }
 
     override fun close() {
