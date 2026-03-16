@@ -17,7 +17,14 @@ import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.core.evaluate
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
-import io.hackle.android.ui.inappmessage.view.*
+import io.hackle.android.ui.inappmessage.view.InAppMessageAnimator
+import io.hackle.android.ui.inappmessage.view.InAppMessageBaseView
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewJavascriptInterface
+import io.hackle.android.ui.inappmessage.view.InAppMessageWebView
+import io.hackle.android.ui.inappmessage.view.InAppMessageWebViewClient
+import io.hackle.android.ui.inappmessage.view.handle
+import io.hackle.android.ui.inappmessage.view.message
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 
@@ -47,7 +54,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     private var _contentResolverFactory: InAppMessageHtmlContentResolverFactory? = null
     private val contentResolverFactory get() = requireNotNull(_contentResolverFactory) { "InAppMessageHtmlContentResolverFactory is not set on InAppMessageHtmlView." }
 
-    private var _bridgeScript: InAppMessageHtmlBridgeScript? = null
+    private var _bridgeScript: InAppMessageHtmlBridgeUserScript? = null
     private val bridgeScript get() = requireNotNull(_bridgeScript) { "InAppMessageHtmlBridgeScript is not set on InAppMessageHtmlView." }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -118,7 +125,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         @SuppressLint("InflateParams")
         fun create(
             activity: Activity,
-            bridgeScript: InAppMessageHtmlBridgeScript,
+            bridgeScript: InAppMessageHtmlBridgeUserScript,
             contentResolverFactory: InAppMessageHtmlContentResolverFactory,
         ): InAppMessageHtmlView {
             val view = activity.layoutInflater.inflate(R.layout.hackle_iam_html, null)
