@@ -1,32 +1,30 @@
 package io.hackle.android.internal.optout
 
-import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class OptOutManager(
-    private val eventProcessor: DefaultEventProcessor,
-    configOptOutTracking: Boolean,
-) {
+    optOutTracking: Boolean
+) : ApplicationListenerRegistry<OptOutListener>() {
 
     private val lock = Any()
 
     @Volatile
-    var isOptOutTracking: Boolean = configOptOutTracking
+    var isOptOutTracking: Boolean = optOutTracking
         private set
 
     fun setOptOutTracking(optOut: Boolean) {
         synchronized(lock) {
-            if (optOut == isOptOutTracking) {
-                return
-            }
-
-            if (optOut) {
-                // optIn -> optOut 전환: 기존 로컬 이벤트를 best-effort flush한 후 차단
-                eventProcessor.flush()
-            }
-
+            if (isOptOutTracking == optOut) return
             isOptOutTracking = optOut
-            log.info { "OptOutTracking changed to $optOut" }
+        }
+        log.info { "OptOutTracking changed to $optOut" }
+        for (listener in listeners) {
+            try {
+                listener.onOptOutChanged(optOut)
+            } catch (e: Exception) {
+                log.error { "Unexpected exception while notifying OptOutListener: $e" }
+            }
         }
     }
 
