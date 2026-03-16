@@ -1662,6 +1662,32 @@ class HackleInvocationTest {
     }
 
     @Test
+    fun `invoke isOptOutTracking returns true`() {
+        every { app.isOptOutTracking } returns true
+
+        val jsonString = createJsonString("isOptOutTracking")
+        val result = invocation.invoke(jsonString)
+        verify(exactly = 1) { app.isOptOutTracking }
+        result.parseJson<InvokeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(data, `is`(true))
+        }
+    }
+
+    @Test
+    fun `invoke isOptOutTracking returns false`() {
+        every { app.isOptOutTracking } returns false
+
+        val jsonString = createJsonString("isOptOutTracking")
+        val result = invocation.invoke(jsonString)
+        verify(exactly = 1) { app.isOptOutTracking }
+        result.parseJson<InvokeResponse>().apply {
+            assertThat(success, `is`(true))
+            assertThat(data, `is`(false))
+        }
+    }
+
+    @Test
     fun `invoke setOptOutTracking with true`() {
         val parameters = mapOf("optOut" to true)
         val jsonString = createJsonString("setOptOutTracking", parameters)

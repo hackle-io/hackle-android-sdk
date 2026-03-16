@@ -54,7 +54,6 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.optout.OptOutManager
-import io.hackle.android.internal.optout.OptOutUserEventFilter
 import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
@@ -223,6 +222,8 @@ internal object HackleApps {
         val eventPublisher = UserEventPublisher()
         val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
+        val optOutManager = OptOutManager(config.optOutTracking)
+
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
@@ -236,8 +237,10 @@ internal object HackleApps {
             sessionManager = sessionManager,
             userManager = userManager,
             screenUserEventDecorator = screenUserEventDecorator,
-            eventBackoffController = eventBackoffController
+            eventBackoffController = eventBackoffController,
+            optOutManager = optOutManager
         )
+        optOutManager.addListener(eventProcessor)
 
         val rcEventDedupRepository =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
@@ -269,15 +272,6 @@ internal object HackleApps {
         )
         val dedupUserEventFilter = DedupUserEventFilter(eventDedupDeterminer)
         eventProcessor.addFilter(dedupUserEventFilter)
-
-        // OptOutManager
-        val optOutManager = OptOutManager(
-            keyValueRepository = keyValueRepositoryBySdkKey,
-            eventProcessor = eventProcessor,
-            configOptOutTracking = config.optOutTracking,
-        )
-        val optOutUserEventFilter = OptOutUserEventFilter(optOutManager)
-        eventProcessor.addFilter(optOutUserEventFilter)
 
         val sessionUserEventDecorator = SessionUserEventDecorator(sessionUserDecorator)
         eventProcessor.addDecorator(sessionUserEventDecorator)
