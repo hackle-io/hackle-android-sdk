@@ -27,6 +27,7 @@ internal class InAppMessageWebViewClient(
         return listener.onUrlLoading(url)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
         log.debug { "WebView's render process has exited." }
         return true

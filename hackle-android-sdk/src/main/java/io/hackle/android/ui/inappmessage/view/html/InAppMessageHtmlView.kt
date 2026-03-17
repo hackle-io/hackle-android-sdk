@@ -39,7 +39,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : InAppMessageBaseView(context, attrs, defStyleAttr) {
+) : InAppMessageBaseView(context, attrs, defStyleAttr), InAppMessageView.LifecycleListener {
 
     // View
     private val webView: InAppMessageWebView get() = findViewById(R.id.hackle_iam_html_webview)
@@ -97,6 +97,12 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         }
     }
 
+    override fun afterInAppMessageClose() {
+        log.debug { "InAppMessageHtmlView.afterInAppMessageClose()" }
+        webView.loadUrl("about:blank")
+        webView.removeAllViews()
+    }
+
     inner class HtmlPageListener(
         private val readyListener: InAppMessageView.ReadyListener
     ) : InAppMessageWebViewClient.PageListener {
@@ -107,6 +113,9 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
          * - Notifies that the InAppMessageView is ready to be shown.
          */
         override fun onPageFinished(view: WebView, url: String) {
+            if (state == InAppMessageView.State.CLOSED) {
+                return
+            }
             webView.evaluate(bridgeScript)
             readyListener.onReady()
         }
