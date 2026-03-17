@@ -2,13 +2,21 @@ package io.hackle.android.internal.invocator.invocation.handlers
 
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.invocator.*
+import io.hackle.android.internal.invocator.checkParameterNotNull
+import io.hackle.android.internal.invocator.deviceId
+import io.hackle.android.internal.invocator.hackleSubscriptionOperationDto
 import io.hackle.android.internal.invocator.invocation.InvocationHandler
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.invocator.invocation.InvocationResponse
+import io.hackle.android.internal.invocator.key
 import io.hackle.android.internal.invocator.model.UserDto
 import io.hackle.android.internal.invocator.model.from
 import io.hackle.android.internal.invocator.model.toDto
+import io.hackle.android.internal.invocator.phoneNumber
+import io.hackle.android.internal.invocator.propertyOperationDto
+import io.hackle.android.internal.invocator.userAsMap
+import io.hackle.android.internal.invocator.userId
+import io.hackle.android.internal.invocator.value
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
@@ -31,7 +39,7 @@ internal class GetUserInvocationHandler(private val core: HackleAppCore) : Invoc
 
 internal class SetUserInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val data = checkNotNull(request.parameters.userAsMap())
+        val data = checkParameterNotNull(request.parameters.userAsMap(), "user")
         val dto = UserDto.from(data)
         val user = User.from(dto)
         core.setUser(user, null)
@@ -60,7 +68,7 @@ internal class SetUserIdInvocationHandler(private val core: HackleAppCore) : Inv
 
 internal class SetDeviceIdInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val deviceId = checkNotNull(request.parameters.deviceId())
+        val deviceId = checkParameterNotNull(request.parameters.deviceId(), "deviceId")
         core.setDeviceId(deviceId, null)
         return InvocationResponse.success()
     }
@@ -70,7 +78,7 @@ internal class SetDeviceIdInvocationHandler(private val core: HackleAppCore) : I
 
 internal class SetUserPropertyInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val key = checkNotNull(request.parameters.key())
+        val key = checkParameterNotNull(request.parameters.key(), "key")
         val value = request.parameters.value()
         val operations = PropertyOperations.builder()
             .set(key, value)
@@ -83,7 +91,7 @@ internal class SetUserPropertyInvocationHandler(private val core: HackleAppCore)
 
 internal class UpdateUserPropertiesInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val dto = checkNotNull(request.parameters.propertyOperationDto())
+        val dto = checkParameterNotNull(request.parameters.propertyOperationDto(), "operations")
         val operations = PropertyOperations.from(dto)
         val context = HackleAppContext.create(request.browserProperties)
         core.updateUserProperties(operations, context, null)
@@ -95,7 +103,7 @@ internal class UpdateUserPropertiesInvocationHandler(private val core: HackleApp
 
 internal class SetPhoneNumberInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val phoneNumber = checkNotNull(request.parameters.phoneNumber())
+        val phoneNumber = checkParameterNotNull(request.parameters.phoneNumber(), "phoneNumber")
         val context = HackleAppContext.create(request.browserProperties)
         core.setPhoneNumber(phoneNumber, context, null)
         return InvocationResponse.success()
@@ -114,7 +122,7 @@ internal class UnsetPhoneNumberInvocationHandler(private val core: HackleAppCore
 
 internal abstract class SubscriptionInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val dto = checkNotNull(request.parameters.hackleSubscriptionOperationDto())
+        val dto = checkParameterNotNull(request.parameters.hackleSubscriptionOperationDto(), "operations")
         val operations = HackleSubscriptionOperations.from(dto)
         val context = HackleAppContext.create(request.browserProperties)
         update(core, operations, context)

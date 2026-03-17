@@ -1,6 +1,7 @@
 package io.hackle.android.internal.invocator.invocation.handlers
 
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.invocator.checkParameterNotNull
 import io.hackle.android.internal.invocator.invocation.InvocationHandler
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.invocator.invocation.InvocationResponse
@@ -32,7 +33,7 @@ internal class CloseInAppMessageViewInvocationHandler(
     private val core: HackleAppCore
 ) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val viewId = requireNotNull(request.parameters.viewId()) { "parameters.viewId must not be null." }
+        val viewId = checkParameterNotNull(request.parameters.viewId(), "viewId")
         val view = core.getInAppMessageView(viewId) ?: return InvocationResponse.success()
         runOnUiThread {
             view.close()
@@ -63,8 +64,8 @@ internal class HandleInAppMessageViewInvocationHandler(
     }
 
     private fun actionEvent(view: InAppMessageView, dto: InAppMessageViewEventDto): InAppMessageViewEvent.Action {
-        val action = requireNotNull(dto.action) { "action must not be null" }
-        val element = requireNotNull(dto.element) { "element must not be null" }
+        val action = checkParameterNotNull(dto.action, "event.action")
+        val element = checkParameterNotNull(dto.element, "event.element")
         return InAppMessageViewEvent.action(
             view = view,
             action = requireNotNull(action.toActionOrNull()) { "Invalid action format" },

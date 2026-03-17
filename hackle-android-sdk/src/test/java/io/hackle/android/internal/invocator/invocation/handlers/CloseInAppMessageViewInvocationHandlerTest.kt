@@ -5,9 +5,13 @@ import io.hackle.android.internal.invocator.invocation.InvocationCommand
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -32,7 +36,7 @@ internal class CloseInAppMessageViewInvocationHandlerTest : AbstractInvocationHa
     @Test
     fun `when parameters viewId is null then throws exception`() {
         val request = request(InvocationCommand.CLOSE_IN_APP_MESSAGE_VIEW, mapOf("viewId" to null))
-        assertThrows<IllegalArgumentException> { sut.invoke(request) }
+        assertThrows<IllegalStateException> { sut.invoke(request) }
     }
 
     @Test

@@ -1,11 +1,20 @@
 package io.hackle.android.internal.invocator
 
-import io.hackle.android.internal.invocator.model.*
+import io.hackle.android.internal.invocator.model.EventDto
+import io.hackle.android.internal.invocator.model.HackleSubscriptionOperationsDto
+import io.hackle.android.internal.invocator.model.PropertyOperationsDto
+import io.hackle.android.internal.invocator.model.UserDto
+import io.hackle.android.internal.invocator.model.from
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 
 internal typealias HackleBrowserProperties = Map<String, Any>
 internal typealias InvocationParameters = Map<String, Any?>
+
+
+internal inline fun <reified T> checkParameterNotNull(value: T?, name: String): T {
+    return checkNotNull(value) { "parameters.$name must not be null." }
+}
 
 /**
  * 사용자 정보를 담은 [Map] 객체를 반환합니다.
