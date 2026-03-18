@@ -51,6 +51,7 @@ import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.platform.PlatformManager
 import io.hackle.android.internal.push.PushEventTracker
 import io.hackle.android.internal.push.token.PushTokenFetchers
@@ -175,8 +176,9 @@ internal object HackleApps {
 
         val sessionManager = SessionManager(
             userManager = userManager,
-            sessionTimeoutMillis = config.sessionTimeoutMillis.toLong(),
             keyValueRepository = globalKeyValueRepository,
+            applicationLifecycleManager = applicationLifecycleManager,
+            sessionPolicy = config.sessionPolicy,
         )
         userManager.addListener(sessionManager)
 
@@ -218,6 +220,8 @@ internal object HackleApps {
         val eventPublisher = UserEventPublisher()
         val screenUserEventDecorator = ScreenUserEventDecorator(screenManager)
 
+        val optOutManager = OptOutManager(config.optOutTracking)
+
         val eventProcessor = DefaultEventProcessor(
             eventPublisher = eventPublisher,
             eventExecutor = eventExecutor,
@@ -230,10 +234,11 @@ internal object HackleApps {
             eventDispatcher = eventDispatcher,
             sessionManager = sessionManager,
             userManager = userManager,
-            applicationLifecycleManager = applicationLifecycleManager,
             screenUserEventDecorator = screenUserEventDecorator,
-            eventBackoffController = eventBackoffController
+            eventBackoffController = eventBackoffController,
+            optOutManager = optOutManager
         )
+        optOutManager.addListener(eventProcessor)
 
         val rcEventDedupRepository =
             AndroidKeyValueRepository.create(context, "${PREFERENCES_NAME}_rc_event_dedup_$sdkKey")
@@ -579,6 +584,7 @@ internal object HackleApps {
             device = platformManager.device,
             applicationInstallStateManager = applicationInstallStateManager,
             userExplorer = userExplorer,
+            optOutManager = optOutManager,
         )
 
         val hackleInvocator = HackleInvocatorImpl(hackleAppCore)

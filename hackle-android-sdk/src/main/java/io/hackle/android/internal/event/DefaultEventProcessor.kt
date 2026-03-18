@@ -1,12 +1,13 @@
 package io.hackle.android.internal.event
 
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.database.workspace.EventEntity.Status.FLUSHING
 import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
+import io.hackle.android.internal.optout.OptOutListener
+import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.push.PushEventTracker
+import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionEventTracker
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.user.UserManager
@@ -34,10 +35,10 @@ internal class DefaultEventProcessor(
     private val eventDispatcher: EventDispatcher,
     private val sessionManager: SessionManager,
     private val userManager: UserManager,
-    private val applicationLifecycleManager: ApplicationLifecycleManager,
     private val screenUserEventDecorator: UserEventDecorator,
     private val eventBackoffController: UserEventBackoffController,
-) : EventProcessor, ApplicationLifecycleListener, Closeable {
+    private val optOutManager: OptOutManager,
+) : EventProcessor, ApplicationLifecycleListener, OptOutListener, Closeable {
 
     private var flushingJob: ScheduledJob? = null
 
@@ -135,6 +136,13 @@ internal class DefaultEventProcessor(
         stop()
     }
 
+    override fun onOptOutChanged(current: Boolean) {
+        // NOTE: optout false -> true로 변경된 경우 flush 호출
+        if (current) {
+            flush()
+        }
+    }
+
     override fun close() {
         eventFlushScheduler.tryClose()
         stop()
@@ -158,7 +166,9 @@ internal class DefaultEventProcessor(
                 val decoratedEvent =
                     decorators.fold(event) { userEvent, decorator -> decorator.decorate(userEvent) }
 
-                save(decoratedEvent)
+                if (!optOutManager.isOptOutTracking) {
+                    save(decoratedEvent)
+                }
                 eventPublisher.publish(decoratedEvent)
             } catch (e: Exception) {
                 log.error { "Failed to add event: $e" }
@@ -170,12 +180,10 @@ internal class DefaultEventProcessor(
                 return
             }
 
-            if (applicationLifecycleManager.currentState == ApplicationState.FOREGROUND) {
-                sessionManager.updateLastEventTime(event.timestamp)
-            } else {
-                // Corner case when an event is processed between onPause and onResume
-                sessionManager.startNewSessionIfNeeded(userManager.currentUser, event.timestamp)
-            }
+            val currentUser = userManager.currentUser
+            sessionManager.startNewSessionIfNeeded(
+                SessionContext.of(currentUser, event.timestamp)
+            )
         }
 
         private fun save(event: UserEvent) {

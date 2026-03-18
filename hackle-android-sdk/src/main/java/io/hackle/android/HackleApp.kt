@@ -58,6 +58,14 @@ class HackleApp internal constructor(
      */
     val user: User get() = hackleAppCore.user
 
+    /**
+     * Whether opt-out tracking is currently enabled.
+     * When true, all event tracking is blocked.
+     *
+     * @return true if the user has opted out of tracking
+     */
+    val isOptOutTracking: Boolean get() = hackleAppCore.isOptOutTracking
+
     internal val userExplorerService: HackleUserExplorerService get() = hackleAppCore.userExplorerService
 
     /**
@@ -356,6 +364,22 @@ class HackleApp internal constructor(
      */
     fun setCurrentScreen(screen: Screen) {
         hackleAppCore.setCurrentScreen(screen)
+    }
+
+    /**
+     * Sets whether opt-out tracking is enabled.
+     *
+     * When opt-out is enabled (true), all event tracking (local storage and network dispatch)
+     * will be blocked. When switching from opt-in to opt-out, a best-effort flush of any
+     * pending events will be attempted before blocking begins.
+     *
+     * This setting is not persisted across app restarts.
+     * On each launch, the opt-out state is determined solely by [HackleConfig.optOutTracking].
+     *
+     * @param optOut true to opt out of all event tracking, false to opt back in
+     */
+    fun setOptOutTracking(optOut: Boolean) {
+        hackleAppCore.setOptOutTracking(optOut)
     }
 
     /**

@@ -1,17 +1,22 @@
 package io.hackle.android.internal.session
 
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.identifierEquals
+import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class SessionManager(
     private val userManager: UserManager,
     private val keyValueRepository: KeyValueRepository,
-    private val sessionTimeoutMillis: Long,
+    private val applicationLifecycleManager: ApplicationLifecycleManager,
+    private val sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
 ) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
@@ -28,22 +33,17 @@ internal class SessionManager(
         log.debug { "SessionManager initialized." }
     }
 
-
-    fun startNewSession(user: User, timestamp: Long): Session {
-        endSession(user)
-        return newSession(user, timestamp)
+    fun startNewSession(oldUser: User, newUser: User, timestamp: Long): Session {
+        endSession(oldUser)
+        return newSession(newUser, timestamp)
     }
 
-    fun startNewSessionIfNeeded(user: User, timestamp: Long): Session {
-
-        val lastEventTime = lastEventTime ?: return startNewSession(user, timestamp)
-
-        val currentSession = currentSession
-        return if (currentSession != null && timestamp - lastEventTime < sessionTimeoutMillis) {
-            updateLastEventTime(timestamp)
-            currentSession
+    fun startNewSessionIfNeeded(context: SessionContext): Session {
+        return if (shouldStartNewSession(context)) {
+            startNewSession(context.oldUser, context.newUser, context.timestamp)
         } else {
-            startNewSession(user, timestamp)
+            updateLastEventTime(context.timestamp)
+            requiredSession
         }
     }
 
@@ -97,8 +97,34 @@ internal class SessionManager(
         log.debug { "LastEventTime loaded [${this.lastEventTime}]" }
     }
 
+    private fun isTimeoutEnabled(context: SessionContext): Boolean {
+        if (context.isApplicationStateChange) {
+            return sessionPolicy.timeoutCondition.onApplicationStateChange
+        }
+        return when (applicationLifecycleManager.currentState) {
+            ApplicationState.FOREGROUND -> sessionPolicy.timeoutCondition.onForeground
+            ApplicationState.BACKGROUND -> sessionPolicy.timeoutCondition.onBackground
+        }
+    }
+
+    private fun isSessionTimedOut(timestamp: Long): Boolean {
+        val lastEventTime = lastEventTime ?: return true
+        return timestamp - lastEventTime >= sessionPolicy.timeoutCondition.timeoutMillis
+    }
+
+    private fun shouldStartNewSession(context: SessionContext): Boolean {
+        if (currentSession == null) return true
+
+        if (!context.oldUser.identifierEquals(context.newUser)) {
+            if (!sessionPolicy.persistCondition.shouldPersist(context.oldUser, context.newUser)) return true
+        }
+
+        return isTimeoutEnabled(context) && isSessionTimedOut(context.timestamp)
+    }
+
     override fun onForeground(timestamp: Long, isFromBackground: Boolean) {
-        startNewSessionIfNeeded(userManager.currentUser, timestamp)
+        val currentUser = userManager.currentUser
+        startNewSessionIfNeeded(SessionContext.of(currentUser, timestamp, isApplicationStateChange = true))
     }
 
     override fun onBackground(timestamp: Long) {
@@ -107,8 +133,7 @@ internal class SessionManager(
     }
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
-        endSession(oldUser)
-        newSession(newUser, timestamp)
+        startNewSessionIfNeeded(SessionContext.of(oldUser, newUser, timestamp))
     }
 
     companion object {
