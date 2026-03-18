@@ -193,3 +193,9 @@ internal fun HackleInvokeParameters.screenName(): String? = this["screenName"] a
  * @return 클래스 이름 또는 `null`
  */
 internal fun HackleInvokeParameters.className(): String? = this["className"] as? String
+
+/**
+ * opt-out 추적 여부를 반환합니다.
+ * @return opt-out 여부 또는 `null`
+ */
+internal fun HackleInvokeParameters.optOut(): Boolean? = this["optOut"] as? Boolean

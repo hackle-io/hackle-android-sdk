@@ -183,6 +183,22 @@ fun Hackle.updateKakaoSubscriptions(operations: HackleSubscriptionOperations) = 
 fun Hackle.fetch(callback: Runnable? = null) = app.fetch(callback)
 
 /**
+ * Sets whether opt-out tracking is enabled.
+ *
+ * This setting is not persisted across app restarts.
+ * On each launch, the opt-out state is determined solely by [HackleConfig.optOutTracking].
+ *
+ * @param optOut true to opt out of all event tracking, false to opt back in
+ */
+fun Hackle.setOptOutTracking(optOut: Boolean) = app.setOptOutTracking(optOut)
+
+/**
+ * Whether opt-out tracking is currently enabled.
+ * When true, all event tracking is blocked.
+ */
+val Hackle.isOptOutTracking: Boolean get() = app.isOptOutTracking
+
+/**
  * Gets the remote config instance for a specific user.
  *
  * @param user the [User] for remote config
