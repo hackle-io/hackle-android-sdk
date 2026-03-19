@@ -109,9 +109,15 @@ internal class InAppMessageHideActionHandler(
 
 internal class UriHandler {
 
+    private val log = Logger<UriHandler>()
+
     fun handle(context: Context, link: String) {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse(link)
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            log.error { "Failed to handle URI: $link\n$e" }
+        }
     }
 }
