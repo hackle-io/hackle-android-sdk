@@ -9,6 +9,7 @@ import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.InAppMessage.ActionType
 
 internal interface InAppMessageActionHandler {
     fun supports(action: InAppMessage.Action): Boolean
@@ -37,7 +38,7 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
     private val log = Logger<InAppMessageLinkActionHandler>()
 
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.actionType == InAppMessage.ActionType.WEB_LINK
+        return action.actionType in ACTION_TYPES
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
@@ -54,6 +55,14 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
         }
         uriHandler.handle(activity, link)
     }
+
+    companion object {
+        private val ACTION_TYPES = setOf(
+            ActionType.WEB_LINK,
+            ActionType.LINK_NEW_TAB,
+            ActionType.LINK_NEW_WINDOW,
+        )
+    }
 }
 
 internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: UriHandler) :
@@ -62,7 +71,7 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
     private val log = Logger<InAppMessageLinkActionHandler>()
 
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.actionType == InAppMessage.ActionType.LINK_AND_CLOSE
+        return action.actionType in ACTION_TYPES
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
@@ -79,6 +88,14 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
         }
         view.close()
         uriHandler.handle(activity, link)
+    }
+
+    companion object {
+        private val ACTION_TYPES = setOf(
+            ActionType.LINK_AND_CLOSE,
+            ActionType.LINK_NEW_TAB_AND_CLOSE,
+            ActionType.LINK_NEW_WINDOW_AND_CLOSE,
+        )
     }
 }
 

@@ -4,6 +4,8 @@ import android.app.Activity
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.InAppMessage.ActionType.LINK_NEW_TAB
+import io.hackle.sdk.core.model.InAppMessage.ActionType.LINK_NEW_WINDOW
 import io.hackle.sdk.core.model.InAppMessage.ActionType.WEB_LINK
 import io.mockk.Called
 import io.mockk.MockKAnnotations
@@ -15,8 +17,7 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isFalse
-import strikt.assertions.isTrue
+import strikt.assertions.isEqualTo
 
 
 internal class InAppMessageLinkActionHandlerTest {
@@ -34,8 +35,15 @@ internal class InAppMessageLinkActionHandlerTest {
 
     @Test
     fun `supports`() {
-        expectThat(sut.supports(InAppMessages.action(type = InAppMessage.ActionType.CLOSE))).isFalse()
-        expectThat(sut.supports(InAppMessages.action(type = WEB_LINK))).isTrue()
+        for (actionType in InAppMessage.ActionType.values()) {
+            expectThat(sut.supports(InAppMessages.action(type = actionType))).isEqualTo(
+                actionType in listOf(
+                    WEB_LINK,
+                    LINK_NEW_TAB,
+                    LINK_NEW_WINDOW
+                )
+            )
+        }
     }
 
     @Test
