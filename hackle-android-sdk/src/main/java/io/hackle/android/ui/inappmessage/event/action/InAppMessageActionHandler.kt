@@ -113,13 +113,14 @@ internal class InAppMessageHideActionHandler(
             return
         }
 
-        val expireAt = clock.currentMillis() + DEFAULT_HIDDEN_DURATION_MILLIS
+        val durationMillis = action.value?.toLongOrNull() ?: DEFAULT_HIDDEN_DURATION_MILLIS
+        val expireAt = clock.currentMillis() + durationMillis
         storage.put(view.inAppMessage, expireAt)
         view.close()
     }
 
     companion object {
-        private const val DEFAULT_HIDDEN_DURATION_MILLIS = 1000 * 60 * 60 * 24 // 24H
+        private const val DEFAULT_HIDDEN_DURATION_MILLIS: Long = 1000 * 60 * 60 * 24 // 24H
     }
 }
 

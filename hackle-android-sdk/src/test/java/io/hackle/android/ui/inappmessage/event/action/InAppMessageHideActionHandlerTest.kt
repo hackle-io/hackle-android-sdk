@@ -43,7 +43,7 @@ internal class InAppMessageHideActionHandlerTest {
     }
 
     @Test
-    fun `handle`() {
+    fun `handle - default`() {
         // given
         val context = InAppMessages.context()
         val view = mockk<InAppMessageView>(relaxed = true) {
@@ -59,6 +59,30 @@ internal class InAppMessageHideActionHandlerTest {
         // then
         verify(exactly = 1) {
             storage.put(any(), (1000 * 60 * 60 * 24) + 42)
+        }
+        verify(exactly = 1) {
+            view.close()
+        }
+    }
+
+
+    @Test
+    fun `handle - custom`() {
+        // given
+        val context = InAppMessages.context()
+        val view = mockk<InAppMessageView>(relaxed = true) {
+            every { this@mockk.presentationContext } returns context
+        }
+        val action = InAppMessages.action(type = InAppMessage.ActionType.HIDDEN, value = "100")
+
+        every { clock.currentMillis() } returns 42
+
+        // when
+        sut.handle(view, action)
+
+        // then
+        verify(exactly = 1) {
+            storage.put(any(), 142)
         }
         verify(exactly = 1) {
             view.close()
