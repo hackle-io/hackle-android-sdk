@@ -3,6 +3,7 @@ package io.hackle.android.ui.inappmessage.view
 import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewParent
 import androidx.core.view.children
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageController
@@ -18,7 +19,7 @@ import io.hackle.sdk.core.model.InAppMessage
 /**
  * Base view interface for [InAppMessage].
  */
-internal interface InAppMessageView : HackleInAppMessageView {
+internal interface InAppMessageView : InAppMessageViewAware, HackleInAppMessageView {
 
     /**
      * The unique identifier of this view.
@@ -142,4 +143,23 @@ internal fun InAppMessageView.handle(
 
 internal fun InAppMessageView.handle(event: InAppMessageViewEvent, type: InAppMessageViewEventHandleType) {
     handle(event, listOf(type))
+}
+
+
+internal interface InAppMessageViewAware {
+    val messageView: InAppMessageView?
+        get() {
+            if (this is InAppMessageView) {
+                return this
+            }
+
+            var current: ViewParent? = (this as? View)?.parent
+            while (current != null) {
+                if (current is InAppMessageView) {
+                    return current
+                }
+                current = current.parent
+            }
+            return null
+        }
 }

@@ -2,14 +2,23 @@ package io.hackle.android.ui.inappmessage.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.webkit.WebView
+import io.hackle.android.ui.inappmessage.InAppMessageUi
 
 internal class InAppMessageWebView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : WebView(context, attrs, defStyleAttr) {
+) : WebView(context, attrs, defStyleAttr), InAppMessageViewAware {
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && InAppMessageUi.instance.isBackButtonDismisses) {
+            messageView?.close()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
     fun load(html: String) {
         loadDataWithBaseURL(BASE_URL, html, TEXT_HTML_MIME_TYPE, UTF_8_ENCODING, null)

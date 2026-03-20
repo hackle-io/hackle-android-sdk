@@ -15,6 +15,7 @@ import io.hackle.android.internal.task.TaskExecutors.runOnBackground
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.Animations
 import io.hackle.android.ui.core.evaluate
+import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
 import io.hackle.android.ui.inappmessage.view.InAppMessageAnimator
@@ -78,6 +79,12 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         val javascriptInterface = InAppMessageViewJavascriptInterface(Hackle.app, this)
         javascriptInterface.addTo(webView)
 
+        // WebView focus
+        webView.setFocusableInTouchModeAndRequestFocus()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            webView.isFocusedByDefault = true
+        }
+
         // Load html
         runOnBackground {
             resolveAndLoad()
@@ -117,6 +124,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
                 return
             }
             webView.evaluate(bridgeScript)
+            webView.post { webView.requestFocus() }
             readyListener.onReady()
         }
 
