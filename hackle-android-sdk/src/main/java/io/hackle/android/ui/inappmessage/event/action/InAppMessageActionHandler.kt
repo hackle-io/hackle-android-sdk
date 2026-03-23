@@ -9,6 +9,7 @@ import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.InAppMessage.Action.Companion.DEFAULT_HIDE_DURATION_MILLIS
 import io.hackle.sdk.core.model.InAppMessage.ActionType
 
 internal interface InAppMessageActionHandler {
@@ -24,7 +25,7 @@ internal class InAppMessageActionHandlerFactory(private val handlers: List<InApp
 
 internal class InAppMessageCloseActionHandler : InAppMessageActionHandler {
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.actionType == InAppMessage.ActionType.CLOSE
+        return action.actionType == ActionType.CLOSE
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
@@ -38,7 +39,7 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
     private val log = Logger<InAppMessageLinkActionHandler>()
 
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.actionType in ACTION_TYPES
+        return action.actionType.shouldLink && !action.actionType.shouldClose
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
@@ -54,14 +55,6 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
             return
         }
         uriHandler.handle(activity, link)
-    }
-
-    companion object {
-        private val ACTION_TYPES = setOf(
-            ActionType.WEB_LINK,
-            ActionType.LINK_NEW_TAB,
-            ActionType.LINK_NEW_WINDOW,
-        )
     }
 }
 
@@ -71,7 +64,7 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
     private val log = Logger<InAppMessageLinkActionHandler>()
 
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.actionType in ACTION_TYPES
+        return action.actionType.shouldLink && action.actionType.shouldClose
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
@@ -89,14 +82,6 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
         view.close()
         uriHandler.handle(activity, link)
     }
-
-    companion object {
-        private val ACTION_TYPES = setOf(
-            ActionType.LINK_AND_CLOSE,
-            ActionType.LINK_NEW_TAB_AND_CLOSE,
-            ActionType.LINK_NEW_WINDOW_AND_CLOSE,
-        )
-    }
 }
 
 internal class InAppMessageHideActionHandler(
@@ -104,7 +89,7 @@ internal class InAppMessageHideActionHandler(
     private val clock: Clock,
 ) : InAppMessageActionHandler {
     override fun supports(action: InAppMessage.Action): Boolean {
-        return action.actionType == InAppMessage.ActionType.HIDDEN
+        return action.actionType == ActionType.HIDDEN
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
@@ -113,14 +98,10 @@ internal class InAppMessageHideActionHandler(
             return
         }
 
-        val durationMillis = action.value?.toLongOrNull() ?: DEFAULT_HIDDEN_DURATION_MILLIS
+        val durationMillis = action.hideDurationMillis ?: DEFAULT_HIDE_DURATION_MILLIS
         val expireAt = clock.currentMillis() + durationMillis
         storage.put(view.inAppMessage, expireAt)
         view.close()
-    }
-
-    companion object {
-        private const val DEFAULT_HIDDEN_DURATION_MILLIS: Long = 1000 * 60 * 60 * 24 // 24H
     }
 }
 

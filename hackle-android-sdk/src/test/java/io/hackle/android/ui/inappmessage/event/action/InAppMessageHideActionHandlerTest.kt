@@ -16,8 +16,7 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isFalse
-import strikt.assertions.isTrue
+import strikt.assertions.isEqualTo
 
 
 internal class InAppMessageHideActionHandlerTest {
@@ -38,8 +37,9 @@ internal class InAppMessageHideActionHandlerTest {
 
     @Test
     fun `supports`() {
-        expectThat(sut.supports(InAppMessages.action(type = InAppMessage.ActionType.CLOSE))).isFalse()
-        expectThat(sut.supports(InAppMessages.action(type = InAppMessage.ActionType.HIDDEN))).isTrue()
+        for (actionType in InAppMessage.ActionType.values()) {
+            expectThat(sut.supports(InAppMessages.action(type = actionType))).isEqualTo(actionType == InAppMessage.ActionType.HIDDEN)
+        }
     }
 
     @Test
