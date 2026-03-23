@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.AttributeSet
 import android.webkit.WebView
 import androidx.annotation.RequiresApi
+import androidx.webkit.WebViewAssetLoader
 import io.hackle.android.Hackle
 import io.hackle.android.R
 import io.hackle.android.app
@@ -18,14 +19,7 @@ import io.hackle.android.ui.core.evaluate
 import io.hackle.android.ui.core.setFocusableInTouchModeAndRequestFocus
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
-import io.hackle.android.ui.inappmessage.view.InAppMessageAnimator
-import io.hackle.android.ui.inappmessage.view.InAppMessageBaseView
-import io.hackle.android.ui.inappmessage.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.view.InAppMessageViewJavascriptInterface
-import io.hackle.android.ui.inappmessage.view.InAppMessageWebView
-import io.hackle.android.ui.inappmessage.view.InAppMessageWebViewClient
-import io.hackle.android.ui.inappmessage.view.handle
-import io.hackle.android.ui.inappmessage.view.message
+import io.hackle.android.ui.inappmessage.view.*
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 
@@ -58,15 +52,20 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     private var _bridgeScript: InAppMessageHtmlBridgeUserScript? = null
     private val bridgeScript get() = requireNotNull(_bridgeScript) { "InAppMessageHtmlBridgeScript is not set on InAppMessageHtmlView." }
 
+    private var _assetLoader: WebViewAssetLoader? = null
+    private val assetLoader get() = requireNotNull(_assetLoader) { "WebViewAssetLoader is not set on InAppMessageHtmlView." }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onConfigure(listener: InAppMessageView.ReadyListener) {
 
         // WebViewClient
         val pageListener = HtmlPageListener(listener)
-        val webViewClient = InAppMessageWebViewClient(pageListener)
+        val webViewClient = InAppMessageWebViewClient(assetLoader, pageListener)
+        val webChromeClient = InAppMessageWebChromeClient()
 
         // WebView
         webView.webViewClient = webViewClient
+        webView.webChromeClient = webChromeClient
         webView.setBackgroundColor(Color.TRANSPARENT)
         webView.settings.javaScriptEnabled = true
         webView.settings.useWideViewPort = true
@@ -105,7 +104,6 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     }
 
     override fun afterInAppMessageClose() {
-        log.debug { "InAppMessageHtmlView.afterInAppMessageClose()" }
         webView.loadUrl("about:blank")
         webView.removeAllViews()
     }
@@ -143,12 +141,14 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         fun create(
             activity: Activity,
             bridgeScript: InAppMessageHtmlBridgeUserScript,
+            assetLoader: WebViewAssetLoader,
             contentResolverFactory: InAppMessageHtmlContentResolverFactory,
         ): InAppMessageHtmlView {
             val view = activity.layoutInflater.inflate(R.layout.hackle_iam_html, null)
             return (view as InAppMessageHtmlView).also {
                 it._contentResolverFactory = contentResolverFactory
                 it._bridgeScript = bridgeScript
+                it._assetLoader = assetLoader
             }
         }
     }

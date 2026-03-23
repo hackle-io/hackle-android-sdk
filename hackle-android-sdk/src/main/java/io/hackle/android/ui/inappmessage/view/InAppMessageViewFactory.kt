@@ -2,6 +2,7 @@ package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.os.Build
+import androidx.webkit.WebViewAssetLoader
 import io.hackle.android.Hackle
 import io.hackle.android.app
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
@@ -13,14 +14,11 @@ import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlView
 import io.hackle.android.ui.inappmessage.view.modal.InAppMessageModalView
 import io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetView
 import io.hackle.sdk.core.model.InAppMessage
-import io.hackle.sdk.core.model.InAppMessage.LayoutType.IMAGE
-import io.hackle.sdk.core.model.InAppMessage.LayoutType.IMAGE_ONLY
-import io.hackle.sdk.core.model.InAppMessage.LayoutType.IMAGE_TEXT
-import io.hackle.sdk.core.model.InAppMessage.LayoutType.NONE
-import io.hackle.sdk.core.model.InAppMessage.LayoutType.TEXT_ONLY
+import io.hackle.sdk.core.model.InAppMessage.LayoutType.*
 
 internal class InAppMessageViewFactory(
     private val htmlContentResolverFactory: InAppMessageHtmlContentResolverFactory,
+    private val assetLoader: WebViewAssetLoader,
 ) {
 
     fun create(context: InAppMessagePresentationContext, activity: Activity): InAppMessageBaseView {
@@ -47,7 +45,7 @@ internal class InAppMessageViewFactory(
     private fun createHtmlView(activity: Activity): InAppMessageHtmlView {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             val bridgeScript = InAppMessageHtmlBridgeUserScript.create(Hackle.app.config)
-            return InAppMessageHtmlView.create(activity, bridgeScript, htmlContentResolverFactory)
+            return InAppMessageHtmlView.create(activity, bridgeScript, assetLoader, htmlContentResolverFactory)
         }
 
         throw IllegalStateException("InAppMessageHtmlView required API 17+ (current: ${Build.VERSION.SDK_INT})")

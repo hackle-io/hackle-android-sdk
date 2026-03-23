@@ -90,6 +90,7 @@ import io.hackle.android.ui.inappmessage.event.action.*
 import io.hackle.android.ui.inappmessage.event.track.InAppMessageEventTracker
 import io.hackle.android.ui.inappmessage.event.track.InAppMessageViewEventTrackHandler
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.view.InAppMessageWebView
 import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlContentResolverFactory
 import io.hackle.android.ui.inappmessage.view.html.PathInAppMessageHtmlContentResolver
 import io.hackle.android.ui.inappmessage.view.html.TextInAppMessageHtmlContentResolver
@@ -418,7 +419,11 @@ internal object HackleApps {
                 PathInAppMessageHtmlContentResolver(httpClient)
             )
         )
-        val inAppMessageViewFactory = InAppMessageViewFactory(inAppMessageHtmlContentResolverFactory)
+        val inAppMessageAssetLoader = InAppMessageWebView.createAssetLoader(context)
+        val inAppMessageViewFactory = InAppMessageViewFactory(
+            htmlContentResolverFactory = inAppMessageHtmlContentResolverFactory,
+            assetLoader = inAppMessageAssetLoader
+        )
         val inAppMessageUi = InAppMessageUi.create(
             activityProvider = activityLifecycleManager,
             messageControllerFactory = InAppMessageControllerFactory(inAppMessageViewFactory),
