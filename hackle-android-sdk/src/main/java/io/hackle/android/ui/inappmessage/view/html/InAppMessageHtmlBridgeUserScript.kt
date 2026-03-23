@@ -2,6 +2,7 @@ package io.hackle.android.ui.inappmessage.view.html
 
 import io.hackle.android.HackleConfig
 import io.hackle.android.ui.core.WebViewUserScript
+import io.hackle.android.ui.inappmessage.view.InAppMessageWebView.Companion.ASSET_LOADER_BASE_URL
 
 internal class InAppMessageHtmlBridgeUserScript(private val url: String) : WebViewUserScript {
 
@@ -20,10 +21,9 @@ internal class InAppMessageHtmlBridgeUserScript(private val url: String) : WebVi
         }
 
     companion object {
-
         private const val JAVASCRIPT_SDK_URL_KEY = "\$javascript_sdk_url"
-        private const val DEFAULT_JAVASCRIPT_SDK_URL =
-            "https://cdn2.hackle.io/npm/@hackler/javascript-sdk@11.5.0/lib/index.browser.umd.min.js"
+        private const val JAVASCRIPT_SDK_ASSET = "hackle-javascript-sdk-11.55.0.min.js"
+        private const val DEFAULT_JAVASCRIPT_SDK_URL = "$ASSET_LOADER_BASE_URL/$JAVASCRIPT_SDK_ASSET"
 
         fun create(config: HackleConfig): InAppMessageHtmlBridgeUserScript {
             val url = config[JAVASCRIPT_SDK_URL_KEY] ?: DEFAULT_JAVASCRIPT_SDK_URL
