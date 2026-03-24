@@ -2,21 +2,13 @@ package io.hackle.android.internal.invocator.invocation.handlers
 
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.invocator.checkParameterNotNull
-import io.hackle.android.internal.invocator.deviceId
-import io.hackle.android.internal.invocator.hackleSubscriptionOperationDto
+import io.hackle.android.internal.invocator.*
 import io.hackle.android.internal.invocator.invocation.InvocationHandler
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.invocator.invocation.InvocationResponse
-import io.hackle.android.internal.invocator.key
 import io.hackle.android.internal.invocator.model.UserDto
 import io.hackle.android.internal.invocator.model.from
 import io.hackle.android.internal.invocator.model.toDto
-import io.hackle.android.internal.invocator.phoneNumber
-import io.hackle.android.internal.invocator.propertyOperationDto
-import io.hackle.android.internal.invocator.userAsMap
-import io.hackle.android.internal.invocator.userId
-import io.hackle.android.internal.invocator.value
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations

@@ -313,7 +313,7 @@ class HackleApp internal constructor(
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                    "JavaScript can use reflection to manipulate application"
+                        "JavaScript can use reflection to manipulate application"
             )
         }
         val javascriptInterface = HackleJavascriptInterface(this, webViewConfig)
