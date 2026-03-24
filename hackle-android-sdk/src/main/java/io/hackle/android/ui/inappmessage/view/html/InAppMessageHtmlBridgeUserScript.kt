@@ -22,7 +22,7 @@ internal class InAppMessageHtmlBridgeUserScript(private val url: String) : WebVi
 
     companion object {
         private const val JAVASCRIPT_SDK_URL_KEY = "\$javascript_sdk_url"
-        private const val JAVASCRIPT_SDK_ASSET = "hackle-javascript-sdk-11.55.0.min.js"
+        const val JAVASCRIPT_SDK_ASSET = "hackle-javascript-sdk-11.55.0.min.js"
         private const val DEFAULT_JAVASCRIPT_SDK_URL = "$ASSET_LOADER_BASE_URL/$JAVASCRIPT_SDK_ASSET"
 
         fun create(config: HackleConfig): InAppMessageHtmlBridgeUserScript {
