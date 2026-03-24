@@ -378,8 +378,8 @@ class HackleApp internal constructor(
      * will be blocked. When switching from opt-in to opt-out, a best-effort flush of any
      * pending events will be attempted before blocking begins.
      *
-     * Once opt-out is enabled, it persists across app restarts and can only be disabled
-     * by calling this method with false.
+     * This setting is not persisted across app restarts.
+     * On each launch, the opt-out state is determined solely by [HackleConfig.optOutTracking].
      *
      * @param optOut true to opt out of all event tracking, false to opt back in
      */

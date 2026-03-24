@@ -36,6 +36,7 @@ class InvocationHandlerFactoryTest {
                     InvocationCommand.REMOTE_CONFIG -> isA<RemoteConfigInvocationHandler>()
                     InvocationCommand.SET_CURRENT_SCREEN -> isA<SetCurrentScreenInvocationHandler>()
                     InvocationCommand.SET_OPT_OUT_TRACKING -> isA<SetOptOutTrackingInvocationHandler>()
+                    InvocationCommand.IS_OPT_OUT_TRACKING -> isA<IsOptOutTrackingInvocationHandler>()
                     InvocationCommand.SHOW_USER_EXPLORER -> isA<ShowUserExplorerInvocationHandler>()
                     InvocationCommand.HIDE_USER_EXPLORER -> isA<HideUserExplorerInvocationHandler>()
                     InvocationCommand.GET_CURRENT_IN_APP_MESSAGE_VIEW -> isA<GetCurrentInAppMessageViewInvocationHandler>()

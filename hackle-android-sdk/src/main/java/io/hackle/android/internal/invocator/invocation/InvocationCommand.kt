@@ -51,6 +51,7 @@ internal enum class InvocationCommand(val command: String) {
 
     // Configuration
     SET_OPT_OUT_TRACKING("setOptOutTracking"),
+    IS_OPT_OUT_TRACKING("isOptOutTracking"),
 
     // DevTools
     SHOW_USER_EXPLORER("showUserExplorer"),

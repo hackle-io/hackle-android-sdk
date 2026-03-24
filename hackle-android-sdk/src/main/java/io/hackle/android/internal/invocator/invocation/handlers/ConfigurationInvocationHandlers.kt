@@ -16,3 +16,9 @@ internal class SetOptOutTrackingInvocationHandler(private val core: HackleAppCor
         return InvocationResponse.success()
     }
 }
+
+internal class IsOptOutTrackingInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Boolean> {
+    override fun invoke(request: InvocationRequest): InvocationResponse<Boolean> {
+        return InvocationResponse.success(core.isOptOutTracking)
+    }
+}
