@@ -1,0 +1,57 @@
+package io.hackle.android.ui.inappmessage.event.track
+
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
+import io.hackle.sdk.common.Event
+import io.hackle.sdk.core.HackleCore
+
+internal class InAppMessageEventTracker(private val core: HackleCore) {
+
+    fun track(context: InAppMessagePresentationContext, event: InAppMessageViewEvent) {
+        val trackEvent = event.toTrackEvent(context)
+        core.track(trackEvent, context.user, event.timestamp)
+    }
+}
+
+internal fun InAppMessageViewEvent.toTrackEvent(context: InAppMessagePresentationContext): Event {
+    return when (this) {
+        is InAppMessageViewEvent.Impression ->
+            Event.builder("\$in_app_impression")
+                .properties(context)
+                .property("title_text", context.message.text?.title?.text)
+                .property("body_text", context.message.text?.body?.text)
+                .property("button_text", context.message.buttons.map { it.text })
+                .property("image_url", context.message.images.map { it.imagePath })
+                .build()
+
+        is InAppMessageViewEvent.ImageImpression ->
+            Event.builder("\$in_app_image_impression")
+                .properties(context)
+                .property("image_url", image.imagePath)
+                .property("image_order", order)
+                .build()
+
+        is InAppMessageViewEvent.Close -> Event.builder("\$in_app_close")
+            .properties(context)
+            .build()
+
+        is InAppMessageViewEvent.Action -> Event.builder("\$in_app_action")
+            .properties(context)
+            .property("action_type", action.actionType.name)
+            .property("action_area", area?.name)
+            .property("action_value", action.value)
+            .property("button_text", button?.text)
+            .property("image_url", image?.imagePath)
+            .property("image_order", imageOrder)
+            .property("element_id", elementId)
+            .build()
+    }
+}
+
+private fun Event.Builder.properties(context: InAppMessagePresentationContext) = apply {
+    properties(context.properties)
+    property("in_app_message_id", context.inAppMessage.id)
+    property("in_app_message_key", context.inAppMessage.key)
+    property("in_app_message_display_type", context.message.layout.displayType.name)
+    property("decision_reason", context.decisionReason.name)
+}

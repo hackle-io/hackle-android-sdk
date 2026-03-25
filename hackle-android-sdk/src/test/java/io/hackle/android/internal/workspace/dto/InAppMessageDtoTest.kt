@@ -4,6 +4,7 @@ import io.hackle.sdk.core.model.DayOfWeek
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionType.*
 import io.hackle.sdk.core.model.InAppMessage.Behavior.CLICK
+import io.hackle.sdk.core.model.InAppMessage.DisplayType.HTML
 import io.hackle.sdk.core.model.InAppMessage.DisplayType.MODAL
 import io.hackle.sdk.core.model.InAppMessage.LayoutType.IMAGE_ONLY
 import io.hackle.sdk.core.model.InAppMessage.Message.Alignment.Horizontal.LEFT
@@ -20,6 +21,7 @@ import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 
 internal class InAppMessageDtoTest {
 
@@ -246,5 +248,27 @@ internal class InAppMessageDtoTest {
             get { slots[5].dayOfWeek } isEqualTo DayOfWeek.SATURDAY
             get { slots[6].dayOfWeek } isEqualTo DayOfWeek.SUNDAY
         }
+    }
+
+    @Test
+    fun `HTML displayType with null html should be excluded from workspace`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(11)
+
+        expectThat(iam).isNull()
+    }
+
+    @Test
+    fun `HTML displayType with valid html should be included in workspace`() {
+        val workspace = ResourcesWorkspaceFetcher("iam.json").fetch()
+
+        val iam = workspace.getInAppMessageOrNull(12)!!
+
+        expectThat(iam.messageContext.messages[0].layout.displayType).isEqualTo(HTML)
+        expectThat(iam.messageContext.messages[0].html).isNotNull()
+            .isA<InAppMessage.Message.Html.TextHtml>().and {
+                get { text } isEqualTo "<h1>Hello</h1>"
+            }
     }
 }

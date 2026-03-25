@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageView
+    <io.hackle.android.ui.inappmessage.view.InAppMessageImageView
         android:id="@+id/hackle_iam_image_item_image_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

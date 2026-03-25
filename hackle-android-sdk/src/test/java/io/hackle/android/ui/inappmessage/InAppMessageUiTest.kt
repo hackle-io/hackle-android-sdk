@@ -6,17 +6,20 @@ import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.core.ImageLoader
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleProcessor
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.Before
 import org.junit.Test
+import strikt.api.expectThat
+import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 import java.util.concurrent.CyclicBarrier
 import kotlin.concurrent.thread
 
@@ -32,10 +35,13 @@ class InAppMessageUiTest {
     private lateinit var defaultListener: HackleInAppMessageListener
 
     @RelaxedMockK
+    private lateinit var clock: Clock
+
+    @RelaxedMockK
     private lateinit var scheduler: Scheduler
 
     @RelaxedMockK
-    private lateinit var eventHandler: InAppMessageEventHandler
+    private lateinit var eventHandleProcessor: InAppMessageViewEventHandleProcessor
 
     @RelaxedMockK
     private lateinit var imageLoader: ImageLoader
@@ -45,6 +51,7 @@ class InAppMessageUiTest {
 
     private lateinit var activity: Activity
     private lateinit var controller: InAppMessageController
+    private lateinit var view: InAppMessageView
 
     @Before
     fun before() {
@@ -55,7 +62,9 @@ class InAppMessageUiTest {
         activity = mockk {
             every { orientation } returns InAppMessage.Orientation.VERTICAL
         }
-        controller = mockk(relaxUnitFun = true)
+        controller = mockk(relaxed = true)
+        view = mockk(relaxed = true)
+        every { controller.view } returns view
 
         every { activityProvider.currentActivity } returns activity
         every { messageControllerFactory.create(any(), any(), any()) } returns controller
@@ -173,32 +182,14 @@ class InAppMessageUiTest {
     }
 
     @Test
-    fun `when InAppMessageActivity destroyed then do not close`() {
+    fun `when controller view activity is null then do close`() {
         // given
         val context = InAppMessages.context()
         sut.present(context)
-        val inAppMessageActivity = mockk<InAppMessageActivity>()
-        val layout = mockk<InAppMessageLayout> {
-            every { this@mockk.activity } returns inAppMessageActivity
-        }
-        every { controller.layout } returns layout
-
-        // when
-        sut.onLifecycle(ActivityLifecycle.DESTROYED, inAppMessageActivity, System.currentTimeMillis())
-
-        // then
-        verify(exactly = 0) { controller.close(any()) }
-    }
-
-    @Test
-    fun `when controller layout activity is null then do close`() {
-        // given
-        val context = InAppMessages.context()
-        sut.present(context)
-        val layout = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { this@mockk.activity } returns null
         }
-        every { controller.layout } returns layout
+        every { controller.view } returns view
 
         // when
         sut.onLifecycle(ActivityLifecycle.DESTROYED, activity, System.currentTimeMillis())
@@ -208,15 +199,15 @@ class InAppMessageUiTest {
     }
 
     @Test
-    fun `when controller layout activity is this activity then do close`() {
+    fun `when controller view activity is this activity then do close`() {
         // given
         val context = InAppMessages.context()
         val mockkActivity = mockk<Activity>()
         sut.present(context)
-        val layout = mockk<InAppMessageLayout> {
+        val view = mockk<InAppMessageView> {
             every { this@mockk.activity } returns mockkActivity
         }
-        every { controller.layout } returns layout
+        every { controller.view } returns view
 
         // when
         sut.onLifecycle(ActivityLifecycle.DESTROYED, mockkActivity, System.currentTimeMillis())
@@ -234,5 +225,34 @@ class InAppMessageUiTest {
 
         // then
         verify(exactly = 0) { controller.close(any()) }
+    }
+
+    @Test
+    fun `currentView`() {
+        val context = InAppMessages.context()
+
+        expectThat(sut.currentView).isNull()
+
+        sut.present(context)
+        expectThat(sut.currentView).isNotNull()
+
+        sut.closeCurrent()
+        expectThat(sut.currentView).isNull()
+    }
+
+
+    @Test
+    fun `getView`() {
+        val context = InAppMessages.context()
+        every { view.id } returns "view1"
+
+        expectThat(sut.getView("view1")).isNull()
+
+        sut.present(context)
+        expectThat(sut.getView("view1")).isNotNull()
+        expectThat(sut.getView("view2")).isNull()
+
+        sut.closeCurrent()
+        expectThat(sut.getView("view1")).isNull()
     }
 }
