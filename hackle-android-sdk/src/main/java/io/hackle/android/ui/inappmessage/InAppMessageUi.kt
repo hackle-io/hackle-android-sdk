@@ -9,11 +9,13 @@ import io.hackle.android.internal.inappmessage.present.presentation.InAppMessage
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleProcessor
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -29,13 +31,14 @@ internal class InAppMessageUi(
     private val activityProvider: ActivityProvider,
     private val messageControllerFactory: InAppMessageControllerFactory,
     private val defaultListener: HackleInAppMessageListener,
+    val clock: Clock,
     val scheduler: Scheduler,
-    val eventHandler: InAppMessageEventHandler,
+    val eventHandleProcessor: InAppMessageViewEventHandleProcessor,
     val imageLoader: ImageLoader,
-) : InAppMessagePresenter, ActivityLifecycleListener {
+) : InAppMessagePresenter, InAppMessageViewProvider, ActivityLifecycleListener {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()
-    val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
+    private val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
 
     private var customListener: HackleInAppMessageListener? = null
     val listener get() = customListener ?: defaultListener
@@ -44,6 +47,13 @@ internal class InAppMessageUi(
     val isBackButtonDismisses get() = _isBackButtonDismisses
 
     private val opening = AtomicBoolean(false)
+
+    override val currentView: InAppMessageView? get() = currentMessageController?.view
+
+    override fun getView(id: String): InAppMessageView? {
+        val view = currentView ?: return null
+        return if (view.id == id) view else null
+    }
 
     override fun present(context: InAppMessagePresentationContext) {
         runOnUiThread {
@@ -117,8 +127,9 @@ internal class InAppMessageUi(
         fun create(
             activityProvider: ActivityProvider,
             messageControllerFactory: InAppMessageControllerFactory,
+            clock: Clock,
             scheduler: Scheduler,
-            eventHandler: InAppMessageEventHandler,
+            eventProcessor: InAppMessageViewEventHandleProcessor,
             imageLoader: ImageLoader,
         ): InAppMessageUi {
             return INSTANCE
@@ -126,8 +137,9 @@ internal class InAppMessageUi(
                     activityProvider,
                     messageControllerFactory,
                     DefaultInAppMessageListener,
+                    clock,
                     scheduler,
-                    eventHandler,
+                    eventProcessor,
                     imageLoader
                 ).also { INSTANCE = it }
         }

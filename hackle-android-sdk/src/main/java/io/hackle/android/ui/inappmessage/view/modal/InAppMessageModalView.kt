@@ -57,7 +57,7 @@ internal class InAppMessageModalView @JvmOverloads constructor(
     override val closeAnimator: InAppMessageAnimator get() = InAppMessageAnimator.of(this, Animations.fadeOut(100))
 
     // Configuration
-    override fun configure() {
+    override fun onConfigure(listener: InAppMessageView.ReadyListener) {
         val configuration = configuration
 
         // FrameView (outside of modal)
@@ -119,6 +119,8 @@ internal class InAppMessageModalView @JvmOverloads constructor(
         } else {
             closeButtonView.visibility = View.GONE
         }
+
+        listener.onReady()
     }
 
     private class Configuration(

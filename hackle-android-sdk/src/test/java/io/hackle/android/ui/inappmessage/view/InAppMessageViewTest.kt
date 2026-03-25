@@ -5,7 +5,10 @@ import android.view.KeyEvent
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 
@@ -21,12 +24,12 @@ class InAppMessageViewTest {
         activity = mockk(relaxed = true)
         controller = mockk(relaxed = true)
         context = InAppMessages.context()
-        
+
         view = TestInAppMessageView(activity)
         view.setController(controller)
         view.setPresentationContext(context)
         view.setActivity(activity)
-        
+
         mockkObject(InAppMessageUi)
         every { InAppMessageUi.instance } returns mockk(relaxed = true)
     }
@@ -74,6 +77,6 @@ class InAppMessageViewTest {
     private class TestInAppMessageView(context: android.content.Context) : InAppMessageBaseView(context) {
         override val openAnimator: InAppMessageAnimator? = null
         override val closeAnimator: InAppMessageAnimator? = null
-        override fun configure() {}
+        override fun onConfigure(listener: InAppMessageView.ReadyListener) {}
     }
 }

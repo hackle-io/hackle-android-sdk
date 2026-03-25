@@ -19,15 +19,18 @@ internal class InvocationResponse<out T> private constructor(
 
     companion object {
 
-        private val SUCCESS = InvocationResponse<Unit>(isSuccess = true, message = "OK", data = null)
+        private val SUCCESS = InvocationResponse<Any>(isSuccess = true, message = "OK", data = null)
 
-        fun success(): InvocationResponse<Unit> = SUCCESS
+        fun <T> success(): InvocationResponse<T> {
+            @Suppress("UNCHECKED_CAST")
+            return SUCCESS as InvocationResponse<T>
+        }
 
         fun <T> success(data: T): InvocationResponse<T> {
             return InvocationResponse(isSuccess = true, message = "OK", data = data)
         }
 
-        fun failed(e: Throwable): InvocationResponse<Nothing> {
+        fun failed(e: Throwable): InvocationResponse<Any> {
             return InvocationResponse(isSuccess = false, message = e.message ?: "FAIL", data = null)
         }
     }

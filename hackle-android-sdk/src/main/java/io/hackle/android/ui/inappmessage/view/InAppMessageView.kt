@@ -2,13 +2,16 @@ package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewGroup
+import android.view.ViewParent
 import androidx.core.view.children
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.ui.inappmessage.InAppMessageController
 import io.hackle.android.ui.inappmessage.InAppMessageLifecycle
-import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType.ACTION
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType.TRACK
 import io.hackle.android.ui.inappmessage.handle
 import io.hackle.sdk.common.HackleInAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
@@ -16,7 +19,12 @@ import io.hackle.sdk.core.model.InAppMessage
 /**
  * Base view interface for [InAppMessage].
  */
-internal interface InAppMessageView : HackleInAppMessageView {
+internal interface InAppMessageView : InAppMessageViewAware, HackleInAppMessageView {
+
+    /**
+     * The unique identifier of this view.
+     */
+    val id: String
 
     /**
      * The current state of the [InAppMessageView]
@@ -39,7 +47,19 @@ internal interface InAppMessageView : HackleInAppMessageView {
     val activity: Activity?
 
     /**
-     * Publishes the lifecycle event to child views.
+     * The [InAppMessage] displayed by this view.
+     */
+    override val inAppMessage: InAppMessage get() = presentationContext.inAppMessage
+
+    /**
+     * Sets up the view with message content and calls [ReadyListener.onReady] when ready to show.
+     */
+    fun configure(listener: ReadyListener)
+
+    /**
+     * Publishes the lifecycle event and propagates it to child views that implement [LifecycleListener].
+     *
+     * @see publishInAppMessageLifecycle
      */
     fun publish(lifecycle: InAppMessageLifecycle)
 
@@ -50,10 +70,37 @@ internal interface InAppMessageView : HackleInAppMessageView {
         controller.close()
     }
 
+    /**
+     * Lifecycle state of the [InAppMessageView].
+     *
+     * State moves in one direction only and cannot go back.
+     *
+     * ```
+     * ┌─────────┐ open()  ┌─────────┐            ┌────────┐ close()   ┌────────┐
+     * │ CREATED │ ------> │ OPENING │ ---------> │ OPENED │ --------> │ CLOSED │
+     * └─────────┘         └─────────┘ onReady()  └────────┘           └────────┘
+     *                         |           ^
+     *                         v           |
+     *                    configure() -----┘
+     * ```
+     */
     enum class State {
-        OPENED, CLOSED
+        CREATED,
+        OPENING,
+        OPENED,
+        CLOSED
     }
 
+    /**
+     * Listener that is called when the view is ready to show.
+     */
+    fun interface ReadyListener {
+        fun onReady()
+    }
+
+    /**
+     * Handles lifecycle events propagated via [publish].
+     */
     interface LifecycleListener {
         fun beforeInAppMessageOpen() {}
         fun afterInAppMessageOpen() {}
@@ -83,32 +130,36 @@ internal fun InAppMessageView.LifecycleListener.onLifeCycle(lifecycle: InAppMess
     }
 }
 
-internal val InAppMessageView.inAppMessage: InAppMessage get() = presentationContext.inAppMessage
 internal val InAppMessageView.message: InAppMessage.Message get() = presentationContext.message
-
-internal fun InAppMessageView.handle(event: InAppMessageEvent) {
-    controller.handle(event)
-}
-
+internal val InAppMessageView.clock get() = controller.ui.clock
 internal val InAppMessageView.listener get() = controller.ui.listener
 
-internal fun InAppMessageView.createCloseListener(): OnClickListener {
-    return OnClickListener { close() }
+internal fun InAppMessageView.handle(
+    event: InAppMessageViewEvent,
+    types: List<InAppMessageViewEventHandleType> = listOf(TRACK, ACTION)
+) {
+    controller.handle(event, types)
 }
 
-internal fun InAppMessageView.createMessageClickListener(): OnClickListener {
-    return OnClickListener {
-        val action = message.action ?: return@OnClickListener
-        handle(InAppMessageEvent.messageAction(action))
-    }
+internal fun InAppMessageView.handle(event: InAppMessageViewEvent, type: InAppMessageViewEventHandleType) {
+    handle(event, listOf(type))
 }
 
-internal fun InAppMessageView.createImageClickListener(
-    image: InAppMessage.Message.Image,
-    order: Int?,
-): OnClickListener {
-    return OnClickListener {
-        val action = image.action ?: return@OnClickListener
-        handle(InAppMessageEvent.imageAction(action, image, order))
-    }
+
+internal interface InAppMessageViewAware {
+    val messageView: InAppMessageView?
+        get() {
+            if (this is InAppMessageView) {
+                return this
+            }
+
+            var current: ViewParent? = (this as? View)?.parent
+            while (current != null) {
+                if (current is InAppMessageView) {
+                    return current
+                }
+                current = current.parent
+            }
+            return null
+        }
 }

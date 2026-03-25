@@ -7,6 +7,11 @@ import io.hackle.sdk.common.User
 internal typealias HackleBrowserProperties = Map<String, Any>
 internal typealias InvocationParameters = Map<String, Any?>
 
+
+internal inline fun <reified T> checkParameterNotNull(value: T?, name: String): T {
+    return checkNotNull(value) { "parameters.$name must not be null." }
+}
+
 /**
  * 사용자 정보를 담은 [Map] 객체를 반환합니다.
  * @return [Map] 형태의 사용자 객체 또는 `null`
@@ -196,3 +201,9 @@ internal fun InvocationParameters.className(): String? = this["className"] as? S
  * @return opt-out 여부 또는 `null`
  */
 internal fun InvocationParameters.optOut(): Boolean? = this["optOut"] as? Boolean
+
+/**
+ * InAppMessageView의 id를 반환합니다
+ * @return InAppMessageView.id or `null`
+ */
+internal fun InvocationParameters.viewId(): String? = this["viewId"] as? String

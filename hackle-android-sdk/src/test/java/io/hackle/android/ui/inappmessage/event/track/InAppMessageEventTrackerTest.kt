@@ -1,6 +1,7 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.track
 
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvents
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.model.InAppMessage
@@ -49,7 +50,7 @@ class InAppMessageEventTrackerTest {
             properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
-        sut.track(context, InAppMessageEvent.Impression, 42)
+        sut.track(context, InAppMessageViewEvents.impression(42))
 
         verify(exactly = 1) {
             core.track(
@@ -98,7 +99,7 @@ class InAppMessageEventTrackerTest {
             properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
-        sut.track(context, InAppMessageEvent.Close, 42)
+        sut.track(context, InAppMessageViewEvents.close(42))
 
         verify(exactly = 1) {
             core.track(
@@ -144,7 +145,15 @@ class InAppMessageEventTrackerTest {
             properties = mapOf("\$trigger_event_insert_id" to "event_insert_id")
         )
 
-        sut.track(context, InAppMessageEvent.buttonAction(action, message.buttons[0]), 42)
+        sut.track(
+            context, InAppMessageViewEvents.action(
+                timestamp = 42,
+                action = action,
+                area = InAppMessage.ActionArea.BUTTON,
+                button = message.buttons[0],
+                elementId = "element-id"
+            )
+        )
 
         verify(exactly = 1) {
             core.track(
@@ -159,6 +168,7 @@ class InAppMessageEventTrackerTest {
                             "action_type" to "WEB_LINK",
                             "button_text" to "button_1",
                             "action_value" to "button_link_click",
+                            "element_id" to "element-id",
                             "decision_reason" to "OVERRIDDEN",
                             "\$trigger_event_insert_id" to "event_insert_id",
                         )

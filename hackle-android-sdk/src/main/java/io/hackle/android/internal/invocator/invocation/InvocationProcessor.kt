@@ -6,7 +6,7 @@ internal class InvocationProcessor(
     private val handlerFactory: InvocationHandlerFactory,
 ) {
 
-    fun process(request: InvocationRequest): InvocationResponse<*> {
+    fun process(request: InvocationRequest): InvocationResponse<Any> {
         return try {
             val handler = handlerFactory.get(request.command)
             handler.invoke(request)

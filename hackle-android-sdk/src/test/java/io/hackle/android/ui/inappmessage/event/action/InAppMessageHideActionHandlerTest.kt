@@ -1,4 +1,4 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.action
 
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHiddenStorage
 import io.hackle.android.support.InAppMessages
@@ -16,8 +16,7 @@ import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isFalse
-import strikt.assertions.isTrue
+import strikt.assertions.isEqualTo
 
 
 internal class InAppMessageHideActionHandlerTest {
@@ -38,15 +37,16 @@ internal class InAppMessageHideActionHandlerTest {
 
     @Test
     fun `supports`() {
-        expectThat(sut.supports(InAppMessages.action(type = InAppMessage.ActionType.CLOSE))).isFalse()
-        expectThat(sut.supports(InAppMessages.action(type = InAppMessage.ActionType.HIDDEN))).isTrue()
+        for (actionType in InAppMessage.ActionType.values()) {
+            expectThat(sut.supports(InAppMessages.action(type = actionType))).isEqualTo(actionType == InAppMessage.ActionType.HIDDEN)
+        }
     }
 
     @Test
-    fun `handle`() {
+    fun `handle - default`() {
         // given
         val context = InAppMessages.context()
-        val view = mockk<InAppMessageView>(relaxUnitFun = true) {
+        val view = mockk<InAppMessageView>(relaxed = true) {
             every { this@mockk.presentationContext } returns context
         }
         val action = InAppMessages.action(type = InAppMessage.ActionType.HIDDEN)
@@ -59,6 +59,30 @@ internal class InAppMessageHideActionHandlerTest {
         // then
         verify(exactly = 1) {
             storage.put(any(), (1000 * 60 * 60 * 24) + 42)
+        }
+        verify(exactly = 1) {
+            view.close()
+        }
+    }
+
+
+    @Test
+    fun `handle - custom`() {
+        // given
+        val context = InAppMessages.context()
+        val view = mockk<InAppMessageView>(relaxed = true) {
+            every { this@mockk.presentationContext } returns context
+        }
+        val action = InAppMessages.action(type = InAppMessage.ActionType.HIDDEN, value = "100")
+
+        every { clock.currentMillis() } returns 42
+
+        // when
+        sut.handle(view, action)
+
+        // then
+        verify(exactly = 1) {
+            storage.put(any(), 142)
         }
         verify(exactly = 1) {
             view.close()

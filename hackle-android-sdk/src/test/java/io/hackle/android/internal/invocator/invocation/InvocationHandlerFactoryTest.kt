@@ -1,6 +1,7 @@
 package io.hackle.android.internal.invocator.invocation
 
 import io.hackle.android.internal.invocator.invocation.handlers.*
+import io.hackle.sdk.core.internal.utils.safe
 import io.mockk.mockk
 import org.junit.Test
 import strikt.api.expectThat
@@ -38,7 +39,10 @@ class InvocationHandlerFactoryTest {
                     InvocationCommand.IS_OPT_OUT_TRACKING -> isA<IsOptOutTrackingInvocationHandler>()
                     InvocationCommand.SHOW_USER_EXPLORER -> isA<ShowUserExplorerInvocationHandler>()
                     InvocationCommand.HIDE_USER_EXPLORER -> isA<HideUserExplorerInvocationHandler>()
-                }
+                    InvocationCommand.GET_CURRENT_IN_APP_MESSAGE_VIEW -> isA<GetCurrentInAppMessageViewInvocationHandler>()
+                    InvocationCommand.CLOSE_IN_APP_MESSAGE_VIEW -> isA<CloseInAppMessageViewInvocationHandler>()
+                    InvocationCommand.HANDLE_IN_APP_MESSAGE_VIEW -> isA<HandleInAppMessageViewInvocationHandler>()
+                }.safe
             }
         }
     }

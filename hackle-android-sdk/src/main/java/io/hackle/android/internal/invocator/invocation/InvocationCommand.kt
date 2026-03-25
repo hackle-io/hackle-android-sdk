@@ -44,6 +44,11 @@ internal enum class InvocationCommand(val command: String) {
     // Screen
     SET_CURRENT_SCREEN("setCurrentScreen"),
 
+    // InAppMessage
+    GET_CURRENT_IN_APP_MESSAGE_VIEW("getCurrentInAppMessageView"),
+    CLOSE_IN_APP_MESSAGE_VIEW("closeInAppMessageView"),
+    HANDLE_IN_APP_MESSAGE_VIEW("handleInAppMessageView"),
+
     // Configuration
     SET_OPT_OUT_TRACKING("setOptOutTracking"),
     IS_OPT_OUT_TRACKING("isOptOutTracking"),

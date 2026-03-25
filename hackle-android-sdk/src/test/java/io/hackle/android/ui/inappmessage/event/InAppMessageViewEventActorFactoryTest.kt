@@ -1,5 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageViewEventActor
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageViewEventActorFactory
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -9,20 +11,20 @@ import strikt.assertions.isNotNull
 import strikt.assertions.isNull
 
 
-internal class InAppMessageEventProcessorFactoryTest {
+internal class InAppMessageViewEventActorFactoryTest {
 
     @Test
     fun `empty`() {
-        val sut = InAppMessageEventProcessorFactory(listOf())
-        expectThat(sut.get(InAppMessageEvent.Impression)).isNull()
+        val sut = InAppMessageViewEventActorFactory(listOf())
+        expectThat(sut.get(InAppMessageViewEvents.impression())).isNull()
     }
 
     @Test
     fun `find first supported processor`() {
-        val processor = mockk<InAppMessageEventProcessor<InAppMessageEvent>>()
+        val processor = mockk<InAppMessageViewEventActor<InAppMessageViewEvent>>()
         every { processor.supports(any()) } returnsMany listOf(false, false, true, false)
 
-        val sut = InAppMessageEventProcessorFactory(listOf(processor, processor, processor, processor))
+        val sut = InAppMessageViewEventActorFactory(listOf(processor, processor, processor, processor))
 
         expectThat(sut.get(mockk())).isNotNull()
         verify(exactly = 3) {

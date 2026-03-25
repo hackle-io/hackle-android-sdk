@@ -32,7 +32,7 @@ import java.io.Closeable
 class HackleApp internal constructor(
     private val hackleAppCore: HackleAppCore,
     internal val sdk: Sdk,
-    internal val mode: HackleAppMode,
+    internal val config: HackleConfig,
     internal val invocator: HackleInvocator,
 ) : Closeable {
     /**
@@ -55,6 +55,14 @@ class HackleApp internal constructor(
      * @return the current [User] instance
      */
     val user: User get() = hackleAppCore.user
+
+    /**
+     * Get displayed InAppMessage view.
+     *
+     * @return [HackleInAppMessageView],
+     *         null if there is no displayed InAppMessage
+     */
+    val displayedInAppMessageView: HackleInAppMessageView? get() = hackleAppCore.currentInAppMessageView
 
     /**
      * Whether opt-out tracking is currently enabled.
@@ -305,12 +313,11 @@ class HackleApp internal constructor(
         if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             throw IllegalStateException(
                 "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                    "JavaScript can use reflection to manipulate application"
+                        "JavaScript can use reflection to manipulate application"
             )
         }
-        val invocator = invocator()
-        val jsInterface = HackleJavascriptInterface(invocator, this.sdk, this.mode, webViewConfig)
-        webView.addJavascriptInterface(jsInterface, HackleJavascriptInterface.NAME)
+        val javascriptInterface = HackleJavascriptInterface(this, webViewConfig)
+        javascriptInterface.addTo(webView)
     }
 
     /**

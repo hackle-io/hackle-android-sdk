@@ -154,6 +154,7 @@ internal object InAppMessages {
             action = action,
             outerButtons = outerButtons,
             innerButtons = innerButtons,
+            html = null,
         )
     }
 

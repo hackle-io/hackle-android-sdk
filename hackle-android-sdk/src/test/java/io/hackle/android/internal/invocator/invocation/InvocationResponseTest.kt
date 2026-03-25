@@ -8,7 +8,7 @@ class InvocationResponseTest {
 
     @Test
     fun `success() - data 없는 성공 응답 JSON`() {
-        val json = InvocationResponse.success().toJsonString()
+        val json = InvocationResponse.success<Any>().toJsonString()
 
         expectThat(json).isEqualTo("""{"success":true,"message":"OK"}""")
     }

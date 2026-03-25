@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.hackle.android.R
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.hackle.android.ui.inappmessage.event.InAppMessageEvent
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.model.InAppMessage
@@ -192,7 +192,8 @@ internal class InAppMessageScrollImageView @JvmOverloads constructor(
             val image = images[index]
             val isFirstImpression = impressions.putIfAbsent(image, true) == null
             if (isFirstImpression) {
-                inAppMessageView.handle(InAppMessageEvent.ImageImpression(image, index + 1))
+                val event = InAppMessageViewEvent.imageImpression(inAppMessageView, image, index + 1)
+                inAppMessageView.handle(event)
             }
         }
     }

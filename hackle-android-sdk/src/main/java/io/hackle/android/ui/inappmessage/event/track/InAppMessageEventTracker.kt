@@ -1,20 +1,21 @@
-package io.hackle.android.ui.inappmessage.event
+package io.hackle.android.ui.inappmessage.event.track
 
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
 
 internal class InAppMessageEventTracker(private val core: HackleCore) {
 
-    fun track(context: InAppMessagePresentationContext, event: InAppMessageEvent, timestamp: Long) {
+    fun track(context: InAppMessagePresentationContext, event: InAppMessageViewEvent) {
         val trackEvent = event.toTrackEvent(context)
-        core.track(trackEvent, context.user, timestamp)
+        core.track(trackEvent, context.user, event.timestamp)
     }
 }
 
-internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationContext): Event {
+internal fun InAppMessageViewEvent.toTrackEvent(context: InAppMessagePresentationContext): Event {
     return when (this) {
-        is InAppMessageEvent.Impression ->
+        is InAppMessageViewEvent.Impression ->
             Event.builder("\$in_app_impression")
                 .properties(context)
                 .property("title_text", context.message.text?.title?.text)
@@ -23,25 +24,26 @@ internal fun InAppMessageEvent.toTrackEvent(context: InAppMessagePresentationCon
                 .property("image_url", context.message.images.map { it.imagePath })
                 .build()
 
-        is InAppMessageEvent.ImageImpression ->
+        is InAppMessageViewEvent.ImageImpression ->
             Event.builder("\$in_app_image_impression")
                 .properties(context)
                 .property("image_url", image.imagePath)
                 .property("image_order", order)
                 .build()
 
-        is InAppMessageEvent.Close -> Event.builder("\$in_app_close")
+        is InAppMessageViewEvent.Close -> Event.builder("\$in_app_close")
             .properties(context)
             .build()
 
-        is InAppMessageEvent.Action -> Event.builder("\$in_app_action")
+        is InAppMessageViewEvent.Action -> Event.builder("\$in_app_action")
             .properties(context)
             .property("action_type", action.actionType.name)
-            .property("action_area", area.name)
+            .property("action_area", area?.name)
             .property("action_value", action.value)
             .property("button_text", button?.text)
             .property("image_url", image?.imagePath)
             .property("image_order", imageOrder)
+            .property("element_id", elementId)
             .build()
     }
 }
