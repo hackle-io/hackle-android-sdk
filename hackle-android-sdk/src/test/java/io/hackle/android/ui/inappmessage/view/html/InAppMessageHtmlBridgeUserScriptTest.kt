@@ -1,9 +1,11 @@
 package io.hackle.android.ui.inappmessage.view.html
 
 import io.hackle.android.HackleConfig
+import io.hackle.android.internal.invocator.invocation.InvocationCommand
 import io.hackle.android.ui.inappmessage.view.InAppMessageWebView.Companion.ASSET_LOADER_BASE_URL
 import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlBridgeUserScript.Companion.BRIDGE_FUNCTION_NAME
 import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlBridgeUserScript.Companion.JAVASCRIPT_SDK_ASSET
+import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlBridgeUserScript.Companion.JAVASCRIPT_SDK_VERSION
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.contains
@@ -15,7 +17,7 @@ internal class InAppMessageHtmlBridgeUserScriptTest {
 
     @Test
     fun `JAVASCRIPT_SDK_ASSET - check fileName`() {
-        expectThat(JAVASCRIPT_SDK_ASSET).isEqualTo("hackle-javascript-sdk-11.55.0.min.js")
+        expectThat(JAVASCRIPT_SDK_ASSET).isEqualTo("hackle-javascript-sdk-$JAVASCRIPT_SDK_VERSION.min.js")
     }
 
     @Test
@@ -25,24 +27,39 @@ internal class InAppMessageHtmlBridgeUserScriptTest {
     }
 
     @Test
+    fun `JAVASCRIPT_SDK_ASSET - check script`() {
+        val jsFile = File("src/main/assets", JAVASCRIPT_SDK_ASSET)
+        val script = jsFile.readText()
+
+        // Check Javascript SDK Version
+        expectThat(script).contains(JAVASCRIPT_SDK_VERSION)
+
+        // Check bridge function
+        expectThat(script).contains(BRIDGE_FUNCTION_NAME)
+
+        // Check InvocationCommand
+        InvocationCommand.values()
+            .filter { it != InvocationCommand.SET_CURRENT_SCREEN } // Not supported yet
+            .forEach {
+                expectThat(script).contains(it.command)
+            }
+    }
+
+    @Test
     fun `BRIDGE_FUNCTION_NAME - check functionName`() {
         expectThat(BRIDGE_FUNCTION_NAME).isEqualTo("setAppWebViewInAppMessageBridge")
     }
 
-    @Test
-    fun `BRIDGE_FUNCTION_NAME - check js file`() {
-        val jsFile = File("src/main/assets", JAVASCRIPT_SDK_ASSET)
-        val jsContent = jsFile.readText()
-
-        expectThat(jsContent).contains(BRIDGE_FUNCTION_NAME)
-    }
 
     @Test
-    fun `BRIDGE_FUNCTION_NAME - check kotlin source`() {
+    fun `check inject source`() {
         val script = InAppMessageHtmlBridgeUserScript.create(HackleConfig.DEFAULT)
-        expectThat(script.source).contains(BRIDGE_FUNCTION_NAME)
+        expectThat(script.source) {
+            contains("document.createElement('script')")
+            contains("Hackle.$BRIDGE_FUNCTION_NAME()")
+            contains("document.head.appendChild(s)")
+        }
     }
-
 
     @Test
     fun `create - default`() {
@@ -64,18 +81,6 @@ internal class InAppMessageHtmlBridgeUserScriptTest {
         expectThat(sut.source) {
             contains(customUrl)
             not { contains(expectedDefaultUrl) }
-        }
-    }
-
-    @Test
-    fun `source contains script injection elements`() {
-        val sut = InAppMessageHtmlBridgeUserScript.create(HackleConfig.DEFAULT)
-        val source = sut.source
-
-        expectThat(source) {
-            contains("document.createElement('script')")
-            contains("Hackle.$BRIDGE_FUNCTION_NAME()")
-            contains("document.head.appendChild(s)")
         }
     }
 }
