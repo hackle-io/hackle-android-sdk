@@ -2,36 +2,24 @@ package io.hackle.android.internal.invocator
 
 import com.google.gson.GsonBuilder
 import io.hackle.android.internal.HackleAppCore
-import io.hackle.android.internal.invocator.model.Invocation
-import io.hackle.android.internal.invocator.model.InvokeResponse
-import io.hackle.android.internal.invocator.model.HackleBrowserProperties
 import io.hackle.android.internal.context.HackleAppContext
+import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
+import io.hackle.android.internal.invocator.invocation.InvocationProcessor
+import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.utils.json.parseJson
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.HackleRemoteConfig
-import io.hackle.sdk.common.ParameterConfig
-import io.hackle.sdk.common.PropertyOperation
-import io.hackle.sdk.common.Screen
-import io.hackle.sdk.common.User
-import io.hackle.sdk.common.Variation
+import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.core.model.ValueType
-import io.mockk.Called
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
+import io.mockk.*
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import kotlin.String
 
-@Suppress("DEPRECATION")
 class HackleInvocationTest {
 
     private lateinit var app: HackleAppCore
@@ -44,16 +32,20 @@ class HackleInvocationTest {
         "url" to "https://hackle.io"
     )
 
+    private data class InvokeResponse(val success: Boolean, val message: String, val data: Any?)
+
     @Before
     fun setup() {
         app = spyk(mockk<HackleAppCore>())
-        invocation = HackleInvocatorImpl(app)
+        val handlerFactory = InvocationHandlerFactory(app)
+        val processor = InvocationProcessor(handlerFactory)
+        invocation = HackleInvocatorImpl(processor)
     }
-    
+
     @Test
     fun `check invocable string test`() {
         val jsonString = createJsonString("getSessionId")
-        val result = Invocation.isInvocableString(jsonString)
+        val result = InvocationRequest.isInvocableString(jsonString)
         assertThat(result, `is`(true))
     }
 
@@ -63,7 +55,7 @@ class HackleInvocationTest {
         val validString = """{"_hackle":{"command":"foo"}}"""
 
         // When
-        val result = Invocation.isInvocableString(validString)
+        val result = InvocationRequest.isInvocableString(validString)
 
         // Then
         assertThat(result, `is`(true))
@@ -75,7 +67,7 @@ class HackleInvocationTest {
         val invalidString = """{"_hackle":{"command":""}}"""
 
         // When
-        val result = Invocation.isInvocableString(invalidString)
+        val result = InvocationRequest.isInvocableString(invalidString)
 
         // Then
         assertThat(result, `is`(false))
@@ -87,7 +79,7 @@ class HackleInvocationTest {
         val invalidString = """{"_hackle":""}"""
 
         // When
-        val result = Invocation.isInvocableString(invalidString)
+        val result = InvocationRequest.isInvocableString(invalidString)
 
         // Then
         assertThat(result, `is`(false))
@@ -99,7 +91,7 @@ class HackleInvocationTest {
         val invalidString = """{"_hackle":{}}"""
 
         // When
-        val result = Invocation.isInvocableString(invalidString)
+        val result = InvocationRequest.isInvocableString(invalidString)
 
         // Then
         assertThat(result, `is`(false))
@@ -111,7 +103,7 @@ class HackleInvocationTest {
         val invalidString = """{"something":{"command":""}}"""
 
         // When
-        val result = Invocation.isInvocableString(invalidString)
+        val result = InvocationRequest.isInvocableString(invalidString)
 
         // Then
         assertThat(result, `is`(false))
@@ -904,7 +896,7 @@ class HackleInvocationTest {
                     assertThat(it.properties["string"], `is`("text"))
                     val array = it.properties["array"] as ArrayList<*>
                     assertThat(array.size, `is`(2))
-                    assertThat(array[0], `is`(123.0))
+                    assertThat(array[0], `is`(123L))
                     assertThat(array[1], `is`("123"))
                 },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
@@ -1489,8 +1481,8 @@ class HackleInvocationTest {
                     assertThat(array[1], `is`("123"))
                 },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-                
-            )
+
+                )
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1730,8 +1722,8 @@ class HackleInvocationTest {
 
     private fun createJsonString(
         command: String,
-        parameters: HackleInvokeParameters? = null,
-        browserProperties: HackleBrowserProperties = defaultBrowserProperties
+        parameters: InvocationParameters? = null,
+        browserProperties: HackleBrowserProperties = defaultBrowserProperties,
     ): String {
         val map = mapOf<String, Any>(
             "_hackle" to mapOf(

@@ -1,5 +1,7 @@
 package io.hackle.android.ui.inappmessage.event
 
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageActionHandler
+import io.hackle.android.ui.inappmessage.event.action.InAppMessageActionHandlerFactory
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

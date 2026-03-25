@@ -1,15 +1,38 @@
 package io.hackle.android.internal.invocator.model
 
 import com.google.gson.annotations.SerializedName
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.PropertyOperation
-import io.hackle.sdk.common.PropertyOperations
-import io.hackle.sdk.common.User
+import io.hackle.android.internal.workspace.InAppMessageDto
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.core.internal.utils.enumValueOfOrNull
+
+internal data class InvocationRequestDto(
+    @SerializedName(KEY_HACKLE)
+    val hackle: HackleData?,
+) {
+    data class HackleData(
+
+        @SerializedName(KEY_COMMAND)
+        val command: String?,
+
+        @SerializedName(KEY_PARAMETERS)
+        val parameters: Map<String, Any?>?,
+
+        @SerializedName(KEY_BROWSER_PROPERTIES)
+        val browserProperties: Map<String, Any>?,
+    )
+
+    companion object {
+        const val KEY_HACKLE = "_hackle"
+        const val KEY_COMMAND = "command"
+        const val KEY_PARAMETERS = "parameters"
+        const val KEY_BROWSER_PROPERTIES = "browserProperties"
+    }
+}
 
 internal data class UserDto(
     @SerializedName(KEY_ID)
@@ -21,7 +44,7 @@ internal data class UserDto(
     @SerializedName(KEY_IDENTIFIERS)
     val identifiers: Map<String, String>,
     @SerializedName(KEY_PROPERTIES)
-    val properties: Map<String, Any>
+    val properties: Map<String, Any>,
 ) {
 
     companion object {
@@ -50,7 +73,7 @@ internal data class DecisionDto(
     @SerializedName("reason")
     val reason: String,
     @SerializedName("config")
-    val config: Map<String, Any>
+    val config: Map<String, Any>,
 )
 
 internal data class FeatureFlagDecisionDto(
@@ -59,7 +82,7 @@ internal data class FeatureFlagDecisionDto(
     @SerializedName("reason")
     val reason: String,
     @SerializedName("config")
-    val config: Map<String, Any>
+    val config: Map<String, Any>,
 )
 
 internal data class EventDto(
@@ -68,7 +91,7 @@ internal data class EventDto(
     @SerializedName(KEY_VALUE)
     val value: Double?,
     @SerializedName(KEY_PROPERTIES)
-    val properties: Map<String, Any>?
+    val properties: Map<String, Any>?,
 ) {
 
     companion object {
@@ -161,3 +184,45 @@ internal fun HackleSubscriptionOperations.Companion.from(dto: HackleSubscription
     }
     return builder.build()
 }
+
+internal class HackleInAppMessageDto(
+    @SerializedName("key")
+    val key: Long,
+)
+
+internal class HackleInAppMessageViewDto(
+    @SerializedName("id")
+    val id: String,
+    @SerializedName("inAppMessage")
+    val inAppMessage: HackleInAppMessageDto,
+)
+
+internal fun HackleInAppMessage.toDto(): HackleInAppMessageDto {
+    return HackleInAppMessageDto(
+        key = key
+    )
+}
+
+internal fun InAppMessageView.toDto(): HackleInAppMessageViewDto {
+    return HackleInAppMessageViewDto(
+        id = id,
+        inAppMessage = inAppMessage.toDto()
+    )
+}
+
+internal class HandleInAppMessageViewInvocationDto(
+    val viewId: String,
+    val handleTypes: List<String>,
+    val event: InAppMessageViewEventDto,
+)
+
+internal class InAppMessageViewEventDto(
+    val type: String,
+    val action: InAppMessageDto.MessageContextDto.ActionDto?,
+    val element: InAppMessageElementDto?
+)
+
+internal class InAppMessageElementDto(
+    val elementId: String?,
+    val area: String?,
+)

@@ -2,9 +2,12 @@ package io.hackle.android.internal.utils.json
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.ToNumberPolicy
 import com.google.gson.reflect.TypeToken
 
-private val GSON: Gson = GsonBuilder().create()
+private val GSON: Gson = GsonBuilder()
+    .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+    .create()
 
 internal inline fun <reified T> Gson.fromJson(json: String): T = fromJson(json, gsonTypeRef<T>().type)
 internal inline fun <reified T> String.parseJson(): T = GSON.fromJson(this)

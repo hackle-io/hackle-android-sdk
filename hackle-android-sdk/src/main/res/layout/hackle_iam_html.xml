@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:targetApi="17">
+
+    <io.hackle.android.ui.inappmessage.view.InAppMessageWebView
+        android:id="@+id/hackle_iam_html_webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlView>

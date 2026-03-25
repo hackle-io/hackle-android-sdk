@@ -322,10 +322,15 @@ internal fun InAppMessageDto.MessageContextDto.toMessageContextOrNull(): InAppMe
 }
 
 internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InAppMessage.Message? {
+    val layout = this.layout.toLayoutOrNull() ?: return null
+    val html = this.html?.toHtmlOrNull()
+    if (layout.displayType == InAppMessage.DisplayType.HTML && html == null) {
+        return null
+    }
     return InAppMessage.Message(
         variationKey = variationKey,
         lang = lang,
-        layout = layout.toLayoutOrNull() ?: return null,
+        layout = layout,
         images = images.map { it.toImageOrNull() ?: return null },
         imageAutoScroll = imageAutoScroll?.let { it.toImageAutoScrollOrNull() ?: return null },
         text = text?.toText(),
@@ -336,8 +341,17 @@ internal fun InAppMessageDto.MessageContextDto.MessageDto.toMessageOrNull(): InA
         ),
         action = action?.let { it.toActionOrNull() ?: return null },
         outerButtons = outerButtons.map { it.toPositionalButtonOrNull() ?: return null },
-        innerButtons = innerButtons.map { it.toPositionalButtonOrNull() ?: return null }
+        innerButtons = innerButtons.map { it.toPositionalButtonOrNull() ?: return null },
+        html = html
     )
+}
+
+internal fun InAppMessageDto.MessageContextDto.MessageDto.HtmlDto.toHtmlOrNull(): InAppMessage.Message.Html? {
+    val resourceType = parseEnumOrNull<InAppMessage.Message.Html.ResourceType>(resourceType) ?: return null
+    return when (resourceType) {
+        InAppMessage.Message.Html.ResourceType.TEXT -> InAppMessage.Message.Html.TextHtml(text = text ?: return null)
+        InAppMessage.Message.Html.ResourceType.PATH -> InAppMessage.Message.Html.PathHtml(path = path ?: return null)
+    }
 }
 
 internal fun InAppMessageDto.MessageContextDto.MessageDto.LayoutDto.toLayoutOrNull(): InAppMessage.Message.Layout? {

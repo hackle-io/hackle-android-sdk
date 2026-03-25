@@ -20,13 +20,13 @@ internal object DefaultInAppMessageListener : HackleInAppMessageListener {
     override fun onInAppMessageClick(
         inAppMessage: HackleInAppMessage,
         view: HackleInAppMessageView,
-        action: HackleInAppMessageAction
+        action: HackleInAppMessageAction,
     ): Boolean = false
 }
 
 internal fun HackleInAppMessageListener.onLifecycle(
     lifecycle: InAppMessageLifecycle,
-    inAppMessage: HackleInAppMessage
+    inAppMessage: HackleInAppMessage,
 ) {
     return when (lifecycle) {
         InAppMessageLifecycle.BEFORE_OPEN -> beforeInAppMessageOpen(inAppMessage)

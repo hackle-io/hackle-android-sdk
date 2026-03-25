@@ -1,11 +1,9 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import androidx.core.view.ViewCompat
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageView
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewController
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewController
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
 import io.hackle.sdk.core.model.InAppMessage.DisplayType.*
 
 internal class InAppMessageControllerFactory(
@@ -18,7 +16,7 @@ internal class InAppMessageControllerFactory(
     ): InAppMessageController? {
         return when (context.message.layout.displayType) {
             NONE -> null
-            MODAL, BANNER, BOTTOM_SHEET -> createViewController(context, ui, activity)
+            MODAL, BANNER, BOTTOM_SHEET, HTML -> createViewController(context, ui, activity)
         }
     }
 
@@ -28,20 +26,8 @@ internal class InAppMessageControllerFactory(
         activity: Activity,
     ): InAppMessageViewController {
         val view = viewFactory.create(context, activity)
-        val controller = InAppMessageViewController(view, context, ui)
+        val controller = InAppMessageViewController(view, ui)
         view.setController(controller)
-        setOnApplyWindowInsetsListener(view)
-
-        view.configure()
         return controller
-    }
-
-    // add margin when enableEdgeToEdge
-    // ref. https://developer.android.com/develop/ui/views/layout/edge-to-edge#system-bars-insets
-    private fun setOnApplyWindowInsetsListener(view: InAppMessageView) {
-        ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
-            (v as? InAppMessageView)?.onApplyWindowInsets(windowInsets)
-            windowInsets
-        }
     }
 }
