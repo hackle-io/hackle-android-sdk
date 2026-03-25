@@ -3,6 +3,11 @@ package io.hackle.android
 import android.content.Context
 import android.os.Build
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.application.ApplicationEventTracker
+import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
+import io.hackle.android.internal.application.install.ApplicationInstallStateManager
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.core.Ordered
 import io.hackle.android.internal.database.DatabaseHelper
 import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
@@ -40,11 +45,8 @@ import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageHidden
 import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
 import io.hackle.android.internal.inappmessage.trigger.*
 import io.hackle.android.internal.invocator.HackleInvocatorImpl
-import io.hackle.android.internal.application.ApplicationEventTracker
-import io.hackle.android.internal.application.install.ApplicationInstallDeterminer
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
-import io.hackle.android.internal.application.install.ApplicationInstallStateManager
-import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
+import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
+import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.log.AndroidLogger
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventDecorator
 import io.hackle.android.internal.mode.webview.WebViewWrapperUserEventFilter
@@ -81,8 +83,16 @@ import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage.Companion.create
 import io.hackle.android.ui.inappmessage.InAppMessageControllerFactory
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import io.hackle.android.ui.inappmessage.event.*
-import io.hackle.android.ui.inappmessage.layout.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleProcessor
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandlerFactory
+import io.hackle.android.ui.inappmessage.event.action.*
+import io.hackle.android.ui.inappmessage.event.track.InAppMessageEventTracker
+import io.hackle.android.ui.inappmessage.event.track.InAppMessageViewEventTrackHandler
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewFactory
+import io.hackle.android.ui.inappmessage.view.InAppMessageWebView
+import io.hackle.android.ui.inappmessage.view.html.InAppMessageHtmlContentResolverFactory
+import io.hackle.android.ui.inappmessage.view.html.PathInAppMessageHtmlContentResolver
+import io.hackle.android.ui.inappmessage.view.html.TextInAppMessageHtmlContentResolver
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.evaluation.EvaluationContext
@@ -380,24 +390,40 @@ internal object HackleApps {
                 InAppMessageHideActionHandler(inAppMessageHiddenStorage, clock)
             )
         )
-        val inAppMessageEventProcessorFactory = InAppMessageEventProcessorFactory(
-            processors = listOf(
-                InAppMessageImpressionEventProcessor(),
-                InAppMessageActionEventProcessor(inAppMessageActionHandlerFactory),
-                InAppMessageCloseEventProcessor()
+        val inAppMessageViewEventActorFactory = InAppMessageViewEventActorFactory(
+            actors = listOf(
+                InAppMessageViewImpressionEventActor(),
+                InAppMessageViewActionEventActor(inAppMessageActionHandlerFactory),
+                InAppMessageViewCloseEventActor()
             )
         )
-        val inAppMessageEventHandler = InAppMessageEventHandler(
-            clock = clock,
-            eventTracker = inAppMessageEventTracker,
-            processorFactory = inAppMessageEventProcessorFactory
+        val inAppMessageViewEventHandlerFactory = InAppMessageViewEventHandlerFactory(
+            handlers = listOf(
+                InAppMessageViewEventTrackHandler(inAppMessageEventTracker),
+                InAppMessageViewEventActionHandler(inAppMessageViewEventActorFactory),
+            )
+        )
+        val inAppMessageViewEventHandleProcessor = InAppMessageViewEventHandleProcessor(
+            handlerFactory = inAppMessageViewEventHandlerFactory,
         )
         val imageLoader = GlideImageLoader()
+        val inAppMessageHtmlContentResolverFactory = InAppMessageHtmlContentResolverFactory(
+            listOf(
+                TextInAppMessageHtmlContentResolver(),
+                PathInAppMessageHtmlContentResolver(httpClient)
+            )
+        )
+        val inAppMessageAssetLoader = InAppMessageWebView.createAssetLoader(context)
+        val inAppMessageViewFactory = InAppMessageViewFactory(
+            htmlContentResolverFactory = inAppMessageHtmlContentResolverFactory,
+            assetLoader = inAppMessageAssetLoader
+        )
         val inAppMessageUi = InAppMessageUi.create(
             activityProvider = activityLifecycleManager,
-            messageControllerFactory = InAppMessageControllerFactory(InAppMessageViewFactory()),
+            messageControllerFactory = InAppMessageControllerFactory(inAppMessageViewFactory),
+            clock = clock,
             scheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
-            eventHandler = inAppMessageEventHandler,
+            eventProcessor = inAppMessageViewEventHandleProcessor,
             imageLoader = imageLoader
         )
 
@@ -585,14 +611,17 @@ internal object HackleApps {
             applicationInstallStateManager = applicationInstallStateManager,
             userExplorer = userExplorer,
             optOutManager = optOutManager,
+            inAppMessageViewProvider = inAppMessageUi
         )
 
-        val hackleInvocator = HackleInvocatorImpl(hackleAppCore)
+        val handlerFactory = InvocationHandlerFactory(hackleAppCore)
+        val processor = InvocationProcessor(handlerFactory)
+        val hackleInvocator = HackleInvocatorImpl(processor)
 
         return HackleApp(
             hackleAppCore = hackleAppCore,
             sdk = sdk,
-            mode = config.mode,
+            config = config,
             invocator = hackleInvocator
         )
     }

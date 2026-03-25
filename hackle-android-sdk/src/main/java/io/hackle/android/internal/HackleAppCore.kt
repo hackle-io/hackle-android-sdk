@@ -4,14 +4,13 @@ import io.hackle.android.internal.application.install.ApplicationInstallStateMan
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
-import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.pii.PIIProperty
 import io.hackle.android.internal.pii.toSecuredEvent
+import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.push.token.PushTokenManager
-import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
@@ -20,13 +19,15 @@ import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.sdk.common.*
-import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.DecisionReason.EXCEPTION
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.decision.RemoteConfigDecision
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.metrics.Metrics
@@ -56,11 +57,13 @@ internal class HackleAppCore(
     private val applicationInstallStateManager: ApplicationInstallStateManager,
     private val userExplorer: HackleUserExplorer,
     private val optOutManager: OptOutManager,
+    private val inAppMessageViewProvider: InAppMessageViewProvider,
 ) : Closeable {
 
     val deviceId: String get() = device.id
     val sessionId: String get() = sessionManager.requiredSession.id
     val user: User get() = userManager.currentUser
+    val currentInAppMessageView: InAppMessageView? get() = inAppMessageViewProvider.currentView
     val isOptOutTracking: Boolean get() = optOutManager.isOptOutTracking
     val userExplorerService: HackleUserExplorerService get() = userExplorer.explorerService
 
@@ -82,6 +85,10 @@ internal class HackleAppCore(
                 onReady.run()
             }
         }
+    }
+
+    fun getInAppMessageView(viewId: String): InAppMessageView? {
+        return inAppMessageViewProvider.getView(viewId)
     }
 
     fun showUserExplorer() {
@@ -126,7 +133,7 @@ internal class HackleAppCore(
     fun updateUserProperties(
         operations: PropertyOperations,
         hackleAppContext: HackleAppContext,
-        callback: Runnable?
+        callback: Runnable?,
     ) {
         try {
             val event = operations.toEvent()
@@ -184,7 +191,7 @@ internal class HackleAppCore(
     fun setPhoneNumber(
         phoneNumber: String,
         hackleAppContext: HackleAppContext,
-        callback: Runnable?
+        callback: Runnable?,
     ) {
         try {
             val event = PropertyOperations.builder()
@@ -219,7 +226,7 @@ internal class HackleAppCore(
         experimentKey: Long,
         user: User?,
         defaultVariation: Variation,
-        hackleAppContext: HackleAppContext
+        hackleAppContext: HackleAppContext,
     ): Decision {
         val sample = Timer.start()
         return try {
@@ -247,7 +254,7 @@ internal class HackleAppCore(
     fun featureFlagDetail(
         featureKey: Long,
         user: User?,
-        hackleAppContext: HackleAppContext
+        hackleAppContext: HackleAppContext,
     ): FeatureFlagDecision {
         val sample = Timer.start()
         return try {

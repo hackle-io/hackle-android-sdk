@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetView xmlns:android="http://schemas.android.com/apk/res/android"
+<io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:background="@color/hackle_iam_modal_frame_background" />
 
-    <io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetContainerView
+    <io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetContainerView
         android:id="@+id/hackle_iam_bottom_sheet_container_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <io.hackle.android.ui.inappmessage.layout.view.InAppMessageImageContainerView
+            <io.hackle.android.ui.inappmessage.view.InAppMessageImageContainerView
                 android:id="@+id/hackle_iam_bottom_sheet_image_container_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp">
 
-                <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+                <io.hackle.android.ui.inappmessage.view.InAppMessagePositionalButtonView
                     android:id="@+id/hackle_iam_bottom_sheet_left_bottom_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
                     app:alignVertical="bottom"
                     tools:text="LEFT BUTTON 1" />
 
-                <io.hackle.android.ui.inappmessage.layout.view.InAppMessagePositionalButtonView
+                <io.hackle.android.ui.inappmessage.view.InAppMessagePositionalButtonView
                     android:id="@+id/hackle_iam_bottom_sheet_right_bottom_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -77,7 +77,7 @@
             </RelativeLayout>
         </LinearLayout>
 
-        <io.hackle.android.ui.inappmessage.layout.view.InAppMessageCloseButtonView
+        <io.hackle.android.ui.inappmessage.view.InAppMessageCloseButtonView
             android:id="@+id/hackle_iam_bottom_sheet_close_button_view"
             android:layout_width="52dp"
             android:layout_height="52dp"
@@ -89,5 +89,5 @@
             android:textAlignment="center"
             android:textSize="20sp" />
 
-    </io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetContainerView>
-</io.hackle.android.ui.inappmessage.layout.view.sheet.InAppMessageBottomSheetView>
+    </io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetContainerView>
+</io.hackle.android.ui.inappmessage.view.sheet.InAppMessageBottomSheetView>

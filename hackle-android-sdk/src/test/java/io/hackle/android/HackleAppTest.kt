@@ -1,16 +1,21 @@
 package io.hackle.android
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.application.install.ApplicationInstallStateManager
-import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
+import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.event.DefaultEventProcessor
+import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
+import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
-import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
@@ -18,25 +23,19 @@ import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
-import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.inappmessage.InAppMessageUi
-import android.app.Activity
-import io.hackle.sdk.common.HackleInAppMessageListener
-import io.hackle.sdk.common.HacklePushSubscriptionStatus
-import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
-import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.android.ui.notification.NotificationHandler
-import android.content.Context
-import android.content.Intent
 import io.hackle.sdk.common.*
-import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
-import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
+import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.Experiment
@@ -51,6 +50,7 @@ import strikt.api.expectThat
 import strikt.api.expectThrows
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -91,7 +91,7 @@ class HackleAppTest {
 
     @RelaxedMockK
     private lateinit var notificationManager: NotificationManager
-    
+
     @RelaxedMockK
     private lateinit var applicationInstallStateManager: ApplicationInstallStateManager
 
@@ -104,6 +104,9 @@ class HackleAppTest {
     @RelaxedMockK
     private lateinit var optOutManager: OptOutManager
 
+    @RelaxedMockK
+    private lateinit var inAppMessageViewProvider: InAppMessageViewProvider
+
     private lateinit var sut: HackleApp
 
     @Before
@@ -115,31 +118,32 @@ class HackleAppTest {
             firstArg<Runnable>().run()
             CompletableFuture.completedFuture(null)
         }
-        
+
         val hackleAppCore = HackleAppCore(
-            Clock.SYSTEM,
-            core,
-            eventExecutor,
-            backgroundExecutor,
-            synchronizer,
-            userManager,
-            workspaceManager,
-            sessionManager,
-            screenManager,
-            eventProcessor,
-            pushTokenManager,
-            notificationManager,
-            fetchThrottler,
-            MockDevice("hackle_device_id", emptyMap()),
-            applicationInstallStateManager,
-            userExplorer,
-            optOutManager,
+            clock = Clock.SYSTEM,
+            core = core,
+            eventExecutor = eventExecutor,
+            backgroundExecutor = backgroundExecutor,
+            synchronizer = synchronizer,
+            userManager = userManager,
+            workspaceManager = workspaceManager,
+            sessionManager = sessionManager,
+            screenManager = screenManager,
+            eventProcessor = eventProcessor,
+            pushTokenManager = pushTokenManager,
+            notificationManager = notificationManager,
+            fetchThrottler = fetchThrottler,
+            device = MockDevice("hackle_device_id", emptyMap()),
+            applicationInstallStateManager = applicationInstallStateManager,
+            userExplorer = userExplorer,
+            optOutManager = optOutManager,
+            inAppMessageViewProvider = inAppMessageViewProvider
         )
-        
+
         sut = HackleApp(
             hackleAppCore,
             Sdk.of("", HackleConfig.DEFAULT),
-            HackleAppMode.NATIVE,
+            HackleConfig.builder().mode(HackleAppMode.NATIVE).build(),
             mockk()
         )
     }
@@ -828,22 +832,25 @@ class HackleAppTest {
 
     @Test
     fun updatePushSubscriptions() {
-        sut.updatePushSubscriptions(HackleSubscriptionOperations.builder()
-            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
-            .information(HackleSubscriptionStatus.SUBSCRIBED)
-            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
-            .build()
+        sut.updatePushSubscriptions(
+            HackleSubscriptionOperations.builder()
+                .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+                .information(HackleSubscriptionStatus.SUBSCRIBED)
+                .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+                .build()
         )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$push_subscriptions")
-                            .properties(mapOf(
-                                "\$marketing" to "UNSUBSCRIBED",
-                                "\$information" to "SUBSCRIBED",
-                                "chat" to "UNKNOWN"
-                            ))
+                            .properties(
+                                mapOf(
+                                    "\$marketing" to "UNSUBSCRIBED",
+                                    "\$information" to "SUBSCRIBED",
+                                    "chat" to "UNKNOWN"
+                                )
+                            )
                             .build()
                     )
                 },
@@ -859,22 +866,25 @@ class HackleAppTest {
 
     @Test
     fun updateSmsSubscriptions() {
-        sut.updateSmsSubscriptions(HackleSubscriptionOperations.builder()
-            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
-            .information(HackleSubscriptionStatus.SUBSCRIBED)
-            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
-            .build()
+        sut.updateSmsSubscriptions(
+            HackleSubscriptionOperations.builder()
+                .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+                .information(HackleSubscriptionStatus.SUBSCRIBED)
+                .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+                .build()
         )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$sms_subscriptions")
-                            .properties(mapOf(
-                                "\$marketing" to "UNSUBSCRIBED",
-                                "\$information" to "SUBSCRIBED",
-                                "chat" to "UNKNOWN"
-                            ))
+                            .properties(
+                                mapOf(
+                                    "\$marketing" to "UNSUBSCRIBED",
+                                    "\$information" to "SUBSCRIBED",
+                                    "chat" to "UNKNOWN"
+                                )
+                            )
                             .build()
                     )
                 },
@@ -889,22 +899,25 @@ class HackleAppTest {
 
     @Test
     fun updateKakaoSubscriptions() {
-        sut.updateKakaoSubscriptions(HackleSubscriptionOperations.builder()
-            .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
-            .information(HackleSubscriptionStatus.SUBSCRIBED)
-            .custom("chat", HackleSubscriptionStatus.UNKNOWN)
-            .build()
+        sut.updateKakaoSubscriptions(
+            HackleSubscriptionOperations.builder()
+                .marketing(HackleSubscriptionStatus.UNSUBSCRIBED)
+                .information(HackleSubscriptionStatus.SUBSCRIBED)
+                .custom("chat", HackleSubscriptionStatus.UNKNOWN)
+                .build()
         )
         verify(exactly = 1) {
             core.track(
                 withArg {
                     expectThat(it).isEqualTo(
                         Event.builder("\$kakao_subscriptions")
-                            .properties(mapOf(
-                                "\$marketing" to "UNSUBSCRIBED",
-                                "\$information" to "SUBSCRIBED",
-                                "chat" to "UNKNOWN"
-                            ))
+                            .properties(
+                                mapOf(
+                                    "\$marketing" to "UNSUBSCRIBED",
+                                    "\$information" to "SUBSCRIBED",
+                                    "chat" to "UNKNOWN"
+                                )
+                            )
                             .build()
                     )
                 },
@@ -1222,6 +1235,16 @@ class HackleAppTest {
         // This method does nothing, just checking it doesn't throw
     }
 
+
+    @Test
+    fun `displayedInAppMessageView`() {
+        every { inAppMessageViewProvider.currentView } returns null
+        expectThat(sut.displayedInAppMessageView).isNull()
+
+        val view = mockk<InAppMessageView>()
+        every { inAppMessageViewProvider.currentView } returns view
+        expectThat(sut.displayedInAppMessageView) isSameInstanceAs view
+    }
 }
 
 class HackleAppCompanionTest {

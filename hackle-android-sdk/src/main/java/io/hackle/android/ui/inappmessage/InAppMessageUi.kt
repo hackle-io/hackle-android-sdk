@@ -1,26 +1,27 @@
 package io.hackle.android.ui.inappmessage
 
 import android.app.Activity
-import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
-import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
-import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.DESTROYED
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.core.ImageLoader
-import io.hackle.android.ui.inappmessage.event.InAppMessageEventHandler
-import io.hackle.android.ui.inappmessage.layout.InAppMessageLayout
-import io.hackle.android.ui.inappmessage.layout.activity.InAppMessageActivity
+import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleProcessor
+import io.hackle.android.ui.inappmessage.view.InAppMessageView
+import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import io.hackle.sdk.core.internal.time.Clock
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 
 /**
- * This class is used to display in-app messages, handle events, and manage [InAppMessageLayout].
+ * This class is used to display in-app messages, handle events, and manage [InAppMessageView].
  * Only one in-app message is displayed at a time.
  *
  * Note that this class is managed as single instance.
@@ -30,13 +31,14 @@ internal class InAppMessageUi(
     private val activityProvider: ActivityProvider,
     private val messageControllerFactory: InAppMessageControllerFactory,
     private val defaultListener: HackleInAppMessageListener,
+    val clock: Clock,
     val scheduler: Scheduler,
-    val eventHandler: InAppMessageEventHandler,
+    val eventHandleProcessor: InAppMessageViewEventHandleProcessor,
     val imageLoader: ImageLoader,
-) : InAppMessagePresenter, ActivityLifecycleListener {
+) : InAppMessagePresenter, InAppMessageViewProvider, ActivityLifecycleListener {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()
-    val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
+    private val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
 
     private var customListener: HackleInAppMessageListener? = null
     val listener get() = customListener ?: defaultListener
@@ -45,6 +47,13 @@ internal class InAppMessageUi(
     val isBackButtonDismisses get() = _isBackButtonDismisses
 
     private val opening = AtomicBoolean(false)
+
+    override val currentView: InAppMessageView? get() = currentMessageController?.view
+
+    override fun getView(id: String): InAppMessageView? {
+        val view = currentView ?: return null
+        return if (view.id == id) view else null
+    }
 
     override fun present(context: InAppMessagePresentationContext) {
         runOnUiThread {
@@ -81,7 +90,7 @@ internal class InAppMessageUi(
     fun setListener(listener: HackleInAppMessageListener?) {
         customListener = listener
     }
-    
+
     fun setBackButtonDismisses(backButtonDismissesInAppMessage: Boolean) {
         _isBackButtonDismisses = backButtonDismissesInAppMessage
     }
@@ -93,17 +102,14 @@ internal class InAppMessageUi(
     override fun onLifecycle(
         activityLifecycle: ActivityLifecycle,
         activity: Activity,
-        timestamp: Long
+        timestamp: Long,
     ) {
         if (activityLifecycle != DESTROYED) {
             return
         }
         val controller = currentMessageController ?: return
-        val controllerActivity = controller.layout.activity
+        val controllerActivity = controller.view.activity
         if (controllerActivity != null && controllerActivity != activity) {
-            return
-        }
-        if (controllerActivity is InAppMessageActivity) {
             return
         }
         try {
@@ -121,8 +127,9 @@ internal class InAppMessageUi(
         fun create(
             activityProvider: ActivityProvider,
             messageControllerFactory: InAppMessageControllerFactory,
+            clock: Clock,
             scheduler: Scheduler,
-            eventHandler: InAppMessageEventHandler,
+            eventProcessor: InAppMessageViewEventHandleProcessor,
             imageLoader: ImageLoader,
         ): InAppMessageUi {
             return INSTANCE
@@ -130,8 +137,9 @@ internal class InAppMessageUi(
                     activityProvider,
                     messageControllerFactory,
                     DefaultInAppMessageListener,
+                    clock,
                     scheduler,
-                    eventHandler,
+                    eventProcessor,
                     imageLoader
                 ).also { INSTANCE = it }
         }
