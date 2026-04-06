@@ -21,8 +21,18 @@ jobs:
         run: |
           CURRENT_VERSION=$(grep 'sdk_version=' gradle.properties | sed -E 's/sdk_version=([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
           IFS='.' read -ra V <<< "${CURRENT_VERSION%%-*}"
-          NEW_MINOR=$((V[1] + 1))
-          NEW_VERSION="${V[0]}.$NEW_MINOR.0"
+
+          CURRENT_CORE=$(grep 'def javaSdkVersion' hackle-android-sdk/build.gradle | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+          IFS='.' read -ra CURR_CORE <<< "$CURRENT_CORE"
+          IFS='.' read -ra NEW_CORE <<< "$CORE_VER"
+
+          if [ "${CURR_CORE[0]}.${CURR_CORE[1]}" = "${NEW_CORE[0]}.${NEW_CORE[1]}" ]; then
+            NEW_PATCH=$((V[2] + 1))
+            NEW_VERSION="${V[0]}.${V[1]}.$NEW_PATCH"
+          else
+            NEW_MINOR=$((V[1] + 1))
+            NEW_VERSION="${V[0]}.$NEW_MINOR.0"
+          fi
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "branch_name=dev-$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "core_sdk_name=hackle-java-sdk-$CORE_VER" >> $GITHUB_OUTPUT
