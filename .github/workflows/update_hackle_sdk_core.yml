@@ -20,10 +20,10 @@ jobs:
         env:
           CORE_VER: ${{ github.event.inputs.core_version }}
         run: |
-          CURRENT_VERSION=$(grep 'sdk_version=' gradle.properties | sed -E 's/sdk_version=([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          CURRENT_VERSION=$(sed -n -E 's/sdk_version=([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' gradle.properties)
           IFS='.' read -ra V <<< "${CURRENT_VERSION%%-*}"
 
-          CURRENT_CORE=$(grep 'def javaSdkVersion' hackle-android-sdk/build.gradle | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+          CURRENT_CORE=$(sed -n -E 's/.*def javaSdkVersion = "([0-9]+\.[0-9]+\.[0-9]+)".*/\1/p' hackle-android-sdk/build.gradle)
           IFS='.' read -ra CURR_CORE <<< "$CURRENT_CORE"
           IFS='.' read -ra NEW_CORE <<< "$CORE_VER"
 
