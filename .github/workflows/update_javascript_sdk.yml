@@ -67,6 +67,8 @@ jobs:
         run: |
           cp /tmp/package/lib/index.browser.umd.min.js \
             "hackle-android-sdk/src/main/assets/hackle-javascript-sdk-${JS_SDK_VERSION}.min.js"
+          ls "hackle-android-sdk/src/main/assets/hackle-javascript-sdk-${JS_SDK_VERSION}.min.js" || \
+            { echo "Error: JS SDK file not found after copy"; exit 1; }
           find hackle-android-sdk/src/main/assets -name "hackle-javascript-sdk-*.min.js" \
             ! -name "hackle-javascript-sdk-${JS_SDK_VERSION}.min.js" -delete
 
@@ -81,7 +83,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$FEATURE_BRANCH"
-          git add .
+          git add \
+            hackle-android-sdk/src/main/assets/ \
+            hackle-android-sdk/src/main/java/io/hackle/android/ui/inappmessage/view/html/InAppMessageHtmlBridgeUserScript.kt
           git commit -m "update hackle-javascript-sdk-$JS_SDK_VERSION"
           git push origin "$FEATURE_BRANCH"
         env:
@@ -90,8 +94,8 @@ jobs:
       - name: Create PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEV_BRANCH: ${{ needs.prepare-branch.outputs.branch_name }}
         run: |
-          DEV_BRANCH="${{ needs.prepare-branch.outputs.branch_name }}"
           gh pr create \
             --base "$DEV_BRANCH" \
             --title "[Automation] Update hackle-javascript-sdk-$JS_SDK_VERSION" \
