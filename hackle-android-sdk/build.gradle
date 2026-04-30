@@ -4,15 +4,15 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jacoco'
-    id 'org.jetbrains.dokka' version '1.7.20'
+    id 'org.jetbrains.dokka' version '1.9.20'
 }
 
 group = 'io.hackle'
 version = sdk_version
 
 android {
+    namespace "io.hackle.android"
     compileSdkVersion 31
-    buildToolsVersion "30.0.2"
 
     defaultConfig {
         minSdkVersion 16
@@ -24,6 +24,14 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "hackle-proguard-rules.pro"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    publishing {
+        singleVariant("release")
     }
 
     compileOptions {
@@ -73,19 +81,20 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "io.mockk:mockk:1.12.0"
+    testImplementation "io.mockk:mockk:1.13.17"
     testImplementation 'io.strikt:strikt-core:0.32.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
 
-task sourceJar(type: Jar) {
+tasks.register('sourceJar', Jar) {
     archiveClassifier.set('sources')
     from android.sourceSets.main.java.srcDirs
 }
 
-task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
+tasks.register('coverageReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
     reports {
         xml.required.set(true)
         html.required.set(true)
