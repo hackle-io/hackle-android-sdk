@@ -10,7 +10,6 @@ import io.hackle.android.internal.application.install.ApplicationInstallStateMan
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
-import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.notification.NotificationManager
 import io.hackle.android.internal.optout.OptOutManager
@@ -24,7 +23,6 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.mock.MockDevice
-import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
@@ -743,31 +741,12 @@ class HackleAppTest {
 
     @Test
     fun `setWebViewBridge success`() {
-        mockkObject(AndroidBuild)
-        every { AndroidBuild.sdkVersion() } returns 17
-
         val webView = mockk<WebView>(relaxed = true)
         sut.setWebViewBridge(webView)
 
         verify(exactly = 1) {
             webView.addJavascriptInterface(any<HackleJavascriptInterface>(), "_hackleApp")
         }
-
-        unmockkObject(AndroidBuild)
-    }
-
-    @Test
-    fun `setWebViewBridge fail`() {
-        mockkObject(AndroidBuild)
-        every { AndroidBuild.sdkVersion() } returns 16
-
-        val webView = mockk<WebView>(relaxed = true)
-
-        assertThrows<IllegalStateException> {
-            sut.setWebViewBridge(webView)
-        }
-
-        unmockkObject(AndroidBuild)
     }
 
     @Test
