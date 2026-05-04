@@ -3,7 +3,7 @@ package io.hackle.android.internal.user
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.common.User
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -17,7 +17,7 @@ internal class UserTargetEventFetcher(
     sdkUri: String,
     private val httpClient: OkHttpClient,
 ) {
-    private val url = HttpUrl.get(url(sdkUri))
+    private val url = url(sdkUri).toHttpUrl()
 
     /**
      * 사용자의 타겟팅 정보를 가져온다.
@@ -45,8 +45,8 @@ internal class UserTargetEventFetcher(
     }
 
     private fun handleResponse(response: Response): UserTargetEvents {
-        check(response.isSuccessful) { "Http status code: ${response.code()}" }
-        val responseBody = checkNotNull(response.body()) { "Response body is null" }
+        check(response.isSuccessful) { "Http status code: ${response.code}" }
+        val responseBody = checkNotNull(response.body) { "Response body is null" }
         val dto = responseBody.parse<UserTargetResponseDto>()
         return UserTargetEvents.Companion.from(dto)
     }

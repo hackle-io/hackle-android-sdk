@@ -54,8 +54,8 @@ internal class PathInAppMessageHtmlContentResolver(
     }
 
     private fun handleResponse(response: Response): String {
-        check(response.isSuccessful) { "Http status code: ${response.code()}" }
-        val responseBody = checkNotNull(response.body()) { "Response body is null" }
+        check(response.isSuccessful) { "Http status code: ${response.code}" }
+        val responseBody = checkNotNull(response.body) { "Response body is null" }
         return responseBody.string()
     }
 }
