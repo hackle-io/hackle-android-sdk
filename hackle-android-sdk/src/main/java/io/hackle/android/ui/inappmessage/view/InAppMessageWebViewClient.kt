@@ -17,7 +17,6 @@ internal class InAppMessageWebViewClient(
         listener.onPageFinished(view, url)
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
         return assetLoader.shouldInterceptRequest(request.url)
     }
@@ -27,7 +26,6 @@ internal class InAppMessageWebViewClient(
         return assetLoader.shouldInterceptRequest(url.toUri())
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
         return listener.onUrlLoading(request.url.toString())
     }

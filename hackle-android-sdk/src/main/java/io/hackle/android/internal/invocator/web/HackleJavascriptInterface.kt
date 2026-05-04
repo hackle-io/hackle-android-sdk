@@ -1,9 +1,7 @@
 package io.hackle.android.internal.invocator.web
 
-import android.os.Build
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import androidx.annotation.RequiresApi
 import io.hackle.android.HackleApp
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.HackleWebViewConfig
@@ -37,7 +35,6 @@ internal open class HackleJavascriptInterface(
         return app.invocator.invoke(string)
     }
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun addTo(webView: WebView) {
         webView.addJavascriptInterface(this, NAME)
     }
