@@ -1,10 +1,13 @@
 package io.hackle.android.ui.notification
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
@@ -51,6 +54,11 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
             }
         }
 
+        if (!hasPostNotificationPermission(context)) {
+            log.debug { "POST_NOTIFICATIONS permission has not been granted. Not posting notification." }
+            return false
+        }
+
         try {
             val notification = NotificationFactory.createNotification(context, notificationExtras, notificationData)
             val notificationManager = NotificationManagerCompat.from(context)
@@ -85,5 +93,11 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
 
         private const val TAG = "hackle_notification"
         private val log = Logger<NotificationBroadcastReceiver>()
+
+        internal fun hasPostNotificationPermission(context: Context): Boolean {
+            return ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        }
     }
 }

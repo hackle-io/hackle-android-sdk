@@ -34,10 +34,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 7.2
-      
+          gradle-version: 8.7
+
       - name: Generate KDoc
-        run: gradle :hackle-android-sdk:dokkaHtml
+        run: ./gradlew :hackle-android-sdk:dokkaHtml
       
       - name: Setup Pages
         uses: actions/configure-pages@v4

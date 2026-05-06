@@ -21,7 +21,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 7.2
+          gradle-version: 8.7
 
       - name: Set up Snapshot version for Workflow Dispatch
         if: ${{ github.event_name == 'workflow_dispatch'}}
@@ -72,7 +72,7 @@ jobs:
           fi
 
       - name: Publish
-        run: gradle :hackle-android-sdk:clean :hackle-android-sdk:build publishToSonatype closeAndReleaseSonatypeStagingRepository --info --configure-on-demand
+        run: ./gradlew :hackle-android-sdk:clean :hackle-android-sdk:build publishToSonatype closeAndReleaseSonatypeStagingRepository --info --configure-on-demand
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
