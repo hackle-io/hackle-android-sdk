@@ -111,7 +111,7 @@ tasks.register('coverageReport', JacocoReport) {
         '**/ui/explorer/**',
         '**/ui/notification/NotificationFactory.class',
         '**/ui/notification/NotificationTrampolineActivity.class',
-        '**/ui/notification/NotificationBroadcastReceiver.class',
+        '**/ui/notification/NotificationBroadcastReceiver*.class',
     ]
     def javaTree = fileTree(dir: "${project.buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
     def kotlinTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)

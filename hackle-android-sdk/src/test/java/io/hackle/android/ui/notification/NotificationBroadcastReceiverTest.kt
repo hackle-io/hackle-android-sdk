@@ -51,9 +51,7 @@ class NotificationBroadcastReceiverTest {
         every { NotificationFactory.createNotification(any(), any(), any()) } returns mockk<Notification>(relaxed = true)
 
         // Stub NotificationManagerCompat.from so that notify(...) calls can be verified.
-        notificationManager = mockk(relaxed = true) {
-            every { areNotificationsEnabled() } returns true
-        }
+        notificationManager = mockk(relaxed = true)
         mockkStatic(NotificationManagerCompat::class)
         every { NotificationManagerCompat.from(any()) } returns notificationManager
 
@@ -138,7 +136,6 @@ class NotificationBroadcastReceiverTest {
     @Test
     fun `POST_NOTIFICATIONS permission denied - createNotification not called`() {
         every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
-        every { notificationManager.areNotificationsEnabled() } returns false
         val intent = mockk<Intent>(relaxed = true)
 
         sut.onReceive(context, intent)
