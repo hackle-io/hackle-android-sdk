@@ -54,7 +54,10 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
             }
         }
 
-        if (!hasPostNotificationPermission(context)) {
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             log.debug { "POST_NOTIFICATIONS permission has not been granted. Not posting notification." }
             return false
         }
@@ -93,11 +96,5 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
 
         private const val TAG = "hackle_notification"
         private val log = Logger<NotificationBroadcastReceiver>()
-
-        internal fun hasPostNotificationPermission(context: Context): Boolean {
-            return ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        }
     }
 }
