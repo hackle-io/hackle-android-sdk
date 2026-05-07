@@ -5,6 +5,7 @@ import android.app.KeyguardManager
 import android.app.Notification
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.internal.task.TaskExecutors
 import io.mockk.every
@@ -45,16 +46,14 @@ class NotificationBroadcastReceiverTest {
         mockkObject(NotificationData.Companion)
         every { NotificationData.from(any()) } returns notificationData
 
-        // The permission check helper is exposed as a testable seam.
-        mockkObject(NotificationBroadcastReceiver.Companion)
-        every { NotificationBroadcastReceiver.hasPostNotificationPermission(any()) } returns true
-
         // The number of NotificationFactory invocations indicates whether displayNotification reached the post branch.
         mockkObject(NotificationFactory)
         every { NotificationFactory.createNotification(any(), any(), any()) } returns mockk<Notification>(relaxed = true)
 
         // Stub NotificationManagerCompat.from so that notify(...) calls can be verified.
-        notificationManager = mockk(relaxed = true)
+        notificationManager = mockk(relaxed = true) {
+            every { areNotificationsEnabled() } returns true
+        }
         mockkStatic(NotificationManagerCompat::class)
         every { NotificationManagerCompat.from(any()) } returns notificationManager
 
@@ -138,7 +137,8 @@ class NotificationBroadcastReceiverTest {
 
     @Test
     fun `POST_NOTIFICATIONS permission denied - createNotification not called`() {
-        every { NotificationBroadcastReceiver.hasPostNotificationPermission(any()) } returns false
+        every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+        every { notificationManager.areNotificationsEnabled() } returns false
         val intent = mockk<Intent>(relaxed = true)
 
         sut.onReceive(context, intent)
