@@ -134,6 +134,75 @@ class InvokeDtoTest {
     }
 
     @Test
+    fun `Event 모델을 EventDto로 변환한다 - 모든 필드 정상`() {
+        // given
+        val event = Event.builder("purchase")
+            .value(99.99)
+            .property("productId", "P123")
+            .build()
+
+        // when
+        val dto = event.toDto()
+
+        // then
+        assertEquals("purchase", dto.key)
+        assertEquals(99.99, dto.value)
+        assertEquals(mapOf("productId" to "P123"), dto.properties)
+    }
+
+    @Test
+    fun `Event 모델을 EventDto로 변환한다 - value가 null이면 dto value도 null`() {
+        // given
+        val event = Event.builder("click").build()
+
+        // when
+        val dto = event.toDto()
+
+        // then
+        assertEquals("click", dto.key)
+        assertNull(dto.value)
+        assertNull(dto.properties)
+    }
+
+    @Test
+    fun `Event 모델을 EventDto로 변환한다 - value가 NaN이면 dto value는 null`() {
+        // given
+        val event = Event.builder("nan_event").value(Double.NaN).build()
+
+        // when
+        val dto = event.toDto()
+
+        // then
+        assertEquals("nan_event", dto.key)
+        assertNull(dto.value)
+    }
+
+    @Test
+    fun `Event 모델을 EventDto로 변환한다 - value가 Infinity이면 dto value는 null`() {
+        // given
+        val positive = Event.builder("pos_inf").value(Double.POSITIVE_INFINITY).build()
+        val negative = Event.builder("neg_inf").value(Double.NEGATIVE_INFINITY).build()
+
+        // when / then
+        assertNull(positive.toDto().value)
+        assertNull(negative.toDto().value)
+    }
+
+    @Test
+    fun `Event 모델을 EventDto로 변환한다 - 빈 properties는 dto에서 null`() {
+        // given
+        val event = Event.builder("empty_props").value(1.0).build()
+
+        // when
+        val dto = event.toDto()
+
+        // then
+        assertEquals("empty_props", dto.key)
+        assertEquals(1.0, dto.value)
+        assertNull(dto.properties)
+    }
+
+    @Test
     fun `PropertyOperationsDto를 PropertyOperations 모델로 변환한다`() {
         // given
         val dto: PropertyOperationsDto = mapOf(
