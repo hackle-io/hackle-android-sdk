@@ -22,12 +22,12 @@ internal class InAppMessageViewJavascriptInterface(
 
     @JavascriptInterface
     fun getInAppMessageTriggerEvent(): String {
-        val json = runCatching { triggerEvent.toDto().toJson() }.getOrNull()
-        if (json == null) {
-            log.error { "Failed to serialize trigger event for HTML IAM bridge" }
-            return ""
+        return try {
+            triggerEvent.toDto().toJson()
+        } catch (e: Throwable) {
+            log.error { "Failed to serialize trigger event for HTML IAM bridge: $e" }
+            ""
         }
-        return json
     }
 
     companion object {
