@@ -75,11 +75,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         webView.settings.allowFileAccess = false
         webView.settings.allowContentAccess = false
 
-        val javascriptInterface = InAppMessageViewJavascriptInterface(
-            Hackle.app,
-            this,
-            presentationContext.triggerEvent,
-        )
+        val javascriptInterface = InAppMessageViewJavascriptInterface(Hackle.app, this)
         javascriptInterface.addTo(webView)
 
         // WebView focus

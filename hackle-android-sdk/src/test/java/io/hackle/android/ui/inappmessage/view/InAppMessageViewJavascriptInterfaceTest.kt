@@ -1,9 +1,11 @@
 package io.hackle.android.ui.inappmessage.view
 
 import io.hackle.android.HackleApp
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.invocator.model.EventDto
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.sdk.common.Event
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.Test
 import strikt.api.expectThat
@@ -13,12 +15,18 @@ import strikt.assertions.isNotNull
 
 internal class InAppMessageViewJavascriptInterfaceTest {
 
-    private fun sut(event: Event): InAppMessageViewJavascriptInterface =
-        InAppMessageViewJavascriptInterface(
+    private fun sut(event: Event): InAppMessageViewJavascriptInterface {
+        val context = mockk<InAppMessagePresentationContext>(relaxed = true) {
+            every { triggerEvent } returns event
+        }
+        val view = mockk<InAppMessageView>(relaxed = true) {
+            every { presentationContext } returns context
+        }
+        return InAppMessageViewJavascriptInterface(
             app = mockk<HackleApp>(relaxed = true),
-            view = mockk<InAppMessageView>(relaxed = true),
-            triggerEvent = event,
+            view = view,
         )
+    }
 
     @Test
     fun `getInAppMessageTriggerEvent - 정상 직렬화`() {

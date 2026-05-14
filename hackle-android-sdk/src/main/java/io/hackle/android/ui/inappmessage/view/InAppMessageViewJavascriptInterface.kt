@@ -11,8 +11,7 @@ import io.hackle.sdk.core.internal.log.Logger
 
 internal class InAppMessageViewJavascriptInterface(
     app: HackleApp,
-    private val view: InAppMessageView,
-    private val triggerEvent: Event,
+    private val view: InAppMessageView
 ) : HackleJavascriptInterface(app, WEB_VIEW_CONFIG) {
 
     @JavascriptInterface
@@ -23,7 +22,7 @@ internal class InAppMessageViewJavascriptInterface(
     @JavascriptInterface
     fun getInAppMessageTriggerEvent(): String {
         return try {
-            triggerEvent.toDto().toJson()
+            view.presentationContext.triggerEvent.toDto().toJson()
         } catch (e: Throwable) {
             log.error { "Failed to serialize trigger event for HTML IAM bridge: $e" }
             ""
