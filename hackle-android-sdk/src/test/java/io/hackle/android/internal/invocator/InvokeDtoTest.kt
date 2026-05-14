@@ -13,6 +13,7 @@ import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -200,6 +201,53 @@ class InvokeDtoTest {
         assertEquals("empty_props", dto.key)
         assertEquals(1.0, dto.value)
         assertNull(dto.properties)
+    }
+
+    @Test
+    fun `Event 모델을 EventDto로 변환한다 - SDK가 허용하는 property value 타입은 그대로 통과한다`() {
+        // given
+        val event = Event.builder("multi_type")
+            .property("bool", true)
+            .property("long", 42L)
+            .property("double", 3.14)
+            .property("string", "value")
+            .property("list", listOf(1, 2, 3))
+            .property("korean", "안녕")
+            .property("emoji", "🎉")
+            .build()
+
+        // when
+        val dto = event.toDto()
+
+        // then
+        val properties = dto.properties
+        assertNotNull(properties)
+        assertEquals(true, properties!!["bool"])
+        assertEquals(42L, properties["long"])
+        assertEquals(3.14, properties["double"])
+        assertEquals("value", properties["string"])
+        assertEquals(listOf(1, 2, 3), properties["list"])
+        assertEquals("안녕", properties["korean"])
+        assertEquals("🎉", properties["emoji"])
+    }
+
+    @Test
+    fun `Event 모델을 EventDto로 변환한다 - SDK가 거부하는 property value는 누락된다`() {
+        // SDK PropertiesBuilder.sanitize 정책 invariant 검증:
+        // - null value는 drop
+        // - nested Map은 drop (Collection/Array가 아닌 임의 객체는 String/Number/Boolean만 허용)
+        val event = Event.builder("sanitize")
+            .property("kept", "value")
+            .property("nullable", null)
+            .property("nested", mapOf("inner" to "v"))
+            .build()
+
+        val dto = event.toDto()
+
+        val properties = dto.properties
+        assertNotNull(properties)
+        assertEquals(setOf("kept"), properties!!.keys)
+        assertEquals("value", properties["kept"])
     }
 
     @Test
