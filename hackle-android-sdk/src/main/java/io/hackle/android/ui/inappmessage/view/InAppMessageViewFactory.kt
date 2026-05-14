@@ -1,7 +1,6 @@
 package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
-import android.os.Build
 import androidx.webkit.WebViewAssetLoader
 import io.hackle.android.Hackle
 import io.hackle.android.app
@@ -43,11 +42,7 @@ internal class InAppMessageViewFactory(
 
 
     private fun createHtmlView(activity: Activity): InAppMessageHtmlView {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            val bridgeScript = InAppMessageHtmlBridgeUserScript.create(Hackle.app.config)
-            return InAppMessageHtmlView.create(activity, bridgeScript, assetLoader, htmlContentResolverFactory)
-        }
-
-        throw IllegalStateException("InAppMessageHtmlView required API 17+ (current: ${Build.VERSION.SDK_INT})")
+        val bridgeScript = InAppMessageHtmlBridgeUserScript.create(Hackle.app.config)
+        return InAppMessageHtmlView.create(activity, bridgeScript, assetLoader, htmlContentResolverFactory)
     }
 }

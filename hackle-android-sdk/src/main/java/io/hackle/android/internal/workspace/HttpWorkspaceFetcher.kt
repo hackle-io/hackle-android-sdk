@@ -7,7 +7,7 @@ import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.core.internal.log.Logger
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -17,7 +17,7 @@ internal class HttpWorkspaceFetcher(
     sdkUri: String,
     private val httpClient: OkHttpClient,
 ) {
-    private val url = HttpUrl.get(url(sdk, sdkUri))
+    private val url = url(sdk, sdkUri).toHttpUrl()
 
     fun fetchIfModified(lastModified: String? = null): WorkspaceConfig? {
         val request = createRequest(lastModified)
@@ -43,9 +43,9 @@ internal class HttpWorkspaceFetcher(
             log.debug { "Workspace is not modified." }
             return null
         }
-        check(response.isSuccessful) { "Http status code: ${response.code()}" }
+        check(response.isSuccessful) { "Http status code: ${response.code}" }
         val lastModified = response.header(HEADER_LAST_MODIFIED)
-        val responseBody = checkNotNull(response.body()) { "Response body is null" }
+        val responseBody = checkNotNull(response.body) { "Response body is null" }
         val dto = responseBody.parse<WorkspaceConfigDto>()
 
         log.debug { "Workspace fetched." }

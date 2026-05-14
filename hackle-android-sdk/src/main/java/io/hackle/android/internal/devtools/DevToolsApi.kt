@@ -7,7 +7,7 @@ import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.utils.json.toJson
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 internal class DevToolsApi(
     private val sdk: Sdk,
@@ -42,11 +42,11 @@ internal class DevToolsApi(
     private fun execute(method: String, path: String, requestBody: Any) {
         val request = Request.Builder()
             .url("$url$path")
-            .method(method, RequestBody.create(CONTENT_TYPE_APPLICATION_JSON, requestBody.toJson()))
+            .method(method, requestBody.toJson().toRequestBody(CONTENT_TYPE_APPLICATION_JSON))
             .header("X-HACKLE-API-KEY", sdk.key)
             .build()
         val response = httpClient.newCall(request).execute()
-        response.use { require(it.isSuccessful) { "[${it.code()}] $method $path" } }
+        response.use { require(it.isSuccessful) { "[${it.code}] $method $path" } }
     }
 }
 

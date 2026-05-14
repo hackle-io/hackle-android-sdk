@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
 import android.webkit.WebView
-import androidx.annotation.RequiresApi
 import androidx.webkit.WebViewAssetLoader
 import io.hackle.android.Hackle
 import io.hackle.android.R
@@ -25,11 +24,7 @@ import io.hackle.sdk.core.model.InAppMessage
 
 /**
  * In-app message view that renders HTML content via WebView.
- *
- * Requires API 17+ because [android.webkit.WebView.addJavascriptInterface] is only safe
- * from JELLY_BEAN_MR1 onwards. Callers must gate on the API level before creating this view.
  */
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 internal class InAppMessageHtmlView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

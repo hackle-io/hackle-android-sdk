@@ -11,11 +11,11 @@ import io.hackle.sdk.core.internal.metrics.flush.FlushCounter
 import io.hackle.sdk.core.internal.metrics.flush.FlushMetric
 import io.hackle.sdk.core.internal.metrics.flush.FlushTimer
 import io.hackle.sdk.core.internal.time.Clock
-import okhttp3.HttpUrl
-import okhttp3.MediaType
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.concurrent.Executor
 
 internal class MonitoringMetricRegistry(
@@ -26,7 +26,7 @@ internal class MonitoringMetricRegistry(
     clock: Clock = Clock.SYSTEM,
 ) : MetricRegistry(clock), ApplicationLifecycleListener {
 
-    private val monitoringEndpoint = HttpUrl.get("$monitoringBaseUrl/metrics")
+    private val monitoringEndpoint = "$monitoringBaseUrl/metrics".toHttpUrl()
 
     override fun createCounter(id: Metric.Id): Counter {
         return FlushCounter(id)
@@ -72,7 +72,7 @@ internal class MonitoringMetricRegistry(
 
         val batch = MetricDto.Batch(metrics.map { metric(it) })
 
-        val requestBody = RequestBody.create(CONTENT_TYPE, batch.toJson())
+        val requestBody = batch.toJson().toRequestBody(CONTENT_TYPE)
         val request = Request.Builder()
             .url(monitoringEndpoint)
             .post(requestBody)
@@ -80,7 +80,7 @@ internal class MonitoringMetricRegistry(
 
         httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                log.warn { "Failed to flushing metrics [${response.code()}]" }
+                log.warn { "Failed to flushing metrics [${response.code}]" }
             }
         }
     }
@@ -100,7 +100,7 @@ internal class MonitoringMetricRegistry(
 
     companion object {
         private val log = Logger<MonitoringMetricRegistry>()
-        private val CONTENT_TYPE = MediaType.get("application/json; charset=utf-8")
+        private val CONTENT_TYPE = "application/json; charset=utf-8".toMediaType()
     }
 }
 
