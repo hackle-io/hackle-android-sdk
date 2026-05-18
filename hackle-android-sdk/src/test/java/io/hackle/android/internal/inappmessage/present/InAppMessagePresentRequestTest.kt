@@ -1,21 +1,25 @@
 package io.hackle.android.internal.inappmessage.present
 
 import io.hackle.android.support.InAppMessages
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isSameInstanceAs
 
 class InAppMessagePresentRequestTest {
 
     @Test
     fun `instance`() {
 
+        val event = Event.of("trigger_key")
         val deliverRequest = InAppMessages.deliverRequest(
             dispatchId = "111",
-            properties = mapOf("\$trigger_event_insert_id" to "insert_id")
+            properties = mapOf("\$trigger_event_insert_id" to "insert_id"),
+            triggerEvent = event,
         )
         val inAppMessage = InAppMessages.create()
         val user = HackleUser.builder().identifier(IdentifierType.DEVICE, "device_id").build()
@@ -46,6 +50,7 @@ class InAppMessagePresentRequestTest {
                 "variation_key" to "B",
                 "experiment_decision_reason" to "TRAFFIC_ALLOCATED"
             )
+            get { triggerEvent } isSameInstanceAs event
         }
     }
 }
