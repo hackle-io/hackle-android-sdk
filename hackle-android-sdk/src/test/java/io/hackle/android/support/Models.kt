@@ -237,8 +237,9 @@ internal object InAppMessages {
         user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
         decisionReason: DecisionReason = DecisionReason.DEFAULT_RULE,
         properties: Map<String, Any> = mapOf(),
+        triggerEvent: Event = Event.of("test"),
     ): InAppMessagePresentationContext {
-        return InAppMessagePresentationContext(dispatchId, inAppMessage, message, user, decisionReason, properties)
+        return InAppMessagePresentationContext(dispatchId, inAppMessage, message, user, decisionReason, properties, triggerEvent)
     }
 
     fun schedule(
@@ -320,8 +321,9 @@ internal object InAppMessages {
         requestedAt: Long = System.currentTimeMillis(),
         reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
         properties: Map<String, Any> = emptyMap(),
+        triggerEvent: Event = Event.of("test"),
     ): InAppMessagePresentRequest {
-        return InAppMessagePresentRequest(dispatchId, inAppMessage, message, user, requestedAt, reason, properties)
+        return InAppMessagePresentRequest(dispatchId, inAppMessage, message, user, requestedAt, reason, properties, triggerEvent)
     }
 
     fun deliverRequest(
@@ -331,7 +333,8 @@ internal object InAppMessages {
         requestedAt: Long = System.currentTimeMillis(),
         reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
         properties: Map<String, Any> = emptyMap(),
+        triggerEvent: Event = Event.of("test"),
     ): InAppMessageDeliverRequest {
-        return InAppMessageDeliverRequest(dispatchId, inAppMessageKey, identifiers, requestedAt, reason, properties)
+        return InAppMessageDeliverRequest(dispatchId, inAppMessageKey, identifiers, requestedAt, reason, properties, triggerEvent)
     }
 }

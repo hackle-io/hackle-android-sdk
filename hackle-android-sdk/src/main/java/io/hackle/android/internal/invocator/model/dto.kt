@@ -144,6 +144,12 @@ internal fun FeatureFlagDecision.toDto() = FeatureFlagDecisionDto(
     config = mapOf("parameters" to config.parameters)
 )
 
+internal fun Event.toDto(): EventDto = EventDto(
+    key = key,
+    value = value?.takeIf { it.isFinite() },
+    properties = properties.takeIf { it.isNotEmpty() },
+)
+
 internal fun Event.Companion.from(dto: EventDto): Event {
     val builder = builder(dto.key)
     dto.value?.apply { builder.value(this) }
