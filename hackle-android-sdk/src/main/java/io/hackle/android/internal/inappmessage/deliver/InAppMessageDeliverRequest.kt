@@ -1,6 +1,7 @@
 package io.hackle.android.internal.inappmessage.deliver
 
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequest
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.Identifiers
@@ -12,6 +13,7 @@ internal data class InAppMessageDeliverRequest(
     val requestedAt: Long,
     val reason: DecisionReason,
     val properties: Map<String, Any>,
+    val triggerEvent: Event,
 ) {
 
     companion object {
@@ -24,7 +26,8 @@ internal data class InAppMessageDeliverRequest(
                 reason = request.schedule.reason,
                 properties = PropertiesBuilder()
                     .add("\$trigger_event_insert_id", request.schedule.eventBasedContext.insertId)
-                    .build()
+                    .build(),
+                triggerEvent = request.schedule.eventBasedContext.event,
             )
         }
     }
