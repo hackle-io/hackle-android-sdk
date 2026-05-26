@@ -1,6 +1,7 @@
 package io.hackle.android.internal.inappmessage.present.presentation
 
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
@@ -12,10 +13,11 @@ internal data class InAppMessagePresentationContext(
     val user: HackleUser,
     val decisionReason: DecisionReason,
     val properties: Map<String, Any>,
+    val triggerEvent: Event,
 ) {
 
     override fun toString(): String {
-        return "InAppMessagePresentationContext(dispatchId=$dispatchId, inAppMessage=$inAppMessage, message=$message)"
+        return "InAppMessagePresentationContext(dispatchId=$dispatchId, inAppMessage=$inAppMessage, message=$message, triggerEventKey=${triggerEvent.key})"
     }
 
     companion object {
@@ -26,7 +28,8 @@ internal data class InAppMessagePresentationContext(
                 message = request.message,
                 user = request.user,
                 decisionReason = request.reason,
-                properties = request.properties
+                properties = request.properties,
+                triggerEvent = request.triggerEvent,
             )
         }
     }

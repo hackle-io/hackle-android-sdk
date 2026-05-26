@@ -81,7 +81,7 @@ jobs:
 
       - name: Update version constant
         run: |
-          sed -i -E "s/JAVASCRIPT_SDK_VERSION = \"[0-9]+\.[0-9]+\.[0-9]+\"/JAVASCRIPT_SDK_VERSION = \"$JS_SDK_VERSION\"/g" \
+          sed -i -E "s/JAVASCRIPT_SDK_VERSION = \"[^\"]+\"/JAVASCRIPT_SDK_VERSION = \"$JS_SDK_VERSION\"/g" \
             hackle-android-sdk/src/main/java/io/hackle/android/ui/inappmessage/view/html/InAppMessageHtmlBridgeUserScript.kt
 
       - name: Commit and push

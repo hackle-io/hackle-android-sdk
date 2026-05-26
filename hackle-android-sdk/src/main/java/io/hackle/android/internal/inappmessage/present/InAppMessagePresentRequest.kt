@@ -1,6 +1,7 @@
 package io.hackle.android.internal.inappmessage.present
 
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverRequest
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluation
 import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutEvaluation
@@ -15,9 +16,10 @@ internal class InAppMessagePresentRequest(
     val requestedAt: Long,
     val reason: DecisionReason,
     val properties: Map<String, Any>,
+    val triggerEvent: Event,
 ) {
     override fun toString(): String {
-        return "InAppMessagePresentRequest(dispatchId=$dispatchId, inAppMessage=$inAppMessage, message=${message.layout.displayType}, user=${user.identifiers}, requestedAt=$requestedAt, reason=$reason, properties=$properties)"
+        return "InAppMessagePresentRequest(dispatchId=$dispatchId, inAppMessage=$inAppMessage, message=${message.layout.displayType}, user=${user.identifiers}, requestedAt=$requestedAt, reason=$reason, triggerEventKey=${triggerEvent.key}, properties=$properties)"
     }
 
     companion object {
@@ -35,7 +37,8 @@ internal class InAppMessagePresentRequest(
                 user = user,
                 requestedAt = request.requestedAt,
                 reason = eligibilityEvaluation.reason,
-                properties = request.properties + layoutEvaluation.properties
+                properties = request.properties + layoutEvaluation.properties,
+                triggerEvent = request.triggerEvent,
             )
         }
     }
