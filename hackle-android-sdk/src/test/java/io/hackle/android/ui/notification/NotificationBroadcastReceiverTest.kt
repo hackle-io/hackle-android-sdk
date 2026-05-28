@@ -1,12 +1,15 @@
 package io.hackle.android.ui.notification
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.app.Notification
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import io.hackle.android.internal.task.TaskExecutors
 import io.mockk.every
 import io.mockk.mockk
@@ -65,6 +68,14 @@ class NotificationBroadcastReceiverTest {
         every { context.getSystemService(Context.KEYGUARD_SERVICE) } returns keyguardManager
         every { context.getSystemService(Context.ACTIVITY_SERVICE) } returns activityManager
         every { context.packageName } returns "io.hackle.test"
+
+        // ActivityCompat inherits checkSelfPermission from ContextCompat;
+        // mock both so the stub matches regardless of which class MockK sees at the call site.
+        // Default the POST_NOTIFICATIONS permission to GRANTED; tests that need DENIED override per-test.
+        mockkStatic(ActivityCompat::class, ContextCompat::class)
+        every {
+            ActivityCompat.checkSelfPermission(any(), Manifest.permission.POST_NOTIFICATIONS)
+        } returns PackageManager.PERMISSION_GRANTED
     }
 
     @After
@@ -135,7 +146,9 @@ class NotificationBroadcastReceiverTest {
 
     @Test
     fun `POST_NOTIFICATIONS permission denied - createNotification not called`() {
-        every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+        every {
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+        } returns PackageManager.PERMISSION_DENIED
         val intent = mockk<Intent>(relaxed = true)
 
         sut.onReceive(context, intent)

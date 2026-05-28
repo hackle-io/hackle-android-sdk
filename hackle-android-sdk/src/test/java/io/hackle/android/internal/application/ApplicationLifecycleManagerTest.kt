@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Bundle
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
+import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.*
 import org.junit.After
@@ -293,6 +294,7 @@ class ApplicationLifecycleManagerTest {
         // then
         verify { listener1.onForeground(1234567890L, false) }
         verify { listener2.onForeground(1234567890L, false) }
+        expectThat(freshManager.currentState).isEqualTo(ApplicationState.FOREGROUND)
     }
 
     @Test
@@ -313,6 +315,7 @@ class ApplicationLifecycleManagerTest {
         // then
         verify { listener1.onBackground(1234567890L) }
         verify { listener2.onBackground(1234567890L) }
+        expectThat(freshManager.currentState).isEqualTo(ApplicationState.BACKGROUND)
     }
 
     @Test
@@ -334,5 +337,30 @@ class ApplicationLifecycleManagerTest {
         // then - publishStateIfNeeded 의 FG 경로에서 listener1 throw 에도 listener2 호출됨
         verify { listener1.onForeground(1234567890L, false) }
         verify { listener2.onForeground(1234567890L, false) }
+        expectThat(freshManager.currentState).isEqualTo(ApplicationState.FOREGROUND)
+    }
+
+    @Test
+    fun `publishStateIfNeeded BACKGROUND should continue invoking remaining listeners and complete state transition when one throws`() {
+        // given - FG 진입 후 BG 전환 (state = BACKGROUND)
+        val freshManager = ApplicationLifecycleManager(mockClock)
+        val listener1 = mockk<ApplicationLifecycleListener>(relaxed = true)
+        val listener2 = mockk<ApplicationLifecycleListener>(relaxed = true)
+        freshManager.addListener(listener1)
+        freshManager.addListener(listener2)
+        freshManager.onActivityStarted(mockActivity1)
+        freshManager.onActivityStopped(mockActivity1) // _currentState = BACKGROUND
+
+        // BG 전환 후 throw stub 등록 — publishStateIfNeeded 호출 시에만 throw
+        clearMocks(listener1, listener2, answers = false)
+        every { listener1.onBackground(any()) } throws RuntimeException("boom")
+
+        // when - BACKGROUND 분기 진입
+        freshManager.publishStateIfNeeded()
+
+        // then - listener1 throw 에도 listener2 호출 + state 유지
+        verify { listener1.onBackground(1234567890L) }
+        verify { listener2.onBackground(1234567890L) }
+        expectThat(freshManager.currentState).isEqualTo(ApplicationState.BACKGROUND)
     }
 }
