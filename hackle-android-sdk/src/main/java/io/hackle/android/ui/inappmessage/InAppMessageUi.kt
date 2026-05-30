@@ -40,9 +40,12 @@ internal class InAppMessageUi(
     private val _currentMessageController = AtomicReference<InAppMessageController>()
     private val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
 
+    // setListener/setBackButtonDismisses는 공개 API(임의 스레드)에서 설정되고 UI 스레드에서 읽히므로 @Volatile.
+    @Volatile
     private var customListener: HackleInAppMessageListener? = null
     val listener get() = customListener ?: defaultListener
 
+    @Volatile
     private var _isBackButtonDismisses: Boolean = true
     val isBackButtonDismisses get() = _isBackButtonDismisses
 

@@ -21,6 +21,10 @@ internal class ScreenManager(
     private val _currentScreen = AtomicReference<Screen?>()
     val currentScreen: Screen? get() = _currentScreen.get()
 
+    // setCurrentScreen(공개 API/JS 브리지, 임의 스레드)과 onLifecycle(메인 스레드)이 동시에 화면을 갱신하면
+    // 화면 전환 이벤트(start/end)의 발행 순서가 역전될 수 있다. getAndSet+publish 전체를 직렬화한다.
+    private val updateLock = Any()
+
     fun setCurrentScreen(screen: Screen, timestamp: Long) {
         updateScreen(screen, timestamp)
     }
@@ -33,7 +37,7 @@ internal class ScreenManager(
         return activity.javaClass.simpleName
     }
 
-    private fun updateScreen(screen: Screen, timestamp: Long) {
+    private fun updateScreen(screen: Screen, timestamp: Long) = synchronized(updateLock) {
         val previousScreen = _currentScreen.getAndSet(screen)
         if (screen == previousScreen) {
             return

@@ -15,6 +15,10 @@ internal class WorkspaceManager(
     private val lastModified: AtomicReference<String?> = AtomicReference()
     private val workspace: AtomicReference<Workspace?> = AtomicReference()
 
+    // sync()는 init/폴링/fetch 등 여러 스레드에서 동시에 호출될 수 있다.
+    // 동시 실행 시 동일 캐시 파일(workspace.json)에 대한 쓰기가 인터리빙되어 파일이 손상될 수 있으므로 직렬화한다.
+    private val syncLock = Any()
+
     fun initialize() {
         readWorkspaceConfigFromLocal()
     }
@@ -23,7 +27,7 @@ internal class WorkspaceManager(
         return workspace.get()
     }
 
-    override fun sync() {
+    override fun sync() = synchronized(syncLock) {
         try {
             val config = httpWorkspaceFetcher.fetchIfModified(lastModified.get())
             if (config != null) {

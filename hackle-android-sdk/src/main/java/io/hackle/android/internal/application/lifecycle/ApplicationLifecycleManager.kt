@@ -14,6 +14,9 @@ internal class ApplicationLifecycleManager(
 ) : ApplicationListenerRegistry<ApplicationLifecycleListener>(), Application.ActivityLifecycleCallbacks {
 
     private val enableActivities: MutableSet<Int> = mutableSetOf()
+
+    // lifecycle 콜백(메인 스레드)에서 갱신되지만 publishStateIfNeeded/currentState는 다른 스레드에서 읽으므로 @Volatile.
+    @Volatile
     private var _currentState: ApplicationState? = null
     val currentState get() = _currentState ?: ApplicationState.BACKGROUND
 
@@ -73,10 +76,11 @@ internal class ApplicationLifecycleManager(
     private fun onActivityForeground(key: Int, timestamp: Long) {
         if (enableActivities.isEmpty()) {
             log.debug { "application(onForeground)" }
+            // 다음 상태를 lifecycle 콜백 스레드에서 동기적으로 캡처/갱신해 비동기 리스너 통지 사이의 stale-read 창을 제거한다.
             val isFromBackground = _currentState == ApplicationState.BACKGROUND
+            _currentState = ApplicationState.FOREGROUND
             execute {
                 notifyListeners(ApplicationState.FOREGROUND) { it.onForeground(timestamp, isFromBackground) }
-                _currentState = ApplicationState.FOREGROUND
             }
         }
         enableActivities.add(key)
@@ -86,9 +90,9 @@ internal class ApplicationLifecycleManager(
         enableActivities.remove(key)
         if (enableActivities.isEmpty()) {
             log.debug { "application(onBackground)" }
+            _currentState = ApplicationState.BACKGROUND
             execute {
                 notifyListeners(ApplicationState.BACKGROUND) { it.onBackground(timestamp) }
-                _currentState = ApplicationState.BACKGROUND
             }
         }
     }

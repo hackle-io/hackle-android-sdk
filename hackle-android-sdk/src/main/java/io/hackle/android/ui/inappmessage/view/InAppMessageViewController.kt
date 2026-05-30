@@ -25,7 +25,11 @@ internal class InAppMessageViewController(
     private val _state = AtomicReference(State.CREATED)
     val state: State get() = _state.get()
 
+    // openingTimeout은 스케줄러 스레드(타임아웃 콜백)와 open/present/close 경로에서 교차 접근되므로 가시성 보장을 위해 @Volatile.
+    @Volatile
     private var openingTimeout: ScheduledJob? = null
+
+    @Volatile
     private var originalOrientation: Int? = null
 
     override fun open(activity: Activity) {
