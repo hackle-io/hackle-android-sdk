@@ -8,8 +8,6 @@ import io.hackle.android.internal.task.TaskExecutors
 
 internal class NotificationHandler(context: Context) {
 
-    // setNotificationDataReceiver는 init(eventExecutor) 스레드에서, handleNotificationData는 트램펄린 액티비티
-    // 메인 스레드에서 호출되므로 가시성 보장을 위해 @Volatile.
     @Volatile
     private var receiver: NotificationDataReceiver =
         DefaultNotificationDataReceiver(

@@ -15,7 +15,6 @@ internal class ActivityLifecycleManager(
     private val clock: Clock
 ) : ApplicationListenerRegistry<ActivityLifecycleListener>(), Application.ActivityLifecycleCallbacks, ActivityProvider {
 
-    // lifecycle 콜백(메인 스레드)에서 갱신되지만 publishStateIfNeeded는 init 호출 스레드에서 읽으므로 @Volatile.
     @Volatile
     private var state: ActivityState = ActivityState.INACTIVE
 

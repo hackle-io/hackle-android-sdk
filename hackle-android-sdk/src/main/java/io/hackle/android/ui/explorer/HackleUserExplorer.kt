@@ -19,7 +19,6 @@ internal class HackleUserExplorer(
     private val activityProvider: ActivityProvider,
 ) : ActivityLifecycleListener {
 
-    // show()/hide()는 임의 스레드에서, onLifecycle은 메인 스레드에서 읽으므로 가시성 보장을 위해 @Volatile.
     @Volatile
     private var isShow: Boolean = false
 

@@ -20,10 +20,6 @@ internal class SessionManager(
     private val sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT,
 ) : ApplicationListenerRegistry<SessionListener>(), ApplicationLifecycleListener, UserListener {
 
-    // currentSession/lastEventTime은 lifecycle(메인) 스레드, eventExecutor 스레드, 이벤트 파이프라인 스레드에서
-    // 동시에 접근된다. 단순 가시성은 @Volatile로, check-then-act(세션 생성 판정)의 원자성은 lock으로 보장한다.
-    // 락으로 보호된 메서드가 서로를 중첩 호출하므로(예: startNewSessionIfNeeded -> startNewSession -> updateLastEventTime)
-    // 재진입 가능한 락이 필요하다.
     private val locker = ReentrantLocker()
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN

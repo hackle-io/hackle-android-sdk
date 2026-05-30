@@ -11,8 +11,6 @@ internal class InAppMessageRecorder(
     private val storage: InAppMessageImpressionStorage,
 ) {
 
-    // record는 trigger 이벤트 스레드와 delay 발화 스레드에서 동시에 호출될 수 있다.
-    // get-modify-set이 비원자적이면 동일 메시지 impression이 유실되므로 직렬화한다.
     private val lock = Any()
 
     fun record(request: InAppMessagePresentRequest, response: InAppMessagePresentResponse) {
