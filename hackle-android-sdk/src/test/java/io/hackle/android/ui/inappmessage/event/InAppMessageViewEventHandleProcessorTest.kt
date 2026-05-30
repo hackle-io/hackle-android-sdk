@@ -46,6 +46,25 @@ internal class InAppMessageViewEventHandleProcessorTest {
     }
 
     @Test
+    fun `when a handler throws then remaining handlers still run and exception is not propagated`() {
+        // given
+        val view = mockk<InAppMessageView>()
+        val event = mockk<InAppMessageViewEvent>()
+
+        val throwingHandler = mockk<InAppMessageViewEventHandler>()
+        val otherHandler = mockk<InAppMessageViewEventHandler>(relaxUnitFun = true)
+        every { handlerFactory.get(TRACK) } returns throwingHandler
+        every { handlerFactory.get(ACTION) } returns otherHandler
+        every { throwingHandler.handle(any(), any()) } throws RuntimeException("boom")
+
+        // when - must not propagate to the click/track caller
+        sut.process(view, event, listOf(TRACK, ACTION))
+
+        // then - the failure of one handler must not skip the others
+        verify(exactly = 1) { otherHandler.handle(view, event) }
+    }
+
+    @Test
     fun `when types is empty then do nothing`() {
         // given
         val view = mockk<InAppMessageView>()
