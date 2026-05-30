@@ -178,9 +178,11 @@ internal object NotificationFactory {
             notificationIntent.data = this.toUri()
         }
         notificationIntent.putExtras(extras)
+        // requestCode 로 wall-clock(ms)을 쓰면 같은 ms에 도착한 서로 다른 푸시가 동일 requestCode 를 갖게 되어
+        // FLAG_ONE_SHOT PendingIntent 가 덮어써질 수 있다. 트레이 알림 식별자와 동일한 메시지별 안정값을 사용한다.
         val pendingIntent = PendingIntent.getActivity(
             context,
-            System.currentTimeMillis().toInt(),
+            data.notificationId,
             notificationIntent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
