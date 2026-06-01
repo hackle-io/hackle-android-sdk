@@ -8,7 +8,6 @@ import io.hackle.android.internal.task.TaskExecutors
 
 internal class NotificationHandler(context: Context) {
 
-    @Volatile
     private var receiver: NotificationDataReceiver =
         DefaultNotificationDataReceiver(
             executor = TaskExecutors.default(),

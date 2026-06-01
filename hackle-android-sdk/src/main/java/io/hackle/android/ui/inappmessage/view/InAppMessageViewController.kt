@@ -25,10 +25,8 @@ internal class InAppMessageViewController(
     private val _state = AtomicReference(State.CREATED)
     val state: State get() = _state.get()
 
-    @Volatile
     private var openingTimeout: ScheduledJob? = null
 
-    @Volatile
     private var originalOrientation: Int? = null
 
     override fun open(activity: Activity) {
