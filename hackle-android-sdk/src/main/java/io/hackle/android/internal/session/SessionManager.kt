@@ -21,9 +21,11 @@ internal class SessionManager(
 
     val requiredSession: Session get() = currentSession ?: Session.UNKNOWN
 
+    @Volatile
     var currentSession: Session? = null
         private set
 
+    @Volatile
     var lastEventTime: Long? = null
         private set
 

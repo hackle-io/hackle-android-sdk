@@ -40,9 +40,11 @@ internal class InAppMessageUi(
     private val _currentMessageController = AtomicReference<InAppMessageController>()
     private val currentMessageController: InAppMessageController? get() = _currentMessageController.get()
 
+    @Volatile
     private var customListener: HackleInAppMessageListener? = null
     val listener get() = customListener ?: defaultListener
 
+    @Volatile
     private var _isBackButtonDismisses: Boolean = true
     val isBackButtonDismisses get() = _isBackButtonDismisses
 

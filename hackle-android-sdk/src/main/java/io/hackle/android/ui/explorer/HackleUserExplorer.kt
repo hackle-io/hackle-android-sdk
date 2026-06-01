@@ -19,6 +19,7 @@ internal class HackleUserExplorer(
     private val activityProvider: ActivityProvider,
 ) : ActivityLifecycleListener {
 
+    @Volatile
     private var isShow: Boolean = false
 
     fun show() {

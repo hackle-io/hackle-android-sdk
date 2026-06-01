@@ -50,7 +50,9 @@ internal class HandleInAppMessageViewInvocationHandler(
         val view = core.getInAppMessageView(dto.viewId) ?: return InvocationResponse.success()
         val event = viewEvent(view, dto.event)
         val handleTypes = dto.handleTypes.map { InAppMessageViewEventHandleType.valueOf(it) }
-        view.handle(event, handleTypes)
+        runOnUiThread {
+            view.handle(event, handleTypes)
+        }
         return InvocationResponse.success()
     }
 

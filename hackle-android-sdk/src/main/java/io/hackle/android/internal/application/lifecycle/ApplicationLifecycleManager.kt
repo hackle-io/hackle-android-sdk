@@ -14,6 +14,8 @@ internal class ApplicationLifecycleManager(
 ) : ApplicationListenerRegistry<ApplicationLifecycleListener>(), Application.ActivityLifecycleCallbacks {
 
     private val enableActivities: MutableSet<Int> = mutableSetOf()
+
+    @Volatile
     private var _currentState: ApplicationState? = null
     val currentState get() = _currentState ?: ApplicationState.BACKGROUND
 

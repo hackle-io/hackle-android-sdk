@@ -15,7 +15,10 @@ internal class ActivityLifecycleManager(
     private val clock: Clock
 ) : ApplicationListenerRegistry<ActivityLifecycleListener>(), Application.ActivityLifecycleCallbacks, ActivityProvider {
 
+    @Volatile
     private var state: ActivityState = ActivityState.INACTIVE
+
+    @Volatile
     private var activity: WeakReference<Activity>? = null
     private var executor: Executor? = null
     override val currentActivity: Activity? get() = activity?.get()
