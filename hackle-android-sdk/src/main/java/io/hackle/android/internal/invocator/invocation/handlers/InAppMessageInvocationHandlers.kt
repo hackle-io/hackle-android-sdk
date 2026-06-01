@@ -17,6 +17,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.view.handle
+import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 
 internal class GetCurrentInAppMessageViewInvocationHandler(
@@ -51,7 +52,11 @@ internal class HandleInAppMessageViewInvocationHandler(
         val event = viewEvent(view, dto.event)
         val handleTypes = dto.handleTypes.map { InAppMessageViewEventHandleType.valueOf(it) }
         runOnUiThread {
-            view.handle(event, handleTypes)
+            try {
+                view.handle(event, handleTypes)
+            } catch (e: Throwable) {
+                log.error(e) { "Failed to handle InAppMessageView invocation" }
+            }
         }
         return InvocationResponse.success()
     }
@@ -74,5 +79,9 @@ internal class HandleInAppMessageViewInvocationHandler(
             area = element.area?.let { InAppMessage.ActionArea.valueOf(it) },
             elementId = element.elementId
         )
+    }
+
+    companion object {
+        private val log = Logger<HandleInAppMessageViewInvocationHandler>()
     }
 }

@@ -108,6 +108,28 @@ internal class HandleInAppMessageViewInvocationHandlerTest : AbstractInvocationH
     }
 
     @Test
+    fun `when view handle throws throwable then invocation should not crash`() {
+        // given
+        val view = mockk<InAppMessageView>(relaxed = true)
+
+        val eventHandleProcessor = mockk<InAppMessageViewEventHandleProcessor>()
+        every { eventHandleProcessor.process(any(), any(), any()) } throws AssertionError("boom")
+        every { view.controller.ui.eventHandleProcessor } returns eventHandleProcessor
+        every { core.getInAppMessageView(any()) } returns view
+
+        val request = request(InvocationCommand.HANDLE_IN_APP_MESSAGE_VIEW, parameters(viewId = "view-id"))
+
+        // when
+        val actual = sut.invoke(request)
+
+        // then
+        expectThat(actual) {
+            get { isSuccess }.isTrue()
+            get { data }.isNull()
+        }
+    }
+
+    @Test
     fun `unsupported type`() {
         val view = mockk<InAppMessageView>(relaxed = true)
 
