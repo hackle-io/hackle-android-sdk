@@ -105,6 +105,42 @@ class NotificationManagerTest {
     }
 
     @Test
+    fun `does not propagate non-Exception throwable raised while handling notification`() {
+        // given - track raises an Error (Throwable, not Exception)
+        every { core.track(any(), any(), any()) } answers { throw AssertionError("boom") }
+
+        val data = NotificationData(
+            "hackle",
+            "abcd1234",
+            111L,
+            222L,
+            1111L,
+            2222L,
+            3333L,
+            4444L,
+            true,
+            "#FF00FF",
+            "foo",
+            "bar",
+            "https://foo.bar/image",
+            "https://foo.foo",
+            NotificationClickAction.APP_OPEN,
+            "foo://bar",
+            1L,
+            2L,
+            3L,
+            "JOURNEY",
+            true
+        )
+
+        // when - must not propagate to the (main-thread) caller
+        manager.onNotificationDataReceived(data, 1L)
+
+        // then - the throwable came from the handling path and was swallowed
+        verify(exactly = 1) { core.track(any(), any(), any()) }
+    }
+
+    @Test
     fun `save notification data if environment is not same`() {
         val timestamp = System.currentTimeMillis()
         val correctData = NotificationData(
