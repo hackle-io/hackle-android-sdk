@@ -26,7 +26,6 @@ internal class InAppMessageViewController(
     val state: State get() = _state.get()
 
     private var openingTimeout: ScheduledJob? = null
-
     private var originalOrientation: Int? = null
 
     override fun open(activity: Activity) {
