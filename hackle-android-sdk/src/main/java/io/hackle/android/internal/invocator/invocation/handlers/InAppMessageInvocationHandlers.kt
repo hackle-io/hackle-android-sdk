@@ -37,9 +37,17 @@ internal class CloseInAppMessageViewInvocationHandler(
         val viewId = checkParameterNotNull(request.parameters.viewId(), "viewId")
         val view = core.getInAppMessageView(viewId) ?: return InvocationResponse.success()
         runOnUiThread {
-            view.close()
+            try {
+                view.close()
+            } catch (e: Throwable) {
+                log.error(e) { "Failed to close InAppMessageView invocation. viewId=[$viewId]" }
+            }
         }
         return InvocationResponse.success()
+    }
+
+    companion object {
+        private val log = Logger<CloseInAppMessageViewInvocationHandler>()
     }
 }
 

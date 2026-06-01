@@ -127,6 +127,9 @@ internal class HandleInAppMessageViewInvocationHandlerTest : AbstractInvocationH
             get { isSuccess }.isTrue()
             get { data }.isNull()
         }
+        verify(exactly = 1) {
+            eventHandleProcessor.process(any(), any(), listOf(TRACK, ACTION))
+        }
     }
 
     @Test
