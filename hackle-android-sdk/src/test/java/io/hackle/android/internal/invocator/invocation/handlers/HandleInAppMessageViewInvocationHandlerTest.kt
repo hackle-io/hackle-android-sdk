@@ -5,6 +5,7 @@ import io.hackle.android.internal.invocator.invocation.InvocationCommand
 import io.hackle.android.internal.invocator.model.HandleInAppMessageViewInvocationDto
 import io.hackle.android.internal.invocator.model.InAppMessageElementDto
 import io.hackle.android.internal.invocator.model.InAppMessageViewEventDto
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.utils.json.gsonTypeRef
 import io.hackle.android.internal.workspace.InAppMessageDto
 import io.hackle.android.support.assertThrows
@@ -18,7 +19,10 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.mockk.verify
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -36,6 +40,13 @@ internal class HandleInAppMessageViewInvocationHandlerTest : AbstractInvocationH
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
+        mockkObject(TaskExecutors)
+        every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
+    }
+
+    @After
+    fun after() {
+        unmockkObject(TaskExecutors)
     }
 
     @Test
@@ -61,6 +72,48 @@ internal class HandleInAppMessageViewInvocationHandlerTest : AbstractInvocationH
         val view = mockk<InAppMessageView>(relaxed = true)
 
         val eventHandleProcessor = mockk<InAppMessageViewEventHandleProcessor>(relaxed = true)
+        every { view.controller.ui.eventHandleProcessor } returns eventHandleProcessor
+        every { core.getInAppMessageView(any()) } returns view
+
+        val request = request(InvocationCommand.HANDLE_IN_APP_MESSAGE_VIEW, parameters(viewId = "view-id"))
+
+        // when
+        val actual = sut.invoke(request)
+
+        // then
+        expectThat(actual) {
+            get { isSuccess }.isTrue()
+            get { data }.isNull()
+        }
+        verify(exactly = 1) {
+            eventHandleProcessor.process(any(), any(), listOf(TRACK, ACTION))
+        }
+    }
+
+    @Test
+    fun `view handle must be dispatched on the ui thread`() {
+        // given
+        val view = mockk<InAppMessageView>(relaxed = true)
+        every { core.getInAppMessageView(any()) } returns view
+
+        val request = request(InvocationCommand.HANDLE_IN_APP_MESSAGE_VIEW, parameters(viewId = "view-id"))
+
+        // when
+        sut.invoke(request)
+
+        // then
+        verify(exactly = 1) {
+            TaskExecutors.runOnUiThread(any())
+        }
+    }
+
+    @Test
+    fun `when view handle throws throwable then invocation should not crash`() {
+        // given
+        val view = mockk<InAppMessageView>(relaxed = true)
+
+        val eventHandleProcessor = mockk<InAppMessageViewEventHandleProcessor>()
+        every { eventHandleProcessor.process(any(), any(), any()) } throws AssertionError("boom")
         every { view.controller.ui.eventHandleProcessor } returns eventHandleProcessor
         every { core.getInAppMessageView(any()) } returns view
 
