@@ -4,19 +4,19 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'jacoco'
-    id 'org.jetbrains.dokka' version '1.7.20'
+    id 'org.jetbrains.dokka' version '1.9.20'
 }
 
 group = 'io.hackle'
 version = sdk_version
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.2"
+    namespace "io.hackle.android"
+    compileSdkVersion 34
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 31
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName version
 
@@ -24,6 +24,14 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "hackle-proguard-rules.pro"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    publishing {
+        singleVariant("release")
     }
 
     compileOptions {
@@ -59,10 +67,10 @@ dependencies {
     }
 
 
-    implementation 'com.squareup.okhttp3:okhttp:3.12.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation "com.google.android.gms:play-services-base:17.3.0"
     implementation "com.google.code.gson:gson:2.8.9"
-    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'androidx.core:core-ktx:1.13.1'
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation 'androidx.webkit:webkit:1.4.0'
 
@@ -73,19 +81,20 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "io.mockk:mockk:1.12.0"
+    testImplementation "io.mockk:mockk:1.13.17"
     testImplementation 'io.strikt:strikt-core:0.32.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
 
-task sourceJar(type: Jar) {
+tasks.register('sourceJar', Jar) {
     archiveClassifier.set('sources')
     from android.sourceSets.main.java.srcDirs
 }
 
-task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
+tasks.register('coverageReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
     reports {
         xml.required.set(true)
         html.required.set(true)
@@ -102,7 +111,7 @@ task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
         '**/ui/explorer/**',
         '**/ui/notification/NotificationFactory.class',
         '**/ui/notification/NotificationTrampolineActivity.class',
-        '**/ui/notification/NotificationBroadcastReceiver.class',
+        '**/ui/notification/NotificationBroadcastReceiver*.class',
     ]
     def javaTree = fileTree(dir: "${project.buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
     def kotlinTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
@@ -110,7 +119,9 @@ task coverageReport(type: JacocoReport, dependsOn: 'testDebugUnitTest') {
 
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files([javaTree, kotlinTree]))
-    executionData.setFrom(fileTree(dir: "${project.buildDir}/jacoco/testDebugUnitTest.exec"))
+    executionData.setFrom(tasks.named('testDebugUnitTest').map {
+        it.extensions.getByType(JacocoTaskExtension).destinationFile
+    })
 }
 
 
@@ -171,7 +182,7 @@ def getLocalProperty(String key) {
 }
 
 // Dokka configuration for KDoc generation
-dokkaHtml.configure {
+tasks.named('dokkaHtml').configure {
     moduleName.set("Hackle Android SDK")
     outputDirectory.set(file("$projectDir/build/dokka"))
 

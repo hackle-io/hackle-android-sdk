@@ -14,6 +14,7 @@ import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -147,7 +148,7 @@ internal fun MockKStubScope<Call, Call>.response(statusCode: Int, body: String? 
         .protocol(mockk())
         .code(statusCode)
         .message(statusCode.toString())
-        .body(body?.let { ResponseBody.create(null, it) })
+        .body(body?.toResponseBody(null))
         .build()
     val call = mockk<Call> {
         every { execute() } returns response

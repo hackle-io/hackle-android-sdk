@@ -1,10 +1,13 @@
 package io.hackle.android.ui.notification
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
 import io.hackle.android.ui.notification.Constants.DEFAULT_NOTIFICATION_CHANNEL_ID
@@ -49,6 +52,14 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
                 log.debug { "Bypass notification handling because app in foregrounded." }
                 return false
             }
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            log.debug { "POST_NOTIFICATIONS permission has not been granted. Not posting notification." }
+            return false
         }
 
         try {

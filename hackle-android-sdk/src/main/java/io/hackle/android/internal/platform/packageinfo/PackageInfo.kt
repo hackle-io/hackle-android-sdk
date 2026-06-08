@@ -16,8 +16,8 @@ internal interface PackageInfo {
             var versionCode = 0L
             try {
                 val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                packageName = packageInfo.packageName
-                versionName = packageInfo.versionName
+                packageName = packageInfo.packageName ?: ""
+                versionName = packageInfo.versionName ?: ""
                 @Suppress("DEPRECATION")
                 versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                     packageInfo.longVersionCode else packageInfo.versionCode.toLong()

@@ -7,11 +7,12 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
+    namespace "io.hackle.android.sdk.tester"
     compileSdkVersion 35
 
     defaultConfig {
         applicationId "io.hackle.android.sdk.tester"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 35
         versionCode 1
         versionName "1.0"
@@ -49,6 +50,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 

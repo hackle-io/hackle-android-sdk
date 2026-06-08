@@ -180,7 +180,7 @@ internal object NotificationFactory {
         notificationIntent.putExtras(extras)
         val pendingIntent = PendingIntent.getActivity(
             context,
-            System.currentTimeMillis().toInt(),
+            data.notificationId,
             notificationIntent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
