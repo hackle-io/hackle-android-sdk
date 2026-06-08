@@ -1,18 +1,14 @@
 package io.hackle.android
 
-import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
-import io.hackle.android.internal.model.AndroidBuild
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
@@ -306,16 +302,8 @@ class HackleApp internal constructor(
      * @param webView  Target [WebView]. MUST NOT be null
      * @param webViewConfig the [HackleWebViewConfig] that contains WebView configuration
      */
-    @SuppressLint("UseRequiresApi")
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @JvmOverloads
     fun setWebViewBridge(webView: WebView, webViewConfig: HackleWebViewConfig = HackleWebViewConfig.DEFAULT) {
-        if (AndroidBuild.sdkVersion() < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            throw IllegalStateException(
-                "HackleApp.setJavascriptInterface should not be called with minSdkVersion < 17 for security reasons: " +
-                        "JavaScript can use reflection to manipulate application"
-            )
-        }
         val javascriptInterface = HackleJavascriptInterface(this, webViewConfig)
         javascriptInterface.addTo(webView)
     }

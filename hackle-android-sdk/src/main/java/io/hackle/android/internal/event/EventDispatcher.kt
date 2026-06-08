@@ -5,11 +5,11 @@ import io.hackle.android.internal.database.workspace.EventEntity.Status.PENDING
 import io.hackle.android.internal.database.repository.EventRepository
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.sdk.core.internal.log.Logger
-import okhttp3.HttpUrl
-import okhttp3.MediaType
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.util.concurrent.Executor
 
@@ -21,7 +21,7 @@ internal class EventDispatcher(
     private val httpClient: OkHttpClient,
     private val eventBackoffController: UserEventBackoffController,
 ) {
-    private val dispatchEndpoint = HttpUrl.get(baseEventUri + EVENT_DISPATCH_PATH)
+    private val dispatchEndpoint = (baseEventUri + EVENT_DISPATCH_PATH).toHttpUrl()
 
     fun dispatch(events: List<EventEntity>) {
         try {
@@ -59,7 +59,7 @@ internal class EventDispatcher(
         }
 
         private fun dispatch() {
-            val requestBody = RequestBody.create(CONTENT_TYPE, events.toBody())
+            val requestBody = events.toBody().toRequestBody(CONTENT_TYPE)
             val request = Request.Builder()
                 .url(dispatchEndpoint)
                 .post(requestBody)
@@ -80,10 +80,10 @@ internal class EventDispatcher(
         }
 
         private fun handleResponse(response: Response): Boolean {
-            when (response.code()) {
+            when (response.code) {
                 in 200..299 -> delete(events)
                 in 400..499 -> delete(events)
-                else -> throw IllegalStateException("Http status code: ${response.code()}")
+                else -> throw IllegalStateException("Http status code: ${response.code}")
             }
             return response.isSuccessful
         }
@@ -111,7 +111,7 @@ internal class EventDispatcher(
 
     companion object {
         private val log = Logger<EventDispatcher>()
-        private val CONTENT_TYPE = MediaType.get("application/json; charset=utf-8")
+        private val CONTENT_TYPE = "application/json; charset=utf-8".toMediaType()
         private const val EVENT_DISPATCH_PATH = "/api/v2/events"
     }
 }
