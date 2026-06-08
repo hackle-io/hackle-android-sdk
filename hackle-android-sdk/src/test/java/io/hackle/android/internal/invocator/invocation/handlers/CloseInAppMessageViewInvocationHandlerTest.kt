@@ -77,4 +77,26 @@ internal class CloseInAppMessageViewInvocationHandlerTest : AbstractInvocationHa
             view.close()
         }
     }
+
+    @Test
+    fun `when view close throws throwable then invocation should not crash`() {
+        // given
+        val view = mockk<InAppMessageView>()
+        every { view.close() } throws AssertionError("boom")
+        every { core.getInAppMessageView(any()) } returns view
+
+        val request = request(InvocationCommand.CLOSE_IN_APP_MESSAGE_VIEW, mapOf("viewId" to "view-id"))
+
+        // when
+        val actual = sut.invoke(request)
+
+        // then
+        expectThat(actual) {
+            get { isSuccess }.isTrue()
+            get { data }.isNull()
+        }
+        verify(exactly = 1) {
+            view.close()
+        }
+    }
 }

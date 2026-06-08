@@ -21,8 +21,8 @@ object MockBundle {
                     every { bundle.getByte(key) } returns value.toByte()
                     every { bundle.getByte(key, any()) } returns value.toByte()
 
-                    every { bundle.getChar(key) } returns value.toChar()
-                    every { bundle.getChar(key, any()) } returns value.toChar()
+                    every { bundle.getChar(key) } returns value.toInt().toChar()
+                    every { bundle.getChar(key, any()) } returns value.toInt().toChar()
 
                     every { bundle.getShort(key) } returns value.toShort()
                     every { bundle.getShort(key, any()) } returns value.toShort()

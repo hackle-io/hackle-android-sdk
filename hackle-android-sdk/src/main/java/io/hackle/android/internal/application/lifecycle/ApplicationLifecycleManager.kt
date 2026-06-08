@@ -30,8 +30,8 @@ internal class ApplicationLifecycleManager(
             log.debug { "application($state)" }
             val timestamp = clock.currentMillis()
             when (state) {
-                ApplicationState.FOREGROUND -> listeners.forEach { it.onForeground(timestamp, false) }
-                ApplicationState.BACKGROUND -> listeners.forEach { it.onBackground(timestamp) }
+                ApplicationState.FOREGROUND -> notifyListeners(state) { it.onForeground(timestamp, false) }
+                ApplicationState.BACKGROUND -> notifyListeners(state) { it.onBackground(timestamp) }
             }
         }
     }
@@ -75,7 +75,7 @@ internal class ApplicationLifecycleManager(
             log.debug { "application(onForeground)" }
             val isFromBackground = _currentState == ApplicationState.BACKGROUND
             execute {
-                listeners.forEach { it.onForeground(timestamp, isFromBackground) }
+                notifyListeners(ApplicationState.FOREGROUND) { it.onForeground(timestamp, isFromBackground) }
                 _currentState = ApplicationState.FOREGROUND
             }
         }
@@ -87,8 +87,18 @@ internal class ApplicationLifecycleManager(
         if (enableActivities.isEmpty()) {
             log.debug { "application(onBackground)" }
             execute {
-                listeners.forEach { it.onBackground(timestamp) }
+                notifyListeners(ApplicationState.BACKGROUND) { it.onBackground(timestamp) }
                 _currentState = ApplicationState.BACKGROUND
+            }
+        }
+    }
+
+    private inline fun notifyListeners(event: ApplicationState, block: (ApplicationLifecycleListener) -> Unit) {
+        for (listener in listeners) {
+            try {
+                block(listener)
+            } catch (e: Throwable) {
+                log.error(e) { "Failed to handle $event [${listener.javaClass.simpleName}]" }
             }
         }
     }

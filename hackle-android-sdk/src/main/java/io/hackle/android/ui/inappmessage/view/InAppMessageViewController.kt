@@ -2,7 +2,6 @@ package io.hackle.android.ui.inappmessage.view
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import android.os.Build
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
@@ -139,9 +138,7 @@ internal class InAppMessageViewController(
     private fun lockScreenOrientation(activity: Activity) {
         if (originalOrientation == null) {
             originalOrientation = activity.requestedOrientation
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                activity.setActivityRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED)
-            }
+            activity.setActivityRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED)
         }
     }
 

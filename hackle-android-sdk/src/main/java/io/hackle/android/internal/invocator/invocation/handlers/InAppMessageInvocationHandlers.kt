@@ -17,6 +17,7 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.view.handle
+import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.InAppMessage
 
 internal class GetCurrentInAppMessageViewInvocationHandler(
@@ -36,9 +37,17 @@ internal class CloseInAppMessageViewInvocationHandler(
         val viewId = checkParameterNotNull(request.parameters.viewId(), "viewId")
         val view = core.getInAppMessageView(viewId) ?: return InvocationResponse.success()
         runOnUiThread {
-            view.close()
+            try {
+                view.close()
+            } catch (e: Throwable) {
+                log.error(e) { "Failed to close InAppMessageView invocation. viewId=[$viewId]" }
+            }
         }
         return InvocationResponse.success()
+    }
+
+    companion object {
+        private val log = Logger<CloseInAppMessageViewInvocationHandler>()
     }
 }
 
@@ -50,7 +59,13 @@ internal class HandleInAppMessageViewInvocationHandler(
         val view = core.getInAppMessageView(dto.viewId) ?: return InvocationResponse.success()
         val event = viewEvent(view, dto.event)
         val handleTypes = dto.handleTypes.map { InAppMessageViewEventHandleType.valueOf(it) }
-        view.handle(event, handleTypes)
+        runOnUiThread {
+            try {
+                view.handle(event, handleTypes)
+            } catch (e: Throwable) {
+                log.error(e) { "Failed to handle InAppMessageView invocation" }
+            }
+        }
         return InvocationResponse.success()
     }
 
@@ -72,5 +87,9 @@ internal class HandleInAppMessageViewInvocationHandler(
             area = element.area?.let { InAppMessage.ActionArea.valueOf(it) },
             elementId = element.elementId
         )
+    }
+
+    companion object {
+        private val log = Logger<HandleInAppMessageViewInvocationHandler>()
     }
 }

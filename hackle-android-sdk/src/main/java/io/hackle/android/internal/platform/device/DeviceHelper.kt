@@ -8,10 +8,12 @@ import android.hardware.display.DisplayManager
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.Display
-import android.view.WindowManager
+import io.hackle.sdk.core.internal.log.Logger
 import java.util.Locale
 
 internal object DeviceHelper {
+
+    private val log = Logger<DeviceHelper>()
 
     private const val WINDOW_SIZE_MEDIUM = 600
 
@@ -44,17 +46,13 @@ internal object DeviceHelper {
         }
     }
 
-    @Suppress("DEPRECATION")
     fun getDisplayMetrics(context: Context): DisplayMetrics {
         val metrics = DisplayMetrics()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-            val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY)
-            display.getRealMetrics(metrics)
-        } else {
-            val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            val display = windowManager.defaultDisplay
-            display.getMetrics(metrics)
+        try {
+            val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as? DisplayManager
+            displayManager?.getDisplay(Display.DEFAULT_DISPLAY)?.getRealMetrics(metrics)
+        } catch (e: Throwable) {
+            log.warn { "Failed to read display metrics; using defaults: $e" }
         }
         return metrics
     }

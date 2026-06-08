@@ -6,10 +6,11 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import okhttp3.Call
-import okhttp3.Headers
+import okhttp3.Headers.Companion.toHeaders
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -131,7 +132,7 @@ class HttpWorkspaceFetcherTest {
             .request(mockk())
             .protocol(mockk())
             .code(statusCode)
-            .headers(Headers.of(headers))
+            .headers(headers.toHeaders())
             .networkResponse(
                 Response.Builder()
                     .request(mockk())
@@ -140,7 +141,7 @@ class HttpWorkspaceFetcherTest {
                     .message(statusCode.toString())
                     .build()
             )
-            .body(body?.let { ResponseBody.create(null, it) })
+            .body(body?.toResponseBody(null))
             .message(statusCode.toString())
             .build()
         return mockk {

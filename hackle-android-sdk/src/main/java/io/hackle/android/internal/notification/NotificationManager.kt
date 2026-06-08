@@ -47,8 +47,8 @@ internal class NotificationManager(
             }
 
             track(data.toTrackEvent(), userManager.currentUser, timestamp)
-        } catch (e: Exception) {
-            log.error { "Failed to handle notification data: ${data.messageId}" }
+        } catch (e: Throwable) {
+            log.error(e) { "Failed to handle notification data: ${data.messageId}" }
         }
     }
 

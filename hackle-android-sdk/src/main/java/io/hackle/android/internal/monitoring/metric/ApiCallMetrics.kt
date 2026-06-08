@@ -39,7 +39,7 @@ internal object ApiCallMetrics {
     }
 
     private fun status(response: Response?): String {
-        return response?.code()?.toString() ?: NONE_TAG
+        return response?.code?.toString() ?: NONE_TAG
     }
 
     private fun exception(e: Throwable?): String {
