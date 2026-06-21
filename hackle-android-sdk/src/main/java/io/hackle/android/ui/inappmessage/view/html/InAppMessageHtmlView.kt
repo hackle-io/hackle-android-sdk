@@ -8,6 +8,8 @@ import android.os.Build
 import android.util.AttributeSet
 import android.webkit.WebView
 import androidx.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import io.hackle.android.Hackle
 import io.hackle.android.R
 import io.hackle.android.app
@@ -73,6 +75,18 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         val javascriptInterface = InAppMessageViewJavascriptInterface(Hackle.app, this)
         javascriptInterface.addTo(webView)
 
+        // Bridge script (Javascript SDK loader)
+        // On supported WebView, register the bridge to run at document start so that it is injected
+        // before any content script and regardless of whether onPageFinished fires.
+        // Otherwise, fall back to injecting on onPageFinished.
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            WebViewCompat.addDocumentStartJavaScript(
+                webView,
+                bridgeScript.source,
+                setOf(InAppMessageWebView.ASSET_LOADER_BASE_URL)
+            )
+        }
+
         // WebView focus
         webView.setFocusableInTouchModeAndRequestFocus()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -116,7 +130,11 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             if (state == InAppMessageView.State.CLOSED) {
                 return
             }
-            webView.evaluate(bridgeScript)
+            // On supported WebView, the bridge is already injected at document start.
+            // Only inject here as a fallback for WebView that does not support DOCUMENT_START_SCRIPT.
+            if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                webView.evaluate(bridgeScript)
+            }
             webView.post { webView.requestFocus() }
             readyListener.onReady()
         }
