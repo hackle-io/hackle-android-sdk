@@ -35,15 +35,32 @@ internal class InAppMessageWebViewClient(
         return listener.onUrlLoading(url)
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+        if (request.isForMainFrame) {
+            log.debug { "WebView received error on main frame: ${error.errorCode}" }
+            listener.onPageError()
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onReceivedError(view: WebView, errorCode: Int, description: String?, failingUrl: String?) {
+        // API 21-22: deprecated 콜백은 메인 프레임(메인 리소스) 에러에만 호출된다
+        log.debug { "WebView received error on main frame: $errorCode" }
+        listener.onPageError()
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
         log.debug { "WebView's render process has exited." }
+        listener.onPageError()
         return true
     }
 
     interface PageListener {
         fun onPageFinished(view: WebView, url: String)
         fun onUrlLoading(url: String): Boolean
+        fun onPageError()
     }
 
     companion object {

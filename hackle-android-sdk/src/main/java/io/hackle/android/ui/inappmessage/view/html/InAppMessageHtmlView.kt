@@ -74,7 +74,6 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         javascriptInterface.addTo(webView)
 
         // WebView focus
-        webView.setFocusableInTouchModeAndRequestFocus()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             webView.isFocusedByDefault = true
         }
@@ -116,9 +115,16 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             if (state == InAppMessageView.State.CLOSED) {
                 return
             }
-            webView.evaluate(bridgeScript)
-            webView.post { webView.requestFocus() }
-            readyListener.onReady()
+
+            val readyHandler = InAppMessageHtmlReadyHandler(
+                isClosed = { state == InAppMessageView.State.CLOSED },
+                // Use setFocusableInTouchModeAndRequestFocus(): a bare requestFocus() is a no-op in touch
+                // mode unless the view is focusable-in-touch-mode. Since the configure-time focus setup is
+                // removed, focusability must be (re)established here or HTML form/keyboard focus breaks.
+                requestFocus = { webView.post { webView.setFocusableInTouchModeAndRequestFocus() } },
+                ready = { readyListener.onReady() }
+            )
+            webView.evaluate(bridgeScript) { readyHandler.onBridgeEvaluated() }
         }
 
         override fun onUrlLoading(url: String): Boolean {
@@ -126,6 +132,10 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             val event = InAppMessageViewEvent.action(this@InAppMessageHtmlView, action, null)
             handle(event, InAppMessageViewEventHandleType.ACTION)
             return true
+        }
+
+        override fun onPageError() {
+            close()
         }
     }
 
