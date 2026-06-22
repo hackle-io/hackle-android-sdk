@@ -20,7 +20,9 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
 import io.hackle.android.ui.inappmessage.view.*
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.model.InAppMessage
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 /**
  * In-app message view that renders HTML content via WebView.
@@ -49,6 +51,9 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
 
     private var _assetLoader: WebViewAssetLoader? = null
     private val assetLoader get() = requireNotNull(_assetLoader) { "WebViewAssetLoader is not set on InAppMessageHtmlView." }
+
+    // Closes the in-app message if the WebView never reports load completion or failure.
+    private var loadTimeoutJob: ScheduledJob? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onConfigure(listener: InAppMessageView.ReadyListener) {
@@ -89,6 +94,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             val contentResolver = contentResolverFactory.get(html.resourceType)
             val content = contentResolver.resolve(html) // blocking
             runOnUiThread {
+                scheduleLoadTimeout()
                 webView.load(content)
             }
         } catch (e: Exception) {
@@ -102,6 +108,25 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         webView.removeAllViews()
     }
 
+    private fun scheduleLoadTimeout() {
+        loadTimeoutJob = controller.ui.scheduler.schedule(LOAD_TIMEOUT_MILLIS, MILLISECONDS) {
+            runOnUiThread { onLoadTimeout() }
+        }
+    }
+
+    private fun cancelLoadTimeout() {
+        loadTimeoutJob?.cancel()
+        loadTimeoutJob = null
+    }
+
+    private fun onLoadTimeout() {
+        if (state != InAppMessageView.State.OPENING) {
+            return
+        }
+        log.warn { "InAppMessage HTML did not finish loading within ${LOAD_TIMEOUT_MILLIS}ms; closing [${inAppMessage.id}]" }
+        close()
+    }
+
     inner class HtmlPageListener(
         private val readyListener: InAppMessageView.ReadyListener
     ) : InAppMessageWebViewClient.PageListener {
@@ -112,6 +137,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
          * - Notifies that the InAppMessageView is ready to be shown.
          */
         override fun onPageFinished(view: WebView, url: String) {
+            cancelLoadTimeout()
             if (state == InAppMessageView.State.CLOSED) {
                 return
             }
@@ -135,12 +161,15 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         }
 
         override fun onPageError() {
+            cancelLoadTimeout()
             close()
         }
     }
 
     companion object {
         private val log = Logger<InAppMessageHtmlView>()
+
+        private const val LOAD_TIMEOUT_MILLIS: Long = 5000
 
         @SuppressLint("InflateParams")
         fun create(
