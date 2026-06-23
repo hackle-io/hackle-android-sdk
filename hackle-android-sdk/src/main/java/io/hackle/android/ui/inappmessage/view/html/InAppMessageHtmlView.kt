@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
+import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.webkit.WebViewAssetLoader
 import io.hackle.android.Hackle
@@ -52,7 +53,6 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     private var _assetLoader: WebViewAssetLoader? = null
     private val assetLoader get() = requireNotNull(_assetLoader) { "WebViewAssetLoader is not set on InAppMessageHtmlView." }
 
-    // Closes the in-app message if the WebView never reports load completion or failure.
     private var loadTimeoutJob: ScheduledJob? = null
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -94,6 +94,9 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             val contentResolver = contentResolverFactory.get(html.resourceType)
             val content = contentResolver.resolve(html) // blocking
             runOnUiThread {
+                if (state != InAppMessageView.State.OPENING) {
+                    return@runOnUiThread
+                }
                 scheduleLoadTimeout()
                 webView.load(content)
             }
@@ -123,7 +126,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         if (state != InAppMessageView.State.OPENING) {
             return
         }
-        log.warn { "InAppMessage HTML did not finish loading within ${LOAD_TIMEOUT_MILLIS}ms; closing [${inAppMessage.id}]" }
+        log.warn { "InAppMessage HTML did not become ready within ${LOAD_TIMEOUT_MILLIS}ms; closing [${inAppMessage.id}]" }
         close()
     }
 
@@ -137,20 +140,20 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
          * - Notifies that the InAppMessageView is ready to be shown.
          */
         override fun onPageFinished(view: WebView, url: String) {
-            cancelLoadTimeout()
             if (state == InAppMessageView.State.CLOSED) {
                 return
             }
 
             val readyHandler = InAppMessageHtmlReadyHandler(
                 isClosed = { state == InAppMessageView.State.CLOSED },
-                // Use setFocusableInTouchModeAndRequestFocus(): a bare requestFocus() is a no-op in touch
-                // mode unless the view is focusable-in-touch-mode. Since the configure-time focus setup is
-                // removed, focusability must be (re)established here or HTML form/keyboard focus breaks.
                 requestFocus = { webView.post { webView.setFocusableInTouchModeAndRequestFocus() } },
                 ready = { readyListener.onReady() }
             )
-            webView.evaluate(bridgeScript) { readyHandler.onBridgeEvaluated() }
+
+            webView.evaluate(bridgeScript) {
+                cancelLoadTimeout()
+                readyHandler.onBridgeEvaluated()
+            }
         }
 
         override fun onUrlLoading(url: String): Boolean {
@@ -161,6 +164,11 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         }
 
         override fun onPageError() {
+            cancelLoadTimeout()
+            close()
+        }
+
+        override fun onRenderProcessGone() {
             cancelLoadTimeout()
             close()
         }

@@ -47,12 +47,13 @@ internal class InAppMessageWebViewClientTest {
     }
 
     @Test
-    fun `onRenderProcessGone notifies page error and returns true`() {
+    fun `onRenderProcessGone notifies render process gone and returns true`() {
         val detail = mockk<RenderProcessGoneDetail>(relaxed = true)
 
         val result = sut.onRenderProcessGone(mockk(relaxed = true), detail)
 
-        verify(exactly = 1) { listener.onPageError() }
+        verify(exactly = 1) { listener.onRenderProcessGone() }
+        verify(exactly = 0) { listener.onPageError() }
         expectThat(result).isTrue()
     }
 }
