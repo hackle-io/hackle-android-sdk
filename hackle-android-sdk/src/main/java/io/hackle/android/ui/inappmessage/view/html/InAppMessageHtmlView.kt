@@ -177,7 +177,7 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     companion object {
         private val log = Logger<InAppMessageHtmlView>()
 
-        private const val LOAD_TIMEOUT_MILLIS: Long = 5000
+        private const val LOAD_TIMEOUT_MILLIS: Long = 30000
 
         @SuppressLint("InflateParams")
         fun create(
