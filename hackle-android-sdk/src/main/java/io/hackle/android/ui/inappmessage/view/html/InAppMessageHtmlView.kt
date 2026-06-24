@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.util.AttributeSet
+import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.webkit.WebViewAssetLoader
 import io.hackle.android.Hackle
@@ -20,7 +21,9 @@ import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
 import io.hackle.android.ui.inappmessage.view.*
 import io.hackle.sdk.core.internal.log.Logger
+import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.model.InAppMessage
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 /**
  * In-app message view that renders HTML content via WebView.
@@ -50,6 +53,8 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     private var _assetLoader: WebViewAssetLoader? = null
     private val assetLoader get() = requireNotNull(_assetLoader) { "WebViewAssetLoader is not set on InAppMessageHtmlView." }
 
+    private var loadTimeoutJob: ScheduledJob? = null
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onConfigure(listener: InAppMessageView.ReadyListener) {
 
@@ -74,7 +79,6 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
         javascriptInterface.addTo(webView)
 
         // WebView focus
-        webView.setFocusableInTouchModeAndRequestFocus()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             webView.isFocusedByDefault = true
         }
@@ -90,6 +94,10 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             val contentResolver = contentResolverFactory.get(html.resourceType)
             val content = contentResolver.resolve(html) // blocking
             runOnUiThread {
+                if (state != InAppMessageView.State.OPENING) {
+                    return@runOnUiThread
+                }
+                scheduleLoadTimeout()
                 webView.load(content)
             }
         } catch (e: Exception) {
@@ -101,6 +109,25 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
     override fun afterInAppMessageClose() {
         webView.loadUrl("about:blank")
         webView.removeAllViews()
+    }
+
+    private fun scheduleLoadTimeout() {
+        loadTimeoutJob = controller.ui.scheduler.schedule(LOAD_TIMEOUT_MILLIS, MILLISECONDS) {
+            runOnUiThread { onLoadTimeout() }
+        }
+    }
+
+    private fun cancelLoadTimeout() {
+        loadTimeoutJob?.cancel()
+        loadTimeoutJob = null
+    }
+
+    private fun onLoadTimeout() {
+        if (state != InAppMessageView.State.OPENING) {
+            return
+        }
+        log.warn { "InAppMessage HTML did not become ready within ${LOAD_TIMEOUT_MILLIS}ms; closing [${inAppMessage.id}]" }
+        close()
     }
 
     inner class HtmlPageListener(
@@ -116,9 +143,17 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             if (state == InAppMessageView.State.CLOSED) {
                 return
             }
-            webView.evaluate(bridgeScript)
-            webView.post { webView.requestFocus() }
-            readyListener.onReady()
+
+            val readyHandler = InAppMessageHtmlReadyHandler(
+                isClosed = { state == InAppMessageView.State.CLOSED },
+                requestFocus = { webView.post { webView.setFocusableInTouchModeAndRequestFocus() } },
+                ready = { readyListener.onReady() }
+            )
+
+            webView.evaluate(bridgeScript) {
+                cancelLoadTimeout()
+                readyHandler.onBridgeEvaluated()
+            }
         }
 
         override fun onUrlLoading(url: String): Boolean {
@@ -127,10 +162,22 @@ internal class InAppMessageHtmlView @JvmOverloads constructor(
             handle(event, InAppMessageViewEventHandleType.ACTION)
             return true
         }
+
+        override fun onPageError() {
+            cancelLoadTimeout()
+            close()
+        }
+
+        override fun onRenderProcessGone() {
+            cancelLoadTimeout()
+            close()
+        }
     }
 
     companion object {
         private val log = Logger<InAppMessageHtmlView>()
+
+        private const val LOAD_TIMEOUT_MILLIS: Long = 30000
 
         @SuppressLint("InflateParams")
         fun create(

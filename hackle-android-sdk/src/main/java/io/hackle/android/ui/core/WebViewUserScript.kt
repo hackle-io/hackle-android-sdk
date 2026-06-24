@@ -6,7 +6,9 @@ internal interface WebViewUserScript {
     val source: String
 }
 
-internal fun WebView.evaluate(script: WebViewUserScript) {
+internal fun WebView.evaluate(script: WebViewUserScript, completion: ((String?) -> Unit)? = null) {
     val source = script.source
-    evaluateJavascript(source, null)
+    evaluateJavascript(source) { value ->
+        completion?.invoke(value)
+    }
 }

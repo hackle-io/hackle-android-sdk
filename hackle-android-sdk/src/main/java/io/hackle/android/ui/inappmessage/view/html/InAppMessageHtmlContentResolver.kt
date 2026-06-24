@@ -5,6 +5,7 @@ import io.hackle.sdk.core.model.InAppMessage
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.util.concurrent.TimeUnit
 
 internal interface InAppMessageHtmlContentResolver<HTML : InAppMessage.Message.Html> {
     fun supports(resourceType: InAppMessage.Message.Html.ResourceType): Boolean
@@ -49,7 +50,9 @@ internal class PathInAppMessageHtmlContentResolver(
 
     private fun execute(request: Request): Response {
         return ApiCallMetrics.record("get.iam-html") {
-            httpClient.newCall(request).execute()
+            val call = httpClient.newCall(request)
+            call.timeout().timeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            call.execute()
         }
     }
 
@@ -57,5 +60,9 @@ internal class PathInAppMessageHtmlContentResolver(
         check(response.isSuccessful) { "Http status code: ${response.code}" }
         val responseBody = checkNotNull(response.body) { "Response body is null" }
         return responseBody.string()
+    }
+
+    companion object {
+        private const val TIMEOUT_SECONDS = 5L
     }
 }
