@@ -13,18 +13,24 @@ internal class FcmPushTokenFetcher(private val firebaseApp: FirebaseApp) : PushT
             log.debug { "Attempt to fetch PushToken from FirebaseMessaging" }
             val tokenValue = fetchFromFirebaseMessaging()
             log.debug { "Successfully fetched PushToken from FirebaseMessaging" }
+            if (tokenValue.isBlank()) {
+                log.warn { "PushToken value is blank." }
+            }
             return PushToken.of(tokenValue)
         } catch (e: Throwable) {
-            log.debug { "Failed to fetch PushToken from FirebaseMessaging: $e" }
+            log.warn { "Failed to fetch PushToken from FirebaseMessaging: $e" }
         }
 
         try {
             log.debug { "Attempt to fetch PushToken from FirebaseInstanceId" }
             val tokenValue = fetchFromFirebaseInstanceId()
             log.debug { "Successfully fetched PushToken from FirebaseInstanceId" }
+            if (tokenValue.isBlank()) {
+                log.warn { "PushToken value is blank." }
+            }
             return PushToken.of(tokenValue)
         } catch (e: Throwable) {
-            log.debug { "Failed to fetch PushToken from FirebaseInstanceId: $e" }
+            log.warn { "Failed to fetch PushToken from FirebaseInstanceId: $e" }
         }
 
         return null
