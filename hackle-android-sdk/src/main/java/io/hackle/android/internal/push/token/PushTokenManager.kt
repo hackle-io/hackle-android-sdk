@@ -23,7 +23,7 @@ internal class PushTokenManager(
         try {
             fetch()
         } catch (e: Throwable) {
-            log.debug { "Failed to fetch PushToken: $e" }
+            log.warn { "Failed to fetch PushToken: $e" }
         }
     }
 

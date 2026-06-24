@@ -140,6 +140,7 @@ internal object InAppMessages {
         action: InAppMessage.Action? = null,
         outerButtons: List<InAppMessage.Message.PositionalButton> = emptyList(),
         innerButtons: List<InAppMessage.Message.PositionalButton> = emptyList(),
+        html: InAppMessage.Message.Html? = null,
     ): InAppMessage.Message {
         return InAppMessage.Message(
             variationKey = variationKey,
@@ -154,7 +155,7 @@ internal object InAppMessages {
             action = action,
             outerButtons = outerButtons,
             innerButtons = innerButtons,
-            html = null,
+            html = html,
         )
     }
 
