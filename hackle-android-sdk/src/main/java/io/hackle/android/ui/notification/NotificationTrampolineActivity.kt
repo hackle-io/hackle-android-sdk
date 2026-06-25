@@ -47,7 +47,7 @@ internal class NotificationTrampolineActivity : Activity() {
                 } else {
                     val trampolineIntent = Intent(Intent.ACTION_VIEW, uri)
                     trampolineIntent.putExtras(extras)
-                    trampolineIntent.flags = DEEP_LINK_INTENT_FLAGS
+                    trampolineIntent.addFlags(NOTIFICATION_INTENT_FLAGS)
                     try {
                         startActivity(trampolineIntent)
                         log.debug { "Redirected to: $uri" }
@@ -67,9 +67,7 @@ internal class NotificationTrampolineActivity : Activity() {
             return
         }
         launcherIntent.setData(data)
-        launcherIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        launcherIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        launcherIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        launcherIntent.addFlags(NOTIFICATION_INTENT_FLAGS)
         launcherIntent.putExtras(bundle)
         startActivity(launcherIntent)
 
@@ -80,7 +78,7 @@ internal class NotificationTrampolineActivity : Activity() {
 
         private val log = Logger<NotificationTrampolineActivity>()
 
-        internal val DEEP_LINK_INTENT_FLAGS =
+        internal val NOTIFICATION_INTENT_FLAGS =
             Intent.FLAG_ACTIVITY_NEW_TASK or
                 Intent.FLAG_ACTIVITY_CLEAR_TOP or
                 Intent.FLAG_ACTIVITY_SINGLE_TOP
