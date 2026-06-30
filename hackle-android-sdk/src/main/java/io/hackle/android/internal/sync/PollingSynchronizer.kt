@@ -2,10 +2,10 @@ package io.hackle.android.internal.sync
 
 import io.hackle.android.HackleConfig
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
-import io.hackle.android.internal.task.Task
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.ScheduledJob
 import io.hackle.sdk.core.internal.scheduler.Scheduler
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class PollingSynchronizer(
@@ -16,7 +16,7 @@ internal class PollingSynchronizer(
 
     private var pollingJob: ScheduledJob? = null
 
-    override fun sync(): Task<Unit> {
+    override fun sync(): CompletableFuture<Void> {
         return delegate.safeSync()
     }
 

@@ -1,13 +1,15 @@
 package io.hackle.android.internal.workspace.config
 
 import io.hackle.android.internal.sync.Synchronizer
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.consume
+import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.workspace.Workspace
 import io.hackle.sdk.core.workspace.config.WorkspaceConfig
 import io.hackle.sdk.core.workspace.config.WorkspaceConfigFetcher
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
 
 internal class WorkspaceConfigManager(
@@ -29,10 +31,10 @@ internal class WorkspaceConfigManager(
         return record.get()?.workspace()
     }
 
-    override fun sync(): Task<Unit> {
+    override fun sync(): CompletableFuture<Void> {
         val lastModified = record.get()?.lastModified
         return fetcher.fetchIfModified(lastModified)
-            .map { store(it) }
+            .consume { store(it) }
             .recover { log.error { "Failed to fetch WorkspaceConfig: $it" } }
     }
 

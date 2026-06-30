@@ -1,6 +1,8 @@
 package io.hackle.android.internal.workspace.evaluation
 
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.consume
+import io.hackle.android.internal.task.map
+import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.workspace.WorkspaceManager
 import io.hackle.android.internal.workspace.evaluation.evaluator.AllWorkspaceEvaluateRequest
 import io.hackle.android.internal.workspace.evaluation.evaluator.SpecificWorkspaceEvaluateRequest
@@ -13,6 +15,7 @@ import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.workspace.Workspace
 import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluation
 import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluationFetcher
+import java.util.concurrent.CompletableFuture
 
 internal class WorkspaceEvaluationManager(
     private val evaluateProcessor: WorkspaceEvaluateProcessor,
@@ -33,12 +36,12 @@ internal class WorkspaceEvaluationManager(
         return cache.get(key)?.workspace()
     }
 
-    fun sync(context: WorkspaceEvaluationContext): Task<Unit> {
+    fun sync(context: WorkspaceEvaluationContext): CompletableFuture<Void> {
         val record = cache.get(context.key)
         val request = AllWorkspaceEvaluateRequest(context, record)
         return evaluateProcessor.process(request)
             .map { resolveResponse(request, it) }
-            .map { store(it) }
+            .consume { store(it) }
             .recover { log.error { "Failed to sync WorkspaceEvaluation: $it" } }
     }
 
@@ -70,7 +73,7 @@ internal class WorkspaceEvaluationManager(
         }
     }
 
-    fun evaluate(context: WorkspaceEvaluationContext, entities: List<Entity>): Task<WorkspaceEvaluation> {
+    fun evaluate(context: WorkspaceEvaluationContext, entities: List<Entity>): CompletableFuture<WorkspaceEvaluation> {
         val request = SpecificWorkspaceEvaluateRequest(context, entities)
         return evaluateProcessor.process(request)
             .map { DefaultWorkspaceEvaluation.from(requireNotNull(it.evaluation) { "evaluation" }) }

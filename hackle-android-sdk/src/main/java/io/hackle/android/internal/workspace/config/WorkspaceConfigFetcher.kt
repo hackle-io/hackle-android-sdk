@@ -6,12 +6,15 @@ import io.hackle.android.internal.http.isNotModified
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.internal.task.future
+import io.hackle.android.internal.task.map
 import io.hackle.sdk.core.internal.log.Logger
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.util.concurrent.CompletableFuture
 
 internal class HttpWorkspaceConfigFetcher(
     sdk: Sdk,
@@ -20,9 +23,9 @@ internal class HttpWorkspaceConfigFetcher(
 ) {
     private val url = url(sdk, sdkUri).toHttpUrl()
 
-    fun fetchIfModified(lastModified: String?): Task<WorkspaceConfigRecord?> {
+    fun fetchIfModified(lastModified: String?): CompletableFuture<WorkspaceConfigRecord?> {
         val request = createRequest(lastModified)
-        return Task.async { execute(request) }
+        return TaskExecutors.future { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

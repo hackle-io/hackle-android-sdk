@@ -2,13 +2,16 @@ package io.hackle.android.internal.user.local
 
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.task.Task
-import io.hackle.android.internal.user.*
+import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.internal.task.future
+import io.hackle.android.internal.task.map
+import io.hackle.android.internal.user.resolvedIdentifiers
 import io.hackle.sdk.common.User
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.util.concurrent.CompletableFuture
 
 internal class UserCohortFetcher(
     sdkUri: String,
@@ -16,9 +19,9 @@ internal class UserCohortFetcher(
 ) {
     private val url = url(sdkUri).toHttpUrl()
 
-    fun fetch(user: User): Task<UserCohorts> {
+    fun fetch(user: User): CompletableFuture<UserCohorts> {
         val request = createRequest(user)
-        return Task.async { execute(request) }
+        return TaskExecutors.future { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

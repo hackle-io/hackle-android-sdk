@@ -1,10 +1,12 @@
 package io.hackle.android.internal.workspace.evaluation.evaluator
 
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.asFuture
+import io.hackle.android.internal.task.flatMap
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationRecord
 import io.hackle.android.internal.workspace.evaluation.model.*
 import io.hackle.android.internal.workspace.evaluation.toDto
+import java.util.concurrent.CompletableFuture
 
 internal class AllWorkspaceRemoteEvaluator(
     private val client: WorkspaceRemoteEvaluateClient,
@@ -13,7 +15,7 @@ internal class AllWorkspaceRemoteEvaluator(
         return scope == WorkspaceEvaluateScope.ALL
     }
 
-    override fun evaluate(request: AllWorkspaceEvaluateRequest): Task<WorkspaceEvaluateResponse> {
+    override fun evaluate(request: AllWorkspaceEvaluateRequest): CompletableFuture<WorkspaceEvaluateResponse> {
         val requestDto = createRequestDto(request)
         return client.evaluate(requestDto)
             .flatMap { resolveResponse(request, it) }
@@ -27,7 +29,7 @@ internal class AllWorkspaceRemoteEvaluator(
     private fun resolveResponse(
         request: AllWorkspaceEvaluateRequest,
         response: WorkspaceEvaluateResponseDto,
-    ): Task<WorkspaceEvaluateResponse> {
+    ): CompletableFuture<WorkspaceEvaluateResponse> {
         val status = WorkspaceEvaluateStatus.valueOf(response.status)
         return when (status) {
             WorkspaceEvaluateStatus.FULL -> resolveFull(response)
@@ -36,21 +38,21 @@ internal class AllWorkspaceRemoteEvaluator(
         }
     }
 
-    private fun resolveFull(dto: WorkspaceEvaluateResponseDto): Task<WorkspaceEvaluateResponse> {
+    private fun resolveFull(dto: WorkspaceEvaluateResponseDto): CompletableFuture<WorkspaceEvaluateResponse> {
         val evaluation = requireNotNull(dto.evaluation) { "evaluation" }
         val response = WorkspaceEvaluateResponse.of(WorkspaceEvaluateStatus.FULL, evaluation)
-        return Task.succeed(response)
+        return response.asFuture()
     }
 
-    private fun resolveNotModified(): Task<WorkspaceEvaluateResponse> {
+    private fun resolveNotModified(): CompletableFuture<WorkspaceEvaluateResponse> {
         val response = WorkspaceEvaluateResponse.notModified()
-        return Task.succeed(response)
+        return response.asFuture()
     }
 
     private fun resolveDelta(
         request: AllWorkspaceEvaluateRequest,
         response: WorkspaceEvaluateResponseDto,
-    ): Task<WorkspaceEvaluateResponse> {
+    ): CompletableFuture<WorkspaceEvaluateResponse> {
         val requestEvaluation = requireNotNull(request.record?.dto) { "request evaluation" }
         val responseEvaluation = requireNotNull(response.evaluation) { "response evaluation" }
 
@@ -64,7 +66,7 @@ internal class AllWorkspaceRemoteEvaluator(
         }
 
         val mergedResponse = WorkspaceEvaluateResponse.of(WorkspaceEvaluateStatus.FULL, mergedEvaluation)
-        return Task.succeed(mergedResponse)
+        return mergedResponse.asFuture()
     }
 }
 

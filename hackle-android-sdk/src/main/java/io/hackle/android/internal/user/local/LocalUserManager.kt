@@ -4,7 +4,9 @@ import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.properties.operate
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.CompletableFutures
+import io.hackle.android.internal.task.consume
+import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.*
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
@@ -12,6 +14,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
+import java.util.concurrent.CompletableFuture
 
 
 internal class LocalUserManager(
@@ -85,13 +88,13 @@ internal class LocalUserManager(
 
     // User Update
 
-    override fun setUser(user: User): Task<Unit> {
+    override fun setUser(user: User): CompletableFuture<Void> {
         return update { context ->
             context.with(user.with(device).mergeWith(context.user))
         }
     }
 
-    override fun resetUser(): Task<Unit> {
+    override fun resetUser(): CompletableFuture<Void> {
         val updated = updateContext { context ->
             context.with(defaultUser)
         }
@@ -99,21 +102,21 @@ internal class LocalUserManager(
         return syncIfNeeded(updated)
     }
 
-    override fun setUserId(userId: String?): Task<Unit> {
+    override fun setUserId(userId: String?): CompletableFuture<Void> {
         return update { context ->
             val user = context.user.toBuilder().userId(userId).build()
             context.with(user.with(device).mergeWith(context.user))
         }
     }
 
-    override fun setDeviceId(deviceId: String): Task<Unit> {
+    override fun setDeviceId(deviceId: String): CompletableFuture<Void> {
         return update { context ->
             val user = context.user.toBuilder().deviceId(deviceId).build()
             context.with(user.with(device).mergeWith(context.user))
         }
     }
 
-    override fun updateProperties(operations: PropertyOperations): Task<Unit> {
+    override fun updateProperties(operations: PropertyOperations): CompletableFuture<Void> {
         return update { context ->
             trackProperties(context.user, operations, clock.currentMillis())
             val user = context.user.copy(properties = operations.operate(context.user.properties))
@@ -127,7 +130,7 @@ internal class LocalUserManager(
         }
     }
 
-    private fun update(update: (LocalUserContext) -> LocalUserContext): Task<Unit> {
+    private fun update(update: (LocalUserContext) -> LocalUserContext): CompletableFuture<Void> {
         val updated = updateContext(update)
         return syncIfNeeded(updated)
     }
@@ -160,23 +163,24 @@ internal class LocalUserManager(
 
     // Sync
 
-    private fun syncIfNeeded(updated: UserUpdated<LocalUserContext>): Task<Unit> {
-        val tasks = mutableListOf<Task<Unit>>()
+    private fun syncIfNeeded(updated: UserUpdated<LocalUserContext>): CompletableFuture<Void> {
+        val futures = mutableListOf<CompletableFuture<Void>>()
         if (hasNewIdentifiers(updated.old.user, updated.new.user)) {
-            tasks.add(syncCohort())
+            futures.add(syncCohort())
         }
         if (!updated.old.user.identifierEquals(updated.new.user)) {
-            tasks.add(syncTargetEvents())
+            futures.add(syncTargetEvents())
         }
-        return Task.all(tasks).then()
+
+        return CompletableFutures.allOf(futures)
     }
 
     /**
      * cohort 정보를 동기화한다.
      */
-    private fun syncCohort(): Task<Unit> {
+    private fun syncCohort(): CompletableFuture<Void> {
         return cohortFetcher.fetch(currentUser)
-            .map {
+            .consume {
                 synchronized(lock) {
                     context = context.update(it)
                 }
@@ -189,9 +193,9 @@ internal class LocalUserManager(
     /**
      * target event 정보를 동기화한다.
      */
-    private fun syncTargetEvents(): Task<Unit> {
+    private fun syncTargetEvents(): CompletableFuture<Void> {
         return targetEventFetcher.fetch(currentUser)
-            .map {
+            .consume {
                 synchronized(lock) {
                     context = context.update(it)
                 }
@@ -211,8 +215,8 @@ internal class LocalUserManager(
         return currentIdentifiers.any { it !in previousIdentifiers }
     }
 
-    override fun sync(): Task<Unit> {
-        return Task.all(syncCohort(), syncTargetEvents()).then()
+    override fun sync(): CompletableFuture<Void> {
+        return CompletableFuture.allOf(syncCohort(), syncTargetEvents())
     }
 
     // Lifecycle

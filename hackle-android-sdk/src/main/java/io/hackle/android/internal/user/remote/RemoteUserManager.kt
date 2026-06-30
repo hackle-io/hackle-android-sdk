@@ -3,7 +3,8 @@ package io.hackle.android.internal.user.remote
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.platform.packageinfo.PackageInfo
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.CompletableFutures
+import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.*
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManager
@@ -13,6 +14,7 @@ import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
 
 internal class RemoteUserManager(
@@ -84,33 +86,33 @@ internal class RemoteUserManager(
 
     // Update User
 
-    override fun setUser(user: User): Task<Unit> {
+    override fun setUser(user: User): CompletableFuture<Void> {
         return updateAndSyncIfNeeded(PropertyOperations.set(user.properties)) {
             RemoteUserContext.from(user.with(device))
         }
     }
 
-    override fun resetUser(): Task<Unit> {
+    override fun resetUser(): CompletableFuture<Void> {
         return updateAndSyncIfNeeded(PropertyOperations.clearAll()) {
             RemoteUserContext.from(defaultUser)
         }
     }
 
-    override fun setUserId(userId: String?): Task<Unit> {
+    override fun setUserId(userId: String?): CompletableFuture<Void> {
         return updateAndSyncIfNeeded { context ->
             RemoteUserContext.from(context.user.toBuilder().userId(userId).build())
         }
     }
 
-    override fun setDeviceId(deviceId: String): Task<Unit> {
+    override fun setDeviceId(deviceId: String): CompletableFuture<Void> {
         return updateAndSyncIfNeeded { context ->
             RemoteUserContext.from(context.user.toBuilder().deviceId(deviceId).build())
         }
     }
 
-    override fun updateProperties(operations: PropertyOperations): Task<Unit> {
+    override fun updateProperties(operations: PropertyOperations): CompletableFuture<Void> {
         if (operations.size == 0) {
-            return Task.succeed(Unit)
+            return CompletableFutures.void()
         }
         val context = SyncContext(currentContext, operations)
         return sync(context)
@@ -119,7 +121,7 @@ internal class RemoteUserManager(
     private fun updateAndSyncIfNeeded(
         operations: PropertyOperations = PropertyOperations.empty(),
         update: (RemoteUserContext) -> RemoteUserContext,
-    ): Task<Unit> {
+    ): CompletableFuture<Void> {
         val updated = updateContext(update)
         val syncContext = SyncContext(updated.new, operations)
         return syncIfNeeded(updated, syncContext)
@@ -156,19 +158,22 @@ internal class RemoteUserManager(
         val operations: PropertyOperations,
     )
 
-    override fun sync(): Task<Unit> {
+    override fun sync(): CompletableFuture<Void> {
         val context = initSyncContext.getAndSet(null) ?: SyncContext(currentContext, PropertyOperations.empty())
         return sync(context)
     }
 
-    private fun sync(context: SyncContext): Task<Unit> {
+    private fun sync(context: SyncContext): CompletableFuture<Void> {
         val hackleUser = hackleUser(context.userContext.user)
         val evaluationContext = WorkspaceEvaluationContext.of(hackleUser, context.operations)
         return evaluationManager.sync(evaluationContext)
             .recover { log.error { "Failed to sync WorkspaceEvaluation: $it" } }
     }
 
-    private fun syncIfNeeded(updated: UserUpdated<RemoteUserContext>, syncContext: SyncContext): Task<Unit> {
+    private fun syncIfNeeded(
+        updated: UserUpdated<RemoteUserContext>,
+        syncContext: SyncContext
+    ): CompletableFuture<Void> {
         if (syncContext.operations.size > 0) {
             return sync(syncContext)
         }
@@ -177,7 +182,7 @@ internal class RemoteUserManager(
             return sync(syncContext)
         }
 
-        return Task.succeed(Unit)
+        return CompletableFutures.void()
     }
 
     // Lifecycle

@@ -1,7 +1,8 @@
 package io.hackle.android.internal.sync
 
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.CompletableFutures
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
 
 internal class CompositeSynchronizer : Synchronizer {
@@ -13,9 +14,9 @@ internal class CompositeSynchronizer : Synchronizer {
         log.debug { "Synchronizer added [${synchronizer::class.java.simpleName}]" }
     }
 
-    override fun sync(): Task<Unit> {
-        val tasks = synchronizers.map { it.safeSync() }
-        return Task.all(tasks).then()
+    override fun sync(): CompletableFuture<Void> {
+        val futures = synchronizers.map { it.safeSync() }
+        return CompletableFutures.allOf(futures)
     }
 
     override fun toString(): String {

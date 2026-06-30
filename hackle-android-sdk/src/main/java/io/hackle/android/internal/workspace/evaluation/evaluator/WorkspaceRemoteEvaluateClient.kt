@@ -2,7 +2,9 @@ package io.hackle.android.internal.workspace.evaluation.evaluator
 
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.internal.task.future
+import io.hackle.android.internal.task.map
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateRequestDto
 import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateResponseDto
@@ -12,6 +14,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import java.util.concurrent.CompletableFuture
 
 internal class WorkspaceRemoteEvaluateClient(
     sdkUri: String,
@@ -20,13 +23,13 @@ internal class WorkspaceRemoteEvaluateClient(
 
     private val evaluateEndpoint = (sdkUri + EVALUATE_PATH).toHttpUrl()
 
-    fun evaluate(request: WorkspaceEvaluateRequestDto): Task<WorkspaceEvaluateResponseDto> {
+    fun evaluate(request: WorkspaceEvaluateRequestDto): CompletableFuture<WorkspaceEvaluateResponseDto> {
         val requestBody = request.toJson().toRequestBody(CONTENT_TYPE)
         val httpRequest = Request.Builder()
             .url(evaluateEndpoint)
             .post(requestBody)
             .build()
-        return Task.async { execute(httpRequest) }
+        return TaskExecutors.future { execute(httpRequest) }
             .map { response -> response.use { handleResponse(it) } }
     }
 
