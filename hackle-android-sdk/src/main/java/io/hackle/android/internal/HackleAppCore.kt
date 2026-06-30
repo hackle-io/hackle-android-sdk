@@ -13,6 +13,7 @@ import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.task.*
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
@@ -67,23 +68,29 @@ internal class HackleAppCore(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
-        eventExecutor.execute {
-            try {
-                // TODO: init 순서 조정, async, callback 처리, non critical 분리
+        eventExecutor
+            .future {
                 workspaceManager.initialize()
                 pushTokenManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
+            }
+            .flatMap {
                 synchronizer.sync()
+            }
+            .map {
                 notificationManager.flush()
                 applicationInstallStateManager.checkApplicationInstall()
+            }
+            .consume {
                 log.debug { "HackleApp initialized" }
-            } catch (e: Throwable) {
-                log.error { "Failed to initialize HackleApp: $e" }
-            } finally {
+            }
+            .recover {
+                log.error { "Failed to initialize HackleApp: $it" }
+            }
+            .onComplete {
                 onReady.run()
             }
-        }
     }
 
     fun getInAppMessageView(viewId: String): InAppMessageView? {

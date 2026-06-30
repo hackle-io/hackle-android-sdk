@@ -2,11 +2,10 @@ package io.hackle.android.internal.task
 
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 
 
 internal inline fun <T> TaskExecutors.future(
-    executor: ExecutorService = default(),
+    executor: Executor = default(),
     crossinline block: () -> T
 ): CompletableFuture<T> {
     return executor.future(block)
@@ -42,6 +41,22 @@ internal inline fun CompletableFuture<Void>.recover(crossinline action: (Throwab
         action(it)
         null
     }
+}
+
+internal inline fun <T> CompletableFuture<T>.onSuccess(crossinline action: (T) -> Unit): CompletableFuture<T> {
+    return whenComplete { value, error ->
+        if (error == null) action(value)
+    }
+}
+
+internal inline fun <T> CompletableFuture<T>.onFailure(crossinline action: (Throwable) -> Unit): CompletableFuture<T> {
+    return whenComplete { _, error ->
+        if (error != null) action(error)
+    }
+}
+
+internal inline fun <T> CompletableFuture<T>.onComplete(crossinline action: () -> Unit): CompletableFuture<T> {
+    return whenComplete { _, _ -> action() }
 }
 
 internal object CompletableFutures {

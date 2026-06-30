@@ -14,7 +14,7 @@ internal class TrackInvocationHandler(private val core: HackleAppCore) : Invocat
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
         val event = checkParameterNotNull(request.parameters.event(), "event")
         val context = HackleAppContext.create(request.browserProperties)
-        core.track(event, context)  // TODO: user? removed
+        core.track(event, context)
         return InvocationResponse.success()
     }
 }

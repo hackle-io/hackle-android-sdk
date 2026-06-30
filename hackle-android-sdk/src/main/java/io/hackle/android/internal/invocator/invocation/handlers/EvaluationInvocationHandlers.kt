@@ -22,7 +22,7 @@ internal abstract class AbTestInvocationHandler<R>(private val core: HackleAppCo
         val experimentKey = checkParameterNotNull(p.experimentKey(), "experimentKey")
         val defaultVariation = Variation.fromOrControl(p.defaultVariation())
         val context = HackleAppContext.create(request.browserProperties)
-        val decision = core.variationDetail(experimentKey, defaultVariation, context) // TODO: user? removed
+        val decision = core.variationDetail(experimentKey, defaultVariation, context)
         return InvocationResponse.success(transform(decision))
     }
 
@@ -45,7 +45,7 @@ internal abstract class FeatureFlagInvocationHandler<R>(private val core: Hackle
         val p = request.parameters
         val featureKey = checkParameterNotNull(p.featureKey(), "featureKey")
         val context = HackleAppContext.create(request.browserProperties)
-        val decision = core.featureFlagDetail(featureKey, context) // TODO: user? removed
+        val decision = core.featureFlagDetail(featureKey, context)
         return InvocationResponse.success(transform(decision))
     }
 
@@ -71,17 +71,17 @@ internal class RemoteConfigInvocationHandler(private val core: HackleAppCore) : 
         val data: Any = when (checkParameterNotNull(p.valueType(), "valueType")) {
             "string" -> {
                 val defaultValue = checkParameterNotNull(p.defaultStringValue(), "defaultValue")
-                core.remoteConfig(key, ValueType.STRING, defaultValue, context).value  // TODO: user? removed
+                core.remoteConfig(key, ValueType.STRING, defaultValue, context).value
             }
 
             "number" -> {
                 val defaultValue = checkParameterNotNull(p.defaultNumberValue(), "defaultValue")
-                core.remoteConfig(key, ValueType.NUMBER, defaultValue, context).value.toDouble() // TODO: user? removed
+                core.remoteConfig(key, ValueType.NUMBER, defaultValue, context).value.toDouble()
             }
 
             "boolean" -> {
                 val defaultValue = checkParameterNotNull(p.defaultBooleanValue(), "defaultValue")
-                core.remoteConfig(key, ValueType.BOOLEAN, defaultValue, context).value // TODO: user? removed
+                core.remoteConfig(key, ValueType.BOOLEAN, defaultValue, context).value
             }
 
             else -> {
