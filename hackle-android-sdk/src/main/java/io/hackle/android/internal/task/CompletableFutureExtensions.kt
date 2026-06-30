@@ -3,16 +3,42 @@ package io.hackle.android.internal.task
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
+internal object Futures {
 
-internal inline fun <T> TaskExecutors.future(
-    executor: Executor = default(),
-    crossinline block: () -> T
-): CompletableFuture<T> {
-    return executor.future(block)
+    inline fun <T> async(
+        executor: Executor = TaskExecutors.default(),
+        crossinline block: () -> T
+    ): CompletableFuture<T> {
+        return CompletableFuture.supplyAsync({ block() }, executor)
+    }
+
+    inline fun <T> sync(block: () -> T): CompletableFuture<T> {
+        return try {
+            block().asFuture()
+        } catch (ex: Throwable) {
+            CompletableFuture<T>().apply { completeExceptionally(ex) }
+        }
+    }
+
+    inline fun <T> wrap(block: () -> CompletableFuture<T>): CompletableFuture<T> {
+        return try {
+            block()
+        } catch (ex: Throwable) {
+            CompletableFuture<T>().apply { completeExceptionally(ex) }
+        }
+    }
+
+    fun allOf(futures: List<CompletableFuture<*>>): CompletableFuture<Void> {
+        return CompletableFuture.allOf(*futures.toTypedArray())
+    }
+
+    fun completed(): CompletableFuture<Void> {
+        return CompletableFuture.completedFuture(null)
+    }
 }
 
 internal inline fun <T> Executor.future(crossinline block: () -> T): CompletableFuture<T> {
-    return CompletableFuture.supplyAsync({ block() }, this)
+    return Futures.async(this, block)
 }
 
 internal fun <T> T.asFuture(): CompletableFuture<T> {
@@ -57,14 +83,4 @@ internal inline fun <T> CompletableFuture<T>.onFailure(crossinline action: (Thro
 
 internal inline fun <T> CompletableFuture<T>.onComplete(crossinline action: () -> Unit): CompletableFuture<T> {
     return whenComplete { _, _ -> action() }
-}
-
-internal object CompletableFutures {
-    fun allOf(futures: List<CompletableFuture<*>>): CompletableFuture<Void> {
-        return CompletableFuture.allOf(*futures.toTypedArray())
-    }
-
-    fun void(): CompletableFuture<Void> {
-        return CompletableFuture.completedFuture(null)
-    }
 }

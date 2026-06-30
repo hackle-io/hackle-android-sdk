@@ -4,11 +4,12 @@ import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverReques
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverResponse.Code
 import io.hackle.android.internal.inappmessage.evaluation.eligibility
 import io.hackle.android.internal.inappmessage.evaluation.layout
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.workspace.config.WorkspaceConfigManager
 import io.hackle.sdk.core.evaluation.EvaluateProcessor
 import io.hackle.sdk.core.evaluation.service.inappmessage.InAppMessageEvaluateScope.DELIVER
 import io.hackle.sdk.core.user.HackleUser
+import java.util.concurrent.CompletableFuture
 
 internal class InAppMessageDeliverLocalEvaluator(
     private val workspaceManager: WorkspaceConfigManager,
@@ -17,8 +18,8 @@ internal class InAppMessageDeliverLocalEvaluator(
     override fun evaluate(
         request: InAppMessageDeliverRequest,
         user: HackleUser,
-    ): Task<InAppMessageDeliverEvaluateResponse> {
-        return Task.sync { doEvaluate(request, user) }
+    ): CompletableFuture<InAppMessageDeliverEvaluateResponse> {
+        return Futures.sync { doEvaluate(request, user) }
     }
 
     private fun doEvaluate(

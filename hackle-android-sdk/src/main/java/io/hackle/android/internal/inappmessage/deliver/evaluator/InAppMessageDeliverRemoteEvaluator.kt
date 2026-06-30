@@ -4,7 +4,8 @@ import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverReques
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverResponse.Code
 import io.hackle.android.internal.inappmessage.evaluation.eligibility
 import io.hackle.android.internal.inappmessage.evaluation.layout
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.asFuture
+import io.hackle.android.internal.task.map
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManager
 import io.hackle.sdk.core.evaluation.EvaluateProcessor
@@ -14,6 +15,7 @@ import io.hackle.sdk.core.evaluation.service.inappmessage.layout.InAppMessageLay
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluation
 import io.hackle.sdk.core.workspace.evaluation.entity.InAppMessageEligibilityRemoteEvaluateResult
+import java.util.concurrent.CompletableFuture
 
 
 internal class InAppMessageDeliverRemoteEvaluator(
@@ -23,12 +25,12 @@ internal class InAppMessageDeliverRemoteEvaluator(
     override fun evaluate(
         request: InAppMessageDeliverRequest,
         user: HackleUser,
-    ): Task<InAppMessageDeliverEvaluateResponse> {
+    ): CompletableFuture<InAppMessageDeliverEvaluateResponse> {
         val workspace = workspaceManager.workspace(user)
-            ?: return Task.succeed(InAppMessageDeliverEvaluateResponse.ineligible(Code.WORKSPACE_NOT_FOUND))
+            ?: return InAppMessageDeliverEvaluateResponse.ineligible(Code.WORKSPACE_NOT_FOUND).asFuture()
 
         val inAppMessage = workspace.getInAppMessageOrNull(request.inAppMessageKey)
-            ?: return Task.succeed(InAppMessageDeliverEvaluateResponse.ineligible(Code.IN_APP_MESSAGE_NOT_FOUND))
+            ?: return InAppMessageDeliverEvaluateResponse.ineligible(Code.IN_APP_MESSAGE_NOT_FOUND).asFuture()
 
         return resolveWorkspaceEvaluation(request, workspace, inAppMessage, user)
             .map { evaluate(request, it, user) }
@@ -39,16 +41,16 @@ internal class InAppMessageDeliverRemoteEvaluator(
         workspace: WorkspaceEvaluation,
         inAppMessage: InAppMessageEligibilityRemoteEvaluateResult,
         user: HackleUser,
-    ): Task<WorkspaceEvaluation> {
+    ): CompletableFuture<WorkspaceEvaluation> {
         if (inAppMessage.evaluateContext.atDeliverTime) {
             // time + dedup 만 먼저 evaluate 해서 API 호출 최적화
             val response = evaluateProcessor.eligibility(request, workspace, inAppMessage, user, record = false)
             if (!response.evaluation.result.isEligible) {
-                return Task.succeed(workspace)
+                return workspace.asFuture()
             }
             return workspaceManager.evaluate(WorkspaceEvaluationContext.of(user), listOf(inAppMessage))
         } else {
-            return Task.succeed(workspace)
+            return workspace.asFuture()
         }
     }
 

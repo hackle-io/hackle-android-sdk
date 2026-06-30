@@ -2,8 +2,7 @@ package io.hackle.android.internal.workspace.evaluation.evaluator
 
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.task.TaskExecutors
-import io.hackle.android.internal.task.future
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.map
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateRequestDto
@@ -29,7 +28,7 @@ internal class WorkspaceRemoteEvaluateClient(
             .url(evaluateEndpoint)
             .post(requestBody)
             .build()
-        return TaskExecutors.future { execute(httpRequest) }
+        return Futures.async { execute(httpRequest) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

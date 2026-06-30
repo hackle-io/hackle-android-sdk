@@ -2,8 +2,7 @@ package io.hackle.android.internal.user.local
 
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
-import io.hackle.android.internal.task.TaskExecutors
-import io.hackle.android.internal.task.future
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.map
 import io.hackle.android.internal.user.resolvedIdentifiers
 import io.hackle.sdk.common.User
@@ -21,7 +20,7 @@ internal class UserCohortFetcher(
 
     fun fetch(user: User): CompletableFuture<UserCohorts> {
         val request = createRequest(user)
-        return TaskExecutors.future { execute(request) }
+        return Futures.async { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

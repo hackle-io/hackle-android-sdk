@@ -4,7 +4,7 @@ import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.platform.packageinfo.PackageInfo
 import io.hackle.android.internal.properties.operate
-import io.hackle.android.internal.task.CompletableFutures
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.consume
 import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.*
@@ -172,7 +172,7 @@ internal class LocalUserManager(
             futures.add(syncTargetEvents())
         }
 
-        return CompletableFutures.allOf(futures)
+        return Futures.allOf(futures)
     }
 
     /**

@@ -9,12 +9,13 @@ import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifier
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
 import io.hackle.android.internal.session.SessionUserDecorator
-import io.hackle.android.internal.task.Task
+import io.hackle.android.internal.task.*
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.user.decorateWith
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.Identifiers
 import io.hackle.sdk.core.user.HackleUser
+import java.util.concurrent.CompletableFuture
 
 internal class InAppMessageDeliverProcessor(
     private val activityProvider: ActivityProvider,
@@ -25,10 +26,9 @@ internal class InAppMessageDeliverProcessor(
     private val presentProcessor: InAppMessagePresentProcessor,
 ) {
 
-    fun process(request: InAppMessageDeliverRequest): Task<InAppMessageDeliverResponse> {
+    fun process(request: InAppMessageDeliverRequest): CompletableFuture<InAppMessageDeliverResponse> {
         log.debug { "InAppMessage Deliver Request: $request" }
-
-        return Task.wrap { deliver(request) }
+        return Futures.wrap { deliver(request) }
             .recover {
                 log.error { "Failed to process InAppMessageDeliver: $it" }
                 InAppMessageDeliverResponse.of(request, Code.EXCEPTION)
@@ -38,11 +38,12 @@ internal class InAppMessageDeliverProcessor(
             }
     }
 
-    private fun deliver(request: InAppMessageDeliverRequest): Task<InAppMessageDeliverResponse> {
+    private fun deliver(request: InAppMessageDeliverRequest): CompletableFuture<InAppMessageDeliverResponse> {
 
         // check ActivityState
         if (activityProvider.currentState != ActivityState.ACTIVE) {
-            return Task.succeed(InAppMessageDeliverResponse.of(request, Code.ACTIVITY_INACTIVE))
+            val response = InAppMessageDeliverResponse.of(request, Code.ACTIVITY_INACTIVE)
+            return response.asFuture()
         }
 
         // check User
@@ -51,7 +52,8 @@ internal class InAppMessageDeliverProcessor(
         val isIdentifierChanged =
             identifierChecker.isIdentifierChanged(request.identifiers, Identifiers.from(user.identifiers))
         if (isIdentifierChanged) {
-            return Task.succeed(InAppMessageDeliverResponse.of(request, Code.IDENTIFIER_CHANGED))
+            val response = InAppMessageDeliverResponse.of(request, Code.IDENTIFIER_CHANGED)
+            return response.asFuture()
         }
 
         return evaluator.evaluate(request, user) // evaluate (dedup + re-evaluate)

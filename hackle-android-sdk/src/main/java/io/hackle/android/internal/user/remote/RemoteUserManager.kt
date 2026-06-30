@@ -3,7 +3,7 @@ package io.hackle.android.internal.user.remote
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.internal.platform.packageinfo.PackageInfo
-import io.hackle.android.internal.task.CompletableFutures
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.*
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
@@ -112,7 +112,7 @@ internal class RemoteUserManager(
 
     override fun updateProperties(operations: PropertyOperations): CompletableFuture<Void> {
         if (operations.size == 0) {
-            return CompletableFutures.void()
+            return Futures.completed()
         }
         val context = SyncContext(currentContext, operations)
         return sync(context)
@@ -182,7 +182,7 @@ internal class RemoteUserManager(
             return sync(syncContext)
         }
 
-        return CompletableFutures.void()
+        return Futures.completed()
     }
 
     // Lifecycle
