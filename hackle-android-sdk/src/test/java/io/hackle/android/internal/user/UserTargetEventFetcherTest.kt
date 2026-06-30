@@ -1,6 +1,8 @@
 package io.hackle.android.internal.user
 
 import android.util.Base64
+import io.hackle.android.internal.user.local.UserTargetEventFetcher
+import io.hackle.android.internal.user.local.UserTargetEvents
 import io.hackle.android.support.assertThrows
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Target
@@ -13,7 +15,6 @@ import io.mockk.verify
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Response
-import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Before
 import org.junit.Test

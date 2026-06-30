@@ -7,7 +7,6 @@ import io.hackle.android.internal.invocator.event
 import io.hackle.android.internal.invocator.invocation.InvocationHandler
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.invocator.invocation.InvocationResponse
-import io.hackle.android.internal.invocator.user
 
 // Track
 
@@ -15,7 +14,7 @@ internal class TrackInvocationHandler(private val core: HackleAppCore) : Invocat
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
         val event = checkParameterNotNull(request.parameters.event(), "event")
         val context = HackleAppContext.create(request.browserProperties)
-        core.track(event, request.parameters.user(), context)
+        core.track(event, context)  // TODO: user? removed
         return InvocationResponse.success()
     }
 }

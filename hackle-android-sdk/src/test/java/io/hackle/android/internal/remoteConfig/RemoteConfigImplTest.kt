@@ -2,16 +2,14 @@ package io.hackle.android.internal.remoteconfig
 
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.DecisionReason.REMOTE_CONFIG_PARAMETER_NOT_FOUND
 import io.hackle.sdk.common.decision.RemoteConfigDecision
 import io.hackle.sdk.core.model.ValueType
-import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -24,7 +22,7 @@ internal class RemoteConfigImplTest {
     private lateinit var hackleAppCore: HackleAppCore
 
     @MockK
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
 
     private lateinit var sut: HackleRemoteConfigImpl
 

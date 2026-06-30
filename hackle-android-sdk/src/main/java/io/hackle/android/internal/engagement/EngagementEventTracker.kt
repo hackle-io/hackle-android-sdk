@@ -19,7 +19,7 @@ internal class EngagementEventTracker(
             .property(SCREEN_NAME_PROPERTY_KEY, engagement.screen.name)
             .property(SCREEN_CLASS_PROPERTY_KEY, engagement.screen.className)
             .build()
-        val hackleUser = userManager.toHackleUser(user)
+        val hackleUser = userManager.hackleUser(user)
         core.track(trackEvent, hackleUser, timestamp)
     }
 

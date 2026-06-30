@@ -1,5 +1,12 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.user.local.TargetEventDto
+import io.hackle.android.internal.user.local.TargetEventPropertyDto
+import io.hackle.android.internal.user.local.TargetEventStatDto
+import io.hackle.android.internal.user.local.UserTargetEvents
+import io.hackle.android.internal.user.local.toProperty
+import io.hackle.android.internal.user.local.toStat
+import io.hackle.android.internal.user.local.toTargetEvent
 import io.hackle.sdk.core.model.Target
 import io.hackle.sdk.core.model.TargetEvent
 import org.junit.Test

@@ -2,8 +2,7 @@ package io.hackle.android.internal.application
 
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
-import io.hackle.android.internal.user.UserManager
-import io.hackle.android.mock.MockPackageInfo
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.user.HackleUser
@@ -14,7 +13,7 @@ import strikt.assertions.isEqualTo
 
 class ApplicationEventTrackerTest {
 
-    private val userManager = mockk<UserManager>()
+    private val userManager = mockk<LocalUserManager>()
     private val core = mockk<HackleCore>(relaxed = true)
     private val mockUser = mockk<HackleUser>()
 

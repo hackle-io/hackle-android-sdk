@@ -1,17 +1,15 @@
 package io.hackle.android.internal.inappmessage.deliver
 
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverResponse.Code
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
 import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateType
 import io.hackle.android.internal.inappmessage.evaluation.InAppMessageIdentifierChecker
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageLayoutResolver
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentProcessor
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType.TRIGGERED
 import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityState
 import io.hackle.android.internal.session.SessionUserDecorator
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.support.InAppMessages
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.model.InAppMessage
@@ -39,7 +37,7 @@ class InAppMessageDeliverProcessorTest {
     private lateinit var workspaceFetcher: WorkspaceFetcher
 
     @MockK
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
 
     @MockK
     private lateinit var sessionUserDecorator: SessionUserDecorator

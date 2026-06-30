@@ -13,7 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 
 class HackleConfigTest {
@@ -35,7 +34,7 @@ class HackleConfigTest {
         val result = HackleConfig.DEFAULT
 
         // then
-        expectThat(result.mode).isEqualTo(HackleAppMode.NATIVE)
+        expectThat(result.appMode).isEqualTo(HackleAppMode.NATIVE)
         expectThat(result.pollingIntervalMillis).isEqualTo(-1) // NO_POLLING
         expectThat(result.sessionTracking).isEqualTo(true)
         expectThat(result.automaticScreenTracking).isEqualTo(true)
@@ -52,7 +51,7 @@ class HackleConfigTest {
             .build()
 
         // then
-        expectThat(result.mode).isEqualTo(HackleAppMode.WEB_VIEW_WRAPPER)
+        expectThat(result.appMode).isEqualTo(HackleAppMode.WEB_VIEW_WRAPPER)
         expectThat(result.pollingIntervalMillis).isEqualTo(120000)
         expectThat(result.eventFlushThreshold).isEqualTo(20)
         // WEB_VIEW_WRAPPER mode disables session tracking
@@ -140,9 +139,9 @@ class HackleConfigTest {
 
     @Test
     fun `mode`() {
-        configTests(HackleConfig::mode to HackleAppMode.NATIVE)
+        configTests(HackleConfig::appMode to HackleAppMode.NATIVE)
         configTests(
-            HackleConfig::mode to HackleAppMode.WEB_VIEW_WRAPPER,
+            HackleConfig::appMode to HackleAppMode.WEB_VIEW_WRAPPER,
             HackleConfig::sessionTracking to false
         ) {
             mode(HackleAppMode.WEB_VIEW_WRAPPER)

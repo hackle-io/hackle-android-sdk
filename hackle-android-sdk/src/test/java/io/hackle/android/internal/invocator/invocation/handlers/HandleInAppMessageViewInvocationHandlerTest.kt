@@ -7,7 +7,7 @@ import io.hackle.android.internal.invocator.model.InAppMessageElementDto
 import io.hackle.android.internal.invocator.model.InAppMessageViewEventDto
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.utils.json.gsonTypeRef
-import io.hackle.android.internal.workspace.InAppMessageDto
+import io.hackle.android.internal.workspace.config.InAppMessageDto
 import io.hackle.android.support.assertThrows
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleProcessor

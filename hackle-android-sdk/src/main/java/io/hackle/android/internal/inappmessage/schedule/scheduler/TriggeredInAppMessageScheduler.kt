@@ -19,7 +19,7 @@ internal class TriggeredInAppMessageScheduler(
     override fun deliver(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
         val deliverRequest = InAppMessageDeliverRequest.of(request)
         val deliverResponse = deliverProcessor.process(deliverRequest)
-        return InAppMessageScheduleResponse.of(request, Code.DELIVER, deliverResponse = deliverResponse)
+        return InAppMessageScheduleResponse.of(request, Code.DELIVER, deliverResponse = deliverResponse.get())  // TODO: Task
     }
 
     override fun delay(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {

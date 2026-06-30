@@ -1,5 +1,10 @@
 package io.hackle.android.internal.workspace
 
+import io.hackle.android.internal.workspace.config.BucketDto
+import io.hackle.android.internal.workspace.config.EventTypeDto
+import io.hackle.android.internal.workspace.config.SegmentDto
+import io.hackle.android.internal.workspace.config.SlotDto
+import io.hackle.android.internal.workspace.config.TargetDto
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

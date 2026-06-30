@@ -2,7 +2,7 @@ package io.hackle.android.internal.session
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.HackleSessionPolicy
@@ -49,7 +49,7 @@ class SessionManagerSessionPolicyTest {
             .timeoutCondition(sessionPolicy.timeoutCondition.toBuilder().millis(10000).build())
             .build()
         return SessionManager(
-            userManager = UserManager(
+            userManager = LocalUserManager(
                 MockDevice("test_id", emptyMap()),
                 MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
                 MapKeyValueRepository(),

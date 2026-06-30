@@ -1,6 +1,9 @@
 package io.hackle.android.internal.user
 
 import android.util.Base64
+import io.hackle.android.internal.user.local.UserCohort
+import io.hackle.android.internal.user.local.UserCohortFetcher
+import io.hackle.android.internal.user.local.UserCohorts
 import io.hackle.android.support.assertThrows
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort

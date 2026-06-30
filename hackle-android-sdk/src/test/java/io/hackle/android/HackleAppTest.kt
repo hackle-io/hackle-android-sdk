@@ -19,9 +19,9 @@ import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
-import io.hackle.android.internal.workspace.WorkspaceManager
+import io.hackle.android.internal.workspace.config.WorkspaceConfigManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.inappmessage.InAppMessageUi
@@ -70,10 +70,10 @@ class HackleAppTest {
     private lateinit var synchronizer: PollingSynchronizer
 
     @RelaxedMockK
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
 
     @RelaxedMockK
-    private lateinit var workspaceManager: WorkspaceManager
+    private lateinit var workspaceManager: WorkspaceConfigManager
 
     @RelaxedMockK
     private lateinit var sessionManager: SessionManager

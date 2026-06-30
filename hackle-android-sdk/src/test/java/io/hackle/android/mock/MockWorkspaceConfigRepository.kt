@@ -1,7 +1,7 @@
 package io.hackle.android.mock
 
 import io.hackle.android.internal.workspace.WorkspaceConfig
-import io.hackle.android.internal.workspace.repository.WorkspaceConfigRepository
+import io.hackle.android.internal.workspace.config.WorkspaceConfigRepository
 
 internal class MockWorkspaceConfigRepository(
     var value: WorkspaceConfig? = null

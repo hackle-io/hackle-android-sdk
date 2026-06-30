@@ -14,7 +14,7 @@ import io.hackle.android.internal.session.SessionContext
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.session.SessionUserDecorator
 import io.hackle.android.internal.session.SessionUserEventDecorator
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
@@ -57,7 +57,7 @@ class DefaultEventProcessorTest {
     private lateinit var sessionManager: SessionManager
 
     @RelaxedMockK
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
 
     @RelaxedMockK
     private lateinit var screenManager: ScreenManager
@@ -87,7 +87,7 @@ class DefaultEventProcessorTest {
         eventFlushMaxBatchSize: Int = 21,
         eventDispatcher: EventDispatcher = this.eventDispatcher,
         sessionManager: SessionManager = this.sessionManager,
-        userManager: UserManager = this.userManager,
+        userManager: LocalUserManager = this.userManager,
         screenManager: ScreenManager = this.screenManager,
         eventBackoffController: UserEventBackoffController = this.eventBackoffController,
         optOutManager: OptOutManager = OptOutManager(false),

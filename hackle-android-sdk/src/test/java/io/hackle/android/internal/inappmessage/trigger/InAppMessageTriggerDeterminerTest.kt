@@ -1,7 +1,6 @@
 package io.hackle.android.internal.inappmessage.trigger
 
 import io.hackle.android.internal.event.UserEvents
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
 import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateType.TRIGGER
 import io.hackle.android.support.InAppMessages
 import io.hackle.sdk.common.decision.DecisionReason

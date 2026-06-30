@@ -1,6 +1,6 @@
 package io.hackle.android.internal.screen
 
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
@@ -17,7 +17,7 @@ import org.junit.Test
 class ScreenEventTrackerTest {
 
     @RelaxedMockK
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
 
     @RelaxedMockK
     private lateinit var core: HackleCore

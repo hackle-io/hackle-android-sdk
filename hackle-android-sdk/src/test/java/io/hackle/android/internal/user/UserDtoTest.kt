@@ -1,5 +1,12 @@
 package io.hackle.android.internal.user
 
+import io.hackle.android.internal.user.local.IdentifierDto
+import io.hackle.android.internal.user.local.TargetEventDto
+import io.hackle.android.internal.user.local.TargetEventPropertyDto
+import io.hackle.android.internal.user.local.TargetEventStatDto
+import io.hackle.android.internal.user.local.UserCohortDto
+import io.hackle.android.internal.user.local.UserCohortsResponseDto
+import io.hackle.android.internal.user.local.UserTargetResponseDto
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

@@ -1,0 +1,55 @@
+package io.hackle.android.ui.explorer.storage
+
+import android.content.Context
+import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
+import io.hackle.android.internal.database.repository.KeyValueRepository
+import io.hackle.sdk.core.evaluation.service.experiment.match.ExperimentManualOverrideStorage
+import io.hackle.sdk.core.model.Experiment
+import io.hackle.sdk.core.model.Variation
+import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.workspace.config.entity.ExperimentConfig
+
+internal class AndroidExperimentManualOverrideStorage(
+    private val keyValueRepository: KeyValueRepository,
+) : ExperimentManualOverrideStorage {
+
+    override fun get(experiment: ExperimentConfig, user: HackleUser): Variation? {
+        val variationId = get(experiment) ?: return null
+        return experiment.getVariationOrNull(variationId)
+    }
+
+    fun getAll(): Map<Long, Long> {
+        val results = hashMapOf<Long, Long>()
+        for (e in keyValueRepository.getAll()) {
+            val experimentId = e.key.toLongOrNull() ?: continue
+            val variationId = e.value as? Long ?: continue
+            results[experimentId] = variationId
+        }
+        return results
+    }
+
+    fun get(experiment: Experiment): Long? {
+        val variationId = keyValueRepository.getLong(experiment.id.toString(), -1)
+        return if (variationId > 0) variationId else null
+    }
+
+    fun set(experiment: Experiment, variationId: Long) {
+        keyValueRepository.putLong(experiment.id.toString(), variationId)
+    }
+
+    fun remove(experiment: Experiment) {
+        keyValueRepository.remove(experiment.id.toString())
+    }
+
+    fun clear() {
+        keyValueRepository.clear()
+    }
+
+    companion object {
+        fun create(context: Context, name: String): AndroidExperimentManualOverrideStorage {
+            return AndroidExperimentManualOverrideStorage(
+                AndroidKeyValueRepository.create(context, name)
+            )
+        }
+    }
+}

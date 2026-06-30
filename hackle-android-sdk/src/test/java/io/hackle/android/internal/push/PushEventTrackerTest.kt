@@ -2,7 +2,7 @@ package io.hackle.android.internal.push
 
 import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.push.token.PushToken
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
@@ -18,7 +18,7 @@ import strikt.assertions.isTrue
 
 class PushEventTrackerTest {
 
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
     private lateinit var core: HackleCore
 
     private lateinit var sut: PushEventTracker

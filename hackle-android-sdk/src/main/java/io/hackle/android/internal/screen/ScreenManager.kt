@@ -1,11 +1,11 @@
 package io.hackle.android.internal.screen
 
 import android.app.Activity
-import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
-import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.*
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User

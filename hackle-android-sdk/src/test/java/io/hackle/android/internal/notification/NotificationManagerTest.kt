@@ -1,8 +1,7 @@
 package io.hackle.android.internal.notification
 
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
-import io.hackle.android.internal.user.UserManager
-import io.hackle.android.internal.workspace.WorkspaceImpl
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.ui.notification.NotificationClickAction
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.sdk.core.HackleCore
@@ -21,7 +20,7 @@ import java.util.concurrent.Executor
 class NotificationManagerTest {
 
     private lateinit var core: HackleCore
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
     private lateinit var executor: Executor
     private lateinit var workspaceFetcher: WorkspaceFetcher
 

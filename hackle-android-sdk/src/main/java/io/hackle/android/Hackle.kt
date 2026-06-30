@@ -3,9 +3,9 @@ package io.hackle.android
 import android.content.Context
 import android.content.Intent
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
-import io.hackle.sdk.common.HackleRemoteConfig
 
 /**
  * Hackle SDK main entry point providing convenient access to SDK features.
@@ -80,6 +80,7 @@ fun Hackle.initialize(
  * @return a [User] instance
  */
 fun Hackle.user(id: String) = User.of(id)
+
 /**
  * Creates a [User] instance using a builder pattern.
  *
@@ -97,6 +98,7 @@ fun Hackle.user(id: String? = null, init: User.Builder.() -> Unit) =
  * @return an [Event] instance
  */
 fun Hackle.event(key: String) = Event.of(key)
+
 /**
  * Creates an [Event] instance using a builder pattern.
  *
@@ -121,18 +123,21 @@ fun Hackle.remoteConfig() = app.remoteConfig()
  * @param user the [User] to set
  */
 fun Hackle.setUser(user: User) = app.setUser(user)
+
 /**
  * Sets the user ID for the current user.
  *
  * @param userId the user ID to set, can be null for anonymous users
  */
 fun Hackle.setUserId(userId: String?) = app.setUserId(userId)
+
 /**
  * Sets a custom device ID.
  *
  * @param deviceId the custom device ID to set
  */
 fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
+
 /**
  * Sets a user property.
  *
@@ -140,6 +145,7 @@ fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
  * @param value the property value
  */
 fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
+
 /**
  * Resets the current user.
  */
@@ -151,6 +157,7 @@ fun Hackle.resetUser() = app.resetUser()
  * @param phoneNumber the phone number to set
  */
 fun Hackle.setPhoneNumber(phoneNumber: String) = app.setPhoneNumber(phoneNumber)
+
 /**
  * Removes the phone number from the current user.
  */
@@ -162,12 +169,14 @@ fun Hackle.unsetPhoneNumber() = app.unsetPhoneNumber()
  * @param operations the [HackleSubscriptionOperations] to apply
  */
 fun Hackle.updatePushSubscriptions(operations: HackleSubscriptionOperations) = app.updatePushSubscriptions(operations)
+
 /**
  * Updates SMS subscription status.
  *
  * @param operations the [HackleSubscriptionOperations] to apply
  */
 fun Hackle.updateSmsSubscriptions(operations: HackleSubscriptionOperations) = app.updateSmsSubscriptions(operations)
+
 /**
  * Updates KakaoTalk subscription status.
  *
@@ -197,18 +206,6 @@ fun Hackle.setOptOutTracking(optOut: Boolean) = app.setOptOutTracking(optOut)
  * When true, all event tracking is blocked.
  */
 val Hackle.isOptOutTracking: Boolean get() = app.isOptOutTracking
-
-/**
- * Gets the remote config instance for a specific user.
- *
- * @param user the [User] for remote config
- * @return the [HackleRemoteConfig] instance
- */
-@Deprecated(
-    "Use remoteConfig() with setUser(user) instead",
-    ReplaceWith("app.remoteConfig()")
-)
-fun Hackle.remoteConfig(user: User) = app.remoteConfig(user)
 
 /**
  * Sets the push token.

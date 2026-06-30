@@ -1,5 +1,8 @@
 package io.hackle.android.internal.workspace
 
+import io.hackle.android.internal.workspace.config.EnvironmentDto
+import io.hackle.android.internal.workspace.config.WorkspaceConfigDto
+import io.hackle.android.internal.workspace.config.WorkspaceDto
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo

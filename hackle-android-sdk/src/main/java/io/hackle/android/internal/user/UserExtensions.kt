@@ -1,6 +1,8 @@
 package io.hackle.android.internal.user
 
 import io.hackle.android.internal.platform.device.Device
+import io.hackle.android.internal.user.local.UserCohorts
+import io.hackle.android.internal.user.local.UserTargetEvents
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Cohort
 import io.hackle.sdk.core.model.Identifiers

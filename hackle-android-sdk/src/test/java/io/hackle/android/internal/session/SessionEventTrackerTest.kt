@@ -2,7 +2,7 @@ package io.hackle.android.internal.session
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.mock.MockDevice
 import io.hackle.android.mock.MockPackageInfo
 import io.hackle.sdk.common.Event
@@ -23,7 +23,7 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionStarted`() {
         // given
-        val userManager = UserManager(
+        val userManager = LocalUserManager(
             MockDevice("device_id", emptyMap()),
             MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
             MapKeyValueRepository(),
@@ -59,7 +59,7 @@ class SessionEventTrackerTest {
     @Test
     fun `onSessionEnded`() {
         // given
-        val userManager = UserManager(
+        val userManager = LocalUserManager(
             MockDevice("device_id", emptyMap()),
             MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
             MapKeyValueRepository(),
