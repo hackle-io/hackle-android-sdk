@@ -38,7 +38,3 @@ internal class DelayedInAppMessageScheduler(
         return Task.succeed(response)
     }
 }
-
-fun main() {
-    println(1)
-}
