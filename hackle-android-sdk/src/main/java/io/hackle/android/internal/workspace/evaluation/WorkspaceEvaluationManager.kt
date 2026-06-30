@@ -73,7 +73,7 @@ internal class WorkspaceEvaluationManager(
     fun evaluate(context: WorkspaceEvaluationContext, entities: List<Entity>): Task<WorkspaceEvaluation> {
         val request = SpecificWorkspaceEvaluateRequest(context, entities)
         return evaluateProcessor.process(request)
-            .map { DefaultWorkspaceEvaluation.from(requireNotNull(it.evaluation) { "record" }) }
+            .map { DefaultWorkspaceEvaluation.from(requireNotNull(it.evaluation) { "evaluation" }) }
     }
 
     companion object {
