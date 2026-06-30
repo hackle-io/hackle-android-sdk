@@ -3,6 +3,7 @@ package io.hackle.android.internal.inappmessage.schedule
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse.Code
 import io.hackle.android.internal.inappmessage.schedule.action.InAppMessageScheduleActionDeterminer
 import io.hackle.android.internal.inappmessage.schedule.scheduler.InAppMessageSchedulerFactory
+import io.hackle.android.internal.task.Task
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class InAppMessageScheduleProcessor(
@@ -10,21 +11,19 @@ internal class InAppMessageScheduleProcessor(
     private val schedulerFactory: InAppMessageSchedulerFactory,
 ) : InAppMessageScheduleListener {
 
-    fun process(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    fun process(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         log.debug { "InAppMessage Schedule Request: $request" }
-
-        val response = try {
-            schedule(request)
-        } catch (e: Exception) {
-            log.error { "Failed to process InAppMessageSchedule: $e" }
-            InAppMessageScheduleResponse.of(request, Code.EXCEPTION)
-        }
-
-        log.debug { "InAppMessage Schedule Response: $response" }
-        return response
+        return Task.wrap { schedule(request) }
+            .recover {
+                log.error { "Failed to process InAppMessageSchedule: $it" }
+                InAppMessageScheduleResponse.of(request, Code.EXCEPTION)
+            }
+            .onSuccess {
+                log.debug { "InAppMessage Schedule Response: $it" }
+            }
     }
 
-    private fun schedule(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    private fun schedule(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         val action = actionDeterminer.determine(request)
         val scheduler = schedulerFactory.get(request.scheduleType)
         return scheduler.schedule(action, request)

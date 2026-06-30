@@ -4,8 +4,12 @@ import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequ
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType
 import io.hackle.android.internal.inappmessage.schedule.action.InAppMessageScheduleAction
+import io.hackle.android.internal.task.Task
 
 internal interface InAppMessageScheduler {
     fun supports(scheduleType: InAppMessageScheduleType): Boolean
-    fun schedule(action: InAppMessageScheduleAction, request: InAppMessageScheduleRequest): InAppMessageScheduleResponse
+    fun schedule(
+        action: InAppMessageScheduleAction,
+        request: InAppMessageScheduleRequest
+    ): Task<InAppMessageScheduleResponse>
 }

@@ -4,17 +4,18 @@ import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequ
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse
 import io.hackle.android.internal.inappmessage.schedule.action.InAppMessageScheduleAction
 import io.hackle.android.internal.inappmessage.schedule.action.InAppMessageScheduleAction.*
+import io.hackle.android.internal.task.Task
 
 internal abstract class AbstractInAppMessageScheduler : InAppMessageScheduler {
 
-    protected abstract fun deliver(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse
-    protected abstract fun delay(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse
-    protected abstract fun ignore(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse
+    protected abstract fun deliver(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse>
+    protected abstract fun delay(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse>
+    protected abstract fun ignore(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse>
 
     final override fun schedule(
         action: InAppMessageScheduleAction,
         request: InAppMessageScheduleRequest,
-    ): InAppMessageScheduleResponse {
+    ): Task<InAppMessageScheduleResponse> {
         return when (action) {
             DELIVER -> deliver(request)
             DELAY -> delay(request)

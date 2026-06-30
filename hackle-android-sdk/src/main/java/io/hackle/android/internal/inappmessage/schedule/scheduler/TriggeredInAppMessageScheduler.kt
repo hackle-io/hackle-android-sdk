@@ -7,6 +7,7 @@ import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequ
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse.Code
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType
+import io.hackle.android.internal.task.Task
 
 internal class TriggeredInAppMessageScheduler(
     private val deliverProcessor: InAppMessageDeliverProcessor,
@@ -16,18 +17,20 @@ internal class TriggeredInAppMessageScheduler(
         return scheduleType == InAppMessageScheduleType.TRIGGERED
     }
 
-    override fun deliver(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    override fun deliver(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         val deliverRequest = InAppMessageDeliverRequest.of(request)
-        val deliverResponse = deliverProcessor.process(deliverRequest)
-        return InAppMessageScheduleResponse.of(request, Code.DELIVER, deliverResponse = deliverResponse.get())  // TODO: Task
+        return deliverProcessor.process(deliverRequest)
+            .map { InAppMessageScheduleResponse.of(request, Code.DELIVER, deliverResponse = it) }
     }
 
-    override fun delay(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    override fun delay(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         val delay = delayManager.registerAndDelay(request)
-        return InAppMessageScheduleResponse.of(request, Code.DELAY, delay = delay)
+        val response = InAppMessageScheduleResponse.of(request, Code.DELAY, delay = delay)
+        return Task.succeed(response)
     }
 
-    override fun ignore(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
-        return InAppMessageScheduleResponse.of(request, Code.IGNORE)
+    override fun ignore(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
+        val response = InAppMessageScheduleResponse.of(request, Code.IGNORE)
+        return Task.succeed(response)
     }
 }

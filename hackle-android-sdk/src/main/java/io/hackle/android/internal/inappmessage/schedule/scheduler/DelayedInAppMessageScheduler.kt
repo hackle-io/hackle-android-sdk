@@ -7,6 +7,7 @@ import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleRequ
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleResponse.Code
 import io.hackle.android.internal.inappmessage.schedule.InAppMessageScheduleType
+import io.hackle.android.internal.task.Task
 
 internal class DelayedInAppMessageScheduler(
     private val deliverProcessor: InAppMessageDeliverProcessor,
@@ -17,22 +18,27 @@ internal class DelayedInAppMessageScheduler(
         return scheduleType == InAppMessageScheduleType.DELAYED
     }
 
-    override fun deliver(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    override fun deliver(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         val delay = delayManager.delete(request)
         requireNotNull(delay) { "InAppMessageDelay not found (inAppMessageKey=${request.schedule.inAppMessageKey})" }
-
         val deliverRequest = InAppMessageDeliverRequest.of(request)
-        val deliverResponse = deliverProcessor.process(deliverRequest)
-        return InAppMessageScheduleResponse.of(request, Code.DELIVER, deliverResponse = deliverResponse.get()) // TODO: Task
+        return deliverProcessor.process(deliverRequest)
+            .map { InAppMessageScheduleResponse.of(request, Code.DELIVER, deliverResponse = it) }
     }
 
-    override fun delay(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    override fun delay(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         val delay = delayManager.delay(request)
-        return InAppMessageScheduleResponse.of(request, Code.DELAY, delay = delay)
+        val response = InAppMessageScheduleResponse.of(request, Code.DELAY, delay = delay)
+        return Task.succeed(response)
     }
 
-    override fun ignore(request: InAppMessageScheduleRequest): InAppMessageScheduleResponse {
+    override fun ignore(request: InAppMessageScheduleRequest): Task<InAppMessageScheduleResponse> {
         val delay = delayManager.delete(request)
-        return InAppMessageScheduleResponse.of(request, Code.IGNORE, delay = delay)
+        val response = InAppMessageScheduleResponse.of(request, Code.IGNORE, delay = delay)
+        return Task.succeed(response)
     }
+}
+
+fun main() {
+    println(1)
 }
