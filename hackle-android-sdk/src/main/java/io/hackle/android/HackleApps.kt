@@ -80,7 +80,7 @@ import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.config.DefaultWorkspaceConfigRepository
 import io.hackle.android.internal.workspace.config.HttpWorkspaceConfigFetcher
 import io.hackle.android.internal.workspace.config.WorkspaceConfigManager
-import io.hackle.android.internal.workspace.evaluation.DefaultWorkspaceEvaluationRepository
+import io.hackle.android.internal.workspace.evaluation.FileWorkspaceEvaluationRepository
 import io.hackle.android.internal.workspace.evaluation.LruWorkspaceEvaluationCache
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManager
 import io.hackle.android.internal.workspace.evaluation.evaluator.*
@@ -196,7 +196,7 @@ internal object HackleApps {
                 val evaluateProcessor = WorkspaceEvaluateProcessor(
                     evaluatorFactory = evaluatorFactory
                 )
-                val repository = DefaultWorkspaceEvaluationRepository(
+                val repository = FileWorkspaceEvaluationRepository(
                     fileStorage = fileStorage
                 )
                 WorkspaceEvaluationManager(

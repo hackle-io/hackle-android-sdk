@@ -47,9 +47,9 @@ internal class WorkspaceEvaluationManager(
         response: WorkspaceEvaluateResponse,
     ): WorkspaceEvaluationRecord {
         return when (response.status) {
-            WorkspaceEvaluateStatus.FULL -> WorkspaceEvaluationRecord.from(
-                request.context.key,
-                requireNotNull(response.evaluation) { "response evaluation" })
+            WorkspaceEvaluateStatus.FULL -> WorkspaceEvaluationRecord.of(
+                key = request.context.key,
+                dto = requireNotNull(response.evaluation) { "response evaluation" })
 
             WorkspaceEvaluateStatus.DELTA -> requireNotNull(request.record) { "current record" } // 실제 발생하지 않지만 방어 로직
             WorkspaceEvaluateStatus.NOT_MODIFIED -> requireNotNull(request.record) { "current record" }

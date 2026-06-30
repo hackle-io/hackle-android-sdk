@@ -1,20 +1,62 @@
 package io.hackle.android.internal.workspace.evaluation
 
 import io.hackle.android.internal.storage.FileStorage
+import io.hackle.android.internal.utils.json.parseJson
+import io.hackle.android.internal.utils.json.toJson
+import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationRecordDto
+import io.hackle.sdk.core.internal.log.Logger
 
 internal interface WorkspaceEvaluationRepository {
     fun get(): List<WorkspaceEvaluationRecord>
     fun set(records: List<WorkspaceEvaluationRecord>)
 }
 
-internal class DefaultWorkspaceEvaluationRepository(
+internal class FileWorkspaceEvaluationRepository(
     private val fileStorage: FileStorage
-): WorkspaceEvaluationRepository {
+) : WorkspaceEvaluationRepository {
     override fun get(): List<WorkspaceEvaluationRecord> {
-        TODO("Not yet implemented")
+        try {
+            if (!fileStorage.exists(FILE_NAME)) {
+                return emptyList()
+            }
+            val reader = fileStorage.reader(FILE_NAME)
+            val json = reader.use { it.readText() }
+            val records = json.parseJson<List<WorkspaceEvaluationRecordDto>>()
+            return records.map { WorkspaceEvaluationRecord.from(it) }
+        } catch (e: Exception) {
+            log.error { "Failed to read WorkspaceEvaluationRecord: $e" }
+            try {
+                fileStorage.delete(FILE_NAME)
+            } catch (_: Exception) {
+                // noop
+            }
+            return emptyList()
+        }
     }
 
     override fun set(records: List<WorkspaceEvaluationRecord>) {
-        TODO("Not yet implemented")
+        try {
+            val writer = fileStorage.writer(FILE_NAME)
+            val values = records.map { it.toDto() }
+            val json = values.toJson()
+            writer.use {
+                it.write(json)
+                it.flush()
+            }
+        } catch (e: Exception) {
+            log.error { "Failed to save WorkspaceEvaluationRecord: $e" }
+        }
+    }
+
+    private fun WorkspaceEvaluationRecord.toDto(): WorkspaceEvaluationRecordDto {
+        return WorkspaceEvaluationRecordDto(
+            key = key.identifiers.asMap(),
+            evaluation = dto
+        )
+    }
+
+    companion object {
+        private val log = Logger<FileWorkspaceEvaluationRepository>()
+        private const val FILE_NAME = "workspace_evaluation.json"
     }
 }

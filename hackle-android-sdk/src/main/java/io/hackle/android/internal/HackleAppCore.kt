@@ -69,6 +69,7 @@ internal class HackleAppCore(
         userManager.initialize(user)
         eventExecutor.execute {
             try {
+                // TODO: init 순서 조정, async, callback 처리, non critical 분리
                 workspaceManager.initialize()
                 pushTokenManager.initialize()
                 sessionManager.initialize()
