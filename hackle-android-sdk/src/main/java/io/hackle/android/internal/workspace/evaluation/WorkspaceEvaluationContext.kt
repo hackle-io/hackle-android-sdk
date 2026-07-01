@@ -2,7 +2,7 @@ package io.hackle.android.internal.workspace.evaluation
 
 import io.hackle.android.internal.user.resolvedIdentifiers
 import io.hackle.android.internal.workspace.evaluation.model.HackleUserDto
-import io.hackle.android.internal.workspace.evaluation.model.RemoteEvaluateContextDto
+import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationContextDto
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Identifiers
@@ -41,8 +41,8 @@ internal class WorkspaceEvaluationContext private constructor(
 }
 
 
-internal fun WorkspaceEvaluationContext.toDto(): RemoteEvaluateContextDto {
-    return RemoteEvaluateContextDto(
+internal fun WorkspaceEvaluationContext.toDto(): WorkspaceEvaluationContextDto {
+    return WorkspaceEvaluationContextDto(
         user = HackleUserDto(
             identifiers = user.identifiers,
             userProperties = user.properties,

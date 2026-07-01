@@ -114,7 +114,7 @@ internal class EvaluateEntityDto(
     val hash: Int?,
 )
 
-internal class RemoteEvaluateContextDto(
+internal class WorkspaceEvaluationContextDto(
     val user: HackleUserDto,
     val operations: Map<String, Any>,
 )
@@ -128,7 +128,7 @@ internal class HackleUserDto(
 internal class WorkspaceEvaluateRequestDto(
     val scope: String, // ALL, SPECIFIC
     val policy: String, // AUTO, FORCE_FULL
-    val context: RemoteEvaluateContextDto,
+    val context: WorkspaceEvaluationContextDto,
     val entities: List<EvaluateEntityDto>,
     val current: WorkspaceEvaluationMetadataDto?,
 )
