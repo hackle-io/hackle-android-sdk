@@ -2,10 +2,8 @@ package io.hackle.android.internal.workspace.evaluation.evaluator
 
 import io.hackle.android.internal.task.asFuture
 import io.hackle.android.internal.task.flatMap
-import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationRecord
 import io.hackle.android.internal.workspace.evaluation.model.*
-import io.hackle.android.internal.workspace.evaluation.toDto
 import java.util.concurrent.CompletableFuture
 
 internal class AllWorkspaceRemoteEvaluator(
@@ -71,7 +69,7 @@ internal class AllWorkspaceRemoteEvaluator(
 }
 
 internal class AllWorkspaceEvaluateRequest(
-    override val context: WorkspaceEvaluationContext,
+    override val context: WorkspaceEvaluateContext,
     val record: WorkspaceEvaluationRecord?,
 ) : WorkspaceEvaluateRequest {
     override val scope: WorkspaceEvaluateScope get() = WorkspaceEvaluateScope.ALL

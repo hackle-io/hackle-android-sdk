@@ -1,9 +1,7 @@
 package io.hackle.android.internal.workspace.evaluation.evaluator
 
 import io.hackle.android.internal.task.map
-import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.android.internal.workspace.evaluation.model.*
-import io.hackle.android.internal.workspace.evaluation.toDto
 import io.hackle.sdk.core.model.Entity
 import java.util.concurrent.CompletableFuture
 
@@ -27,7 +25,7 @@ internal class SpecificWorkspaceRemoteEvaluator(
 }
 
 internal class SpecificWorkspaceEvaluateRequest(
-    override val context: WorkspaceEvaluationContext,
+    override val context: WorkspaceEvaluateContext,
     val targets: List<Entity>,
 ) : WorkspaceEvaluateRequest {
     override val scope: WorkspaceEvaluateScope get() = WorkspaceEvaluateScope.SPECIFIC

@@ -1,7 +1,7 @@
 package io.hackle.android.internal.workspace.evaluation
 
 internal interface WorkspaceEvaluationCache {
-    fun get(key: WorkspaceEvaluationContext.Key): WorkspaceEvaluationRecord?
+    fun get(key: WorkspaceEvaluationRecord.Key): WorkspaceEvaluationRecord?
     fun put(record: WorkspaceEvaluationRecord): List<WorkspaceEvaluationRecord>
     fun latest(): WorkspaceEvaluationRecord?
     fun restore(records: List<WorkspaceEvaluationRecord>)
@@ -10,10 +10,10 @@ internal interface WorkspaceEvaluationCache {
 internal class LruWorkspaceEvaluationCache(private val capacity: Int) : WorkspaceEvaluationCache {
 
     private val lock = Any()
-    private val entries = HashMap<WorkspaceEvaluationContext.Key, WorkspaceEvaluationRecord>()
-    private val order = ArrayList<WorkspaceEvaluationContext.Key>()
+    private val entries = HashMap<WorkspaceEvaluationRecord.Key, WorkspaceEvaluationRecord>()
+    private val order = ArrayList<WorkspaceEvaluationRecord.Key>()
 
-    override fun get(key: WorkspaceEvaluationContext.Key): WorkspaceEvaluationRecord? {
+    override fun get(key: WorkspaceEvaluationRecord.Key): WorkspaceEvaluationRecord? {
         return synchronized(lock) { entries[key] }
     }
 
@@ -26,7 +26,7 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
         }
     }
 
-    private fun remove(key: WorkspaceEvaluationContext.Key) {
+    private fun remove(key: WorkspaceEvaluationRecord.Key) {
         entries.remove(key)
         order.remove(key)
     }

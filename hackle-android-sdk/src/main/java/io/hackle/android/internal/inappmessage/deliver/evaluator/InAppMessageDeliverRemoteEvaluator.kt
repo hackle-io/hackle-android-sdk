@@ -6,7 +6,7 @@ import io.hackle.android.internal.inappmessage.evaluation.eligibility
 import io.hackle.android.internal.inappmessage.evaluation.layout
 import io.hackle.android.internal.task.asFuture
 import io.hackle.android.internal.task.map
-import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
+import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateContext
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManager
 import io.hackle.sdk.core.evaluation.EvaluateProcessor
 import io.hackle.sdk.core.evaluation.service.inappmessage.InAppMessageEvaluateScope.DELIVER
@@ -48,7 +48,7 @@ internal class InAppMessageDeliverRemoteEvaluator(
             if (!response.evaluation.result.isEligible) {
                 return workspace.asFuture()
             }
-            return workspaceManager.evaluate(WorkspaceEvaluationContext.of(user), listOf(inAppMessage))
+            return workspaceManager.evaluate(WorkspaceEvaluateContext.of(user), listOf(inAppMessage))
         } else {
             return workspace.asFuture()
         }

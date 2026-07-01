@@ -8,6 +8,7 @@ import io.hackle.android.internal.workspace.evaluation.evaluator.AllWorkspaceEva
 import io.hackle.android.internal.workspace.evaluation.evaluator.SpecificWorkspaceEvaluateRequest
 import io.hackle.android.internal.workspace.evaluation.evaluator.WorkspaceEvaluateProcessor
 import io.hackle.android.internal.workspace.evaluation.evaluator.WorkspaceEvaluateResponse
+import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateContext
 import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateStatus
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.Entity
@@ -32,11 +33,11 @@ internal class WorkspaceEvaluationManager(
     }
 
     override fun workspace(user: HackleUser): WorkspaceEvaluation? {
-        val key = WorkspaceEvaluationContext.keyOf(user)
+        val key = WorkspaceEvaluationRecord.keyOf(user)
         return cache.get(key)?.workspace()
     }
 
-    fun sync(context: WorkspaceEvaluationContext): CompletableFuture<Void> {
+    fun sync(context: WorkspaceEvaluateContext): CompletableFuture<Void> {
         val record = cache.get(context.key)
         val request = AllWorkspaceEvaluateRequest(context, record)
         return evaluateProcessor.process(request)
@@ -73,7 +74,7 @@ internal class WorkspaceEvaluationManager(
         }
     }
 
-    fun evaluate(context: WorkspaceEvaluationContext, entities: List<Entity>): CompletableFuture<WorkspaceEvaluation> {
+    fun evaluate(context: WorkspaceEvaluateContext, entities: List<Entity>): CompletableFuture<WorkspaceEvaluation> {
         val request = SpecificWorkspaceEvaluateRequest(context, entities)
         return evaluateProcessor.process(request)
             .map { DefaultWorkspaceEvaluation.from(requireNotNull(it.evaluation) { "evaluation" }) }
