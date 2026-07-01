@@ -6,6 +6,7 @@ import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluation
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.model.Identifiers
+import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 
@@ -43,11 +44,12 @@ internal class WorkspaceEvaluationContext private constructor(
 
 internal fun WorkspaceEvaluationContext.toDto(): WorkspaceEvaluationContextDto {
     return WorkspaceEvaluationContextDto(
+        platformType = InAppMessage.PlatformType.ANDROID.name,
         user = HackleUserDto(
             identifiers = user.identifiers,
             userProperties = user.properties,
             hackleProperties = user.hackleProperties
         ),
-        operations = operations.asMap().mapKeys { it.key.key }
+        operations = operations.asMap().mapKeys { it.key.key },
     )
 }

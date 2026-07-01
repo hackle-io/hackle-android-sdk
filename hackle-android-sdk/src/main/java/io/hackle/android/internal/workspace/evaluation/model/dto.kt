@@ -115,6 +115,7 @@ internal class EvaluateEntityDto(
 )
 
 internal class WorkspaceEvaluationContextDto(
+    val platformType: String, // ANDROID, IOS, WEB
     val user: HackleUserDto,
     val operations: Map<String, Any>,
 )

@@ -29,7 +29,8 @@ internal val DecisionReason.isManualOverridable
         NOT_IN_IN_APP_MESSAGE_TARGET,
         IN_APP_MESSAGE_FREQUENCY_CAPPED,
         EXPERIMENT_CONTROL_GROUP,
-        OPT_OUT
+        OPT_OUT,
+        UNKNOWN,
             -> false
 
         EXPERIMENT_DRAFT,
