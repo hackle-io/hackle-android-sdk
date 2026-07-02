@@ -44,7 +44,6 @@ internal class WorkspaceConfigManager(
         }
         this.record.set(record)
         this.repository.set(record)
-
     }
 
     private fun load() {

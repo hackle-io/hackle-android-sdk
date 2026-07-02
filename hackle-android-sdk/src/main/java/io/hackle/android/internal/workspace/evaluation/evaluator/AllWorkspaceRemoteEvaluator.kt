@@ -51,10 +51,10 @@ internal class AllWorkspaceRemoteEvaluator(
         request: AllWorkspaceEvaluateRequest,
         response: WorkspaceEvaluateResponseDto,
     ): CompletableFuture<WorkspaceEvaluateResponse> {
-        val requestEvaluation = requireNotNull(request.record?.dto) { "request evaluation" }
+        val currentEvaluation = requireNotNull(request.record?.dto) { "request evaluation" }
         val responseEvaluation = requireNotNull(response.evaluation) { "response evaluation" }
 
-        val mergedEvaluation = WorkspaceEvaluations.merge(requestEvaluation, response)
+        val mergedEvaluation = WorkspaceEvaluations.merge(currentEvaluation, response)
         val mergedHash = WorkspaceEvaluations.hash(mergedEvaluation.items)
 
         if (mergedHash != responseEvaluation.metadata.results.hash) {

@@ -16,9 +16,7 @@ internal fun ExperimentEvaluateResultDto.toResult(experimentType: Experiment.Typ
         type = experimentType,
         version = version,
         executionVersion = executionVersion,
-        variationId = variationId,
-        variationKey = variationKey,
-        parameterConfiguration = config?.toParameterConfiguration(),
+        variation = variation.toVariation(config?.toParameterConfiguration()),
         reason = DecisionReason.from(reason),
         references = references.mapNotNull { it.toEntityOrNull() }
     )
@@ -30,8 +28,7 @@ internal fun RemoteConfigParameterEvaluateResultDto.toResultOrNull(): RemoteConf
         id = id,
         key = key,
         type = valueType,
-        value = value,
-        valueId = valueId,
+        value = value?.toValue(),
         reason = DecisionReason.from(reason),
         references = references.mapNotNull { it.toEntityOrNull() }
     )

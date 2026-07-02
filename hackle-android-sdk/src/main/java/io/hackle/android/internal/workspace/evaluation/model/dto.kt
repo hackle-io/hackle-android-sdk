@@ -1,8 +1,6 @@
 package io.hackle.android.internal.workspace.evaluation.model
 
-import io.hackle.android.internal.workspace.config.InAppMessageDto
-import io.hackle.android.internal.workspace.config.ParameterConfigurationDto
-import io.hackle.android.internal.workspace.config.WorkspaceDto
+import io.hackle.android.internal.workspace.config.*
 
 internal class WorkspaceEvaluationRecordDto(
     val key: Map<String, String>, // identifiers
@@ -51,8 +49,7 @@ internal class ExperimentEvaluateResultDto(
     val version: Int,
     val executionVersion: Int,
 
-    val variationId: Long?,
-    val variationKey: String,
+    val variation: VariationDto,
     val config: ParameterConfigurationDto?,
 
     val reason: String,
@@ -63,8 +60,7 @@ internal class RemoteConfigParameterEvaluateResultDto(
     val id: Long,
     val key: String,
     val valueType: String,
-    val value: Any,
-    val valueId: Long?,
+    val value: RemoteConfigParameterDto.ValueDto?,
     val reason: String,
     val references: List<EntityDto>,
 )
@@ -135,7 +131,7 @@ internal class WorkspaceEvaluateRequestDto(
 )
 
 internal class WorkspaceEvaluateResponseDto(
-    val status: String,
+    val status: String, // FULL, DELTA, NOT_MODIFIED
     val evaluation: WorkspaceEvaluationDto?,
     val deleted: List<EntityDto>,
 )
