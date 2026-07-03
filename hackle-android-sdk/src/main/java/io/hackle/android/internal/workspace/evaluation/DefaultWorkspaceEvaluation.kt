@@ -78,13 +78,13 @@ internal class DefaultWorkspaceEvaluation(
             val remoteConfigParameters = mutableListOf<RemoteConfigParameterRemoteEvaluateResult>()
             val inAppMessages = mutableListOf<InAppMessageEligibilityRemoteEvaluateResult>()
 
-            for (item in dto.items) {
-                val serviceType = parseEnumOrNull<ServiceType>(item.type) ?: continue
+            for (result in dto.results) {
+                val serviceType = parseEnumOrNull<ServiceType>(result.type) ?: continue
                 when (serviceType) {
-                    ServiceType.AB_TEST -> item.experiment?.toResult(AB_TEST)?.let(experiments::add)
-                    ServiceType.FEATURE_FLAG -> item.featureFlag?.toResult(FEATURE_FLAG)?.let(featureFlags::add)
-                    ServiceType.REMOTE_CONFIG -> item.remoteConfig?.toResultOrNull()?.let(remoteConfigParameters::add)
-                    ServiceType.IN_APP_MESSAGE -> item.inAppMessage?.toResultOrNull()?.let(inAppMessages::add)
+                    ServiceType.AB_TEST -> result.experiment?.toResult(AB_TEST)?.let(experiments::add)
+                    ServiceType.FEATURE_FLAG -> result.featureFlag?.toResult(FEATURE_FLAG)?.let(featureFlags::add)
+                    ServiceType.REMOTE_CONFIG -> result.remoteConfig?.toResultOrNull()?.let(remoteConfigParameters::add)
+                    ServiceType.IN_APP_MESSAGE -> result.inAppMessage?.toResultOrNull()?.let(inAppMessages::add)
                 }
             }
             return DefaultWorkspaceEvaluation(

@@ -55,7 +55,7 @@ internal class AllWorkspaceRemoteEvaluator(
         val responseEvaluation = requireNotNull(response.evaluation) { "response evaluation" }
 
         val mergedEvaluation = WorkspaceEvaluations.merge(currentEvaluation, response)
-        val mergedHash = WorkspaceEvaluations.hash(mergedEvaluation.items)
+        val mergedHash = WorkspaceEvaluations.hash(mergedEvaluation.results)
 
         if (mergedHash != responseEvaluation.metadata.results.hash) {
             val requestDto = request.toFullDto()
@@ -90,7 +90,7 @@ private fun AllWorkspaceEvaluateRequest.toAutoDto(record: WorkspaceEvaluationRec
         scope = WorkspaceEvaluateScope.ALL.name,
         policy = WorkspaceEvaluatePolicy.AUTO.name,
         context = context.toDto(),
-        entities = record.dto.items.map { EvaluateEntityDto(it.type, it.id, it.hash) },
+        entities = record.dto.results.map { EvaluateEntityDto(it.type, it.id, it.hash) },
         current = record.dto.metadata
     )
 }

@@ -9,7 +9,7 @@ internal class WorkspaceEvaluationRecordDto(
 
 internal class WorkspaceEvaluationDto(
     val workspace: WorkspaceDto,
-    val items: List<EvaluateResultDto>,
+    val results: List<EvaluateResultDto>,
     val metadata: WorkspaceEvaluationMetadataDto,
 )
 

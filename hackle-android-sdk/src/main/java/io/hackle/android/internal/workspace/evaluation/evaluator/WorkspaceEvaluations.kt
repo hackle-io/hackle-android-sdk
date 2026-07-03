@@ -9,10 +9,10 @@ import io.hackle.sdk.core.workspace.evaluation.entity.RemoteEvaluateResult
 internal object WorkspaceEvaluations {
 
     fun merge(evaluation: WorkspaceEvaluationDto, response: WorkspaceEvaluateResponseDto): WorkspaceEvaluationDto {
-        val merged = evaluation.items.associateByTo(LinkedHashMap()) { it.key() }
+        val merged = evaluation.results.associateByTo(LinkedHashMap()) { it.key() }
 
         val responseEvaluation = requireNotNull(response.evaluation) { "evaluation" }
-        for (result in responseEvaluation.items) {
+        for (result in responseEvaluation.results) {
             merged[result.key()] = result
         }
 
