@@ -68,7 +68,6 @@ internal class RemoteConfigParameterEvaluateResultDto(
 internal class InAppMessageEligibilityEvaluateResultDto(
     val id: Long,
     val key: Long,
-    val platformTypes: List<String>,
 
     // Period
     val period: InAppMessageDto.PeriodDto?,
@@ -94,7 +93,6 @@ internal class InAppMessageEligibilityEvaluateResultDto(
 
 internal class InAppMessageLayoutEvaluateResultDto(
     val message: InAppMessageDto.MessageContextDto.MessageDto,
-    val exposure: InAppMessageDto.MessageContextDto.MessageDto.ExposureDto,
     val reason: String,
     val references: List<EntityDto>,
 )
