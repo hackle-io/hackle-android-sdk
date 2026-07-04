@@ -133,7 +133,6 @@ internal data class ContainerGroupDto(
 
 internal data class ParameterConfigurationDto(
     val id: Long,
-    val revision: String,
     val parameters: List<ParameterDto>,
 ) {
     data class ParameterDto(
@@ -161,7 +160,6 @@ internal data class RemoteConfigParameterDto(
 
     data class ValueDto(
         val id: Long,
-        val revision: String,
         val value: Any,
     )
 }
