@@ -8,7 +8,7 @@ import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.mode.remot
 import io.hackle.sdk.core.evaluation.service.inappmessage.layout.InAppMessageLayoutEvaluateResponse
 import io.hackle.sdk.core.evaluation.service.inappmessage.layout.mode.local.InAppMessageLayoutLocalEvaluateRequest
 import io.hackle.sdk.core.evaluation.service.inappmessage.layout.mode.remote.InAppMessageLayoutRemoteEvaluateRequest
-import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.PlatformType
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.workspace.config.WorkspaceConfig
 import io.hackle.sdk.core.workspace.config.entity.InAppMessageConfig
@@ -27,7 +27,7 @@ internal fun EvaluateProcessor.eligibility(
         entity = inAppMessage,
         user = user,
         scope = scope,
-        platformType = InAppMessage.PlatformType.ANDROID,
+        platformType = PlatformType.ANDROID,
         timestamp = timestamp,
     )
     return inAppMessage(request)
@@ -62,7 +62,7 @@ internal fun EvaluateProcessor.eligibility(
         user = user,
         scope = scope,
         timestamp = timestamp,
-        platformType = InAppMessage.PlatformType.ANDROID,
+        platformType = PlatformType.ANDROID,
         record = record
     )
     return inAppMessage(request)
