@@ -22,7 +22,7 @@ internal class HttpWorkspaceConfigFetcher(
 ) {
     private val url = url(sdk, sdkUri).toHttpUrl()
 
-    fun fetchIfModified(lastModified: String?): CompletableFuture<WorkspaceConfigRecord?> {
+    fun fetchIfModified(lastModified: String?): CompletableFuture<WorkspaceConfigContext?> {
         val request = createRequest(lastModified)
         return Futures.async { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
@@ -41,7 +41,7 @@ internal class HttpWorkspaceConfigFetcher(
         }
     }
 
-    private fun handleResponse(response: Response): WorkspaceConfigRecord? {
+    private fun handleResponse(response: Response): WorkspaceConfigContext? {
         if (response.isNotModified) {
             log.debug { "Workspace is not modified." }
             return null
@@ -52,7 +52,7 @@ internal class HttpWorkspaceConfigFetcher(
         val dto = responseBody.parse<WorkspaceConfigDto>()
 
         log.debug { "Workspace fetched." }
-        return WorkspaceConfigRecord.of(dto, lastModified)
+        return WorkspaceConfigContext.of(dto, lastModified)
     }
 
     companion object {

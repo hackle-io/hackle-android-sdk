@@ -14,8 +14,8 @@ internal data class InAppMessageDeliverEvaluation(
         return PropertiesBuilder()
             .add("experiment_id", experimentEvaluation.entity.id)
             .add("experiment_key", experimentEvaluation.entity.key)
-            .add("variation_id", experimentEvaluation.result.variationId)
-            .add("variation_key", experimentEvaluation.result.variationKey)
+            .add("variation_id", experimentEvaluation.result.variation.id)
+            .add("variation_key", experimentEvaluation.result.variation.key)
             .add("experiment_decision_reason", experimentEvaluation.result.reason.name)
             .build()
     }

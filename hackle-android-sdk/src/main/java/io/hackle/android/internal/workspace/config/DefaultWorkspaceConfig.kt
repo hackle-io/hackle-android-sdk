@@ -15,7 +15,7 @@ internal class DefaultWorkspaceConfig(
     // Metadata
     override val id: Long,
     override val environmentId: Long,
-    override val lastModified: String?,
+    override val modifiedAt: String?,
 
     // Entity
     override val experiments: List<ExperimentConfig>,
@@ -69,12 +69,12 @@ internal class DefaultWorkspaceConfig(
 
     override fun toProperties(): Map<String, Any> {
         return PropertiesBuilder()
-            .add("config_modified_at", lastModified)
+            .add("config_modified_at", modifiedAt)
             .build()
     }
 
     companion object {
-        fun from(dto: WorkspaceConfigDto, lastModified: String?): WorkspaceConfig {
+        fun from(dto: WorkspaceConfigDto, modifiedAt: String?): WorkspaceConfig {
 
             val configurations = dto.parameterConfigurations.asSequence()
                 .map { it.toParameterConfiguration() }
@@ -92,7 +92,7 @@ internal class DefaultWorkspaceConfig(
             return DefaultWorkspaceConfig(
                 id = dto.workspace.id,
                 environmentId = dto.workspace.environment.id,
-                lastModified = lastModified,
+                modifiedAt = modifiedAt,
                 experiments = experiments,
                 featureFlags = featureFlags,
                 remoteConfigParameters = remoteConfigParameters,

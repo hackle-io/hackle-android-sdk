@@ -1,23 +1,23 @@
 package io.hackle.android.internal.workspace.evaluation
 
 internal interface WorkspaceEvaluationCache {
-    fun get(key: WorkspaceEvaluationRecord.Key): WorkspaceEvaluationRecord?
-    fun put(record: WorkspaceEvaluationRecord): List<WorkspaceEvaluationRecord>
-    fun latest(): WorkspaceEvaluationRecord?
-    fun restore(records: List<WorkspaceEvaluationRecord>)
+    fun get(key: WorkspaceEvaluationContext.Key): WorkspaceEvaluationContext?
+    fun put(record: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext>
+    fun latest(): WorkspaceEvaluationContext?
+    fun restore(records: List<WorkspaceEvaluationContext>)
 }
 
 internal class LruWorkspaceEvaluationCache(private val capacity: Int) : WorkspaceEvaluationCache {
 
     private val lock = Any()
-    private val entries = HashMap<WorkspaceEvaluationRecord.Key, WorkspaceEvaluationRecord>()
-    private val order = ArrayList<WorkspaceEvaluationRecord.Key>()
+    private val entries = HashMap<WorkspaceEvaluationContext.Key, WorkspaceEvaluationContext>()
+    private val order = ArrayList<WorkspaceEvaluationContext.Key>()
 
-    override fun get(key: WorkspaceEvaluationRecord.Key): WorkspaceEvaluationRecord? {
+    override fun get(key: WorkspaceEvaluationContext.Key): WorkspaceEvaluationContext? {
         return synchronized(lock) { entries[key] }
     }
 
-    override fun put(record: WorkspaceEvaluationRecord): List<WorkspaceEvaluationRecord> {
+    override fun put(record: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext> {
         synchronized(lock) {
             remove(record.key)
             add(record)
@@ -26,12 +26,12 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
         }
     }
 
-    private fun remove(key: WorkspaceEvaluationRecord.Key) {
+    private fun remove(key: WorkspaceEvaluationContext.Key) {
         entries.remove(key)
         order.remove(key)
     }
 
-    private fun add(record: WorkspaceEvaluationRecord) {
+    private fun add(record: WorkspaceEvaluationContext) {
         entries[record.key] = record
         order.add(record.key)
     }
@@ -42,14 +42,14 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
         }
     }
 
-    override fun latest(): WorkspaceEvaluationRecord? {
+    override fun latest(): WorkspaceEvaluationContext? {
         synchronized(lock) {
             val key = order.lastOrNull() ?: return null
             return entries[key]
         }
     }
 
-    override fun restore(records: List<WorkspaceEvaluationRecord>) {
+    override fun restore(records: List<WorkspaceEvaluationContext>) {
         synchronized(lock) {
             entries.clear()
             order.clear()

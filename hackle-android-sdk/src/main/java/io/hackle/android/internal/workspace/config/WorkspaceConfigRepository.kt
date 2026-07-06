@@ -6,15 +6,15 @@ import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.core.internal.log.Logger
 
 internal interface WorkspaceConfigRepository {
-    fun get(): WorkspaceConfigRecord?
-    fun set(record: WorkspaceConfigRecord)
+    fun get(): WorkspaceConfigContext?
+    fun set(record: WorkspaceConfigContext)
 }
 
 internal class DefaultWorkspaceConfigRepository(
     private val fileStorage: FileStorage
 ) : WorkspaceConfigRepository {
 
-    override fun get(): WorkspaceConfigRecord? {
+    override fun get(): WorkspaceConfigContext? {
         if (!fileStorage.exists(FILE_NAME)) {
             return null
         }
@@ -25,7 +25,7 @@ internal class DefaultWorkspaceConfigRepository(
                 reader.readText()
             }
             val dto = text.parseJson<WorkspaceConfigRecordDto>()
-            return WorkspaceConfigRecord.from(dto)
+            return WorkspaceConfigContext.from(dto)
         } catch (_: Exception) {
             fileStorage.delete(FILE_NAME)
         }
@@ -33,10 +33,10 @@ internal class DefaultWorkspaceConfigRepository(
         return null
     }
 
-    override fun set(record: WorkspaceConfigRecord) {
+    override fun set(record: WorkspaceConfigContext) {
         try {
             val writer = fileStorage.writer(FILE_NAME)
-            val dto = WorkspaceConfigRecordDto(record.lastModified, record.dto)
+            val dto = WorkspaceConfigRecordDto(record.modifiedAt, record.dto)
             val text = dto.toJson()
             writer.use {
                 writer.write(text)

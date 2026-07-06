@@ -29,7 +29,7 @@ internal class HackleUserMetadataDto(
 )
 
 internal class WorkspaceConfigMetadataDto(
-    val lastModified: String,
+    val modifiedAt: String,
 )
 
 internal class EvaluateResultDto(

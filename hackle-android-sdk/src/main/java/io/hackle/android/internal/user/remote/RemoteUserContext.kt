@@ -1,7 +1,7 @@
 package io.hackle.android.internal.user.remote
 
 import io.hackle.android.internal.user.UserContext
-import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationRecord
+import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.sdk.common.User
 
 internal class RemoteUserContext private constructor(
@@ -26,6 +26,6 @@ internal class RemoteUserContext private constructor(
     }
 }
 
-internal fun RemoteUserContext.evaluationKey(): WorkspaceEvaluationRecord.Key {
-    return WorkspaceEvaluationRecord.keyOf(user)
+internal fun RemoteUserContext.evaluationKey(): WorkspaceEvaluationContext.Key {
+    return WorkspaceEvaluationContext.keyOf(user)
 }

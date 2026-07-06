@@ -17,28 +17,28 @@ internal class WorkspaceConfigManager(
     private val repository: WorkspaceConfigRepository
 ) : WorkspaceManager, WorkspaceConfigFetcher, Synchronizer {
 
-    private val record: AtomicReference<WorkspaceConfigRecord?> = AtomicReference()
+    private val record: AtomicReference<WorkspaceConfigContext?> = AtomicReference()
 
     override fun initialize() {
         load()
     }
 
     override fun metadata(): Workspace.Metadata? {
-        return record.get()?.workspace()?.metadata
+        return record.get()?.workspace?.metadata
     }
 
     override fun workspace(user: HackleUser): WorkspaceConfig? {
-        return record.get()?.workspace()
+        return record.get()?.workspace
     }
 
     override fun sync(): CompletableFuture<Void> {
-        val lastModified = record.get()?.lastModified
+        val lastModified = record.get()?.modifiedAt
         return fetcher.fetchIfModified(lastModified)
             .consume { store(it) }
             .recover { log.error { "Failed to fetch WorkspaceConfig: $it" } }
     }
 
-    private fun store(record: WorkspaceConfigRecord?) {
+    private fun store(record: WorkspaceConfigContext?) {
         if (record == null) {
             return
         }
@@ -51,7 +51,7 @@ internal class WorkspaceConfigManager(
             val record = repository.get()
             if (record != null) {
                 this.record.set(record)
-                log.debug { "WorkspaceConfig loaded: [last modified: ${record.lastModified}]" }
+                log.debug { "WorkspaceConfig loaded: [modifiedAt: ${record.modifiedAt}]" }
             }
         } catch (e: Exception) {
             log.error { "Failed to read WorkspaceConfig from local: $e" }

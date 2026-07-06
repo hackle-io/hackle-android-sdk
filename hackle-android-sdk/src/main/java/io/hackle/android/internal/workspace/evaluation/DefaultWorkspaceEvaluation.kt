@@ -21,7 +21,7 @@ internal class DefaultWorkspaceEvaluation(
     override val id: Long,
     override val environmentId: Long,
     override val evaluatedAt: Long,
-    override val lastModified: String?,
+    override val modifiedAt: String?,
 
     // Entity
     override val experiments: List<ExperimentRemoteEvaluateResult>,
@@ -65,7 +65,7 @@ internal class DefaultWorkspaceEvaluation(
 
     override fun toProperties(): Map<String, Any> {
         return PropertiesBuilder()
-            .add("config_modified_at", lastModified)
+            .add("config_modified_at", modifiedAt)
             .add("remote_evaluated_at", evaluatedAt)
             .build()
     }
@@ -91,7 +91,7 @@ internal class DefaultWorkspaceEvaluation(
                 id = dto.workspace.id,
                 environmentId = dto.workspace.environment.id,
                 evaluatedAt = dto.metadata.evaluatedAt,
-                lastModified = dto.metadata.config.lastModified,
+                modifiedAt = dto.metadata.config.modifiedAt,
                 experiments = experiments,
                 featureFlags = featureFlags,
                 remoteConfigParameters = remoteConfigParameters,

@@ -1,6 +1,6 @@
 package io.hackle.android.internal.workspace.evaluation.model
 
-import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationRecord
+import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.core.model.PlatformType
 import io.hackle.sdk.core.user.HackleUser
@@ -11,7 +11,7 @@ internal class WorkspaceEvaluateContext private constructor(
     val operations: PropertyOperations,
 ) {
 
-    val key: WorkspaceEvaluationRecord.Key get() = WorkspaceEvaluationRecord.keyOf(user)
+    val key: WorkspaceEvaluationContext.Key get() = WorkspaceEvaluationContext.keyOf(user)
 
     companion object {
         fun of(

@@ -7,14 +7,14 @@ import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluation
 import io.hackle.sdk.core.internal.log.Logger
 
 internal interface WorkspaceEvaluationRepository {
-    fun get(): List<WorkspaceEvaluationRecord>
-    fun set(records: List<WorkspaceEvaluationRecord>)
+    fun get(): List<WorkspaceEvaluationContext>
+    fun set(records: List<WorkspaceEvaluationContext>)
 }
 
 internal class FileWorkspaceEvaluationRepository(
     private val fileStorage: FileStorage
 ) : WorkspaceEvaluationRepository {
-    override fun get(): List<WorkspaceEvaluationRecord> {
+    override fun get(): List<WorkspaceEvaluationContext> {
         try {
             if (!fileStorage.exists(FILE_NAME)) {
                 return emptyList()
@@ -22,7 +22,7 @@ internal class FileWorkspaceEvaluationRepository(
             val reader = fileStorage.reader(FILE_NAME)
             val json = reader.use { it.readText() }
             val records = json.parseJson<List<WorkspaceEvaluationRecordDto>>()
-            return records.map { WorkspaceEvaluationRecord.from(it) }
+            return records.map { WorkspaceEvaluationContext.from(it) }
         } catch (e: Exception) {
             log.error { "Failed to read WorkspaceEvaluationRecord: $e" }
             try {
@@ -34,7 +34,7 @@ internal class FileWorkspaceEvaluationRepository(
         }
     }
 
-    override fun set(records: List<WorkspaceEvaluationRecord>) {
+    override fun set(records: List<WorkspaceEvaluationContext>) {
         try {
             val writer = fileStorage.writer(FILE_NAME)
             val values = records.map { it.toDto() }
@@ -48,7 +48,7 @@ internal class FileWorkspaceEvaluationRepository(
         }
     }
 
-    private fun WorkspaceEvaluationRecord.toDto(): WorkspaceEvaluationRecordDto {
+    private fun WorkspaceEvaluationContext.toDto(): WorkspaceEvaluationRecordDto {
         return WorkspaceEvaluationRecordDto(
             key = key.identifiers.asMap(),
             evaluation = dto

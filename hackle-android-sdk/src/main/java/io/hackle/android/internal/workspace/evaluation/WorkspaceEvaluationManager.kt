@@ -29,12 +29,12 @@ internal class WorkspaceEvaluationManager(
     }
 
     override fun metadata(): Workspace.Metadata? {
-        return cache.latest()?.workspace()?.metadata
+        return cache.latest()?.workspace?.metadata
     }
 
     override fun workspace(user: HackleUser): WorkspaceEvaluation? {
-        val key = WorkspaceEvaluationRecord.keyOf(user)
-        return cache.get(key)?.workspace()
+        val key = WorkspaceEvaluationContext.keyOf(user)
+        return cache.get(key)?.workspace
     }
 
     fun sync(context: WorkspaceEvaluateContext): CompletableFuture<Void> {
@@ -49,9 +49,9 @@ internal class WorkspaceEvaluationManager(
     private fun resolveResponse(
         request: AllWorkspaceEvaluateRequest,
         response: WorkspaceEvaluateResponse,
-    ): WorkspaceEvaluationRecord {
+    ): WorkspaceEvaluationContext {
         return when (response.status) {
-            WorkspaceEvaluateStatus.FULL -> WorkspaceEvaluationRecord.of(
+            WorkspaceEvaluateStatus.FULL -> WorkspaceEvaluationContext.of(
                 key = request.context.key,
                 dto = requireNotNull(response.evaluation) { "response evaluation" })
 
@@ -60,7 +60,7 @@ internal class WorkspaceEvaluationManager(
         }
     }
 
-    private fun store(record: WorkspaceEvaluationRecord) {
+    private fun store(record: WorkspaceEvaluationContext) {
         val snapshots = cache.put(record)
         repository.set(snapshots)
     }
