@@ -15,6 +15,7 @@ internal class WorkspaceEvaluationDto(
 
 internal class WorkspaceEvaluationMetadataDto(
     val evaluatedAt: Long,
+    val fullEvaluatedAt: Long,
     val results: WorkspaceEvaluateResultsMetadataDto,
     val user: HackleUserMetadataDto,
     val config: WorkspaceConfigMetadataDto,
@@ -46,6 +47,7 @@ internal class EvaluateResultDto(
 internal class ExperimentEvaluateResultDto(
     val id: Long,
     val key: Long,
+    val order: Long,
     val version: Int,
     val executionVersion: Int,
 
@@ -68,6 +70,7 @@ internal class RemoteConfigParameterEvaluateResultDto(
 internal class InAppMessageEligibilityEvaluateResultDto(
     val id: Long,
     val key: Long,
+    val order: Long,
 
     // Period
     val period: InAppMessageDto.PeriodDto?,

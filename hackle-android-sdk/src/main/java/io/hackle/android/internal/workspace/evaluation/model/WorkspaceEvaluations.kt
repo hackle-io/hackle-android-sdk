@@ -13,6 +13,7 @@ internal fun ExperimentEvaluateResultDto.toResult(experimentType: Experiment.Typ
     return ExperimentRemoteEvaluateResult(
         id = id,
         key = key,
+        order = order,
         type = experimentType,
         version = version,
         executionVersion = executionVersion,
@@ -50,6 +51,7 @@ internal fun InAppMessageEligibilityEvaluateResultDto.toResultOrNull(): InAppMes
     val layout = InAppMessageLayoutRemoteEvaluateResult(
         id = id,
         key = key,
+        order = order,
         period = period,
         timetable = timetable,
         eventTrigger = eventTrigger,
@@ -63,6 +65,7 @@ internal fun InAppMessageEligibilityEvaluateResultDto.toResultOrNull(): InAppMes
     return InAppMessageEligibilityRemoteEvaluateResult(
         id = id,
         key = key,
+        order = order,
         period = period,
         timetable = timetable,
         eventTrigger = eventTrigger,

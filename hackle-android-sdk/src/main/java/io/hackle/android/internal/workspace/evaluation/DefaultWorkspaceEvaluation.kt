@@ -21,6 +21,7 @@ internal class DefaultWorkspaceEvaluation(
     override val id: Long,
     override val environmentId: Long,
     override val evaluatedAt: Long,
+    override val fullEvaluatedAt: Long,
     override val modifiedAt: String?,
 
     // Entity
@@ -67,6 +68,7 @@ internal class DefaultWorkspaceEvaluation(
         return PropertiesBuilder()
             .add("config_modified_at", modifiedAt)
             .add("remote_evaluated_at", evaluatedAt)
+            .add("remote_full_evaluated_at", fullEvaluatedAt)
             .build()
     }
 
@@ -91,11 +93,12 @@ internal class DefaultWorkspaceEvaluation(
                 id = dto.workspace.id,
                 environmentId = dto.workspace.environment.id,
                 evaluatedAt = dto.metadata.evaluatedAt,
+                fullEvaluatedAt = dto.metadata.fullEvaluatedAt,
                 modifiedAt = dto.metadata.config.modifiedAt,
-                experiments = experiments,
-                featureFlags = featureFlags,
+                experiments = experiments.sortedBy { it.order },
+                featureFlags = featureFlags.sortedBy { it.order },
                 remoteConfigParameters = remoteConfigParameters,
-                inAppMessages = inAppMessages
+                inAppMessages = inAppMessages.sortedBy { it.order }
             )
         }
     }

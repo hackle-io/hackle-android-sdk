@@ -20,6 +20,7 @@ internal fun ExperimentDto.toExperimentOrNull(
     return ExperimentConfig(
         id = id,
         key = key,
+        order = order,
         name = name,
         type = type,
         identifierType = identifierType,
@@ -216,6 +217,7 @@ internal fun InAppMessageDto.toInAppMessageOrNull(): InAppMessageConfig? {
     return InAppMessageConfig(
         id = id,
         key = key,
+        order = order,
         period = period,
         timetable = timetable,
         status = status,
