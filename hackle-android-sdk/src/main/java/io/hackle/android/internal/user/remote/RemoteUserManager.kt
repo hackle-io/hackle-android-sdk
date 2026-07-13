@@ -7,7 +7,7 @@ import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.*
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManager
-import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateContext
+import io.hackle.android.internal.workspace.evaluation.model.RemoteEvaluateContext
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
@@ -165,7 +165,7 @@ internal class RemoteUserManager(
 
     private fun sync(context: SyncContext): CompletableFuture<Void> {
         val hackleUser = hackleUser(context.userContext.user)
-        val evaluationContext = WorkspaceEvaluateContext.of(hackleUser, context.operations)
+        val evaluationContext = RemoteEvaluateContext.of(hackleUser, context.operations)
         return evaluationManager.sync(evaluationContext)
             .recover { log.error { "Failed to sync WorkspaceEvaluation: $it" } }
     }

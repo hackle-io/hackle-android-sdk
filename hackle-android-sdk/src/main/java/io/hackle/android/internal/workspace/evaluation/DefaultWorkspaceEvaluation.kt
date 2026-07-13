@@ -1,15 +1,13 @@
 package io.hackle.android.internal.workspace.evaluation
 
+import io.hackle.android.internal.workspace.config.WorkspaceDto
 import io.hackle.android.internal.workspace.config.parseEnumOrNull
-import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationDto
-import io.hackle.android.internal.workspace.evaluation.model.toResult
-import io.hackle.android.internal.workspace.evaluation.model.toResultOrNull
+import io.hackle.android.internal.workspace.evaluation.model.*
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.core.model.Entity
 import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
 import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
 import io.hackle.sdk.core.model.ServiceType
-import io.hackle.sdk.core.workspace.config.WorkspaceConfig
 import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluation
 import io.hackle.sdk.core.workspace.evaluation.entity.ExperimentRemoteEvaluateResult
 import io.hackle.sdk.core.workspace.evaluation.entity.InAppMessageEligibilityRemoteEvaluateResult
@@ -21,17 +19,17 @@ internal class DefaultWorkspaceEvaluation(
     override val id: Long,
     override val environmentId: Long,
     override val evaluatedAt: Long,
-    override val fullEvaluatedAt: Long,
     override val modifiedAt: String?,
+    val fullEvaluatedAt: Long?,
 
     // Entity
     override val experiments: List<ExperimentRemoteEvaluateResult>,
     override val featureFlags: List<ExperimentRemoteEvaluateResult>,
     override val remoteConfigParameters: List<RemoteConfigParameterRemoteEvaluateResult>,
     override val inAppMessages: List<InAppMessageEligibilityRemoteEvaluateResult>,
-) : WorkspaceEvaluation, WorkspaceConfig.Metadata {
+) : WorkspaceEvaluation, WorkspaceEvaluation.Metadata {
 
-    override val metadata: WorkspaceConfig.Metadata get() = this
+    override val metadata: WorkspaceEvaluation.Metadata get() = this
 
     private val _experiments = experiments.associateBy { it.key }
     private val _featureFlags = featureFlags.associateBy { it.key }
@@ -73,14 +71,26 @@ internal class DefaultWorkspaceEvaluation(
     }
 
     companion object {
-        fun from(dto: WorkspaceEvaluationDto): DefaultWorkspaceEvaluation {
+        fun from(dto: WorkspaceEvaluationDto, fullEvaluatedAt: Long): DefaultWorkspaceEvaluation {
+            return create(dto.workspace, dto.metadata, dto.results, fullEvaluatedAt)
+        }
 
+        fun from(dto: EntityEvaluationDto): DefaultWorkspaceEvaluation {
+            return create(dto.workspace, dto.metadata, dto.results, null)
+        }
+
+        private fun create(
+            workspace: WorkspaceDto,
+            metadata: EvaluationMetadataDto,
+            results: List<EvaluateResultDto>,
+            fullEvaluatedAt: Long?
+        ): DefaultWorkspaceEvaluation {
             val experiments = mutableListOf<ExperimentRemoteEvaluateResult>()
             val featureFlags = mutableListOf<ExperimentRemoteEvaluateResult>()
             val remoteConfigParameters = mutableListOf<RemoteConfigParameterRemoteEvaluateResult>()
             val inAppMessages = mutableListOf<InAppMessageEligibilityRemoteEvaluateResult>()
 
-            for (result in dto.results) {
+            for (result in results) {
                 val serviceType = parseEnumOrNull<ServiceType>(result.type) ?: continue
                 when (serviceType) {
                     ServiceType.AB_TEST -> result.experiment?.toResult(AB_TEST)?.let(experiments::add)
@@ -90,11 +100,11 @@ internal class DefaultWorkspaceEvaluation(
                 }
             }
             return DefaultWorkspaceEvaluation(
-                id = dto.workspace.id,
-                environmentId = dto.workspace.environment.id,
-                evaluatedAt = dto.metadata.evaluatedAt,
-                fullEvaluatedAt = dto.metadata.fullEvaluatedAt,
-                modifiedAt = dto.metadata.config.modifiedAt,
+                id = workspace.id,
+                environmentId = workspace.environment.id,
+                evaluatedAt = metadata.evaluatedAt,
+                modifiedAt = metadata.config.modifiedAt,
+                fullEvaluatedAt = fullEvaluatedAt,
                 experiments = experiments.sortedBy { it.order },
                 featureFlags = featureFlags.sortedBy { it.order },
                 remoteConfigParameters = remoteConfigParameters,

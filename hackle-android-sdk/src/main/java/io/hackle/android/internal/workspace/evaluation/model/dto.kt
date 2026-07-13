@@ -2,28 +2,24 @@ package io.hackle.android.internal.workspace.evaluation.model
 
 import io.hackle.android.internal.workspace.config.*
 
-internal class WorkspaceEvaluationRecordDto(
+internal class WorkspaceEvaluationContextDto(
     val key: Map<String, String>, // identifiers
     val evaluation: WorkspaceEvaluationDto,
+    val fullEvaluatedAt: Long
 )
 
 internal class WorkspaceEvaluationDto(
     val workspace: WorkspaceDto,
-    val results: List<EvaluateResultDto>,
     val metadata: WorkspaceEvaluationMetadataDto,
+    val results: List<EvaluateResultDto>,
 )
 
 internal class WorkspaceEvaluationMetadataDto(
-    val evaluatedAt: Long,
-    val fullEvaluatedAt: Long,
-    val results: WorkspaceEvaluateResultsMetadataDto,
-    val user: HackleUserMetadataDto,
-    val config: WorkspaceConfigMetadataDto,
-)
-
-internal class WorkspaceEvaluateResultsMetadataDto(
     val hash: Int,
-)
+    override val evaluatedAt: Long,
+    val user: HackleUserMetadataDto,
+    override val config: WorkspaceConfigMetadataDto,
+) : EvaluationMetadataDto
 
 internal class HackleUserMetadataDto(
     val hash: Int,
@@ -108,13 +104,13 @@ internal class EntityDto(
 internal class EvaluateEntityDto(
     val type: String,
     val id: Long,
-    val hash: Int?,
+    val hash: Int,
 )
 
-internal class WorkspaceEvaluateContextDto(
+internal class RemoteEvaluateContextDto(
     val platformType: String, // ANDROID, IOS, WEB
     val user: HackleUserDto,
-    val operations: Map<String, Any>,
+    val operations: Map<String, Map<String, Any>>,
 )
 
 internal class HackleUserDto(
@@ -123,16 +119,53 @@ internal class HackleUserDto(
     val hackleProperties: Map<String, Any>,
 )
 
+// HTTP Request, Response
+
 internal class WorkspaceEvaluateRequestDto(
-    val scope: String, // ALL, SPECIFIC
     val policy: String, // AUTO, FORCE_FULL
-    val context: WorkspaceEvaluateContextDto,
+    val context: RemoteEvaluateContextDto,
+    val base: BaseEvaluationDto?
+)
+
+internal class BaseEvaluationDto(
+    val fullEvaluatedAt: Long,
+    val metadata: WorkspaceEvaluationMetadataDto,
     val entities: List<EvaluateEntityDto>,
-    val current: WorkspaceEvaluationMetadataDto?,
 )
 
 internal class WorkspaceEvaluateResponseDto(
-    val status: String, // FULL, DELTA, NOT_MODIFIED
-    val evaluation: WorkspaceEvaluationDto?,
+    val status: String, // FULL, DELTA
+    val full: WorkspaceEvaluationDto?,
+    val delta: WorkspaceEvaluationDeltaDto?,
+)
+
+internal class WorkspaceEvaluationDeltaDto(
+    val metadata: WorkspaceEvaluationMetadataDto,
+    val changed: List<EvaluateResultDto>,
     val deleted: List<EntityDto>,
 )
+
+internal class EntityEvaluateRequestDto(
+    val context: RemoteEvaluateContextDto,
+    val entities: List<EntityDto>,
+)
+
+internal class EntityEvaluateResponseDto(
+    val evaluation: EntityEvaluationDto
+)
+
+internal class EntityEvaluationDto(
+    val workspace: WorkspaceDto,
+    val metadata: EntityEvaluationMetadataDto,
+    val results: List<EvaluateResultDto>,
+)
+
+internal class EntityEvaluationMetadataDto(
+    override val evaluatedAt: Long,
+    override val config: WorkspaceConfigMetadataDto,
+) : EvaluationMetadataDto
+
+internal interface EvaluationMetadataDto {
+    val evaluatedAt: Long
+    val config: WorkspaceConfigMetadataDto
+}

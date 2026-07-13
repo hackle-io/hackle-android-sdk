@@ -4,12 +4,11 @@ import io.hackle.android.internal.task.consume
 import io.hackle.android.internal.task.map
 import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.workspace.WorkspaceManager
-import io.hackle.android.internal.workspace.evaluation.evaluator.AllWorkspaceEvaluateRequest
-import io.hackle.android.internal.workspace.evaluation.evaluator.SpecificWorkspaceEvaluateRequest
-import io.hackle.android.internal.workspace.evaluation.evaluator.WorkspaceEvaluateProcessor
-import io.hackle.android.internal.workspace.evaluation.evaluator.WorkspaceEvaluateResponse
-import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateContext
-import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateStatus
+import io.hackle.android.internal.workspace.evaluation.evaluator.full.FullWorkspaceEvaluateRequest
+import io.hackle.android.internal.workspace.evaluation.evaluator.full.FullWorkspaceRemoteEvaluator
+import io.hackle.android.internal.workspace.evaluation.evaluator.partial.PartialWorkspaceEvaluateRequest
+import io.hackle.android.internal.workspace.evaluation.evaluator.partial.PartialWorkspaceRemoteEvaluator
+import io.hackle.android.internal.workspace.evaluation.model.RemoteEvaluateContext
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.model.Entity
 import io.hackle.sdk.core.user.HackleUser
@@ -19,7 +18,8 @@ import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluationFetcher
 import java.util.concurrent.CompletableFuture
 
 internal class WorkspaceEvaluationManager(
-    private val evaluateProcessor: WorkspaceEvaluateProcessor,
+    private val fullEvaluator: FullWorkspaceRemoteEvaluator,
+    private val partialEvaluator: PartialWorkspaceRemoteEvaluator,
     private val repository: WorkspaceEvaluationRepository,
     private val cache: WorkspaceEvaluationCache,
 ) : WorkspaceManager, WorkspaceEvaluationFetcher {
@@ -37,47 +37,32 @@ internal class WorkspaceEvaluationManager(
         return cache.get(key)?.workspace
     }
 
-    fun sync(context: WorkspaceEvaluateContext): CompletableFuture<Void> {
-        val record = cache.get(context.key)
-        val request = AllWorkspaceEvaluateRequest(context, record)
-        return evaluateProcessor.process(request)
-            .map { resolveResponse(request, it) }
-            .consume { store(it) }
+    fun sync(context: RemoteEvaluateContext): CompletableFuture<Void> {
+        val base = cache.get(context.key)
+        val request = FullWorkspaceEvaluateRequest.of(context, base)
+        return fullEvaluator.evaluate(request)
+            .consume { store(it.context) }
             .recover { log.error { "Failed to sync WorkspaceEvaluation: $it" } }
     }
 
-    private fun resolveResponse(
-        request: AllWorkspaceEvaluateRequest,
-        response: WorkspaceEvaluateResponse,
-    ): WorkspaceEvaluationContext {
-        return when (response.status) {
-            WorkspaceEvaluateStatus.FULL -> WorkspaceEvaluationContext.of(
-                key = request.context.key,
-                dto = requireNotNull(response.evaluation) { "response evaluation" })
-
-            WorkspaceEvaluateStatus.DELTA -> requireNotNull(request.record) { "current record" } // 실제 발생하지 않지만 방어 로직
-            WorkspaceEvaluateStatus.NOT_MODIFIED -> requireNotNull(request.record) { "current record" }
-        }
-    }
-
-    private fun store(record: WorkspaceEvaluationContext) {
-        val snapshots = cache.put(record)
+    private fun store(context: WorkspaceEvaluationContext) {
+        val snapshots = cache.put(context)
         repository.set(snapshots)
     }
 
     private fun load() {
         try {
-            val records = repository.get()
-            cache.restore(records)
+            val context = repository.get()
+            cache.restore(context)
         } catch (e: Exception) {
             log.error { "Failed to load WorkspaceEValuation from local: $e" }
         }
     }
 
-    fun evaluate(context: WorkspaceEvaluateContext, entities: List<Entity>): CompletableFuture<WorkspaceEvaluation> {
-        val request = SpecificWorkspaceEvaluateRequest(context, entities)
-        return evaluateProcessor.process(request)
-            .map { DefaultWorkspaceEvaluation.from(requireNotNull(it.evaluation) { "evaluation" }) }
+    fun evaluate(context: RemoteEvaluateContext, entities: List<Entity>): CompletableFuture<WorkspaceEvaluation> {
+        val request = PartialWorkspaceEvaluateRequest(context, entities)
+        return partialEvaluator.evaluate(request)
+            .map { it.evaluation }
     }
 
     companion object {

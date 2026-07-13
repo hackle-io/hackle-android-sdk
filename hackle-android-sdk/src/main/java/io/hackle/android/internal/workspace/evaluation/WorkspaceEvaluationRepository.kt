@@ -3,12 +3,12 @@ package io.hackle.android.internal.workspace.evaluation
 import io.hackle.android.internal.storage.FileStorage
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.internal.utils.json.toJson
-import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationRecordDto
+import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationContextDto
 import io.hackle.sdk.core.internal.log.Logger
 
 internal interface WorkspaceEvaluationRepository {
     fun get(): List<WorkspaceEvaluationContext>
-    fun set(records: List<WorkspaceEvaluationContext>)
+    fun set(contexts: List<WorkspaceEvaluationContext>)
 }
 
 internal class FileWorkspaceEvaluationRepository(
@@ -21,10 +21,10 @@ internal class FileWorkspaceEvaluationRepository(
             }
             val reader = fileStorage.reader(FILE_NAME)
             val json = reader.use { it.readText() }
-            val records = json.parseJson<List<WorkspaceEvaluationRecordDto>>()
-            return records.map { WorkspaceEvaluationContext.from(it) }
+            val contexts = json.parseJson<List<WorkspaceEvaluationContextDto>>()
+            return contexts.map { WorkspaceEvaluationContext.from(it) }
         } catch (e: Exception) {
-            log.error { "Failed to read WorkspaceEvaluationRecord: $e" }
+            log.error { "Failed to read WorkspaceEvaluationContext: $e" }
             try {
                 fileStorage.delete(FILE_NAME)
             } catch (_: Exception) {
@@ -34,24 +34,25 @@ internal class FileWorkspaceEvaluationRepository(
         }
     }
 
-    override fun set(records: List<WorkspaceEvaluationContext>) {
+    override fun set(contexts: List<WorkspaceEvaluationContext>) {
         try {
             val writer = fileStorage.writer(FILE_NAME)
-            val values = records.map { it.toDto() }
+            val values = contexts.map { it.toDto() }
             val json = values.toJson()
             writer.use {
                 it.write(json)
                 it.flush()
             }
         } catch (e: Exception) {
-            log.error { "Failed to save WorkspaceEvaluationRecord: $e" }
+            log.error { "Failed to save WorkspaceEvaluationContext: $e" }
         }
     }
 
-    private fun WorkspaceEvaluationContext.toDto(): WorkspaceEvaluationRecordDto {
-        return WorkspaceEvaluationRecordDto(
+    private fun WorkspaceEvaluationContext.toDto(): WorkspaceEvaluationContextDto {
+        return WorkspaceEvaluationContextDto(
             key = key.identifiers.asMap(),
-            evaluation = dto
+            evaluation = dto,
+            fullEvaluatedAt = fullEvaluatedAt
         )
     }
 

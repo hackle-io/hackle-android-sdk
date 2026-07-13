@@ -2,25 +2,23 @@ package io.hackle.android.internal.workspace.evaluation.evaluator
 
 import io.hackle.android.internal.workspace.evaluation.model.EntityDto
 import io.hackle.android.internal.workspace.evaluation.model.EvaluateResultDto
-import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluateResponseDto
+import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationDeltaDto
 import io.hackle.android.internal.workspace.evaluation.model.WorkspaceEvaluationDto
 import io.hackle.sdk.core.workspace.evaluation.entity.RemoteEvaluateResult
 
 internal object WorkspaceEvaluations {
 
-    fun merge(evaluation: WorkspaceEvaluationDto, response: WorkspaceEvaluateResponseDto): WorkspaceEvaluationDto {
-        val merged = evaluation.results.associateByTo(LinkedHashMap()) { it.key() }
+    fun merge(evaluation: WorkspaceEvaluationDto, delta: WorkspaceEvaluationDeltaDto): WorkspaceEvaluationDto {
+        val results = evaluation.results.associateByTo(LinkedHashMap()) { it.key() }
 
-        val responseEvaluation = requireNotNull(response.evaluation) { "evaluation" }
-        for (result in responseEvaluation.results) {
-            merged[result.key()] = result
+        for (change in delta.changed) {
+            results[change.key()] = change
+        }
+        for (delete in delta.deleted) {
+            results.remove(delete.key())
         }
 
-        for (entity in response.deleted) {
-            merged.remove(entity.key())
-        }
-
-        return WorkspaceEvaluationDto(evaluation.workspace, merged.values.toList(), responseEvaluation.metadata)
+        return WorkspaceEvaluationDto(evaluation.workspace, delta.metadata, results.values.toList())
     }
 
     fun hash(results: List<EvaluateResultDto>): Int {
@@ -38,4 +36,8 @@ internal object WorkspaceEvaluations {
     private fun EntityDto.key(): RemoteEvaluateResult.Key {
         return RemoteEvaluateResult.Key(type, id)
     }
+}
+
+internal fun WorkspaceEvaluationDto.merge(delta: WorkspaceEvaluationDeltaDto): WorkspaceEvaluationDto {
+    return WorkspaceEvaluations.merge(this, delta)
 }

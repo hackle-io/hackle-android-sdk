@@ -5,20 +5,19 @@ import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.core.model.PlatformType
 import io.hackle.sdk.core.user.HackleUser
 
-internal class WorkspaceEvaluateContext private constructor(
+internal class RemoteEvaluateContext private constructor(
     val platformType: PlatformType,
     val user: HackleUser,
     val operations: PropertyOperations,
 ) {
-
     val key: WorkspaceEvaluationContext.Key get() = WorkspaceEvaluationContext.keyOf(user)
 
     companion object {
         fun of(
             user: HackleUser,
             operations: PropertyOperations = PropertyOperations.empty(),
-        ): WorkspaceEvaluateContext {
-            return WorkspaceEvaluateContext(
+        ): RemoteEvaluateContext {
+            return RemoteEvaluateContext(
                 platformType = PlatformType.ANDROID,
                 user = user,
                 operations = operations
@@ -27,9 +26,8 @@ internal class WorkspaceEvaluateContext private constructor(
     }
 }
 
-
-internal fun WorkspaceEvaluateContext.toDto(): WorkspaceEvaluateContextDto {
-    return WorkspaceEvaluateContextDto(
+internal fun RemoteEvaluateContext.toDto(): RemoteEvaluateContextDto {
+    return RemoteEvaluateContextDto(
         platformType = platformType.name,
         user = HackleUserDto(
             identifiers = user.identifiers,

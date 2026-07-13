@@ -83,7 +83,9 @@ import io.hackle.android.internal.workspace.config.WorkspaceConfigManager
 import io.hackle.android.internal.workspace.evaluation.FileWorkspaceEvaluationRepository
 import io.hackle.android.internal.workspace.evaluation.LruWorkspaceEvaluationCache
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManager
-import io.hackle.android.internal.workspace.evaluation.evaluator.*
+import io.hackle.android.internal.workspace.evaluation.client.RemoteEvaluateClient
+import io.hackle.android.internal.workspace.evaluation.evaluator.full.FullWorkspaceRemoteEvaluator
+import io.hackle.android.internal.workspace.evaluation.evaluator.partial.PartialWorkspaceRemoteEvaluator
 import io.hackle.android.ui.core.GlideImageLoader
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
@@ -183,30 +185,28 @@ internal object HackleApps {
             }
 
             EvaluationMode.REMOTE -> {
-                val evaluateClient = WorkspaceRemoteEvaluateClient(
+                val evaluateClient = RemoteEvaluateClient(
                     sdkUri = config.sdkUri,
                     httpClient = httpClient
                 )
-                val evaluatorFactory = WorkspaceRemoteEvaluatorFactory(
-                    evaluators = listOf(
-                        AllWorkspaceRemoteEvaluator(evaluateClient),
-                        SpecificWorkspaceRemoteEvaluator(evaluateClient)
-                    )
+                val fullWorkspaceRemoteEvaluator = FullWorkspaceRemoteEvaluator(
+                    client = evaluateClient
                 )
-                val evaluateProcessor = WorkspaceEvaluateProcessor(
-                    evaluatorFactory = evaluatorFactory
+
+                val partialWorkspaceRemoteEvaluator = PartialWorkspaceRemoteEvaluator(
+                    client = evaluateClient
                 )
                 val repository = FileWorkspaceEvaluationRepository(
                     fileStorage = fileStorage
                 )
                 WorkspaceEvaluationManager(
-                    evaluateProcessor = evaluateProcessor,
+                    fullEvaluator = fullWorkspaceRemoteEvaluator,
+                    partialEvaluator = partialWorkspaceRemoteEvaluator,
                     repository = repository,
                     cache = LruWorkspaceEvaluationCache(capacity = 10)
                 )
             }
         }
-
 
         // UserManager
 

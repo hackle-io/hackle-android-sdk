@@ -2,9 +2,9 @@ package io.hackle.android.internal.workspace.evaluation
 
 internal interface WorkspaceEvaluationCache {
     fun get(key: WorkspaceEvaluationContext.Key): WorkspaceEvaluationContext?
-    fun put(record: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext>
+    fun put(context: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext>
     fun latest(): WorkspaceEvaluationContext?
-    fun restore(records: List<WorkspaceEvaluationContext>)
+    fun restore(contexts: List<WorkspaceEvaluationContext>)
 }
 
 internal class LruWorkspaceEvaluationCache(private val capacity: Int) : WorkspaceEvaluationCache {
@@ -17,10 +17,10 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
         return synchronized(lock) { entries[key] }
     }
 
-    override fun put(record: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext> {
+    override fun put(context: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext> {
         synchronized(lock) {
-            remove(record.key)
-            add(record)
+            remove(context.key)
+            add(context)
             evict()
             return order.map { entries.getValue(it) }
         }
@@ -31,9 +31,9 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
         order.remove(key)
     }
 
-    private fun add(record: WorkspaceEvaluationContext) {
-        entries[record.key] = record
-        order.add(record.key)
+    private fun add(context: WorkspaceEvaluationContext) {
+        entries[context.key] = context
+        order.add(context.key)
     }
 
     private fun evict() {
@@ -49,12 +49,12 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
         }
     }
 
-    override fun restore(records: List<WorkspaceEvaluationContext>) {
+    override fun restore(contexts: List<WorkspaceEvaluationContext>) {
         synchronized(lock) {
             entries.clear()
             order.clear()
-            for (record in records.takeLast(capacity)) {
-                add(record)
+            for (context in contexts.takeLast(capacity)) {
+                add(context)
             }
         }
     }
