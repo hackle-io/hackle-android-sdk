@@ -1,5 +1,6 @@
 package io.hackle.android.internal.inappmessage.trigger
 
+import io.hackle.sdk.core.evaluation.EvaluationPhase
 import io.hackle.sdk.core.evaluation.evaluator.Evaluators
 import io.hackle.sdk.core.evaluation.match.EventEvaluateRequest
 import io.hackle.sdk.core.evaluation.match.TargetMatcher
@@ -38,6 +39,7 @@ internal class InAppMessageEventEvaluateRequest(
     override val entity: Entity,
     override val event: UserEvent,
 ) : EventEvaluateRequest {
+    override val phase: EvaluationPhase get() = EvaluationPhase.RUNTIME
     override val record: Boolean get() = false
 
     companion object {
