@@ -1,5 +1,6 @@
 package io.hackle.android.internal.workspace.evaluation.client
 
+import io.hackle.android.internal.http.isNoContent
 import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.android.internal.task.Futures
@@ -52,7 +53,7 @@ internal class RemoteEvaluateClient(
     }
 
     private fun handleWorkspaceResponse(response: Response): WorkspaceEvaluateResponseDto? {
-        if (response.code == 204) {
+        if (response.isNoContent) {
             return null
         }
         return handleResponse<WorkspaceEvaluateResponseDto>(response)
