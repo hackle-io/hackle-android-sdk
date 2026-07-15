@@ -129,6 +129,7 @@ internal object HackleApps {
     private const val PREFERENCES_NAME = "io.hackle.android"
 
     fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
+        val coreContext = HackleCoreContext.create()
         val clock = Clock.SYSTEM
         val sdk = Sdk.of(sdkKey, config)
         loggerConfiguration(config)
@@ -215,32 +216,25 @@ internal object HackleApps {
         )
 
         val userManager = when (config.evaluationMode) {
-            EvaluationMode.LOCAL -> {
-                val cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient)
-                val targetEventFetcher = UserTargetEventFetcher(config.sdkUri, httpClient)
-                val userManager = LocalUserManager(
-                    clock = clock,
-                    device = platformManager.device,
-                    packageInfo = platformManager.packageInfo,
-                    repository = userRepository,
-                    cohortFetcher = cohortFetcher,
-                    targetEventFetcher = targetEventFetcher
-                )
-                compositeSynchronizer.add(userManager)
-                userManager
-            }
+            EvaluationMode.LOCAL -> LocalUserManager(
+                clock = clock,
+                device = platformManager.device,
+                packageInfo = platformManager.packageInfo,
+                repository = userRepository,
+                cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient),
+                targetEventFetcher = UserTargetEventFetcher(config.sdkUri, httpClient)
+            )
 
-            EvaluationMode.REMOTE -> {
-                RemoteUserManager(
-                    clock = clock,
-                    device = platformManager.device,
-                    packageInfo = platformManager.packageInfo,
-                    repository = userRepository,
-                    evaluationManager = workspaceManager as WorkspaceEvaluationManager
-                )
-            }
+            EvaluationMode.REMOTE -> RemoteUserManager(
+                clock = clock,
+                device = platformManager.device,
+                packageInfo = platformManager.packageInfo,
+                repository = userRepository,
+                evaluationManager = workspaceManager as WorkspaceEvaluationManager
+            )
+
         }
-
+        compositeSynchronizer.add(userManager)
 
         // SessionManager
 
@@ -366,7 +360,7 @@ internal object HackleApps {
         )
 
         val evaluateProcessor = EvaluateProcessor.create(
-            context = HackleCoreContext.GLOBAL,
+            context = coreContext,
             clock = clock,
             eventProcessor = eventProcessor,
             overrideStorage = experimentOverrideStorage,
@@ -561,7 +555,7 @@ internal object HackleApps {
         inAppMessageDelayScheduler.listener = inAppMessageScheduleProcessor
 
         val inAppMessageEventMatcher = InAppMessageEventMatcher(
-            targetMatcher = HackleCoreContext.GLOBAL.get(),
+            targetMatcher = coreContext.get(),
         )
         val inAppMessageTriggerDeterminer = when (config.evaluationMode) {
             EvaluationMode.LOCAL -> LocalInAppMessageTriggerDeterminer(
