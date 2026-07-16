@@ -78,7 +78,7 @@ internal class InAppMessageEligibilityEvaluateResultDto(
     val eventTriggerDelay: InAppMessageDto.CampaignDelayDto?,
 
     // EvaluateContext
-    val evaluateContext: InAppMessageDto.EvaluateContextDto,
+    val evaluateContext: InAppMessageDto.EvaluateContextDto?,
 
     // MessageContext
     val messageContext: InAppMessageDto.MessageContextDto,

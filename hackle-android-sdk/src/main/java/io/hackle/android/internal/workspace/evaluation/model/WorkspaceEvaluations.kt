@@ -45,7 +45,7 @@ internal fun InAppMessageEligibilityEvaluateResultDto.toResultOrNull(): InAppMes
             ?.let { it.toDelayOrNull() ?: return null }
             ?: InAppMessage.Delay(InAppMessage.Delay.Type.IMMEDIATE, null)
     )
-    val evaluateContext = InAppMessage.EvaluateContext(atDeliverTime = evaluateContext.atDeliverTime)
+    val evaluateContext = InAppMessage.EvaluateContext(atDeliverTime = evaluateContext?.atDeliverTime ?: false)
     val messageContext = messageContext.toMessageContextOrNull() ?: return null
 
     val layout = InAppMessageLayoutRemoteEvaluateResult(
