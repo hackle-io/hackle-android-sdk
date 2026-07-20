@@ -634,7 +634,8 @@ internal object HackleApps {
                 pushTokenManager = pushTokenManager,
                 devToolsApi = devToolsApi,
             ),
-            activityProvider = activityLifecycleManager
+            activityProvider = activityLifecycleManager,
+            config = config
         )
 
         // Metrics
@@ -670,7 +671,6 @@ internal object HackleApps {
             clock = clock,
             core = core,
             eventExecutor = eventExecutor,
-            backgroundExecutor = TaskExecutors.default(),
             synchronizer = pollingSynchronizer,
             userManager = userManager,
             workspaceManager = workspaceManager,

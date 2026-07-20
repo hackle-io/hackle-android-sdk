@@ -42,7 +42,6 @@ internal class HackleAppCore(
     private val clock: Clock,
     private val core: HackleCore,
     private val eventExecutor: Executor,
-    private val backgroundExecutor: Executor,
     private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
@@ -277,10 +276,8 @@ internal class HackleAppCore(
     fun fetch(callback: Runnable?) {
         fetchThrottler.execute(
             accept = {
-                backgroundExecutor.execute {
-                    synchronizer.sync()
-                    callback?.run()
-                }
+                synchronizer.sync()
+                    .onComplete { callback?.run() }
             },
             reject = {
                 log.debug { "Too many quick fetch requests." }

@@ -2,11 +2,9 @@ package io.hackle.android.internal.workspace.evaluation.model
 
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.sdk.common.PropertyOperations
-import io.hackle.sdk.core.model.PlatformType
 import io.hackle.sdk.core.user.HackleUser
 
 internal class RemoteEvaluateContext private constructor(
-    val platformType: PlatformType,
     val user: HackleUser,
     val operations: PropertyOperations,
 ) {
@@ -18,7 +16,6 @@ internal class RemoteEvaluateContext private constructor(
             operations: PropertyOperations = PropertyOperations.empty(),
         ): RemoteEvaluateContext {
             return RemoteEvaluateContext(
-                platformType = PlatformType.ANDROID,
                 user = user,
                 operations = operations
             )
@@ -28,7 +25,6 @@ internal class RemoteEvaluateContext private constructor(
 
 internal fun RemoteEvaluateContext.toDto(): RemoteEvaluateContextDto {
     return RemoteEvaluateContextDto(
-        platformType = platformType.name,
         user = HackleUserDto(
             identifiers = user.identifiers,
             userProperties = user.properties,

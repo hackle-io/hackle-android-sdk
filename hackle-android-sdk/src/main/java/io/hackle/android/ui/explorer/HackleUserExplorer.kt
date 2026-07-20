@@ -5,23 +5,30 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams
+import io.hackle.android.HackleConfig
 import io.hackle.android.R
-import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
+import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.explorer.view.button.HackleUserExplorerButton
+import io.hackle.sdk.common.EvaluationMode
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class HackleUserExplorer(
     val explorerService: HackleUserExplorerService,
     private val activityProvider: ActivityProvider,
+    private val config: HackleConfig,
 ) : ActivityLifecycleListener {
 
     private var isShow: Boolean = false
 
     fun show() {
+        if (config.evaluationMode == EvaluationMode.REMOTE) {
+            log.warn { "UserExplorer is not supported in EvaluationMode.REMOTE" }
+            return
+        }
         isShow = true
         val activity = activityProvider.currentActivity ?: return
         runOnUiThread {

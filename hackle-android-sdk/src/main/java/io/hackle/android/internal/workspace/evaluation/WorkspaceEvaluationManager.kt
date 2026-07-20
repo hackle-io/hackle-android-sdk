@@ -55,7 +55,7 @@ internal class WorkspaceEvaluationManager(
             val context = repository.get()
             cache.restore(context)
         } catch (e: Exception) {
-            log.error { "Failed to load WorkspaceEValuation from local: $e" }
+            log.error { "Failed to load WorkspaceEvaluation from local: $e" }
         }
     }
 

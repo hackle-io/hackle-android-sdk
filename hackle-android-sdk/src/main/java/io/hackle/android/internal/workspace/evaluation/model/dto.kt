@@ -108,7 +108,6 @@ internal class EvaluateEntityDto(
 )
 
 internal class RemoteEvaluateContextDto(
-    val platformType: String, // ANDROID, IOS, WEB
     val user: HackleUserDto,
     val operations: Map<String, Map<String, Any>>,
 )
