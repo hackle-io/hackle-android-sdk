@@ -57,24 +57,23 @@ internal class InAppMessageDeliverProcessor(
         }
 
         return evaluator.evaluate(request, user) // evaluate (dedup + re-evaluate)
-            .map { resolve(request, user, it) }
+            .flatMap { resolve(request, user, it) }
     }
 
     private fun resolve(
         request: InAppMessageDeliverRequest,
         user: HackleUser,
         response: InAppMessageDeliverEvaluateResponse,
-    ): InAppMessageDeliverResponse {
+    ): CompletableFuture<InAppMessageDeliverResponse> {
         if (!response.isEligible) {
-            return InAppMessageDeliverResponse.of(request, response.code ?: Code.INELIGIBLE)
+            return InAppMessageDeliverResponse.of(request, response.code ?: Code.INELIGIBLE).asFuture()
         }
 
         val evaluation = requireNotNull(response.evaluation) { "evaluation" }
 
         val presentRequest = InAppMessagePresentRequest.of(request, user, evaluation)
-        val presentResponse = presentProcessor.process(presentRequest)
-
-        return InAppMessageDeliverResponse.of(request, Code.PRESENT, presentResponse)
+        return presentProcessor.process(presentRequest)
+            .map { InAppMessageDeliverResponse.of(request, Code.DELIVER, it) }
     }
 
     companion object {

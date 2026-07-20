@@ -507,6 +507,7 @@ internal object HackleApps {
             storage = inAppMessageImpressionStorage
         )
         val inAppMessagePresentProcessor = InAppMessagePresentProcessor(
+            coreExecutor = coreExecutor,
             presenter = inAppMessageUi,
             recorder = inAppMessageRecorder
         )

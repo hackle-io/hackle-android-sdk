@@ -5,6 +5,10 @@ import java.util.concurrent.Executor
 
 internal object Futures {
 
+    inline fun <T> ui(crossinline block: () -> T): CompletableFuture<T> {
+        return async(TaskExecutors.main(), block)
+    }
+
     inline fun <T> async(
         executor: Executor = TaskExecutors.background(),
         crossinline block: () -> T
@@ -95,6 +99,15 @@ internal inline fun <T> CompletableFuture<T>.onSuccess(crossinline action: (T) -
     return whenComplete { value, error ->
         if (error == null) action(value)
     }
+}
+
+internal inline fun <T> CompletableFuture<T>.onSuccessAsync(
+    executor: Executor,
+    crossinline action: (T) -> Unit
+): CompletableFuture<T> {
+    return whenCompleteAsync({ value, error ->
+        if (error == null) action(value)
+    }, executor)
 }
 
 internal inline fun <T> CompletableFuture<T>.onFailure(crossinline action: (Throwable) -> Unit): CompletableFuture<T> {

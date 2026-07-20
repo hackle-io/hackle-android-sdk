@@ -3,26 +3,29 @@ package io.hackle.android.internal.inappmessage.present
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
 import io.hackle.android.internal.inappmessage.present.record.InAppMessageRecorder
+import io.hackle.android.internal.task.Futures
+import io.hackle.android.internal.task.onSuccessAsync
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 internal class InAppMessagePresentProcessor(
+    private val coreExecutor: Executor,
     private val presenter: InAppMessagePresenter,
     private val recorder: InAppMessageRecorder,
 ) {
-    fun process(request: InAppMessagePresentRequest): InAppMessagePresentResponse {
+    fun process(request: InAppMessagePresentRequest): CompletableFuture<InAppMessagePresentResponse> {
         log.debug { "InAppMessage Present Request: $request" }
-
-        val response = present(request)
-        recorder.record(request, response)
-
-        log.debug { "InAppMessage Present Response: $response" }
-        return response
+        return Futures.wrap { present(request) }
+            .onSuccessAsync(coreExecutor) { response ->
+                recorder.record(request, response)
+                log.debug { "InAppMessage Present Response: $response" }
+            }
     }
 
-    private fun present(request: InAppMessagePresentRequest): InAppMessagePresentResponse {
+    private fun present(request: InAppMessagePresentRequest): CompletableFuture<InAppMessagePresentResponse> {
         val context = InAppMessagePresentationContext.of(request)
-        presenter.present(context)
-        return InAppMessagePresentResponse.of(request, context)
+        return presenter.present(context)
     }
 
     companion object {

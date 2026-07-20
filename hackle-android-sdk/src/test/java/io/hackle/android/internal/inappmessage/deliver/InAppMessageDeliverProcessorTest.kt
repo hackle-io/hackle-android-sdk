@@ -241,7 +241,7 @@ class InAppMessageDeliverProcessorTest {
         val actual = sut.process(request)
 
         // then
-        expectThat(actual) isEqualTo InAppMessageDeliverResponse.of(request, Code.PRESENT, presentResponse)
+        expectThat(actual) isEqualTo InAppMessageDeliverResponse.of(request, Code.DELIVER, presentResponse)
         verify {
             presentProcessor.process(withArg {
                 expectThat(it) {
