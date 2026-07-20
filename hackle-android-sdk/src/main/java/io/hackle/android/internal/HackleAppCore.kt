@@ -41,7 +41,7 @@ import java.util.concurrent.Executor
 internal class HackleAppCore(
     private val clock: Clock,
     private val core: HackleCore,
-    private val eventExecutor: Executor,
+    private val coreExecutor: Executor,
     private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
@@ -67,7 +67,7 @@ internal class HackleAppCore(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
-        eventExecutor
+        coreExecutor
             .future {
                 workspaceManager.initialize()
                 pushTokenManager.initialize()
@@ -87,7 +87,7 @@ internal class HackleAppCore(
             .recover {
                 log.error { "Failed to initialize HackleApp: $it" }
             }
-            .onComplete {
+            .onCompleteAsync(TaskExecutors.background()) {
                 onReady.run()
             }
     }
@@ -110,32 +110,32 @@ internal class HackleAppCore(
     fun setUser(user: User, callback: Runnable?) {
         userManager.setUser(user)
             .recover { log.error { "Unexpected exception while setUser: $it" } }
-            .onComplete { callback?.run() }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun resetUser(callback: Runnable?) {
         userManager.resetUser()
             .recover { log.error { "Unexpected exception while reset user: $it" } }
-            .onComplete { callback?.run() }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
 
     fun setUserId(userId: String?, callback: Runnable?) {
         userManager.setUserId(userId)
             .recover { log.error { "Unexpected exception while set userId: $it" } }
-            .onComplete { callback?.run() }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun setDeviceId(deviceId: String, callback: Runnable?) {
         userManager.setDeviceId(deviceId)
             .recover { log.error { "Unexpected exception while set deviceId: $it" } }
-            .onComplete { callback?.run() }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable?) {
         userManager.updateProperties(operations)
             .recover { log.error { "Unexpected exception while update user properties: $it" } }
-            .onComplete { callback?.run() }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun updatePushSubscriptions(operations: HackleSubscriptionOperations, hackleAppContext: HackleAppContext) {
@@ -183,7 +183,7 @@ internal class HackleAppCore(
         } catch (e: Exception) {
             log.error { "Unexpected exception while set phoneNumber: $e" }
         } finally {
-            callback?.run()
+            TaskExecutors.runOnBackground { callback?.run() }
         }
     }
 
@@ -198,7 +198,7 @@ internal class HackleAppCore(
         } catch (e: Exception) {
             log.error { "Unexpected exception while unset phoneNumber: $e" }
         } finally {
-            callback?.run()
+            TaskExecutors.runOnBackground { callback?.run() }
         }
     }
 
@@ -277,11 +277,11 @@ internal class HackleAppCore(
         fetchThrottler.execute(
             accept = {
                 synchronizer.sync()
-                    .onComplete { callback?.run() }
+                    .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
             },
             reject = {
                 log.debug { "Too many quick fetch requests." }
-                callback?.run()
+                TaskExecutors.runOnBackground { callback?.run() }
             }
         )
     }

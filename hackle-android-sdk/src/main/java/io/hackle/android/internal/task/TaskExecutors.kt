@@ -24,7 +24,7 @@ internal object TaskExecutors {
         return HandlerExecutor(handler)
     }
 
-    fun default(): ExecutorService {
+    fun background(): ExecutorService {
         return BACKGROUND_WORKER
     }
 

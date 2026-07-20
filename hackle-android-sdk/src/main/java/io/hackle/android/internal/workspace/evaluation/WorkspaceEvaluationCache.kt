@@ -19,6 +19,11 @@ internal class LruWorkspaceEvaluationCache(private val capacity: Int) : Workspac
 
     override fun put(context: WorkspaceEvaluationContext): List<WorkspaceEvaluationContext> {
         synchronized(lock) {
+            val exist = get(context.key)
+            if (exist != null && exist.workspace.metadata.evaluatedAt > context.workspace.metadata.evaluatedAt) {
+                return order.map { entries.getValue(it) }
+            }
+
             remove(context.key)
             add(context)
             evict()

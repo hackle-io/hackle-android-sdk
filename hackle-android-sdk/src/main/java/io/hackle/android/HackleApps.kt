@@ -129,6 +129,7 @@ internal object HackleApps {
     private const val PREFERENCES_NAME = "io.hackle.android"
 
     fun create(context: Context, sdkKey: String, config: HackleConfig): HackleApp {
+        val coreExecutor = TaskExecutors.handler("io.hackle.CoreExecutor")
         val coreContext = HackleCoreContext.create()
         val clock = Clock.SYSTEM
         val sdk = Sdk.of(sdkKey, config)
@@ -204,7 +205,8 @@ internal object HackleApps {
                     fullEvaluator = fullWorkspaceRemoteEvaluator,
                     partialEvaluator = partialWorkspaceRemoteEvaluator,
                     repository = repository,
-                    cache = LruWorkspaceEvaluationCache(capacity = 10)
+                    cache = LruWorkspaceEvaluationCache(capacity = 10),
+                    coreExecutor = coreExecutor
                 )
             }
         }
@@ -268,13 +270,12 @@ internal object HackleApps {
 
         val workspaceDatabase = DatabaseHelper.getWorkspaceDatabase(context, sdkKey)
         val eventRepository = EventRepository(workspaceDatabase)
-        val eventExecutor = TaskExecutors.handler("io.hackle.EventExecutor")
         val httpExecutor = TaskExecutors.handler("io.hackle.HttpExecutor")
         val eventBackoffController = UserEventBackoffController(config.eventFlushIntervalMillis, clock)
 
         val eventDispatcher = EventDispatcher(
             baseEventUri = config.eventUri,
-            eventExecutor = eventExecutor,
+            coreExecutor = coreExecutor,
             eventRepository = eventRepository,
             httpExecutor = httpExecutor,
             httpClient = httpClient,
@@ -287,8 +288,8 @@ internal object HackleApps {
         val optOutManager = OptOutManager(config.optOutTracking)
 
         val eventProcessor = DefaultEventProcessor(
+            coreExecutor = coreExecutor,
             eventPublisher = eventPublisher,
-            eventExecutor = eventExecutor,
             eventRepository = eventRepository,
             eventRepositoryMaxSize = HackleConfig.DEFAULT_EVENT_REPOSITORY_MAX_SIZE,
             eventFlushScheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
@@ -400,7 +401,7 @@ internal object HackleApps {
 
         // ApplicationLifecycleListener
 
-        applicationLifecycleManager.setExecutor(eventExecutor)
+        applicationLifecycleManager.setExecutor(coreExecutor)
         applicationLifecycleManager.addListener(pollingSynchronizer)
         applicationLifecycleManager.addListener(sessionManager)
         applicationLifecycleManager.addListener(userManager)
@@ -608,7 +609,7 @@ internal object HackleApps {
 
         val notificationManager = NotificationManager(
             core = core,
-            executor = eventExecutor,
+            coreExecutor = coreExecutor,
             workspaceFetcher = workspaceManager,
             userManager = userManager,
             repository = NotificationHistoryRepositoryImpl(
@@ -640,7 +641,7 @@ internal object HackleApps {
 
         // Metrics
         if (config.enableMonitoring) {
-            metricConfiguration(config, applicationLifecycleManager, eventExecutor, httpExecutor, httpClient)
+            metricConfiguration(config, applicationLifecycleManager, coreExecutor, httpExecutor, httpClient)
         }
 
         // ApplicationLifecycleListener
@@ -649,7 +650,7 @@ internal object HackleApps {
 
         // LifecycleListener
 
-        activityLifecycleManager.setExecutor(eventExecutor)
+        activityLifecycleManager.setExecutor(coreExecutor)
         if (config.automaticScreenTracking) {
             activityLifecycleManager.addListener(screenManager, order = Ordered.HIGHEST)
         }
@@ -670,7 +671,7 @@ internal object HackleApps {
         val hackleAppCore = HackleAppCore(
             clock = clock,
             core = core,
-            eventExecutor = eventExecutor,
+            coreExecutor = coreExecutor,
             synchronizer = pollingSynchronizer,
             userManager = userManager,
             workspaceManager = workspaceManager,
@@ -707,13 +708,13 @@ internal object HackleApps {
     private fun metricConfiguration(
         config: HackleConfig,
         applicationLifecycleManager: ApplicationLifecycleManager,
-        eventExecutor: Executor,
+        coreExecutor: Executor,
         httpExecutor: Executor,
         httpClient: OkHttpClient,
     ) {
         val monitoringMetricRegistry = MonitoringMetricRegistry(
             monitoringBaseUrl = config.monitoringUri,
-            eventExecutor = eventExecutor,
+            coreExecutor = coreExecutor,
             httpExecutor = httpExecutor,
             httpClient = httpClient
         )

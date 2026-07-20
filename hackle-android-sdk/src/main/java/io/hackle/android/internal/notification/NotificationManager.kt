@@ -15,7 +15,7 @@ import kotlin.math.ceil
 
 internal class NotificationManager(
     private val core: HackleCore,
-    private val executor: Executor,
+    private val coreExecutor: Executor,
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
     private val repository: NotificationHistoryRepository,
@@ -28,7 +28,7 @@ internal class NotificationManager(
             return
         }
 
-        executor.execute(FlushTask())
+        coreExecutor.execute(FlushTask())
     }
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
@@ -54,7 +54,7 @@ internal class NotificationManager(
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
-        executor.execute {
+        coreExecutor.execute {
             try {
                 repository.save(data, timestamp)
                 log.debug { "Saved notification data: ${data.pushMessageId}[${timestamp}]" }

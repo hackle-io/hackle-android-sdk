@@ -53,7 +53,7 @@ class NotificationManagerTest {
 
         manager = NotificationManager(
             core = core,
-            executor = executor,
+            coreExecutor = executor,
             workspaceFetcher = workspaceFetcher,
             userManager = userManager,
             repository = repository,

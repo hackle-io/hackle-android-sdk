@@ -94,7 +94,7 @@ class DefaultEventProcessorTest {
     ): DefaultEventProcessor {
         return DefaultEventProcessor(
             eventPublisher = eventPublisher,
-            eventExecutor = eventExecutor,
+            coreExecutor = eventExecutor,
             eventRepository = eventRepository,
             eventRepositoryMaxSize = eventRepositoryMaxSize,
             eventFlushScheduler = eventFlushScheduler,

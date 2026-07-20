@@ -120,7 +120,7 @@ class HackleAppTest {
         val hackleAppCore = HackleAppCore(
             clock = Clock.SYSTEM,
             core = core,
-            eventExecutor = eventExecutor,
+            coreExecutor = eventExecutor,
             backgroundExecutor = backgroundExecutor,
             synchronizer = synchronizer,
             userManager = userManager,

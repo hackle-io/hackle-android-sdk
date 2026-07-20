@@ -6,7 +6,7 @@ import java.util.concurrent.Executor
 internal object Futures {
 
     inline fun <T> async(
-        executor: Executor = TaskExecutors.default(),
+        executor: Executor = TaskExecutors.background(),
         crossinline block: () -> T
     ): CompletableFuture<T> {
         return CompletableFuture.supplyAsync({ block() }, executor)
@@ -49,12 +49,34 @@ internal inline fun <T, R> CompletableFuture<T>.map(crossinline transform: (T) -
     return thenApply { transform(it) }
 }
 
+
+internal inline fun <T, R> CompletableFuture<T>.mapAsync(
+    executor: Executor,
+    crossinline transform: (T) -> R
+): CompletableFuture<R> {
+    return thenApplyAsync({ transform(it) }, executor)
+}
+
 internal inline fun <T> CompletableFuture<T>.consume(crossinline action: (T) -> Unit): CompletableFuture<Void> {
     return thenAccept { action(it) }
 }
 
+internal inline fun <T> CompletableFuture<T>.consumeAsync(
+    executor: Executor,
+    crossinline action: (T) -> Unit
+): CompletableFuture<Void> {
+    return thenAcceptAsync({ action(it) }, executor)
+}
+
 internal inline fun <T, R> CompletableFuture<T>.flatMap(crossinline transform: (T) -> CompletableFuture<R>): CompletableFuture<R> {
     return thenCompose { transform(it) }
+}
+
+internal inline fun <T, R> CompletableFuture<T>.flatMapAsync(
+    executor: Executor,
+    crossinline transform: (T) -> CompletableFuture<R>
+): CompletableFuture<R> {
+    return thenComposeAsync({ transform(it) }, executor)
 }
 
 internal inline fun <T> CompletableFuture<T>.recover(crossinline transform: (Throwable) -> T): CompletableFuture<T> {
@@ -83,4 +105,12 @@ internal inline fun <T> CompletableFuture<T>.onFailure(crossinline action: (Thro
 
 internal inline fun <T> CompletableFuture<T>.onComplete(crossinline action: () -> Unit): CompletableFuture<T> {
     return whenComplete { _, _ -> action() }
+}
+
+
+internal inline fun <T> CompletableFuture<T>.onCompleteAsync(
+    executor: Executor,
+    crossinline action: () -> Unit
+): CompletableFuture<T> {
+    return whenCompleteAsync({ _, _ -> action() }, executor)
 }

@@ -1,6 +1,6 @@
 package io.hackle.android.internal.workspace.evaluation
 
-import io.hackle.android.internal.task.consume
+import io.hackle.android.internal.task.consumeAsync
 import io.hackle.android.internal.task.map
 import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.workspace.WorkspaceManager
@@ -16,12 +16,14 @@ import io.hackle.sdk.core.workspace.Workspace
 import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluation
 import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluationFetcher
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 internal class WorkspaceEvaluationManager(
     private val fullEvaluator: FullWorkspaceRemoteEvaluator,
     private val partialEvaluator: PartialWorkspaceRemoteEvaluator,
     private val repository: WorkspaceEvaluationRepository,
     private val cache: WorkspaceEvaluationCache,
+    private val coreExecutor: Executor,
 ) : WorkspaceManager, WorkspaceEvaluationFetcher {
 
     override fun initialize() {
@@ -41,7 +43,7 @@ internal class WorkspaceEvaluationManager(
         val base = cache.get(context.key)
         val request = FullWorkspaceEvaluateRequest.of(context, base)
         return fullEvaluator.evaluate(request)
-            .consume { store(it.context) }
+            .consumeAsync(coreExecutor) { store(it.context) }
             .recover { log.error { "Failed to sync WorkspaceEvaluation: $it" } }
     }
 
