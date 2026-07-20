@@ -11,6 +11,7 @@ import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
@@ -514,16 +515,20 @@ class HackleApp internal constructor(
             config: HackleConfig,
             onReady: Runnable,
         ): HackleApp {
-            return synchronized(LOCK) {
-                INSTANCE?.also { onReady.run() }
-                    ?: HackleApps
-                        .create(context.applicationContext, sdkKey, config)
-                        .initialize(user, onReady)
-                        .also {
-                            ApplicationLifecycleManager.instance.publishStateIfNeeded()
-                            ActivityLifecycleManager.instance.publishStateIfNeeded()
-                        }
-                        .also { INSTANCE = it }
+            synchronized(LOCK) {
+                val instance = INSTANCE
+                if (instance != null) {
+                    TaskExecutors.runOnBackground { onReady.run() }
+                    return instance
+                }
+                return HackleApps
+                    .create(context.applicationContext, sdkKey, config)
+                    .initialize(user, onReady)
+                    .also {
+                        ApplicationLifecycleManager.instance.publishStateIfNeeded()
+                        ActivityLifecycleManager.instance.publishStateIfNeeded()
+                    }
+                    .also { INSTANCE = it }
             }
         }
     }
