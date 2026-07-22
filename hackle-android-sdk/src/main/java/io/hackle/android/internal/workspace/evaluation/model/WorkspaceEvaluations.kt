@@ -9,14 +9,15 @@ import io.hackle.sdk.core.workspace.evaluation.entity.InAppMessageLayoutRemoteEv
 import io.hackle.sdk.core.workspace.evaluation.entity.RemoteConfigParameterRemoteEvaluateResult
 
 
-internal fun ExperimentEvaluateResultDto.toResult(experimentType: Experiment.Type): ExperimentRemoteEvaluateResult {
+internal fun ExperimentEvaluateResultDto.toResultOrNull(experimentType: Experiment.Type): ExperimentRemoteEvaluateResult? {
     return ExperimentRemoteEvaluateResult(
         id = id,
         key = key,
+        status = Experiment.Status.from(execution.status) ?: return null,
         order = order,
         type = experimentType,
         version = version,
-        executionVersion = executionVersion,
+        executionVersion = execution.version,
         variation = variation.toVariation(config?.toParameterConfiguration()),
         reason = DecisionReason.from(reason),
         references = references.mapNotNull { it.toEntityOrNull() }

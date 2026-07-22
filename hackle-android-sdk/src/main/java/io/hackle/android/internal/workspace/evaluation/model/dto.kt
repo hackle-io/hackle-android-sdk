@@ -45,14 +45,19 @@ internal class ExperimentEvaluateResultDto(
     val key: Long,
     val order: Long,
     val version: Int,
-    val executionVersion: Int,
+    val execution: ExecutionDto,
 
     val variation: VariationDto,
     val config: ParameterConfigurationDto?,
 
     val reason: String,
     val references: List<EntityDto>,
-)
+) {
+    class ExecutionDto(
+        val status: String,
+        val version: Int,
+    )
+}
 
 internal class RemoteConfigParameterEvaluateResultDto(
     val id: Long,
