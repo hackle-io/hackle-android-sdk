@@ -4,32 +4,25 @@ import io.hackle.android.internal.http.parse
 import io.hackle.android.internal.monitoring.metric.ApiCallMetrics
 import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.map
-import io.hackle.android.internal.user.*
+import io.hackle.android.internal.user.resolvedIdentifiers
 import io.hackle.sdk.common.User
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
-/**
- * UserTargetEventFetcher
- * @property sdkUri SDK URI
- * @property httpClient OkHttpClient
- */
 internal class UserTargetEventFetcher(
     sdkUri: String,
+    private val executor: Executor,
     private val httpClient: OkHttpClient,
 ) {
     private val url = url(sdkUri).toHttpUrl()
 
-    /**
-     * 사용자의 타겟팅 정보를 가져온다.
-     * @param user 사용자 정보
-     */
     fun fetch(user: User): CompletableFuture<UserTargetEvents> {
         val request = createRequest(user)
-        return Futures.async { execute(request) }
+        return Futures.async(executor) { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

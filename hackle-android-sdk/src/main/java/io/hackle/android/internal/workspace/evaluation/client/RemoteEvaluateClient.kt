@@ -18,9 +18,11 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 internal class RemoteEvaluateClient(
     sdkUri: String,
+    private val executor: Executor,
     private val httpClient: OkHttpClient,
 ) {
 
@@ -29,13 +31,13 @@ internal class RemoteEvaluateClient(
 
     fun evaluateIfModified(requestDto: WorkspaceEvaluateRequestDto): CompletableFuture<WorkspaceEvaluateResponseDto?> {
         val request = createRequest(workspaceEndpoint, requestDto.toJson())
-        return Futures.async { execute(request, "workspace.remote.evaluate") }
+        return Futures.async(executor) { execute(request, "workspace.remote.evaluate") }
             .map { response -> response.use { handleWorkspaceResponse(it) } }
     }
 
     fun evaluateEntities(requestDto: EntityEvaluateRequestDto): CompletableFuture<EntityEvaluateResponseDto> {
         val request = createRequest(entityEndpoint, requestDto.toJson())
-        return Futures.async { execute(request, "entity.remote.evaluate") }
+        return Futures.async(executor) { execute(request, "entity.remote.evaluate") }
             .map { response -> response.use { handleResponse<EntityEvaluateResponseDto>(it) } }
     }
 

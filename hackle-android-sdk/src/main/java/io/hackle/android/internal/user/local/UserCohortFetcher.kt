@@ -11,16 +11,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 internal class UserCohortFetcher(
     sdkUri: String,
+    private val executor: Executor,
     private val httpClient: OkHttpClient,
 ) {
     private val url = url(sdkUri).toHttpUrl()
 
     fun fetch(user: User): CompletableFuture<UserCohorts> {
         val request = createRequest(user)
-        return Futures.async { execute(request) }
+        return Futures.async(executor) { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

@@ -14,17 +14,19 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 internal class HttpWorkspaceConfigFetcher(
     sdk: Sdk,
     sdkUri: String,
+    private val executor: Executor,
     private val httpClient: OkHttpClient,
 ) {
     private val url = url(sdk, sdkUri).toHttpUrl()
 
     fun fetchIfModified(lastModified: String?): CompletableFuture<WorkspaceConfigContext?> {
         val request = createRequest(lastModified)
-        return Futures.async { execute(request) }
+        return Futures.async(executor) { execute(request) }
             .map { response -> response.use { handleResponse(it) } }
     }
 

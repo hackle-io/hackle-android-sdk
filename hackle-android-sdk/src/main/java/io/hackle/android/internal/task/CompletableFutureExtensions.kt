@@ -10,7 +10,7 @@ internal object Futures {
     }
 
     inline fun <T> async(
-        executor: Executor = TaskExecutors.background(),
+        executor: Executor,
         crossinline block: () -> T
     ): CompletableFuture<T> {
         return CompletableFuture.supplyAsync({ block() }, executor)

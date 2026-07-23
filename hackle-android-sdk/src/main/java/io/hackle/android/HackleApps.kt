@@ -173,6 +173,7 @@ internal object HackleApps {
                 val fetcher = HttpWorkspaceConfigFetcher(
                     sdk = sdk,
                     sdkUri = config.sdkUri,
+                    executor = TaskExecutors.background(),
                     httpClient = httpClient
                 )
                 val repository = DefaultWorkspaceConfigRepository(
@@ -189,6 +190,7 @@ internal object HackleApps {
             EvaluationMode.REMOTE -> {
                 val evaluateClient = RemoteEvaluateClient(
                     sdkUri = config.sdkUri,
+                    executor = TaskExecutors.background(),
                     httpClient = httpClient
                 )
                 val fullWorkspaceRemoteEvaluator = FullWorkspaceRemoteEvaluator(
@@ -223,8 +225,16 @@ internal object HackleApps {
                 device = platformManager.device,
                 packageInfo = platformManager.packageInfo,
                 repository = userRepository,
-                cohortFetcher = UserCohortFetcher(config.sdkUri, httpClient),
-                targetEventFetcher = UserTargetEventFetcher(config.sdkUri, httpClient)
+                cohortFetcher = UserCohortFetcher(
+                    sdkUri = config.sdkUri,
+                    executor = TaskExecutors.background(),
+                    httpClient = httpClient
+                ),
+                targetEventFetcher = UserTargetEventFetcher(
+                    sdkUri = config.sdkUri,
+                    executor = TaskExecutors.background(),
+                    httpClient = httpClient
+                )
             )
 
             EvaluationMode.REMOTE -> RemoteUserManager(
