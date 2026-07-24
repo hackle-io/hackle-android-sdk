@@ -108,32 +108,32 @@ internal class HackleAppCore(
     // User
 
     fun setUser(user: User, callback: Runnable?) {
-        userManager.setUser(user)
+        Futures.wrap { userManager.setUser(user) }
             .recover { log.error { "Unexpected exception while setUser: $it" } }
             .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun resetUser(callback: Runnable?) {
-        userManager.resetUser()
+        Futures.wrap { userManager.resetUser() }
             .recover { log.error { "Unexpected exception while reset user: $it" } }
             .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
 
     fun setUserId(userId: String?, callback: Runnable?) {
-        userManager.setUserId(userId)
+        Futures.wrap { userManager.setUserId(userId) }
             .recover { log.error { "Unexpected exception while set userId: $it" } }
             .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun setDeviceId(deviceId: String, callback: Runnable?) {
-        userManager.setDeviceId(deviceId)
+        Futures.wrap { userManager.setDeviceId(deviceId) }
             .recover { log.error { "Unexpected exception while set deviceId: $it" } }
             .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable?) {
-        userManager.updateProperties(operations)
+        Futures.wrap { userManager.updateProperties(operations) }
             .recover { log.error { "Unexpected exception while update user properties: $it" } }
             .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }

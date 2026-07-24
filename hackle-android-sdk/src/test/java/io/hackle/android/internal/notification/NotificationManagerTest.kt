@@ -1,16 +1,13 @@
 package io.hackle.android.internal.notification
 
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
-import io.hackle.android.internal.user.local.LocalUserManager
+import io.hackle.android.internal.user.UserManager
+import io.hackle.android.support.Workspaces
 import io.hackle.android.ui.notification.NotificationClickAction
 import io.hackle.android.ui.notification.NotificationData
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.workspace.WorkspaceFetcher
-import io.mockk.called
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import io.mockk.verifySequence
+import io.mockk.*
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -20,7 +17,7 @@ import java.util.concurrent.Executor
 class NotificationManagerTest {
 
     private lateinit var core: HackleCore
-    private lateinit var userManager: LocalUserManager
+    private lateinit var userManager: UserManager
     private lateinit var executor: Executor
     private lateinit var workspaceFetcher: WorkspaceFetcher
 
@@ -33,23 +30,11 @@ class NotificationManagerTest {
         core = mockk(relaxed = true)
         userManager = mockk()
         every { userManager.currentUser } returns mockk()
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         executor = mockk()
         every { executor.execute(any()) } answers { firstArg<Runnable>().run() }
         workspaceFetcher = mockk()
-        every { workspaceFetcher.fetch() } returns WorkspaceImpl(
-            111L,
-            222L,
-            emptyList(),
-            emptyList(),
-            emptyMap(),
-            emptyMap(),
-            emptyMap(),
-            emptyMap(),
-            emptyMap(),
-            emptyMap(),
-            emptyList()
-        )
+        every { workspaceFetcher.metadata() } returns Workspaces.configMetadata(id = 111, environmentId = 222)
 
         manager = NotificationManager(
             core = core,
@@ -266,7 +251,7 @@ class NotificationManagerTest {
 
     @Test
     fun `save notification data if workspace fetcher returns null`() {
-        every { workspaceFetcher.fetch() } returns null
+        every { workspaceFetcher.metadata() } returns null
 
         val data = NotificationData(
             "hackle",
@@ -382,7 +367,7 @@ class NotificationManagerTest {
             NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 1L, 2L, 3L, "JOURNEY", 5L, true),
         )
         repository.putAll(notifications)
-        every { workspaceFetcher.fetch() } returns null
+        every { workspaceFetcher.metadata() } returns null
 
         verify { core wasNot called }
         assertThat(repository.count(111L, 111L), `is`(1))

@@ -1,17 +1,19 @@
 package io.hackle.android.internal.session
 
-import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
-import io.hackle.android.internal.user.local.LocalUserManager
-import io.hackle.android.mock.MockDevice
-import io.hackle.android.mock.MockPackageInfo
+import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.event.UserEvent
+import io.hackle.sdk.core.user.HackleUser
+import io.hackle.sdk.core.user.IdentifierType
+import io.mockk.MockKAnnotations
 import io.mockk.every
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -20,23 +22,26 @@ import strikt.assertions.isTrue
 
 class SessionEventTrackerTest {
 
+    @RelaxedMockK
+    private lateinit var userManager: UserManager
+
+    @RelaxedMockK
+    private lateinit var core: HackleCore
+
+    @InjectMockKs
+    private lateinit var sut: SessionEventTracker
+
+    @Before
+    fun before() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+        every { userManager.hackleUser(any(), any()) } returns
+            HackleUser.builder().identifier(IdentifierType.ID, "user_id").build()
+    }
+
     @Test
     fun `onSessionStarted`() {
-        // given
-        val userManager = LocalUserManager(
-            MockDevice("device_id", emptyMap()),
-            MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
-            MapKeyValueRepository(),
-            mockk(),
-            mockk()
-        )
-        val core = mockk<HackleCore>(relaxed = true)
-        val sut = SessionEventTracker(userManager, core)
-
         // when
-        val session = Session("42.ffffffff")
-        val user = User.of("user_id")
-        sut.onSessionStarted(session, user, 42)
+        sut.onSessionStarted(Session("42.ffffffff"), User.of("user_id"), 42)
 
         // then
         verify {
@@ -58,21 +63,8 @@ class SessionEventTrackerTest {
 
     @Test
     fun `onSessionEnded`() {
-        // given
-        val userManager = LocalUserManager(
-            MockDevice("device_id", emptyMap()),
-            MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
-            MapKeyValueRepository(),
-            mockk(),
-            mockk()
-        )
-        val core = mockk<HackleCore>(relaxed = true)
-        val sut = SessionEventTracker(userManager, core)
-
         // when
-        val session = Session("42.ffffffff")
-        val user = User.of("user_id")
-        sut.onSessionEnded(session, user, 42)
+        sut.onSessionEnded(Session("42.ffffffff"), User.of("user_id"), 42)
 
         // then
         verify {

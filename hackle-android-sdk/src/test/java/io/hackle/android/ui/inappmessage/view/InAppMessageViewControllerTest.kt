@@ -71,7 +71,7 @@ internal class InAppMessageViewControllerTest {
                 null
             }
         )
-        val inAppMessage = InAppMessages.create(
+        val inAppMessage = InAppMessages.config(
             messageContext = InAppMessages.messageContext(messages = listOf(message))
         )
         return InAppMessages.context(inAppMessage = inAppMessage, message = message)

@@ -1,13 +1,10 @@
 package io.hackle.android.internal.session
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
-import io.hackle.android.internal.user.local.LocalUserManager
-import io.hackle.android.mock.MockDevice
-import io.hackle.android.mock.MockPackageInfo
-import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
+import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.User
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.Test
 import strikt.api.expectThat
@@ -49,13 +46,9 @@ class SessionManagerSessionPolicyTest {
             .timeoutCondition(sessionPolicy.timeoutCondition.toBuilder().millis(10000).build())
             .build()
         return SessionManager(
-            userManager = LocalUserManager(
-                MockDevice("test_id", emptyMap()),
-                MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
-                MapKeyValueRepository(),
-                mockk(),
-                mockk()
-            ),
+            userManager = mockk(relaxed = true) {
+                every { currentUser } returns User.builder().deviceId("test_id").build()
+            },
             keyValueRepository = MapKeyValueRepository(),
             applicationLifecycleManager = mockk(relaxed = true),
             sessionPolicy = policy,

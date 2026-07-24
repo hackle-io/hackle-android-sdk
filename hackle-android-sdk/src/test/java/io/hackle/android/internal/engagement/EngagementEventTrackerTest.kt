@@ -1,25 +1,39 @@
 package io.hackle.android.internal.engagement
 
-import io.hackle.sdk.common.Screen
-import io.hackle.android.internal.user.local.LocalUserManager
+import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.HackleCore
 import io.hackle.sdk.core.user.HackleUser
+import io.mockk.MockKAnnotations
 import io.mockk.every
-import io.mockk.mockk
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import io.mockk.verify
+import org.junit.Before
 import org.junit.Test
 
 class EngagementEventTrackerTest {
+
+    @MockK
+    private lateinit var userManager: UserManager
+
+    @MockK
+    private lateinit var core: HackleCore
+
+    @InjectMockKs
+    private lateinit var sut: EngagementEventTracker
+
+    @Before
+    fun before() {
+        MockKAnnotations.init(this, relaxUnitFun = true)
+    }
+
     @Test
     fun `track engagement event`() {
         // given
-        val userManager = mockk<LocalUserManager>()
-        val core = mockk<HackleCore>(relaxed = true)
-        val sut = EngagementEventTracker(userManager, core)
-
-        every { userManager.toHackleUser(any()) } returns HackleUser.builder().build()
+        every { userManager.hackleUser(any(), any()) } returns HackleUser.builder().build()
 
         val engagement = Engagement(Screen("name", "class"), 42)
 
@@ -40,11 +54,7 @@ class EngagementEventTrackerTest {
     @Test
     fun `track engagement event with screen properties`() {
         // given
-        val userManager = mockk<LocalUserManager>()
-        val core = mockk<HackleCore>(relaxed = true)
-        val sut = EngagementEventTracker(userManager, core)
-
-        every { userManager.toHackleUser(any()) } returns HackleUser.builder().build()
+        every { userManager.hackleUser(any(), any()) } returns HackleUser.builder().build()
 
         val properties = mapOf(
             "key1" to "value1",
@@ -74,11 +84,7 @@ class EngagementEventTrackerTest {
     @Test
     fun `track engagement event with null screen properties`() {
         // given
-        val userManager = mockk<LocalUserManager>()
-        val core = mockk<HackleCore>(relaxed = true)
-        val sut = EngagementEventTracker(userManager, core)
-
-        every { userManager.toHackleUser(any()) } returns HackleUser.builder().build()
+        every { userManager.hackleUser(any(), any()) } returns HackleUser.builder().build()
 
         val screen = Screen.builder("name", "class")
             .properties(null)
@@ -102,11 +108,7 @@ class EngagementEventTrackerTest {
     @Test
     fun `track engagement event with empty screen properties`() {
         // given
-        val userManager = mockk<LocalUserManager>()
-        val core = mockk<HackleCore>(relaxed = true)
-        val sut = EngagementEventTracker(userManager, core)
-
-        every { userManager.toHackleUser(any()) } returns HackleUser.builder().build()
+        every { userManager.hackleUser(any(), any()) } returns HackleUser.builder().build()
 
         val screen = Screen.builder("name", "class")
             .properties(emptyMap())

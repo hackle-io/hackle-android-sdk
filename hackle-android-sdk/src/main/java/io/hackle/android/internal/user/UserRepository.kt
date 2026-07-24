@@ -6,10 +6,15 @@ import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 
-internal class UserRepository(
+internal interface UserRepository {
+    fun get(): User?
+    fun set(user: User)
+}
+
+internal class DefaultUserRepository(
     private val repository: KeyValueRepository
-) {
-    fun get(): User? {
+) : UserRepository {
+    override fun get(): User? {
         return try {
             val json = repository.getString(USER_KEY) ?: return null
             val dto = json.parseJson<UserModelDto>()
@@ -22,7 +27,7 @@ internal class UserRepository(
         }
     }
 
-    fun set(user: User) {
+    override fun set(user: User) {
         try {
             val dto = UserModelDto.from(user)
             val json = dto.toJson()
@@ -34,7 +39,7 @@ internal class UserRepository(
     }
 
     companion object {
-        private val log = Logger<UserRepository>()
+        private val log = Logger<DefaultUserRepository>()
         private const val USER_KEY = "user"
     }
 }

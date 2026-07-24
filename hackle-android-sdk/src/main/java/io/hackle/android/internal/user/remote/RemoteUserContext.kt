@@ -19,9 +19,7 @@ internal class RemoteUserContext private constructor(
             if (user.properties.isEmpty()) {
                 return user
             }
-            return user.toBuilder()
-                .properties(emptyMap())
-                .build()
+            return user.copy(properties = emptyMap())
         }
     }
 }

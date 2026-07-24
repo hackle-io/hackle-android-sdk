@@ -69,7 +69,7 @@ import io.hackle.android.internal.storage.DefaultFileStorage
 import io.hackle.android.internal.sync.CompositeSynchronizer
 import io.hackle.android.internal.sync.PollingSynchronizer
 import io.hackle.android.internal.task.TaskExecutors
-import io.hackle.android.internal.user.UserRepository
+import io.hackle.android.internal.user.DefaultUserRepository
 import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.internal.user.local.PropertiesEventTracker
 import io.hackle.android.internal.user.local.UserCohortFetcher
@@ -215,7 +215,7 @@ internal object HackleApps {
 
         // UserManager
 
-        val userRepository = UserRepository(
+        val userRepository = DefaultUserRepository(
             repository = keyValueRepositoryBySdkKey
         )
 

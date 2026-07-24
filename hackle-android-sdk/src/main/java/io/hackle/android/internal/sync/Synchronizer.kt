@@ -1,5 +1,6 @@
 package io.hackle.android.internal.sync
 
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.internal.task.recover
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.CompletableFuture
@@ -11,6 +12,6 @@ internal interface Synchronizer {
 private val log = Logger<Synchronizer>()
 
 internal fun Synchronizer.safeSync(): CompletableFuture<Void> {
-    return sync()
+    return Futures.wrap { sync() }
         .recover { log.error { "Failed to sync ${javaClass.simpleName}: $it" } }
 }

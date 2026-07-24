@@ -13,7 +13,10 @@ import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.hackle.sdk.core.model.ValueType
-import io.mockk.*
+import io.mockk.Called
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertNull
@@ -36,7 +39,7 @@ class HackleInvocationTest {
 
     @Before
     fun setup() {
-        app = spyk(mockk<HackleAppCore>())
+        app = mockk(relaxUnitFun = true)
         val handlerFactory = InvocationHandlerFactory(app)
         val processor = InvocationProcessor(handlerFactory)
         invocation = HackleInvocatorImpl(processor)
@@ -314,7 +317,6 @@ class HackleInvocationTest {
                     assertThat(set.size, `is`(1))
                     assertThat(set["foo"], `is`("bar"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
                 null
             )
         }
@@ -372,7 +374,6 @@ class HackleInvocationTest {
                     assertThat(setOnce.size, `is`(1))
                     assertThat(setOnce["foo"], `is`("bar"))
                 },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
                 null
             )
         }
@@ -505,12 +506,7 @@ class HackleInvocationTest {
         val jsonString = createJsonString("resetUser")
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
-            app.resetUser(withArg<HackleAppContext> {
-                assertThat(
-                    it.browserProperties,
-                    `is`(defaultBrowserProperties)
-                )
-            }, null)
+            app.resetUser(null)
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -558,7 +554,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with variation`() {
-        every { app.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+        every { app.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
@@ -568,7 +564,6 @@ class HackleInvocationTest {
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                null,
                 withArg<Variation> { assertThat(it.name, `is`("D")) },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
@@ -581,8 +576,8 @@ class HackleInvocationTest {
     }
 
     @Test
-    fun `invoke with variation with user string`() {
-        every { app.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+    fun `invoke with variation - user 파라미터는 무시하고 현재 SDK 유저 기준으로 호출한다`() {
+        every { app.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
@@ -596,60 +591,7 @@ class HackleInvocationTest {
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
-                withArg { assertThat(it.name, `is`("D")) },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`("B"))
-        }
-    }
-
-    @Test
-    fun `invoke with variation with user object`() {
-        every { app.variationDetail(any(), any<User>(), any(), any()) } returns Decision.of(
-            Variation.B,
-            DecisionReason.DEFAULT_RULE
-        )
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "experimentKey" to 1,
-            "defaultVariation" to "D",
-            "user" to user
-        )
-        val jsonString = createJsonString("variation", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.variationDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
-                withArg { assertThat(it.name, `is`("D")) },
+                withArg<Variation> { assertThat(it.name, `is`("D")) },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
@@ -674,7 +616,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with variation detail`() {
-        every { app.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+        every { app.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
@@ -684,104 +626,7 @@ class HackleInvocationTest {
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                null,
                 withArg<Variation> { assertThat(it.name, `is`("D")) },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-
-            val map = data as Map<*, *>
-            assertNull(map["experiment"])
-            assertThat(map["variation"], `is`("B"))
-            assertThat(map["reason"], `is`("DEFAULT_RULE"))
-
-            val config = map["config"] as Map<*, *>
-            val configParameters = config["parameters"] as Map<*, *>
-            assertThat(configParameters.isEmpty(), `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with variation detail with user string`() {
-        every { app.variationDetail(any(), any(), any(), any()) } returns Decision.of(
-            Variation.B,
-            DecisionReason.DEFAULT_RULE
-        )
-        val parameters = mapOf(
-            "experimentKey" to 1,
-            "defaultVariation" to "D",
-            "user" to "abcd1234"
-        )
-        val jsonString = createJsonString("variationDetail", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.variationDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
-                withArg { assertThat(it.name, `is`("D")) },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-
-            val map = data as Map<*, *>
-            assertNull(map["experiment"])
-            assertThat(map["variation"], `is`("B"))
-            assertThat(map["reason"], `is`("DEFAULT_RULE"))
-
-            val config = map["config"] as Map<*, *>
-            val configParameters = config["parameters"] as Map<*, *>
-            assertThat(configParameters.isEmpty(), `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with variation detail with user object`() {
-        every { app.variationDetail(any(), any<User>(), any(), any()) } returns Decision.of(
-            Variation.B,
-            DecisionReason.DEFAULT_RULE
-        )
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "experimentKey" to 1,
-            "defaultVariation" to "D",
-            "user" to user
-        )
-        val jsonString = createJsonString("variationDetail", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.variationDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
-                withArg { assertThat(it.name, `is`("D")) },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
@@ -814,7 +659,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with is feature on`() {
-        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+        every { app.featureFlagDetail(any(), any()) } returns FeatureFlagDecision.on(
             DecisionReason.DEFAULT_RULE,
             ParameterConfig.empty()
         )
@@ -825,79 +670,6 @@ class HackleInvocationTest {
             app.featureFlagDetail(
                 withArg {
                     assertThat(it, `is`(1))
-                },
-                user = null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with is feature on with user string`() {
-        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
-            DecisionReason.DEFAULT_RULE,
-            ParameterConfig.empty()
-        )
-        val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
-        val jsonString = createJsonString("isFeatureOn", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.featureFlagDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> {
-                    assertThat(it, `is`(User.of("abcd1234")))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with is feature on with user object`() {
-        every { app.featureFlagDetail(any(), any<User>(), any()) } returns FeatureFlagDecision.on(
-            DecisionReason.DEFAULT_RULE,
-            ParameterConfig.empty()
-        )
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf("featureKey" to 1, "user" to user)
-        val jsonString = createJsonString("isFeatureOn", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.featureFlagDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat(array[0], `is`(123L))
-                    assertThat(array[1], `is`("123"))
                 },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
@@ -923,7 +695,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with feature detail`() {
-        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+        every { app.featureFlagDetail(any(), any()) } returns FeatureFlagDecision.on(
             DecisionReason.DEFAULT_RULE,
             ParameterConfig.empty()
         )
@@ -934,93 +706,6 @@ class HackleInvocationTest {
             app.featureFlagDetail(
                 withArg {
                     assertThat(it, `is`(1))
-                },
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-
-            val map = data as Map<*, *>
-            assertNull(map["featureFlag"])
-            assertThat(map["isOn"], `is`(true))
-            assertThat(map["reason"], `is`("DEFAULT_RULE"))
-
-            val config = map["config"] as Map<*, *>
-            val configParameters = config["parameters"] as Map<*, *>
-            assertThat(configParameters.isEmpty(), `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with feature flag detail with user string`() {
-        every { app.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
-            DecisionReason.DEFAULT_RULE,
-            ParameterConfig.empty()
-        )
-        val parameters = mapOf("featureKey" to 1, "user" to "abcd1234")
-        val jsonString = createJsonString("featureFlagDetail", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.featureFlagDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> { assertThat(it, `is`(User.of("abcd1234"))) },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-
-            val map = data as Map<*, *>
-            assertNull(map["featureFlag"])
-            assertThat(map["isOn"], `is`(true))
-            assertThat(map["reason"], `is`("DEFAULT_RULE"))
-
-            val config = map["config"] as Map<*, *>
-            val configParameters = config["parameters"] as Map<*, *>
-            assertThat(configParameters.isEmpty(), `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with feature flag detail with user object`() {
-        every { app.featureFlagDetail(any(), any<User>(), any()) } returns FeatureFlagDecision.on(
-            DecisionReason.DEFAULT_RULE,
-            ParameterConfig.empty()
-        )
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf("featureKey" to 1, "user" to user)
-        val jsonString = createJsonString("featureFlagDetail", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.featureFlagDetail(
-                withArg { assertThat(it, `is`(1)) },
-                withArg<User> {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
                 },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
@@ -1062,81 +747,6 @@ class HackleInvocationTest {
                 withArg<Event> {
                     assertThat(it, `is`(Event.of("foo")))
                 },
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertNull(data)
-        }
-    }
-
-    @Test
-    fun `invoke with track with event string with user string`() {
-        val parameters = mapOf(
-            "event" to "foo",
-            "user" to "abcd1234"
-        )
-        val jsonString = createJsonString("track", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.track(
-                withArg<Event> {
-                    assertThat(it, `is`(Event.of("foo")))
-                },
-                withArg<User> {
-                    assertThat(it, `is`(User.of("abcd1234")))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertNull(data)
-        }
-    }
-
-    @Test
-    fun `invoke with track with event string with user object`() {
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "event" to "foo",
-            "user" to user
-        )
-        val jsonString = createJsonString("track", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.track(
-                withArg<Event> {
-                    assertThat(it, `is`(Event.of("foo")))
-                },
-                withArg<User> {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
@@ -1165,97 +775,6 @@ class HackleInvocationTest {
                     assertThat(it.properties.size, `is`(1))
                     assertThat(it.properties["abc"], `is`("def"))
                 },
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertNull(data)
-        }
-    }
-
-    @Test
-    fun `invoke with track with event object with user string`() {
-        val event = mapOf(
-            "key" to "foo",
-            "value" to 123,
-            "properties" to mapOf("abc" to "def")
-        )
-        val parameters = mapOf(
-            "event" to event,
-            "user" to "abcd1234"
-        )
-        val jsonString = createJsonString("track", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.track(
-                withArg<Event> {
-                    assertThat(it.key, `is`("foo"))
-                    assertThat(it.value, `is`(123.0))
-                    assertThat(it.properties.size, `is`(1))
-                    assertThat(it.properties["abc"], `is`("def"))
-                },
-                withArg<User> {
-                    assertThat(it, `is`(User.of("abcd1234")))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertNull(data)
-        }
-    }
-
-    @Test
-    fun `invoke with track with event object with user object`() {
-        val event = mapOf(
-            "key" to "foo",
-            "value" to 123,
-            "properties" to mapOf("abc" to "def")
-        )
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "event" to event,
-            "user" to user
-        )
-        val jsonString = createJsonString("track", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.track(
-                withArg<Event> {
-                    assertThat(it.key, `is`("foo"))
-                    assertThat(it.value, `is`(123.0))
-                    assertThat(it.properties.size, `is`(1))
-                    assertThat(it.properties["abc"], `is`("def"))
-                },
-                withArg<User> {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
@@ -1280,7 +799,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config - string`() {
-        every { app.remoteConfig(any(), any(), any(), null, any()).value } returns "foo"
+        every { app.remoteConfig(any(), any(), any(), any()).value } returns "foo"
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "string",
@@ -1293,87 +812,6 @@ class HackleInvocationTest {
                 "foo",
                 ValueType.STRING,
                 "abc",
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`("foo"))
-        }
-    }
-
-    @Test
-    fun `invoke with remote config with user string - string`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns "foo"
-        val parameters = mapOf(
-            "key" to "foo",
-            "valueType" to "string",
-            "defaultValue" to "abc",
-            "user" to "abcd1234"
-        )
-        val jsonString = createJsonString("remoteConfig", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.remoteConfig(
-                "foo",
-                ValueType.STRING,
-                "abc",
-                withArg {
-                    assertThat(it.userId, `is`("abcd1234"))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`("foo"))
-        }
-    }
-
-    @Test
-    fun `invoke with remote config with user object - string`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns "foo"
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "key" to "foo",
-            "valueType" to "string",
-            "defaultValue" to "abc",
-            "user" to user
-        )
-        val jsonString = createJsonString("remoteConfig", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.remoteConfig(
-                "foo",
-                ValueType.STRING,
-                "abc",
-                withArg {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
             )
         }
@@ -1386,7 +824,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config - number`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns 123.0
+        every { app.remoteConfig(any(), any(), any(), any()).value } returns 123.0
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "number",
@@ -1399,90 +837,8 @@ class HackleInvocationTest {
                 "foo",
                 ValueType.NUMBER,
                 1000.0,
-                null,
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
             )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`(123.0))
-        }
-    }
-
-    @Test
-    fun `invoke with remote config with user string - number`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns 123.0
-        val parameters = mapOf(
-            "key" to "foo",
-            "valueType" to "number",
-            "defaultValue" to 1000.0,
-            "user" to "abcd1234"
-        )
-        val jsonString = createJsonString("remoteConfig", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.remoteConfig(
-                "foo",
-                ValueType.NUMBER,
-                1000.0,
-                withArg {
-                    assertThat(it.userId, `is`("abcd1234"))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`(123.0))
-        }
-    }
-
-    @Test
-    fun `invoke with remote config with user object - number`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns 123.0
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "key" to "foo",
-            "valueType" to "number",
-            "defaultValue" to 1000.0,
-            "user" to user
-        )
-        val jsonString = createJsonString("remoteConfig", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.remoteConfig(
-                "foo",
-                ValueType.NUMBER,
-                1000.0,
-                withArg {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-
-                )
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -1493,7 +849,7 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with remote config - boolean`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns true
+        every { app.remoteConfig(any(), any(), any(), any()).value } returns true
         val parameters = mapOf(
             "key" to "foo",
             "valueType" to "boolean",
@@ -1506,87 +862,6 @@ class HackleInvocationTest {
                 "foo",
                 ValueType.BOOLEAN,
                 false,
-                null,
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with remote config with user string - boolean`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns true
-        val parameters = mapOf(
-            "key" to "foo",
-            "valueType" to "boolean",
-            "defaultValue" to false,
-            "user" to "abcd1234"
-        )
-        val jsonString = createJsonString("remoteConfig", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.remoteConfig(
-                "foo",
-                ValueType.BOOLEAN,
-                false,
-                withArg {
-                    assertThat(it.userId, `is`("abcd1234"))
-                },
-                withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
-            )
-        }
-        result.parseJson<InvokeResponse>().apply {
-            assertThat(success, `is`(true))
-            assertThat(message, `is`("OK"))
-            assertThat(data, `is`(true))
-        }
-    }
-
-    @Test
-    fun `invoke with remote config with user object - boolean`() {
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns true
-        val user = mapOf(
-            "id" to "foo",
-            "userId" to "bar",
-            "deviceId" to "abcd1234",
-            "identifiers" to mapOf("foo" to "bar"),
-            "properties" to mapOf(
-                "number" to 123,
-                "string" to "text",
-                "array" to arrayOf(123, "123")
-            )
-        )
-        val parameters = mapOf(
-            "key" to "foo",
-            "valueType" to "boolean",
-            "defaultValue" to false,
-            "user" to user
-        )
-        val jsonString = createJsonString("remoteConfig", parameters)
-        val result = invocation.invoke(jsonString)
-        verify(exactly = 1) {
-            app.remoteConfig(
-                "foo",
-                ValueType.BOOLEAN,
-                false,
-                withArg {
-                    assertThat(it.id, `is`("foo"))
-                    assertThat(it.userId, `is`("bar"))
-                    assertThat(it.deviceId, `is`("abcd1234"))
-                    assertThat(it.identifiers.size, `is`(1))
-                    assertThat(it.identifiers["foo"], `is`("bar"))
-                    assertThat(it.properties.size, `is`(3))
-                    assertThat((it.properties["number"] as Number).toDouble(), `is`(123.0))
-                    assertThat(it.properties["string"], `is`("text"))
-                    val array = it.properties["array"] as ArrayList<*>
-                    assertThat(array.size, `is`(2))
-                    assertThat((array[0] as Number).toDouble(), `is`(123.0))
-                    assertThat(array[1], `is`("123"))
-                },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) },
             )
         }
@@ -1600,7 +875,7 @@ class HackleInvocationTest {
     @Test
     fun `invoke with remote config with invalid parameters`() {
         val remoteConfig = mockk<HackleRemoteConfig>()
-        every { app.remoteConfig(any(), any(), any(), any(), any()).value } returns ""
+        every { app.remoteConfig(any(), any(), any(), any()).value } returns ""
         val parameters = emptyMap<String, Any>()
         val jsonString = createJsonString("remoteConfig", parameters)
         val result = invocation.invoke(jsonString)

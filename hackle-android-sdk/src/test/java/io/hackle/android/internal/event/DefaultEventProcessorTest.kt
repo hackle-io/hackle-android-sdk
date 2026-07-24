@@ -9,12 +9,9 @@ import io.hackle.android.internal.event.dedup.UserEventDedupDeterminer
 import io.hackle.android.internal.optout.OptOutManager
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.screen.ScreenUserEventDecorator
-import io.hackle.android.internal.session.Session
-import io.hackle.android.internal.session.SessionContext
-import io.hackle.android.internal.session.SessionManager
-import io.hackle.android.internal.session.SessionUserDecorator
-import io.hackle.android.internal.session.SessionUserEventDecorator
+import io.hackle.android.internal.session.*
 import io.hackle.android.internal.user.local.LocalUserManager
+import io.hackle.android.support.UserEvents
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User

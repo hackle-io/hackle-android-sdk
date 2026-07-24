@@ -19,6 +19,7 @@ import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.Session
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.config.WorkspaceConfigManager
@@ -53,15 +54,14 @@ import strikt.assertions.isSameInstanceAs
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.RejectedExecutionException
 
 class HackleAppTest {
-    //
+
     @RelaxedMockK
     private lateinit var core: HackleCore
 
     @RelaxedMockK
-    private lateinit var eventExecutor: Executor
+    private lateinit var coreExecutor: Executor
 
     @RelaxedMockK
     private lateinit var backgroundExecutor: ExecutorService
@@ -111,17 +111,24 @@ class HackleAppTest {
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
 
-        every { eventExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
-        every { backgroundExecutor.execute(any()) } answers {
-            firstArg<Runnable>().run()
-            CompletableFuture.completedFuture(null)
-        }
+        every { coreExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
+
+        mockkObject(TaskExecutors)
+        every { TaskExecutors.background() } returns backgroundExecutor
+        every { TaskExecutors.runOnBackground(any()) } answers { firstArg<() -> Unit>().invoke() }
+        every { backgroundExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
+
+        every { synchronizer.sync() } returns CompletableFuture.completedFuture(null)
+        every { userManager.setUser(any()) } returns CompletableFuture.completedFuture(null)
+        every { userManager.resetUser() } returns CompletableFuture.completedFuture(null)
+        every { userManager.setUserId(any()) } returns CompletableFuture.completedFuture(null)
+        every { userManager.setDeviceId(any()) } returns CompletableFuture.completedFuture(null)
+        every { userManager.updateProperties(any()) } returns CompletableFuture.completedFuture(null)
 
         val hackleAppCore = HackleAppCore(
             clock = Clock.SYSTEM,
             core = core,
-            coreExecutor = eventExecutor,
-            backgroundExecutor = backgroundExecutor,
+            coreExecutor = coreExecutor,
             synchronizer = synchronizer,
             userManager = userManager,
             workspaceManager = workspaceManager,
@@ -148,8 +155,13 @@ class HackleAppTest {
 
     @After
     fun tearDown() {
+        unmockkObject(TaskExecutors)
         unmockkObject(HackleApp)
         clearAllMocks()
+    }
+
+    private fun failedFuture(): CompletableFuture<Void> {
+        return CompletableFuture<Void>().apply { completeExceptionally(IllegalArgumentException("fail")) }
     }
 
     @Test
@@ -238,23 +250,9 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setUser - run callback event if failed to submit sync`() {
+    fun `setUser - run callback even if failed to sync`() {
         // given
-        every { backgroundExecutor.submit(any()) } throws RejectedExecutionException()
-        val user = User.builder().build()
-        val callback = mockk<Runnable>(relaxed = true)
-
-        // when
-        sut.setUser(user, callback)
-
-        // then
-        verify(exactly = 1) { callback.run() }
-    }
-
-    @Test
-    fun `setUser - run callback event if failed to sync`() {
-        // given
-        every { userManager.syncIfNeeded(any()) } throws IllegalArgumentException()
+        every { userManager.setUser(any()) } returns failedFuture()
         val user = User.builder().build()
         val callback = mockk<Runnable>(relaxed = true)
 
@@ -286,7 +284,7 @@ class HackleAppTest {
     @Test
     fun `setUserId - run callback even if failed to set user id`() {
         // given
-        every { userManager.setUser(any()) } throws IllegalArgumentException()
+        every { userManager.setUserId(any()) } throws IllegalArgumentException()
         val callback = mockk<Runnable>(relaxed = true)
 
         // when
@@ -297,22 +295,9 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setUserId - run callback event if failed to submit sync`() {
+    fun `setUserId - run callback even if failed to sync`() {
         // given
-        every { backgroundExecutor.submit(any()) } throws RejectedExecutionException()
-        val callback = mockk<Runnable>(relaxed = true)
-
-        // when
-        sut.setUserId("user_id", callback)
-
-        // then
-        verify(exactly = 1) { callback.run() }
-    }
-
-    @Test
-    fun `setUserId - run callback event if failed to sync`() {
-        // given
-        every { userManager.syncIfNeeded(any()) } throws IllegalArgumentException()
+        every { userManager.setUserId(any()) } returns failedFuture()
         val callback = mockk<Runnable>(relaxed = true)
 
         // when
@@ -328,11 +313,11 @@ class HackleAppTest {
         val callback = mockk<Runnable>(relaxed = true)
 
         // when
-        sut.setDeviceId("device_id", callback)
+        sut.setUserId("user_id", callback)
 
         // then
         verify(exactly = 1) {
-            userManager.setDeviceId("device_id")
+            userManager.setUserId("user_id")
         }
         verify(exactly = 1) {
             callback.run()
@@ -342,7 +327,7 @@ class HackleAppTest {
     @Test
     fun `setDeviceId - run callback even if failed to set device id`() {
         // given
-        every { userManager.setUser(any()) } throws IllegalArgumentException()
+        every { userManager.setDeviceId(any()) } throws IllegalArgumentException()
         val callback = mockk<Runnable>(relaxed = true)
 
         // when
@@ -353,22 +338,9 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setDeviceId - run callback event if failed to submit sync`() {
+    fun `setDeviceId - run callback even if failed to sync`() {
         // given
-        every { backgroundExecutor.submit(any()) } throws RejectedExecutionException()
-        val callback = mockk<Runnable>(relaxed = true)
-
-        // when
-        sut.setDeviceId("device_id", callback)
-
-        // then
-        verify(exactly = 1) { callback.run() }
-    }
-
-    @Test
-    fun `setDeviceId - run callback event if failed to sync`() {
-        // given
-        every { userManager.syncIfNeeded(any()) } throws IllegalArgumentException()
+        every { userManager.setDeviceId(any()) } returns failedFuture()
         val callback = mockk<Runnable>(relaxed = true)
 
         // when
@@ -399,19 +371,6 @@ class HackleAppTest {
     fun `setUserProperty`() {
         val callback = mockk<Runnable>(relaxed = true)
         sut.setUserProperty("age", 42, callback)
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$properties")
-                            .property("\$set", mapOf("age" to 42))
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
 
         verify(exactly = 1) {
             userManager.updateProperties(
@@ -434,33 +393,10 @@ class HackleAppTest {
         sut.updateUserProperties(operations, callback)
 
         verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$properties")
-                            .property("\$set", mapOf("age" to 42))
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
-        }
-
-        verify(exactly = 1) {
-            userManager.updateProperties(
-                withArg {
-                    expectThat(it.asMap()).isEqualTo(
-                        PropertyOperations.builder().set("age", 42).build().asMap()
-                    )
-                }
-            )
+            userManager.updateProperties(operations)
         }
         verify(exactly = 1) {
             callback.run()
-        }
-        verify(exactly = 1) {
-            eventProcessor.flush()
         }
     }
 
@@ -491,79 +427,79 @@ class HackleAppTest {
     }
 
     @Test
-    fun `resetUser - clear properties`() {
-        sut.resetUser()
+    fun `resetUser - delegate to userManager`() {
+        val callback = mockk<Runnable>(relaxed = true)
+
+        sut.resetUser(callback)
 
         verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it).isEqualTo(
-                        Event.builder("\$properties")
-                            .property("\$clearAll", mapOf("clearAll" to "-"))
-                            .build()
-                    )
-                },
-                any(),
-                any()
-            )
+            userManager.resetUser()
+        }
+        verify(exactly = 1) {
+            callback.run()
         }
     }
 
     @Test
     fun setPhoneNumber() {
-        sut.setPhoneNumber("")
+        val callback = mockk<Runnable>(relaxed = true)
+
+        sut.setPhoneNumber("010-1234-5678", callback)
 
         verify(exactly = 1) { core.track(any(), any(), any()) }
+        verify(exactly = 1) { eventProcessor.flush() }
+        verify(exactly = 1) { callback.run() }
     }
 
     @Test
     fun unsetPhoneNumber() {
-        sut.unsetPhoneNumber()
+        val callback = mockk<Runnable>(relaxed = true)
+
+        sut.unsetPhoneNumber(callback)
 
         verify(exactly = 1) { core.track(any(), any(), any()) }
+        verify(exactly = 1) { eventProcessor.flush() }
+        verify(exactly = 1) { callback.run() }
     }
 
     @Test
     fun variation() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
+        every { userManager.hackleUser(any(), any()) } returns hackleUser
 
         val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
-        every { core.experiment(any(), any(), any()) } returns decision
+        every { core.experiment(any(), any()) } returns decision
 
         // when
         val actual = sut.variation(42)
 
         // then
         expectThat(actual).isEqualTo(Variation.B)
-        verify(exactly = 1) { userManager.resolve(null, any()) }
+        verify(exactly = 1) { core.experiment(42, hackleUser) }
     }
 
     @Test
     fun `variationDetail - success`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
+        every { userManager.hackleUser(any(), any()) } returns hackleUser
 
         val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
-        every { core.experiment(any(), any(), any()) } returns decision
+        every { core.experiment(any(), any()) } returns decision
 
         // when
         val actual = sut.variationDetail(42)
 
         // then
         expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(null, any()) }
+        verify(exactly = 1) { core.experiment(42, hackleUser) }
     }
 
     @Test
     fun `variationDetail - error`() {
         // given
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        every { core.experiment(any(), any(), any()) } throws IllegalArgumentException()
+        every { core.experiment(any(), any()) } throws IllegalArgumentException()
 
         // when
         val actual = sut.variationDetail(42)
@@ -571,14 +507,13 @@ class HackleAppTest {
         // then
         expectThat(actual.variation).isEqualTo(Variation.A)
         expectThat(actual.reason).isEqualTo(DecisionReason.EXCEPTION)
-        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `allVariationDetails`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
+        every { userManager.hackleUser(any(), any()) } returns hackleUser
 
         val experiment = mockk<Experiment> {
             every { key } returns 42
@@ -596,16 +531,12 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isEqualTo(mapOf(42L to decision))
-        verify(exactly = 1) { userManager.resolve(null, any()) }
+        verify(exactly = 1) { core.experiments(hackleUser) }
     }
-
 
     @Test
     fun `allVariationDetails - exception`() {
         // given
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
         every { core.experiments(any()) } throws IllegalArgumentException()
 
         // when
@@ -619,7 +550,7 @@ class HackleAppTest {
     fun `isFeatureOn`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
+        every { userManager.hackleUser(any(), any()) } returns hackleUser
 
         val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
         every { core.featureFlag(any(), any()) } returns decision
@@ -629,14 +560,14 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isEqualTo(true)
-        verify(exactly = 1) { userManager.resolve(null, any()) }
+        verify(exactly = 1) { core.featureFlag(42, hackleUser) }
     }
 
     @Test
     fun `featureFlagDetail - success`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
+        every { userManager.hackleUser(any(), any()) } returns hackleUser
 
         val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
         every { core.featureFlag(any(), any()) } returns decision
@@ -646,15 +577,12 @@ class HackleAppTest {
 
         // then
         expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(null, any()) }
+        verify(exactly = 1) { core.featureFlag(42, hackleUser) }
     }
 
     @Test
     fun `featureFlagDetail - exception`() {
         // given
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
         every { core.featureFlag(any(), any()) } throws IllegalArgumentException()
 
         // when
@@ -663,13 +591,12 @@ class HackleAppTest {
         // then
         expectThat(actual.isOn).isEqualTo(false)
         expectThat(actual.reason).isEqualTo(DecisionReason.EXCEPTION)
-        verify(exactly = 1) { userManager.resolve(null, any()) }
     }
 
     @Test
     fun `track`() {
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
+        every { userManager.hackleUser(any(), any()) } returns hackleUser
 
         sut.track("test_1")
         sut.track(Event.builder("test_2").build())
@@ -679,7 +606,7 @@ class HackleAppTest {
                 withArg {
                     expectThat(it.key).isEqualTo("test_1")
                 },
-                any(),
+                hackleUser,
                 any()
             )
         }
@@ -689,11 +616,10 @@ class HackleAppTest {
                 withArg {
                     expectThat(it.key).isEqualTo("test_2")
                 },
-                any(),
+                hackleUser,
                 any()
             )
         }
-        verify(exactly = 2) { userManager.resolve(null, any()) }
     }
 
     @Test
@@ -713,30 +639,28 @@ class HackleAppTest {
     @Test
     fun `initialize`() {
         val onReady = mockk<Runnable>(relaxed = true)
-        mockkObject(ApplicationInstallStateManager.Companion)
 
         sut.initialize(null, onReady)
 
         verify(exactly = 1) { userManager.initialize(null) }
+        verify(exactly = 1) { workspaceManager.initialize() }
+        verify(exactly = 1) { pushTokenManager.initialize() }
         verify(exactly = 1) { sessionManager.initialize() }
         verify(exactly = 1) { eventProcessor.initialize() }
         verify(exactly = 1) { synchronizer.sync() }
+        verify(exactly = 1) { notificationManager.flush() }
+        verify(exactly = 1) { applicationInstallStateManager.checkApplicationInstall() }
         verify(exactly = 1) { onReady.run() }
-
-        unmockkObject(ApplicationInstallStateManager.Companion)
     }
 
     @Test
     fun `initialize - run onReady even if failed to initialize`() {
         every { synchronizer.sync() } throws IllegalArgumentException()
-        mockkObject(ApplicationInstallStateManager.Companion)
 
         val onReady = mockk<Runnable>(relaxed = true)
         sut.initialize(null, onReady)
 
         verify(exactly = 1) { onReady.run() }
-
-        unmockkObject(ApplicationInstallStateManager.Companion)
     }
 
     @Test
@@ -755,7 +679,6 @@ class HackleAppTest {
         every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
 
         // when
-
         sut.fetch()
 
         // then
@@ -770,7 +693,6 @@ class HackleAppTest {
         every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
 
         // when
-
         sut.fetch()
 
         // then
@@ -785,7 +707,6 @@ class HackleAppTest {
         every { fetchThrottler.execute(any(), any()) } answers { firstArg<() -> Unit>().invoke() }
 
         // when
-
         sut.fetch()
 
         // then
@@ -807,6 +728,20 @@ class HackleAppTest {
         verify(exactly = 1) {
             callback.run()
         }
+    }
+
+    @Test
+    fun `fetch - run callback even if throttled`() {
+        // given
+        every { fetchThrottler.execute(any(), any()) } answers { secondArg<() -> Unit>().invoke() }
+        val callback = mockk<Runnable>(relaxed = true)
+
+        // when
+        sut.fetch(callback)
+
+        // then
+        verify(exactly = 0) { synchronizer.sync() }
+        verify(exactly = 1) { callback.run() }
     }
 
     @Test
@@ -841,7 +776,6 @@ class HackleAppTest {
             core.flush()
         }
     }
-
 
     @Test
     fun updateSmsSubscriptions() {
@@ -975,221 +909,8 @@ class HackleAppTest {
     }
 
     // Deprecated methods tests
-    @Test
-    fun `variation with userId - deprecated`() {
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
-        every { core.experiment(any(), any(), any()) } returns decision
-
-        val actual = sut.variation(42, "user_id")
-
-        expectThat(actual).isEqualTo(Variation.B)
-        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
-    }
-
-    @Test
-    fun `variation with User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
-        every { core.experiment(any(), any(), any()) } returns decision
-
-        val actual = sut.variation(42, user)
-
-        expectThat(actual).isEqualTo(Variation.B)
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `variationDetail with userId - deprecated`() {
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
-        every { core.experiment(any(), any(), any()) } returns decision
-
-        val actual = sut.variationDetail(42, "user_id")
-
-        expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
-    }
-
-    @Test
-    fun `variationDetail with User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = Decision.of(Variation.B, DecisionReason.TRAFFIC_ALLOCATED)
-        every { core.experiment(any(), any(), any()) } returns decision
-
-        val actual = sut.variationDetail(42, user)
-
-        expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `allVariationDetails with User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val experiment = mockk<Experiment> {
-            every { key } returns 42
-        }
-        val decision = Decision.of(
-            Variation.B,
-            DecisionReason.TRAFFIC_ALLOCATED,
-            ParameterConfig.empty(),
-            experiment
-        )
-        every { core.experiments(any()) } returns mapOf(experiment to decision)
-
-        val actual = sut.allVariationDetails(user)
-
-        expectThat(actual).isEqualTo(mapOf(42L to decision))
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `featureFlagDetail with userId - deprecated`() {
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
-        every { core.featureFlag(any(), any()) } returns decision
-
-        val actual = sut.featureFlagDetail(42, "user_id")
-
-        expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
-    }
-
-    @Test
-    fun `featureFlagDetail with User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
-        every { core.featureFlag(any(), any()) } returns decision
-
-        val actual = sut.featureFlagDetail(42, user)
-
-        expectThat(actual).isSameInstanceAs(decision)
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `isFeatureOn with userId - deprecated`() {
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
-        every { core.featureFlag(any(), any()) } returns decision
-
-        val actual = sut.isFeatureOn(42, "user_id")
-
-        expectThat(actual).isEqualTo(true)
-        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
-    }
-
-    @Test
-    fun `isFeatureOn with User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        val decision = FeatureFlagDecision.on(DecisionReason.DEFAULT_RULE)
-        every { core.featureFlag(any(), any()) } returns decision
-
-        val actual = sut.isFeatureOn(42, user)
-
-        expectThat(actual).isEqualTo(true)
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `track with eventKey and userId - deprecated`() {
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        sut.track("test_event", "user_id")
-
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it.key).isEqualTo("test_event")
-                },
-                any(),
-                any()
-            )
-        }
-        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
-    }
-
-    @Test
-    fun `track with Event and userId - deprecated`() {
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-        val event = Event.builder("test_event").build()
-
-        sut.track(event, "user_id")
-
-        verify(exactly = 1) {
-            core.track(event, any(), any())
-        }
-        verify(exactly = 1) { userManager.resolve(User.of("user_id"), any()) }
-    }
-
-    @Test
-    fun `track with eventKey and User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-
-        sut.track("test_event", user)
-
-        verify(exactly = 1) {
-            core.track(
-                withArg {
-                    expectThat(it.key).isEqualTo("test_event")
-                },
-                any(),
-                any()
-            )
-        }
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `track with Event and User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-        val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
-        every { userManager.resolve(any(), any()) } returns hackleUser
-        val event = Event.builder("test_event").build()
-
-        sut.track(event, user)
-
-        verify(exactly = 1) {
-            core.track(event, any(), any())
-        }
-        verify(exactly = 1) { userManager.resolve(user, any()) }
-    }
-
-    @Test
-    fun `remoteConfig with User - deprecated`() {
-        val user = User.builder().id("user_id").build()
-
-        val actual = sut.remoteConfig(user)
-
-        expectThat(actual).isA<HackleRemoteConfigImpl>()
-    }
+    // 4.0 유저 중앙화로 user/userId를 받는 deprecated 오버로드(variation/variationDetail/allVariationDetails/
+    // isFeatureOn/featureFlagDetail/track/remoteConfig)는 공개 API에서 제거되어 테스트도 함께 삭제됨
 
     @Test
     fun `showUserExplorer with Activity - deprecated`() {
@@ -1213,7 +934,6 @@ class HackleAppTest {
         sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
         // This method does nothing, just checking it doesn't throw
     }
-
 
     @Test
     fun `displayedInAppMessageView`() {
