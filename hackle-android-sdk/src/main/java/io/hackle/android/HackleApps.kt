@@ -207,7 +207,7 @@ internal object HackleApps {
                     fullEvaluator = fullWorkspaceRemoteEvaluator,
                     partialEvaluator = partialWorkspaceRemoteEvaluator,
                     repository = repository,
-                    cache = LruWorkspaceEvaluationCache(capacity = 10),
+                    cache = LruWorkspaceEvaluationCache(capacity = 4),
                     executor = TaskExecutors.handler("io.hackle.WorkspaceEvaluationManager")
                 )
             }
