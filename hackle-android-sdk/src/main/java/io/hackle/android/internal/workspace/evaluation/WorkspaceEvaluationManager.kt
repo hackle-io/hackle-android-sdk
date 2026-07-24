@@ -23,7 +23,7 @@ internal class WorkspaceEvaluationManager(
     private val partialEvaluator: PartialWorkspaceRemoteEvaluator,
     private val repository: WorkspaceEvaluationRepository,
     private val cache: WorkspaceEvaluationCache,
-    private val coreExecutor: Executor,
+    private val executor: Executor,
 ) : WorkspaceManager, WorkspaceEvaluationFetcher {
 
     override fun initialize() {
@@ -43,7 +43,7 @@ internal class WorkspaceEvaluationManager(
         val base = cache.get(context.key)
         val request = FullWorkspaceEvaluateRequest.of(context, base)
         return fullEvaluator.evaluate(request)
-            .consumeAsync(coreExecutor) { store(it.context) }
+            .consumeAsync(executor) { store(it.context) }
             .recover { log.error { "Failed to sync WorkspaceEvaluation: $it" } }
     }
 

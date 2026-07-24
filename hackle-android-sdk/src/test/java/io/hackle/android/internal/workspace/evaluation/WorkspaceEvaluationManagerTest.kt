@@ -33,7 +33,7 @@ class WorkspaceEvaluationManagerTest {
     private lateinit var partialEvaluator: PartialWorkspaceRemoteEvaluator
 
     @MockK
-    private lateinit var coreExecutor: Executor
+    private lateinit var executor: Executor
 
     private lateinit var cache: WorkspaceEvaluationCache
     private lateinit var repository: WorkspaceEvaluationRepository
@@ -43,11 +43,11 @@ class WorkspaceEvaluationManagerTest {
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        every { coreExecutor.execute(any()) } answers { firstArg<Runnable>().run() }
+        every { executor.execute(any()) } answers { firstArg<Runnable>().run() }
 
         cache = LruWorkspaceEvaluationCache(capacity = 10)
         repository = MockWorkspaceEvaluationRepository()
-        sut = WorkspaceEvaluationManager(fullEvaluator, partialEvaluator, repository, cache, coreExecutor)
+        sut = WorkspaceEvaluationManager(fullEvaluator, partialEvaluator, repository, cache, executor)
     }
 
     private fun user(id: String = "user"): HackleUser {
@@ -74,7 +74,7 @@ class WorkspaceEvaluationManagerTest {
         val failingRepository = mockk<WorkspaceEvaluationRepository> {
             every { get() } throws IllegalArgumentException("fail")
         }
-        val sut = WorkspaceEvaluationManager(fullEvaluator, partialEvaluator, failingRepository, cache, coreExecutor)
+        val sut = WorkspaceEvaluationManager(fullEvaluator, partialEvaluator, failingRepository, cache, executor)
 
         // when
         sut.initialize()
@@ -195,22 +195,26 @@ class WorkspaceEvaluationManagerTest {
     }
 
     @Test
-    fun `sync - 평가 결과 저장은 coreExecutor에서 실행된다`() {
+    fun `sync - 평가 결과 저장은 호출 스레드가 아닌 별도 executor에서 비동기로 실행된다`() {
+        // 저장을 sync 호출 스레드에서 인라인으로 하면, initialize가 coreExecutor에서 sync().get()으로
+        // 블로킹할 때 store도 같은 coreExecutor를 필요로 하여 데드락이 발생한다.
+        // 따라서 store는 반드시 별도 executor로 디스패치되어 호출 스레드를 막지 않아야 한다.
         // given
         val context = RemoteEvaluateContext.of(user("user"))
         val evaluated = Workspaces.evaluationContext(key = context.key)
         every { fullEvaluator.evaluate(any()) } returns FullWorkspaceEvaluateResponse(evaluated).asFuture()
 
         val store = slot<Runnable>()
-        justRun { coreExecutor.execute(capture(store)) }
+        justRun { executor.execute(capture(store)) }
 
         // when
         val actual = sut.sync(context)
 
-        // then
+        // then: executor 작업이 실행되기 전까지 저장이 완료되지 않는다 (인라인 실행 아님)
         expectThat(actual.isDone) isEqualTo false
         expectThat(sut.workspace(user("user"))).isNull()
 
+        // executor에서 store가 실행되어야 비로소 완료·반영된다
         store.captured.run()
         actual.get()
         expectThat(sut.workspace(user("user"))) isSameInstanceAs evaluated.workspace

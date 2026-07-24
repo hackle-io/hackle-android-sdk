@@ -651,6 +651,40 @@ class HackleAppTest {
         verify(exactly = 1) { notificationManager.flush() }
         verify(exactly = 1) { applicationInstallStateManager.checkApplicationInstall() }
         verify(exactly = 1) { onReady.run() }
+
+        // sync 완료를 기다린 뒤(sync().get()) 이후 단계를 진행한다 (이벤트 순서 하위호환)
+        verifyOrder {
+            userManager.initialize(null)
+            workspaceManager.initialize()
+            synchronizer.sync()
+            notificationManager.flush()
+            applicationInstallStateManager.checkApplicationInstall()
+            onReady.run()
+        }
+    }
+
+    @Test
+    fun `initialize - 초기화 시퀀스를 coreExecutor에서 실행한다`() {
+        // 이벤트 순서 하위호환을 위해 초기화 시퀀스(sync 포함)는 단일 스레드 coreExecutor에서 직렬 실행된다.
+        // given: coreExecutor 작업을 캡처만 하고 즉시 실행하지 않는다
+        val task = slot<Runnable>()
+        every { coreExecutor.execute(capture(task)) } answers { }
+        val onReady = mockk<Runnable>(relaxed = true)
+
+        // when
+        sut.initialize(null, onReady)
+
+        // then: userManager.initialize는 호출 스레드에서 즉시, 나머지 시퀀스는 coreExecutor 작업 전까지 미실행
+        verify(exactly = 1) { userManager.initialize(null) }
+        verify(exactly = 0) { workspaceManager.initialize() }
+        verify(exactly = 0) { synchronizer.sync() }
+        verify(exactly = 0) { onReady.run() }
+
+        // coreExecutor 작업이 실행되면 나머지 시퀀스가 수행된다
+        task.captured.run()
+        verify(exactly = 1) { workspaceManager.initialize() }
+        verify(exactly = 1) { synchronizer.sync() }
+        verify(exactly = 1) { onReady.run() }
     }
 
     @Test

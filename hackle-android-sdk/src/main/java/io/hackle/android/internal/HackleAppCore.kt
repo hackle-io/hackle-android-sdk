@@ -13,7 +13,10 @@ import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
-import io.hackle.android.internal.task.*
+import io.hackle.android.internal.task.Futures
+import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.internal.task.onCompleteAsync
+import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
@@ -67,29 +70,22 @@ internal class HackleAppCore(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
-        coreExecutor
-            .future {
+        coreExecutor.execute {
+            try {
                 workspaceManager.initialize()
                 pushTokenManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
-            }
-            .flatMap {
-                synchronizer.sync()
-            }
-            .map {
+                synchronizer.sync().get()
                 notificationManager.flush()
                 applicationInstallStateManager.checkApplicationInstall()
-            }
-            .consume {
                 log.debug { "HackleApp initialized" }
-            }
-            .recover {
-                log.error { "Failed to initialize HackleApp: $it" }
-            }
-            .onCompleteAsync(TaskExecutors.background()) {
+            } catch (e: Throwable) {
+                log.error { "Failed to initialize HackleApp: $e" }
+            } finally {
                 onReady.run()
             }
+        }
     }
 
     fun getInAppMessageView(viewId: String): InAppMessageView? {
