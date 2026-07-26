@@ -62,21 +62,23 @@ class WorkspaceEvaluationsTest {
     }
 
     @Test
-    fun `merge - metadata는 delta의 것으로 교체하고 workspace는 유지한다`() {
+    fun `merge - workspace와 metadata를 delta의 것으로 교체한다`() {
         // given
         val evaluation = Workspaces.evaluationDto(
             workspace = Workspaces.workspaceDto(id = 1),
             metadata = Workspaces.evaluationMetadataDto(evaluatedAt = 100)
         )
-        val deltaMetadata = Workspaces.evaluationMetadataDto(evaluatedAt = 200)
-        val delta = Workspaces.deltaDto(metadata = deltaMetadata)
+        val delta = Workspaces.deltaDto(
+            workspace = Workspaces.workspaceDto(id = 1),
+            metadata = Workspaces.evaluationMetadataDto(evaluatedAt = 200)
+        )
 
         // when
         val actual = WorkspaceEvaluations.merge(evaluation, delta)
 
         // then
-        expectThat(actual.workspace) isSameInstanceAs evaluation.workspace
-        expectThat(actual.metadata) isSameInstanceAs deltaMetadata
+        expectThat(actual.workspace) isSameInstanceAs delta.workspace
+        expectThat(actual.metadata) isSameInstanceAs delta.metadata
     }
 
     @Test

@@ -279,11 +279,13 @@ internal object Workspaces {
     }
 
     fun deltaDto(
+        workspace: WorkspaceDto = workspaceDto(),
         metadata: WorkspaceEvaluationMetadataDto = evaluationMetadataDto(),
         changed: List<EvaluateResultDto> = emptyList(),
         deleted: List<EntityDto> = emptyList(),
     ): WorkspaceEvaluationDeltaDto {
         return WorkspaceEvaluationDeltaDto(
+            workspace = workspace,
             metadata = metadata,
             changed = changed,
             deleted = deleted

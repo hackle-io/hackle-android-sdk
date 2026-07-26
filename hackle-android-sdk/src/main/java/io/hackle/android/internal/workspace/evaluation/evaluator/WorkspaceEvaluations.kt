@@ -18,7 +18,7 @@ internal object WorkspaceEvaluations {
             results.remove(delete.key())
         }
 
-        return WorkspaceEvaluationDto(evaluation.workspace, delta.metadata, results.values.toList())
+        return WorkspaceEvaluationDto(delta.workspace, delta.metadata, results.values.toList())
     }
 
     fun hash(results: List<EvaluateResultDto>): Int {

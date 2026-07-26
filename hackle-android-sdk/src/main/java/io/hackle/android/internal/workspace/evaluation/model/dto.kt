@@ -144,6 +144,7 @@ internal class WorkspaceEvaluateResponseDto(
 )
 
 internal class WorkspaceEvaluationDeltaDto(
+    val workspace: WorkspaceDto,
     val metadata: WorkspaceEvaluationMetadataDto,
     val changed: List<EvaluateResultDto>,
     val deleted: List<EntityDto>,
