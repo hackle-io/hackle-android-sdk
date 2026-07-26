@@ -59,7 +59,7 @@ internal fun InAppMessageEligibilityEvaluateResultDto.toResultOrNull(): InAppMes
         evaluateContext = evaluateContext,
         messageContext = messageContext,
         message = layout.message.toMessageOrNull() ?: return null,
-        reason = DecisionReason.from(reason),
+        reason = DecisionReason.from(layout.reason),
         references = layout.references.mapNotNull { it.toEntityOrNull() },
     )
 
