@@ -31,13 +31,13 @@ internal class RemoteEvaluateClient(
 
     fun evaluateIfModified(requestDto: WorkspaceEvaluateRequestDto): CompletableFuture<WorkspaceEvaluateResponseDto?> {
         val request = createRequest(workspaceEndpoint, requestDto.toJson())
-        return Futures.async(executor) { execute(request, "workspace.remote.evaluate") }
+        return Futures.async(executor) { execute(request, "evaluate.workspace") }
             .map { response -> response.use { handleWorkspaceResponse(it) } }
     }
 
     fun evaluateEntities(requestDto: EntityEvaluateRequestDto): CompletableFuture<EntityEvaluateResponseDto> {
         val request = createRequest(entityEndpoint, requestDto.toJson())
-        return Futures.async(executor) { execute(request, "entity.remote.evaluate") }
+        return Futures.async(executor) { execute(request, "evaluate.entities") }
             .map { response -> response.use { handleResponse<EntityEvaluateResponseDto>(it) } }
     }
 
@@ -69,7 +69,7 @@ internal class RemoteEvaluateClient(
 
     companion object {
         private val CONTENT_TYPE = "application/json; charset=utf-8".toMediaType()
-        private const val WORKSPACE_EVALUATE_PATH = "/api/v1/workspace-evaluate"
-        private const val TARGET_EVALUATE_PATH = "/api/v1/entity-evaluate"
+        private const val WORKSPACE_EVALUATE_PATH = "/api/v1/evaluate/workspace"
+        private const val TARGET_EVALUATE_PATH = "/api/v1/evaluate/entities"
     }
 }
