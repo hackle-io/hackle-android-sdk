@@ -511,6 +511,20 @@ class HackleAppTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
+    fun `variationDetail - deprecated 오버로드는 defaultVariation을 무시한다`() {
+        // given
+        every { core.experiment(any(), any()) } throws IllegalArgumentException()
+
+        // when
+        val actual = sut.variationDetail(42, Variation.J)
+
+        // then
+        expectThat(actual.variation).isEqualTo(Variation.A)
+        expectThat(actual.reason).isEqualTo(DecisionReason.EXCEPTION)
+    }
+
+    @Test
     fun `allVariationDetails`() {
         // given
         val hackleUser = HackleUser.builder().identifier(IdentifierType.ID, "42").build()
