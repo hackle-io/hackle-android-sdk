@@ -59,7 +59,7 @@ class RemoteEvaluateClientTest {
         verify(exactly = 1) {
             httpClient.newCall(withArg {
                 expectThat(it.method) isEqualTo "POST"
-                expectThat(it.url.toString()) isEqualTo "http://localhost/api/v1/workspace-evaluate"
+                expectThat(it.url.toString()) isEqualTo "http://localhost/api/v1/evaluate/workspace"
                 val body = Buffer().also { buffer -> it.body!!.writeTo(buffer) }.readUtf8()
                 expectThat(body).contains("\"policy\":\"FORCE_FULL\"")
             })
@@ -138,7 +138,7 @@ class RemoteEvaluateClientTest {
         verify(exactly = 1) {
             httpClient.newCall(withArg {
                 expectThat(it.method) isEqualTo "POST"
-                expectThat(it.url.toString()) isEqualTo "http://localhost/api/v1/entity-evaluate"
+                expectThat(it.url.toString()) isEqualTo "http://localhost/api/v1/evaluate/entities"
             })
         }
     }
