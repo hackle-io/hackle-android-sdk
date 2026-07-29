@@ -148,7 +148,8 @@ fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
     "Use updateUserProperties(operations) instead.",
     ReplaceWith(
         "app.updateUserProperties(PropertyOperations.builder().set(key, value).build())",
-        "io.hackle.sdk.common.PropertyOperations"
+        "io.hackle.sdk.common.PropertyOperations",
+        "io.hackle.android.app"
     )
 )
 @Suppress("DEPRECATION")
