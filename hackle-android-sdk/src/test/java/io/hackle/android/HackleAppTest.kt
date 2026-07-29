@@ -368,6 +368,7 @@ class HackleAppTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `setUserProperty`() {
         val callback = mockk<Runnable>(relaxed = true)
         sut.setUserProperty("age", 42, callback)
@@ -503,6 +504,20 @@ class HackleAppTest {
 
         // when
         val actual = sut.variationDetail(42)
+
+        // then
+        expectThat(actual.variation).isEqualTo(Variation.A)
+        expectThat(actual.reason).isEqualTo(DecisionReason.EXCEPTION)
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun `variationDetail - deprecated 오버로드는 defaultVariation을 무시한다`() {
+        // given
+        every { core.experiment(any(), any()) } throws IllegalArgumentException()
+
+        // when
+        val actual = sut.variationDetail(42, Variation.J)
 
         // then
         expectThat(actual.variation).isEqualTo(Variation.A)

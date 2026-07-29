@@ -9,7 +9,6 @@ import io.hackle.android.internal.invocator.invocation.InvocationResponse
 import io.hackle.android.internal.invocator.model.DecisionDto
 import io.hackle.android.internal.invocator.model.FeatureFlagDecisionDto
 import io.hackle.android.internal.invocator.model.toDto
-import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.model.ValueType
@@ -20,9 +19,8 @@ internal abstract class AbTestInvocationHandler<R>(private val core: HackleAppCo
     override fun invoke(request: InvocationRequest): InvocationResponse<R> {
         val p = request.parameters
         val experimentKey = checkParameterNotNull(p.experimentKey(), "experimentKey")
-        val defaultVariation = Variation.fromOrControl(p.defaultVariation())
         val context = HackleAppContext.create(request.browserProperties)
-        val decision = core.variationDetail(experimentKey, defaultVariation, context)
+        val decision = core.variationDetail(experimentKey, context)
         return InvocationResponse.success(transform(decision))
     }
 

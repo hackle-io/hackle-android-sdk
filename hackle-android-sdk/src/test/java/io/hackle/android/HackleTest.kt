@@ -42,6 +42,7 @@ class HackleTest {
     private val testPushToken = "test_push_token"
 
     @Before
+    @Suppress("DEPRECATION")
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
 
@@ -218,6 +219,7 @@ class HackleTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `setUserProperty should delegate to app setUserProperty`() {
         // when
         Hackle.setUserProperty(testPropertyKey, testPropertyValue)
