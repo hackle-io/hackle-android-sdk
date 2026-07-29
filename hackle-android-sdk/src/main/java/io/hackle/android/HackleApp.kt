@@ -120,21 +120,6 @@ class HackleApp internal constructor(
     }
 
     /**
-     * Sets a single user property.
-     *
-     * @param key the key of the property
-     * @param value the value of the property
-     * @param callback an optional callback to be executed when the operation is complete
-     */
-    @JvmOverloads
-    fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
-        val operations = PropertyOperations.builder()
-            .set(key, value)
-            .build()
-        hackleAppCore.updateUserProperties(operations, callback)
-    }
-
-    /**
      * Updates user properties with a set of operations.
      *
      * @param operations a set of [PropertyOperations] to apply to user properties
@@ -432,6 +417,28 @@ class HackleApp internal constructor(
         log.error {
             "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
         }
+    }
+
+    /**
+     * Sets a single user property.
+     *
+     * @param key the key of the property
+     * @param value the value of the property
+     * @param callback an optional callback to be executed when the operation is complete
+     */
+    @Deprecated(
+        "Use updateUserProperties(operations) instead.",
+        ReplaceWith(
+            "updateUserProperties(PropertyOperations.builder().set(key, value).build(), callback)",
+            "io.hackle.sdk.common.PropertyOperations"
+        )
+    )
+    @JvmOverloads
+    fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
+        val operations = PropertyOperations.builder()
+            .set(key, value)
+            .build()
+        hackleAppCore.updateUserProperties(operations, callback)
     }
     //</editor-fold>
 

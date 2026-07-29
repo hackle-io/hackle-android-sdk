@@ -368,6 +368,7 @@ class HackleAppTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `setUserProperty`() {
         val callback = mockk<Runnable>(relaxed = true)
         sut.setUserProperty("age", 42, callback)

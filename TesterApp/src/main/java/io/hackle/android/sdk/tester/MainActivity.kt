@@ -17,6 +17,7 @@ import io.hackle.android.Hackle
 import io.hackle.android.HackleApp
 import io.hackle.android.HackleConfig
 import io.hackle.android.app
+import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import java.util.concurrent.Executors
@@ -131,8 +132,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.set_property_01_btn).setOnClickListener {
             val property = userService.property(R.id.property_key_01, R.id.property_value_01)
             if (property != null) {
-                Hackle.app.setUserProperty(property.first, property.second)
-
+                Hackle.app.updateUserProperties(
+                    PropertyOperations.builder().set(property.first, property.second).build()
+                )
             }
         }
 

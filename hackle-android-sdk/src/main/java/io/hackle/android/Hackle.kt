@@ -144,6 +144,14 @@ fun Hackle.setDeviceId(deviceId: String) = app.setDeviceId(deviceId)
  * @param key the property key
  * @param value the property value
  */
+@Deprecated(
+    "Use updateUserProperties(operations) instead.",
+    ReplaceWith(
+        "app.updateUserProperties(PropertyOperations.builder().set(key, value).build())",
+        "io.hackle.sdk.common.PropertyOperations"
+    )
+)
+@Suppress("DEPRECATION")
 fun Hackle.setUserProperty(key: String, value: Any?) = app.setUserProperty(key, value)
 
 /**
