@@ -94,7 +94,6 @@ internal class HackleAppCore(
 
     fun showUserExplorer() {
         userExplorer.show()
-        Metrics.counter("user.explorer.show").increment()
     }
 
     fun hideUserExplorer() {
