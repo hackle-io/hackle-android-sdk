@@ -199,7 +199,6 @@ internal class HackleAppCore(
 
     fun variationDetail(
         experimentKey: Long,
-        defaultVariation: Variation,
         hackleAppContext: HackleAppContext,
     ): Decision {
         val sample = Timer.start()
@@ -207,8 +206,8 @@ internal class HackleAppCore(
             val hackleUser = userManager.hackleUser(appContext = hackleAppContext)
             core.experiment(experimentKey, hackleUser)
         } catch (t: Throwable) {
-            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
-            Decision.of(defaultVariation, EXCEPTION)
+            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]: $t" }
+            Decision.of(Variation.CONTROL, EXCEPTION)
         }.also {
             DecisionMetrics.experiment(sample, experimentKey, it)
         }

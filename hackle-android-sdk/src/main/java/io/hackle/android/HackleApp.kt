@@ -16,7 +16,6 @@ import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
-import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
@@ -210,28 +209,24 @@ class HackleApp internal constructor(
     /**
      * Decide the variation to expose to the user for experiment.
      *
-     * @param experimentKey    the unique key of the experiment
-     * @param defaultVariation the default variation of the experiment. MUST NOT be null
+     * @param experimentKey the unique key of the experiment
      *
-     * @return the decided [Variation] for the user, or [defaultVariation]
+     * @return the decided [Variation] for the user, or [Variation.CONTROL] if the experiment cannot be decided
      */
-    @JvmOverloads
-    fun variation(experimentKey: Long, defaultVariation: Variation = CONTROL): Variation {
-        return variationDetail(experimentKey, defaultVariation).variation
+    fun variation(experimentKey: Long): Variation {
+        return variationDetail(experimentKey).variation
     }
 
     /**
      * Decide the variation to expose to the user for experiment and returns an object that
      * describes the way the variation was decided.
      *
-     * @param experimentKey    the unique key for the experiment
-     * @param defaultVariation the default variation of the experiment. MUST NOT be null
+     * @param experimentKey the unique key for the experiment
      *
      * @return a [Decision] object
      */
-    @JvmOverloads
-    fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
-        return hackleAppCore.variationDetail(experimentKey, defaultVariation, HackleAppContext.DEFAULT)
+    fun variationDetail(experimentKey: Long): Decision {
+        return hackleAppCore.variationDetail(experimentKey, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -389,6 +384,39 @@ class HackleApp internal constructor(
 
     // Deprecated
     //<editor-fold desc="Deprecated function">
+    /**
+     * Decide the variation to expose to the user for experiment.
+     *
+     * @param experimentKey    the unique key of the experiment
+     * @param defaultVariation ignored. [Variation.CONTROL] is always used when the experiment cannot be decided
+     *
+     * @return the decided [Variation] for the user, or [Variation.CONTROL] if the experiment cannot be decided
+     */
+    @Deprecated(
+        "Use variation(experimentKey) without defaultVariation instead.",
+        ReplaceWith("variation(experimentKey)")
+    )
+    fun variation(experimentKey: Long, defaultVariation: Variation): Variation {
+        return variation(experimentKey)
+    }
+
+    /**
+     * Decide the variation to expose to the user for experiment and returns an object that
+     * describes the way the variation was decided.
+     *
+     * @param experimentKey    the unique key for the experiment
+     * @param defaultVariation ignored. [Variation.CONTROL] is always used when the experiment cannot be decided
+     *
+     * @return a [Decision] object
+     */
+    @Deprecated(
+        "Use variationDetail(experimentKey) without defaultVariation instead.",
+        ReplaceWith("variationDetail(experimentKey)")
+    )
+    fun variationDetail(experimentKey: Long, defaultVariation: Variation): Decision {
+        return variationDetail(experimentKey)
+    }
+
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))
     fun showUserExplorer(activity: Activity) {
         showUserExplorer()

@@ -47,7 +47,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `VariationInvocationHandler - variation 이름을 반환한다`() {
         // given
-        every { core.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.B, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationInvocationHandler(core)
@@ -64,31 +64,30 @@ class EvaluationInvocationHandlersTest {
     }
 
     @Test
-    fun `VariationInvocationHandler - defaultVariation이 없으면 A를 기본값으로 사용한다`() {
+    fun `VariationInvocationHandler - defaultVariation 파라미터는 무시된다`() {
         // given
-        every { core.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.A, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationInvocationHandler(core)
-        val params = mapOf<String, Any?>("experimentKey" to 1)
+        val params = mapOf<String, Any?>("experimentKey" to 1, "defaultVariation" to "D")
 
         // when
-        sut.invoke(request("variation", params))
+        val response = sut.invoke(request("variation", params))
 
         // then
         verify(exactly = 1) {
-            core.variationDetail(
-                1L,
-                withArg<Variation> { expectThat(it.name).isEqualTo("A") },
-                any<HackleAppContext>()
-            )
+            core.variationDetail(1L, any<HackleAppContext>())
+        }
+        expectThat(response) {
+            get { data }.isEqualTo("A")
         }
     }
 
     @Test
     fun `VariationInvocationHandler - user 파라미터는 무시된다`() {
         // given
-        every { core.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.B, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationInvocationHandler(core)
@@ -99,7 +98,7 @@ class EvaluationInvocationHandlersTest {
 
         // then
         verify(exactly = 1) {
-            core.variationDetail(any(), any<Variation>(), any<HackleAppContext>())
+            core.variationDetail(any(), any<HackleAppContext>())
         }
     }
 
@@ -116,7 +115,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `VariationDetailInvocationHandler - DecisionDto를 반환한다`() {
         // given
-        every { core.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.B, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationDetailInvocationHandler(core)

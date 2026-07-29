@@ -554,17 +554,16 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with variation`() {
-        every { app.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { app.variationDetail(any(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
-        val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
+        val parameters = mapOf("experimentKey" to 1)
         val jsonString = createJsonString("variation", parameters)
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<Variation> { assertThat(it.name, `is`("D")) },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
@@ -577,13 +576,12 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with variation - user 파라미터는 무시하고 현재 SDK 유저 기준으로 호출한다`() {
-        every { app.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { app.variationDetail(any(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
         val parameters = mapOf(
             "experimentKey" to 1,
-            "defaultVariation" to "D",
             "user" to "abcd1234"
         )
         val jsonString = createJsonString("variation", parameters)
@@ -591,7 +589,6 @@ class HackleInvocationTest {
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<Variation> { assertThat(it.name, `is`("D")) },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
@@ -616,17 +613,16 @@ class HackleInvocationTest {
 
     @Test
     fun `invoke with variation detail`() {
-        every { app.variationDetail(any(), any<Variation>(), any()) } returns Decision.of(
+        every { app.variationDetail(any(), any()) } returns Decision.of(
             Variation.B,
             DecisionReason.DEFAULT_RULE
         )
-        val parameters = mapOf("experimentKey" to 1, "defaultVariation" to "D")
+        val parameters = mapOf("experimentKey" to 1)
         val jsonString = createJsonString("variationDetail", parameters)
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
             app.variationDetail(
                 withArg { assertThat(it, `is`(1)) },
-                withArg<Variation> { assertThat(it.name, `is`("D")) },
                 withArg<HackleAppContext> { assertThat(it.browserProperties, `is`(defaultBrowserProperties)) }
             )
         }
