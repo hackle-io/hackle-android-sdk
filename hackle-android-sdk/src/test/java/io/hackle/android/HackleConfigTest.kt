@@ -42,6 +42,7 @@ class HackleConfigTest {
         expectThat(result.automaticAppLifecycleTracking).isEqualTo(true)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `HackleConfig builder should create config with custom values`() {
         // when
@@ -138,6 +139,7 @@ class HackleConfigTest {
         }
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `mode`() {
         configTests(HackleConfig::appMode to HackleAppMode.NATIVE)

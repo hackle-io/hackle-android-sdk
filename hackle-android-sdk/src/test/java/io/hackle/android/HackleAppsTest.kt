@@ -104,6 +104,7 @@ class HackleAppsTest {
         expectThat(result.config.appMode).isEqualTo(HackleAppMode.NATIVE)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `HackleApps create should return HackleApp instance with custom config`() {
         // given

@@ -107,6 +107,7 @@ class HackleAppTest {
 
     private lateinit var sut: HackleApp
 
+    @Suppress("DEPRECATION")
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
