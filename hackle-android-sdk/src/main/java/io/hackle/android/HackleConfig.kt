@@ -211,7 +211,7 @@ class HackleConfig private constructor(builder: Builder) {
          * @param evaluationMode the evaluation mode to set
          * @return this builder instance
          */
-        fun mode(evaluationMode: EvaluationMode) = apply {
+        fun evaluationMode(evaluationMode: EvaluationMode) = apply {
             this.evaluationMode = evaluationMode
         }
 

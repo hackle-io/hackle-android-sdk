@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import org.junit.After
+import io.hackle.sdk.common.EvaluationMode
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.HackleSessionTimeoutCondition
@@ -145,6 +146,17 @@ class HackleConfigTest {
             HackleConfig::sessionTracking to false
         ) {
             mode(HackleAppMode.WEB_VIEW_WRAPPER)
+        }
+    }
+
+    @Test
+    fun `evaluationMode`() {
+        configTests(HackleConfig::evaluationMode to EvaluationMode.LOCAL)
+        configTests(HackleConfig::evaluationMode to EvaluationMode.REMOTE) {
+            evaluationMode(EvaluationMode.REMOTE)
+        }
+        configTests(HackleConfig::evaluationMode to EvaluationMode.LOCAL) {
+            evaluationMode(EvaluationMode.LOCAL)
         }
     }
 
