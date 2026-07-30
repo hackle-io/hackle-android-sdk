@@ -211,7 +211,7 @@ class HackleConfig private constructor(builder: Builder) {
          * @param evaluationMode the evaluation mode to set
          * @return this builder instance
          */
-        fun mode(evaluationMode: EvaluationMode) = apply {
+        fun evaluationMode(evaluationMode: EvaluationMode) = apply {
             this.evaluationMode = evaluationMode
         }
 
@@ -221,6 +221,9 @@ class HackleConfig private constructor(builder: Builder) {
          * @param mode the application mode to set
          * @return this builder instance
          */
+        @Deprecated(
+            message = "App mode configuration is deprecated. WEB_VIEW_WRAPPER is no longer recommended, and NATIVE is the default."
+        )
         fun mode(mode: HackleAppMode) = apply {
             this.appMode = mode
         }

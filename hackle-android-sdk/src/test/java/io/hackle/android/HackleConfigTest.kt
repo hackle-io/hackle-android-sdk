@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import org.junit.After
+import io.hackle.sdk.common.EvaluationMode
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
 import io.hackle.sdk.common.HackleSessionTimeoutCondition
@@ -41,6 +42,7 @@ class HackleConfigTest {
         expectThat(result.automaticAppLifecycleTracking).isEqualTo(true)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `HackleConfig builder should create config with custom values`() {
         // when
@@ -137,6 +139,7 @@ class HackleConfigTest {
         }
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `mode`() {
         configTests(HackleConfig::appMode to HackleAppMode.NATIVE)
@@ -145,6 +148,17 @@ class HackleConfigTest {
             HackleConfig::sessionTracking to false
         ) {
             mode(HackleAppMode.WEB_VIEW_WRAPPER)
+        }
+    }
+
+    @Test
+    fun `evaluationMode`() {
+        configTests(HackleConfig::evaluationMode to EvaluationMode.LOCAL)
+        configTests(HackleConfig::evaluationMode to EvaluationMode.REMOTE) {
+            evaluationMode(EvaluationMode.REMOTE)
+        }
+        configTests(HackleConfig::evaluationMode to EvaluationMode.LOCAL) {
+            evaluationMode(EvaluationMode.LOCAL)
         }
     }
 

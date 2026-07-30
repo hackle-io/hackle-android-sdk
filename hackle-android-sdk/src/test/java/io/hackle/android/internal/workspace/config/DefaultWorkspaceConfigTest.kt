@@ -179,9 +179,14 @@ class DefaultWorkspaceConfigTest {
     }
 
     @Test
-    fun `toProperties - config_modified_at을 포함한다`() {
-        expectThat(workspace(modifiedAt = "42").toProperties()) isEqualTo mapOf<String, Any>("config_modified_at" to "42")
-        expectThat(workspace(modifiedAt = null).toProperties()) isEqualTo emptyMap()
+    fun `toProperties - evaluation_mode와 config_modified_at을 포함한다`() {
+        expectThat(workspace(modifiedAt = "42").toProperties()) isEqualTo mapOf<String, Any>(
+            "evaluation_mode" to "LOCAL",
+            "config_modified_at" to "42",
+        )
+        expectThat(workspace(modifiedAt = null).toProperties()) isEqualTo mapOf<String, Any>(
+            "evaluation_mode" to "LOCAL",
+        )
     }
 
     private fun experimentDto(

@@ -3,6 +3,7 @@ package io.hackle.android.internal.workspace.evaluation
 import io.hackle.android.internal.workspace.config.WorkspaceDto
 import io.hackle.android.internal.workspace.config.parseEnumOrNull
 import io.hackle.android.internal.workspace.evaluation.model.*
+import io.hackle.sdk.common.EvaluationMode
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.core.model.Entity
 import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
@@ -64,6 +65,7 @@ internal class DefaultWorkspaceEvaluation(
 
     override fun toProperties(): Map<String, Any> {
         return PropertiesBuilder()
+            .add("evaluation_mode", EvaluationMode.REMOTE.name)
             .add("config_modified_at", modifiedAt)
             .add("remote_evaluated_at", evaluatedAt)
             .add("remote_full_evaluated_at", fullEvaluatedAt)

@@ -3,6 +3,8 @@ package io.hackle.android.support
 import io.hackle.android.internal.workspace.config.*
 import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationContext
 import io.hackle.android.internal.workspace.evaluation.model.*
+import io.hackle.sdk.common.EvaluationMode
+import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.core.model.*
 import io.hackle.sdk.core.workspace.config.WorkspaceConfig
 import io.hackle.sdk.core.workspace.config.entity.ExperimentConfig
@@ -384,8 +386,10 @@ internal object Workspaces {
         }
 
         override fun toProperties(): Map<String, Any> {
-            val modifiedAt = metadata.modifiedAt ?: return emptyMap()
-            return mapOf("config_modified_at" to modifiedAt)
+            return PropertiesBuilder()
+                .add("evaluation_mode", EvaluationMode.LOCAL.name)
+                .add("config_modified_at", metadata.modifiedAt)
+                .build()
         }
     }
 
@@ -421,8 +425,11 @@ internal object Workspaces {
         }
 
         override fun toProperties(): Map<String, Any> {
-            val modifiedAt = metadata.modifiedAt ?: return emptyMap()
-            return mapOf("config_modified_at" to modifiedAt)
+            return PropertiesBuilder()
+                .add("evaluation_mode", EvaluationMode.REMOTE.name)
+                .add("config_modified_at", metadata.modifiedAt)
+                .add("remote_evaluated_at", metadata.evaluatedAt)
+                .build()
         }
     }
 }
