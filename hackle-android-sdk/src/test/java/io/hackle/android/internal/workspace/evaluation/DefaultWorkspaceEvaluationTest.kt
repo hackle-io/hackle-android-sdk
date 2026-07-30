@@ -277,6 +277,7 @@ class DefaultWorkspaceEvaluationTest {
 
         // when & then
         expectThat(DefaultWorkspaceEvaluation.from(dto, fullEvaluatedAt = 99).toProperties()) isEqualTo mapOf(
+            "evaluation_mode" to "REMOTE",
             "config_modified_at" to "42",
             "remote_evaluated_at" to 100L,
             "remote_full_evaluated_at" to 99L,
@@ -292,6 +293,7 @@ class DefaultWorkspaceEvaluationTest {
 
         // when & then
         expectThat(DefaultWorkspaceEvaluation.from(dto).toProperties()) isEqualTo mapOf(
+            "evaluation_mode" to "REMOTE",
             "config_modified_at" to "42",
             "remote_evaluated_at" to 100L,
         )

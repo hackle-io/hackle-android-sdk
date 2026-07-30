@@ -1,5 +1,6 @@
 package io.hackle.android.internal.workspace.config
 
+import io.hackle.sdk.common.EvaluationMode
 import io.hackle.sdk.common.PropertiesBuilder
 import io.hackle.sdk.core.model.Bucket
 import io.hackle.sdk.core.model.Container
@@ -69,6 +70,7 @@ internal class DefaultWorkspaceConfig(
 
     override fun toProperties(): Map<String, Any> {
         return PropertiesBuilder()
+            .add("evaluation_mode", EvaluationMode.LOCAL.name)
             .add("config_modified_at", modifiedAt)
             .build()
     }
