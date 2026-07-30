@@ -15,7 +15,7 @@ android {
     compileSdkVersion 34
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 34
         versionCode 1
         versionName version
@@ -52,7 +52,7 @@ android {
 def hasLocalSdk = getLocalProperty('hackle.java.sdk.path') != null
 
 dependencies {
-    def javaSdkVersion = "2.34.1"
+    def javaSdkVersion = "3.0.0-875e405-SNAPSHOT"
     
     // if hackle.java.sdk.path exist in local.properties, use local hackle-sdk-common and hackle-sdk-core
     if(hasLocalSdk)  {

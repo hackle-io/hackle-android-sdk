@@ -1,7 +1,7 @@
 package io.hackle.android.internal.mode.webview
 
 import io.hackle.android.internal.event.UserEventFilter
-import io.hackle.android.internal.event.UserEvents
+import io.hackle.android.support.UserEvents
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import org.junit.Test

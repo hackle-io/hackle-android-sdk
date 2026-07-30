@@ -1,0 +1,115 @@
+package io.hackle.android.internal.workspace.evaluation
+
+import io.hackle.android.internal.workspace.config.WorkspaceDto
+import io.hackle.android.internal.workspace.config.parseEnumOrNull
+import io.hackle.android.internal.workspace.evaluation.model.*
+import io.hackle.sdk.common.PropertiesBuilder
+import io.hackle.sdk.core.model.Entity
+import io.hackle.sdk.core.model.Experiment.Type.AB_TEST
+import io.hackle.sdk.core.model.Experiment.Type.FEATURE_FLAG
+import io.hackle.sdk.core.model.ServiceType
+import io.hackle.sdk.core.workspace.evaluation.WorkspaceEvaluation
+import io.hackle.sdk.core.workspace.evaluation.entity.ExperimentRemoteEvaluateResult
+import io.hackle.sdk.core.workspace.evaluation.entity.InAppMessageEligibilityRemoteEvaluateResult
+import io.hackle.sdk.core.workspace.evaluation.entity.RemoteConfigParameterRemoteEvaluateResult
+import io.hackle.sdk.core.workspace.evaluation.entity.RemoteEvaluateResult
+
+internal class DefaultWorkspaceEvaluation(
+    // Metadata
+    override val id: Long,
+    override val environmentId: Long,
+    override val evaluatedAt: Long,
+    override val modifiedAt: String?,
+    val fullEvaluatedAt: Long?,
+
+    // Entity
+    override val experiments: List<ExperimentRemoteEvaluateResult>,
+    override val featureFlags: List<ExperimentRemoteEvaluateResult>,
+    override val remoteConfigParameters: List<RemoteConfigParameterRemoteEvaluateResult>,
+    override val inAppMessages: List<InAppMessageEligibilityRemoteEvaluateResult>,
+) : WorkspaceEvaluation, WorkspaceEvaluation.Metadata {
+
+    override val metadata: WorkspaceEvaluation.Metadata get() = this
+
+    private val _experiments = experiments.associateBy { it.key }
+    private val _featureFlags = featureFlags.associateBy { it.key }
+    private val _remoteConfigParameters = remoteConfigParameters.associateBy { it.key }
+    private val _inAppMessage = inAppMessages.associateBy { it.key }
+
+    override fun getExperimentOrNull(experimentKey: Long): ExperimentRemoteEvaluateResult? {
+        return _experiments[experimentKey]
+    }
+
+    override fun getFeatureFlagOrNull(featureKey: Long): ExperimentRemoteEvaluateResult? {
+        return _featureFlags[featureKey]
+    }
+
+    override fun getRemoteConfigParameterOrNull(parameterKey: String): RemoteConfigParameterRemoteEvaluateResult? {
+        return _remoteConfigParameters[parameterKey]
+    }
+
+    override fun getInAppMessageOrNull(inAppMessageKey: Long): InAppMessageEligibilityRemoteEvaluateResult? {
+        return _inAppMessage[inAppMessageKey]
+    }
+
+    override fun result(entity: Entity): RemoteEvaluateResult? {
+        val entities: List<RemoteEvaluateResult> = when (entity.serviceType) {
+            ServiceType.AB_TEST -> experiments
+            ServiceType.FEATURE_FLAG -> featureFlags
+            ServiceType.REMOTE_CONFIG -> remoteConfigParameters
+            ServiceType.IN_APP_MESSAGE -> inAppMessages
+        }
+        return entities.find { it.id == entity.id }
+    }
+
+    override fun toProperties(): Map<String, Any> {
+        return PropertiesBuilder()
+            .add("config_modified_at", modifiedAt)
+            .add("remote_evaluated_at", evaluatedAt)
+            .add("remote_full_evaluated_at", fullEvaluatedAt)
+            .build()
+    }
+
+    companion object {
+        fun from(dto: WorkspaceEvaluationDto, fullEvaluatedAt: Long): DefaultWorkspaceEvaluation {
+            return create(dto.workspace, dto.metadata, dto.results, fullEvaluatedAt)
+        }
+
+        fun from(dto: EntityEvaluationDto): DefaultWorkspaceEvaluation {
+            return create(dto.workspace, dto.metadata, dto.results, null)
+        }
+
+        private fun create(
+            workspace: WorkspaceDto,
+            metadata: EvaluationMetadataDto,
+            results: List<EvaluateResultDto>,
+            fullEvaluatedAt: Long?
+        ): DefaultWorkspaceEvaluation {
+            val experiments = mutableListOf<ExperimentRemoteEvaluateResult>()
+            val featureFlags = mutableListOf<ExperimentRemoteEvaluateResult>()
+            val remoteConfigParameters = mutableListOf<RemoteConfigParameterRemoteEvaluateResult>()
+            val inAppMessages = mutableListOf<InAppMessageEligibilityRemoteEvaluateResult>()
+
+            for (result in results) {
+                val serviceType = parseEnumOrNull<ServiceType>(result.type) ?: continue
+                when (serviceType) {
+                    ServiceType.AB_TEST -> result.experiment?.toResultOrNull(AB_TEST)?.let(experiments::add)
+                    ServiceType.FEATURE_FLAG -> result.featureFlag?.toResultOrNull(FEATURE_FLAG)?.let(featureFlags::add)
+                    ServiceType.REMOTE_CONFIG -> result.remoteConfig?.toResultOrNull()?.let(remoteConfigParameters::add)
+                    ServiceType.IN_APP_MESSAGE -> result.inAppMessage?.toResultOrNull()?.let(inAppMessages::add)
+                }
+            }
+            return DefaultWorkspaceEvaluation(
+                id = workspace.id,
+                environmentId = workspace.environment.id,
+                evaluatedAt = metadata.evaluatedAt,
+                modifiedAt = metadata.config.modifiedAt,
+                fullEvaluatedAt = fullEvaluatedAt,
+                experiments = experiments.sortedBy { it.order },
+                featureFlags = featureFlags.sortedBy { it.order },
+                remoteConfigParameters = remoteConfigParameters,
+                inAppMessages = inAppMessages.sortedBy { it.order }
+            )
+        }
+    }
+}

@@ -5,12 +5,15 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Response
 import okhttp3.ResponseBody
 import java.net.HttpURLConnection.HTTP_NOT_MODIFIED
+import java.net.HttpURLConnection.HTTP_NO_CONTENT
 
-internal val Response.isNotModified: Boolean
-    get() {
-        val networkResponse = networkResponse ?: return false
-        return networkResponse.code == HTTP_NOT_MODIFIED
-    }
+internal fun Response.isStatusCode(code: Int): Boolean {
+    val networkResponse = networkResponse ?: return false
+    return networkResponse.code == code
+}
+
+internal val Response.isNoContent: Boolean get() = isStatusCode(HTTP_NO_CONTENT)
+internal val Response.isNotModified: Boolean get() = isStatusCode(HTTP_NOT_MODIFIED)
 
 internal inline fun <reified T> ResponseBody.parse(): T = string().parseJson()
 

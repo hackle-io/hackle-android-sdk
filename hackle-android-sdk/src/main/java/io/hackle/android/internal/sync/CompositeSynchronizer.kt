@@ -1,11 +1,11 @@
 package io.hackle.android.internal.sync
 
+import io.hackle.android.internal.task.Futures
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
 
-internal class CompositeSynchronizer(private val executor: ExecutorService) : Synchronizer {
+internal class CompositeSynchronizer : Synchronizer {
 
     private val synchronizers = CopyOnWriteArrayList<Synchronizer>()
 
@@ -14,31 +14,9 @@ internal class CompositeSynchronizer(private val executor: ExecutorService) : Sy
         log.debug { "Synchronizer added [${synchronizer::class.java.simpleName}]" }
     }
 
-    override fun sync() {
-        val jobs = mutableListOf<SyncJob>()
-        for (synchronizer in synchronizers) {
-            try {
-                val future = executor.submit { synchronizer.sync() }
-                jobs.add(SyncJob(synchronizer, future))
-            } catch (e: Exception) {
-                log.error { "Failed to sync $synchronizer: $e" }
-            }
-        }
-        jobs.forEach { it.await() }
-    }
-
-
-    class SyncJob(
-        private val synchronizer: Synchronizer,
-        private val future: Future<*>
-    ) {
-        fun await() {
-            try {
-                future.get()
-            } catch (e: Exception) {
-                log.error { "Failed to sync ${synchronizer}: $e" }
-            }
-        }
+    override fun sync(): CompletableFuture<Void> {
+        val futures = synchronizers.map { it.safeSync() }
+        return Futures.allOf(futures)
     }
 
     override fun toString(): String {

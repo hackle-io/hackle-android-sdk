@@ -24,8 +24,8 @@ import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
 internal class DefaultEventProcessor(
+    private val coreExecutor: Executor,
     private val eventPublisher: UserEventPublisher,
-    private val eventExecutor: Executor,
     private val eventRepository: EventRepository,
     private val eventRepositoryMaxSize: Int,
     private val eventFlushScheduler: Scheduler,
@@ -61,7 +61,7 @@ internal class DefaultEventProcessor(
             // NOTE: screen decorator는 task에 들어가기 전에 추가해야 한다.
             //  task에 들어간 후 처리되기 전에 screen이 바뀔 수 있기 때문
             val decoratedEvent = screenUserEventDecorator.decorate(event)
-            eventExecutor.execute(AddEventTask(decoratedEvent))
+            coreExecutor.execute(AddEventTask(decoratedEvent))
         } catch (e: Exception) {
             log.error { "Failed to process event: $e" }
         }
@@ -69,7 +69,7 @@ internal class DefaultEventProcessor(
 
     override fun flush() {
         try {
-            eventExecutor.execute(FlushTask())
+            coreExecutor.execute(FlushTask())
         } catch (e: Exception) {
             log.error { "Failed to submit FlushTask: $e" }
         }

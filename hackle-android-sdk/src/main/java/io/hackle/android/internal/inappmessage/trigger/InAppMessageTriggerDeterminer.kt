@@ -1,44 +1,40 @@
 package io.hackle.android.internal.inappmessage.trigger
 
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateProcessor
-import io.hackle.android.internal.inappmessage.evaluation.InAppMessageEvaluateType
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluation
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityRequest
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.InAppMessageEligibilityEvaluation
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.workspace.Workspace
-import io.hackle.sdk.core.workspace.WorkspaceFetcher
 
-internal class InAppMessageTriggerDeterminer(
-    private val workspaceFetcher: WorkspaceFetcher,
-    private val eventMatcher: InAppMessageEventMatcher,
-    private val evaluateProcessor: InAppMessageEvaluateProcessor,
-) {
-    fun determine(event: UserEvent): InAppMessageTrigger? {
+internal interface InAppMessageTriggerDeterminer {
+    fun determine(event: UserEvent): InAppMessageTrigger?
+}
+
+internal abstract class AbstractInAppMessageTriggerDeterminer<WORKSPACE : Workspace, MESSAGE : InAppMessage> :
+    InAppMessageTriggerDeterminer {
+    protected abstract val eventMatcher: InAppMessageEventMatcher
+
+    protected abstract fun workspace(user: HackleUser): WORKSPACE?
+    protected abstract fun evaluate(
+        workspace: WORKSPACE,
+        message: MESSAGE,
+        event: UserEvent,
+    ): InAppMessageEligibilityEvaluation
+
+    final override fun determine(event: UserEvent): InAppMessageTrigger? {
         val trackEvent = event as? UserEvent.Track ?: return null
-        val workspace = workspaceFetcher.fetch() ?: return null
-
-        for (inAppMessage in workspace.inAppMessages) {
-            val matches = eventMatcher.matches(workspace, inAppMessage, trackEvent)
+        val workspace = workspace(event.user) ?: return null
+        for (message in workspace.inAppMessages) {
+            val matches = eventMatcher.matches(workspace, message, trackEvent)
             if (!matches) {
                 continue
             }
-
-            val evaluation = evaluate(workspace, inAppMessage, event)
-            if (evaluation.isEligible) {
-                return InAppMessageTrigger(inAppMessage, evaluation.reason, trackEvent)
+            @Suppress("UNCHECKED_CAST")
+            val evaluation = evaluate(workspace, message as MESSAGE, event)
+            if (evaluation.result.isEligible) {
+                return InAppMessageTrigger(message, evaluation.result.reason, trackEvent)
             }
         }
-
         return null
-    }
-
-    private fun evaluate(
-        workspace: Workspace,
-        inAppMessage: InAppMessage,
-        event: UserEvent.Track,
-    ): InAppMessageEligibilityEvaluation {
-        val request = InAppMessageEligibilityRequest(workspace, event.user, inAppMessage, event.timestamp)
-        return evaluateProcessor.process(InAppMessageEvaluateType.TRIGGER, request)
     }
 }

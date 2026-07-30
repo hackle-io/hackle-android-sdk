@@ -2,7 +2,6 @@ package io.hackle.android.internal.mode.webview
 
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.core.event.UserEvent
-import io.hackle.sdk.core.model.EventType
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import org.junit.Assert.assertEquals
@@ -25,7 +24,7 @@ class WebViewWrapperUserEventDecoratorTest {
             insertId = "",
             timestamp = 0L,
             user = user,
-            eventType = EventType.Custom(1, eventKey),
+            internalProperties = emptyMap(),
             event = Event.builder(eventKey).build()
         )
 

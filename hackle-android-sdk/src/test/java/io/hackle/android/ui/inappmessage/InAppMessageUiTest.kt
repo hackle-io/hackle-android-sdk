@@ -59,6 +59,7 @@ class InAppMessageUiTest {
         mockkObject(TaskExecutors)
         mockkStatic("io.hackle.android.ui.inappmessage.InAppMessageExtensionsKt")
         every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
+        every { TaskExecutors.main() } returns java.util.concurrent.Executor { it.run() }
         activity = mockk {
             every { orientation } returns InAppMessage.Orientation.VERTICAL
         }

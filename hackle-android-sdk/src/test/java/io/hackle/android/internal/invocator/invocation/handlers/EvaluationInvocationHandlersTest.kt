@@ -4,8 +4,8 @@ import com.google.gson.GsonBuilder
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
+import io.hackle.android.support.assertThrows
 import io.hackle.sdk.common.ParameterConfig
-import io.hackle.sdk.common.User
 import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
@@ -14,7 +14,6 @@ import io.hackle.sdk.core.model.ValueType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.hackle.android.support.assertThrows
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -48,7 +47,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `VariationInvocationHandler - variation 이름을 반환한다`() {
         // given
-        every { core.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.B, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationInvocationHandler(core)
@@ -65,32 +64,30 @@ class EvaluationInvocationHandlersTest {
     }
 
     @Test
-    fun `VariationInvocationHandler - defaultVariation이 없으면 A를 기본값으로 사용한다`() {
+    fun `VariationInvocationHandler - defaultVariation 파라미터는 무시된다`() {
         // given
-        every { core.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.A, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationInvocationHandler(core)
-        val params = mapOf<String, Any?>("experimentKey" to 1)
+        val params = mapOf<String, Any?>("experimentKey" to 1, "defaultVariation" to "D")
 
         // when
-        sut.invoke(request("variation", params))
+        val response = sut.invoke(request("variation", params))
 
         // then
         verify(exactly = 1) {
-            core.variationDetail(
-                1L,
-                null,
-                withArg<Variation> { expectThat(it.name).isEqualTo("A") },
-                any<HackleAppContext>()
-            )
+            core.variationDetail(1L, any<HackleAppContext>())
+        }
+        expectThat(response) {
+            get { data }.isEqualTo("A")
         }
     }
 
     @Test
-    fun `VariationInvocationHandler - user 문자열을 User로 변환한다`() {
+    fun `VariationInvocationHandler - user 파라미터는 무시된다`() {
         // given
-        every { core.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.B, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationInvocationHandler(core)
@@ -101,12 +98,7 @@ class EvaluationInvocationHandlersTest {
 
         // then
         verify(exactly = 1) {
-            core.variationDetail(
-                any(),
-                withArg<User> { expectThat(it).isEqualTo(User.of("user-123")) },
-                any<Variation>(),
-                any<HackleAppContext>()
-            )
+            core.variationDetail(any(), any<HackleAppContext>())
         }
     }
 
@@ -123,7 +115,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `VariationDetailInvocationHandler - DecisionDto를 반환한다`() {
         // given
-        every { core.variationDetail(any(), any(), any<Variation>(), any()) } returns Decision.of(
+        every { core.variationDetail(any(), any()) } returns Decision.of(
             Variation.B, DecisionReason.DEFAULT_RULE
         )
         val sut = VariationDetailInvocationHandler(core)
@@ -147,7 +139,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `IsFeatureOnInvocationHandler - isOn 값을 반환한다`() {
         // given
-        every { core.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+        every { core.featureFlagDetail(any(), any()) } returns FeatureFlagDecision.on(
             DecisionReason.DEFAULT_RULE, ParameterConfig.empty()
         )
         val sut = IsFeatureOnInvocationHandler(core)
@@ -166,7 +158,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `IsFeatureOnInvocationHandler - feature off이면 false를 반환한다`() {
         // given
-        every { core.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.off(
+        every { core.featureFlagDetail(any(), any()) } returns FeatureFlagDecision.off(
             DecisionReason.DEFAULT_RULE, ParameterConfig.empty()
         )
         val sut = IsFeatureOnInvocationHandler(core)
@@ -180,9 +172,9 @@ class EvaluationInvocationHandlersTest {
     }
 
     @Test
-    fun `IsFeatureOnInvocationHandler - user 문자열을 User로 변환한다`() {
+    fun `IsFeatureOnInvocationHandler - user 파라미터는 무시된다`() {
         // given
-        every { core.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+        every { core.featureFlagDetail(any(), any()) } returns FeatureFlagDecision.on(
             DecisionReason.DEFAULT_RULE, ParameterConfig.empty()
         )
         val sut = IsFeatureOnInvocationHandler(core)
@@ -193,11 +185,7 @@ class EvaluationInvocationHandlersTest {
 
         // then
         verify(exactly = 1) {
-            core.featureFlagDetail(
-                any(),
-                withArg<User> { expectThat(it).isEqualTo(User.of("user-456")) },
-                any<HackleAppContext>()
-            )
+            core.featureFlagDetail(any(), any<HackleAppContext>())
         }
     }
 
@@ -214,7 +202,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `FeatureFlagDetailInvocationHandler - FeatureFlagDecisionDto를 반환한다`() {
         // given
-        every { core.featureFlagDetail(any(), any(), any()) } returns FeatureFlagDecision.on(
+        every { core.featureFlagDetail(any(), any()) } returns FeatureFlagDecision.on(
             DecisionReason.DEFAULT_RULE, ParameterConfig.empty()
         )
         val sut = FeatureFlagDetailInvocationHandler(core)
@@ -238,7 +226,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `RemoteConfigInvocationHandler - string 타입의 값을 반환한다`() {
         // given
-        every { core.remoteConfig(any(), any(), any(), any(), any()).value } returns "hello"
+        every { core.remoteConfig(any(), any(), any(), any()).value } returns "hello"
         val sut = RemoteConfigInvocationHandler(core)
         val params = mapOf<String, Any?>("key" to "config_key", "valueType" to "string", "defaultValue" to "default")
 
@@ -250,13 +238,13 @@ class EvaluationInvocationHandlersTest {
             get { isSuccess }.isTrue()
             get { data }.isEqualTo("hello")
         }
-        verify(exactly = 1) { core.remoteConfig("config_key", ValueType.STRING, "default", null, any()) }
+        verify(exactly = 1) { core.remoteConfig("config_key", ValueType.STRING, "default", any()) }
     }
 
     @Test
     fun `RemoteConfigInvocationHandler - number 타입의 값을 반환한다`() {
         // given
-        every { core.remoteConfig(any(), any(), any(), any(), any()).value } returns 42.0
+        every { core.remoteConfig(any(), any(), any(), any()).value } returns 42.0
         val sut = RemoteConfigInvocationHandler(core)
         val params = mapOf<String, Any?>("key" to "num_key", "valueType" to "number", "defaultValue" to 0.0)
 
@@ -273,7 +261,7 @@ class EvaluationInvocationHandlersTest {
     @Test
     fun `RemoteConfigInvocationHandler - boolean 타입의 값을 반환한다`() {
         // given
-        every { core.remoteConfig(any(), any(), any(), any(), any()).value } returns true
+        every { core.remoteConfig(any(), any(), any(), any()).value } returns true
         val sut = RemoteConfigInvocationHandler(core)
         val params = mapOf<String, Any?>("key" to "bool_key", "valueType" to "boolean", "defaultValue" to false)
 
@@ -288,9 +276,9 @@ class EvaluationInvocationHandlersTest {
     }
 
     @Test
-    fun `RemoteConfigInvocationHandler - user 문자열을 userId로 변환한다`() {
+    fun `RemoteConfigInvocationHandler - user 파라미터는 무시된다`() {
         // given
-        every { core.remoteConfig(any(), any(), any(), any(), any()).value } returns "value"
+        every { core.remoteConfig(any(), any(), any(), any()).value } returns "value"
         val sut = RemoteConfigInvocationHandler(core)
         val params = mapOf<String, Any?>(
             "key" to "k", "valueType" to "string", "defaultValue" to "d", "user" to "user-789"
@@ -301,11 +289,7 @@ class EvaluationInvocationHandlersTest {
 
         // then
         verify(exactly = 1) {
-            core.remoteConfig(
-                any(), any(), any(),
-                withArg { expectThat(it.userId).isEqualTo("user-789") },
-                any()
-            )
+            core.remoteConfig("k", ValueType.STRING, "d", any())
         }
     }
 

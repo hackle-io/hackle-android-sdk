@@ -18,7 +18,7 @@ internal class ScreenEventTracker(
             .property(PREVIOUS_SCREEN_NAME_PROPERTY_KEY, previousScreen?.name)
             .property(PREVIOUS_SCREEN_CLASS_PROPERTY_KEY, previousScreen?.className)
             .build()
-        val hackleUser = userManager.toHackleUser(user)
+        val hackleUser = userManager.hackleUser(user)
         core.track(event, hackleUser, timestamp)
     }
 
