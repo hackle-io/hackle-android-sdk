@@ -4,9 +4,8 @@ import com.google.gson.GsonBuilder
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.User
 import io.hackle.android.support.assertThrows
+import io.hackle.sdk.common.Event
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
@@ -54,7 +53,6 @@ class EventInvocationHandlersTest {
         verify(exactly = 1) {
             core.track(
                 withArg<Event> { expectThat(it).isEqualTo(Event.of("purchase")) },
-                null,
                 any<HackleAppContext>()
             )
         }
@@ -86,14 +84,13 @@ class EventInvocationHandlersTest {
                         get { properties["item"] }.isEqualTo("shirt")
                     }
                 },
-                null,
                 any<HackleAppContext>()
             )
         }
     }
 
     @Test
-    fun `TrackInvocationHandler - user 문자열과 함께 이벤트를 전송한다`() {
+    fun `TrackInvocationHandler - user 파라미터는 무시된다`() {
         // given
         val sut = TrackInvocationHandler(core)
         val params = mapOf<String, Any?>("event" to "click", "user" to "user-abc")
@@ -103,11 +100,7 @@ class EventInvocationHandlersTest {
 
         // then
         verify(exactly = 1) {
-            core.track(
-                any<Event>(),
-                withArg<User> { expectThat(it).isEqualTo(User.of("user-abc")) },
-                any<HackleAppContext>()
-            )
+            core.track(any<Event>(), any<HackleAppContext>())
         }
     }
 
@@ -124,7 +117,6 @@ class EventInvocationHandlersTest {
         verify(exactly = 1) {
             core.track(
                 any<Event>(),
-                any(),
                 withArg<HackleAppContext> {
                     expectThat(it.browserProperties["url"]).isEqualTo("https://hackle.io")
                 }

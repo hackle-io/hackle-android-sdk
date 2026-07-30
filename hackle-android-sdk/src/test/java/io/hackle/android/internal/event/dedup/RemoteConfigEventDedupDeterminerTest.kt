@@ -1,10 +1,10 @@
 package io.hackle.android.internal.event.dedup
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.event.UserEvents
+import io.hackle.android.support.RemoteConfigs
+import io.hackle.android.support.UserEvents
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
-import io.hackle.sdk.core.model.RemoteConfigParameter
 import io.hackle.sdk.core.model.ValueType
 import io.hackle.sdk.core.user.HackleUser
 import io.mockk.mockk
@@ -40,20 +40,17 @@ class RemoteConfigEventDedupDeterminerTest {
             insertId = "insertId",
             timestamp = 1,
             user = HackleUser.builder().build(),
-            parameter = RemoteConfigParameter(
+            properties = emptyMap(),
+            internalProperties = emptyMap(),
+            parameter = RemoteConfigs.config(
                 id = 42,
                 key = "rc",
                 type = ValueType.STRING,
                 identifierType = "id",
-                targetRules = emptyList(),
-                defaultValue = RemoteConfigParameter.Value(
-                    id = 32,
-                    rawValue = "default"
-                )
+                defaultValue = RemoteConfigs.value(id = 32, rawValue = "default")
             ),
             valueId = 320,
-            decisionReason = DecisionReason.DEFAULT_RULE,
-            properties = emptyMap()
+            decisionReason = DecisionReason.DEFAULT_RULE
         )
         val key = sut.cacheKey(event)
         expectThat(key).isEqualTo("42-320-DEFAULT_RULE")

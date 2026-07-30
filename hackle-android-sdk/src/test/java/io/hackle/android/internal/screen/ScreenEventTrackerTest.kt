@@ -33,7 +33,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when previousScreen is null then track screen event`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val screen = Screen("test_screen_name", "test_screen_class")
 
         // when
@@ -52,7 +52,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when currentScreen and previousScreen are different then track screen event`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val screen = Screen("test_screen_name", "test_screen_class")
         val prevScreen = Screen("prev_screen_name", "prev_screen_class")
 
@@ -79,7 +79,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when screen has properties then include properties in event`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val properties = mapOf(
             "key1" to "value1",
             "key2" to 123,
@@ -106,7 +106,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when screen has properties and previous screen then include all properties in event`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val properties = mapOf("screen_key" to "screen_value")
         val screen = Screen.builder("test_screen_name", "test_screen_class")
             .properties(properties)
@@ -132,7 +132,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when screen has null properties then event has no additional properties`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val screen = Screen.builder("test_screen_name", "test_screen_class")
             .properties(null)
             .build()
@@ -153,7 +153,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when screen has empty properties then event has empty properties`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val screen = Screen.builder("test_screen_name", "test_screen_class")
             .properties(emptyMap())
             .build()
@@ -175,7 +175,7 @@ class ScreenEventTrackerTest {
     @Test
     fun `onScreenStarted - when screen properties contain page_name and page_class then they are overridden by screen name and className`() {
         // given
-        every { userManager.toHackleUser(any()) } returns mockk()
+        every { userManager.hackleUser(any(), any()) } returns mockk()
         val properties = mapOf(
             "\$page_name" to "wrong_name_from_properties",
             "\$page_class" to "wrong_class_from_properties",

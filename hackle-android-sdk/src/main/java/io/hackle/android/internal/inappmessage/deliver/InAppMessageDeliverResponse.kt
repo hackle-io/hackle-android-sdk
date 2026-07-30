@@ -10,7 +10,7 @@ internal data class InAppMessageDeliverResponse(
 ) {
 
     enum class Code {
-        PRESENT,
+        DELIVER,
         ACTIVITY_INACTIVE,
         WORKSPACE_NOT_FOUND,
         IN_APP_MESSAGE_NOT_FOUND,

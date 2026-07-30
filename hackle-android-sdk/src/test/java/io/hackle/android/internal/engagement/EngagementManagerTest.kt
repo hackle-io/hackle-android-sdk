@@ -3,7 +3,7 @@ package io.hackle.android.internal.engagement
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.sdk.common.Screen
 import io.hackle.android.internal.screen.ScreenManager
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
@@ -15,7 +15,7 @@ import strikt.assertions.isEqualTo
 
 class EngagementManagerTest {
 
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
     private lateinit var screenManager: ScreenManager
     private lateinit var listener: EngagementListener
 

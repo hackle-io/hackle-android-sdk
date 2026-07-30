@@ -101,7 +101,7 @@ class HackleAppsTest {
         // then
         expectThat(result).isA<HackleApp>()
         expectThat(result.sdk.key).isEqualTo(testSdkKey)
-        expectThat(result.config.mode).isEqualTo(HackleAppMode.NATIVE)
+        expectThat(result.config.appMode).isEqualTo(HackleAppMode.NATIVE)
     }
 
     @Test
@@ -118,7 +118,7 @@ class HackleAppsTest {
         // then
         expectThat(result).isA<HackleApp>()
         expectThat(result.sdk.key).isEqualTo(testSdkKey)
-        expectThat(result.config.mode).isEqualTo(HackleAppMode.WEB_VIEW_WRAPPER)
+        expectThat(result.config.appMode).isEqualTo(HackleAppMode.WEB_VIEW_WRAPPER)
     }
 
     @Test

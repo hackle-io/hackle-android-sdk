@@ -3,7 +3,7 @@ package io.hackle.android.internal.inappmessage.storage
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
 import io.hackle.android.support.InAppMessages
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpression
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageImpression
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -25,13 +25,13 @@ internal class AndroidInAppMessageImpressionStorageTest {
 
     @Test
     fun `get and set`() {
-        val inAppMessage = InAppMessages.create(id = 42)
+        val inAppMessage = InAppMessages.config(id = 42)
         val impression = InAppMessageImpression(identifiers = mapOf("a" to "b"), timestamp = 4242)
 
         expectThat(sut.get(inAppMessage)).isEmpty()
 
         sut.set(inAppMessage, listOf(impression))
-        expectThat( repository.getString("42")).isNotNull()
+        expectThat(repository.getString("42")).isNotNull()
 
         expectThat(sut.get(inAppMessage)).hasSize(1)
         expectThat(sut.get(inAppMessage).first()) isEqualTo impression

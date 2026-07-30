@@ -20,7 +20,7 @@ import java.util.concurrent.Executor
 
 internal class MonitoringMetricRegistry(
     monitoringBaseUrl: String,
-    private val eventExecutor: Executor,
+    private val coreExecutor: Executor,
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
     clock: Clock = Clock.SYSTEM,
@@ -41,7 +41,7 @@ internal class MonitoringMetricRegistry(
     }
 
     override fun onBackground(timestamp: Long) {
-        eventExecutor.execute { flush() }
+        coreExecutor.execute { flush() }
     }
 
     private fun flush() {

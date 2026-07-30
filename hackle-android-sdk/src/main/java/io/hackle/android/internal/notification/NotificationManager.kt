@@ -15,7 +15,7 @@ import kotlin.math.ceil
 
 internal class NotificationManager(
     private val core: HackleCore,
-    private val executor: Executor,
+    private val coreExecutor: Executor,
     private val workspaceFetcher: WorkspaceFetcher,
     private val userManager: UserManager,
     private val repository: NotificationHistoryRepository,
@@ -28,15 +28,16 @@ internal class NotificationManager(
             return
         }
 
-        executor.execute(FlushTask())
+        coreExecutor.execute(FlushTask())
     }
 
     override fun onNotificationDataReceived(data: NotificationData, timestamp: Long) {
         try {
-            val workspace = workspaceFetcher.fetch()
+            val workspace = workspaceFetcher.metadata()
             if (workspace == null ||
                 workspace.id != data.workspaceId ||
-                workspace.environmentId != data.environmentId) {
+                workspace.environmentId != data.environmentId
+            ) {
                 if (workspace == null) {
                     log.debug { "Workspace data is empty." }
                 } else {
@@ -53,7 +54,7 @@ internal class NotificationManager(
     }
 
     private fun saveInLocal(data: NotificationData, timestamp: Long) {
-        executor.execute {
+        coreExecutor.execute {
             try {
                 repository.save(data, timestamp)
                 log.debug { "Saved notification data: ${data.pushMessageId}[${timestamp}]" }
@@ -64,7 +65,7 @@ internal class NotificationManager(
     }
 
     private fun track(event: Event, user: User, timestamp: Long) {
-        val hackleUser = userManager.toHackleUser(user)
+        val hackleUser = userManager.hackleUser(user)
         core.track(event, hackleUser, timestamp)
         log.debug { "${event.key} event queued." }
     }
@@ -75,7 +76,7 @@ internal class NotificationManager(
 
         override fun run() {
             try {
-                val workspace = workspaceFetcher.fetch()
+                val workspace = workspaceFetcher.metadata()
                 if (workspace == null) {
                     log.debug { "Workspace data is empty." }
                     return

@@ -1,6 +1,6 @@
 package io.hackle.android.internal.inappmessage.trigger
 
-import io.hackle.android.internal.event.UserEvents
+import io.hackle.android.support.UserEvents
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs

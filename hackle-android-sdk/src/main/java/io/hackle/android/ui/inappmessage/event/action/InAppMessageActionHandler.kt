@@ -5,7 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.decision.DecisionReason
-import io.hackle.sdk.core.evaluation.target.InAppMessageHiddenStorage
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageHiddenStorage
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage

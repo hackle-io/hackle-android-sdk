@@ -4,12 +4,8 @@ import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleMana
 import io.hackle.android.internal.application.lifecycle.ApplicationState
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
-import io.hackle.android.internal.user.UserManager
-import io.hackle.android.mock.MockDevice
-import io.hackle.android.mock.MockPackageInfo
-import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionPersistCondition
+import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionTimeoutCondition
 import io.hackle.sdk.common.User
 import io.mockk.every
@@ -35,13 +31,9 @@ class SessionManagerTest {
             .timeoutCondition(HackleSessionTimeoutCondition.builder().millis(sessionTimeoutMillis).onForeground(true).onApplicationStateChange(true).build())
             .build()
         return SessionManager(
-            userManager = UserManager(
-                MockDevice("test_id", emptyMap()),
-                MockPackageInfo(PackageVersionInfo("1.0.0", 1L)),
-                MapKeyValueRepository(),
-                mockk(),
-                mockk()
-            ),
+            userManager = mockk(relaxed = true) {
+                every { currentUser } returns User.builder().deviceId("test_id").build()
+            },
             keyValueRepository = repository,
             applicationLifecycleManager = applicationLifecycleManager,
             sessionPolicy = policy,
