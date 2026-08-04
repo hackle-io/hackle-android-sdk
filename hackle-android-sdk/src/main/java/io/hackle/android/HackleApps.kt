@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.application.ApplicationEventTracker
@@ -24,6 +25,7 @@ import io.hackle.android.internal.event.dedup.DedupUserEventFilter
 import io.hackle.android.internal.event.dedup.DelegatingUserEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.ExposureEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
+import io.hackle.android.internal.http.LoggingInterceptor
 import io.hackle.android.internal.http.SdkHeaderInterceptor
 import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.InAppMessageManager
@@ -147,7 +149,7 @@ internal object HackleApps {
 
         // Http
 
-        val httpClient = createHttpClient(context, sdk)
+        val httpClient = createHttpClient(context, sdk, config)
 
         // Platform, Application, Lifecycle
 
@@ -734,13 +736,17 @@ internal object HackleApps {
         Metrics.addRegistry(monitoringMetricRegistry)
     }
 
-    private fun createHttpClient(context: Context, sdk: Sdk): OkHttpClient {
+    private fun createHttpClient(context: Context, sdk: Sdk, config: HackleConfig): OkHttpClient {
 
         val builder = OkHttpClient.Builder()
             .connectTimeout(1, TimeUnit.SECONDS)
             .readTimeout(5, TimeUnit.SECONDS)
             .writeTimeout(5, TimeUnit.SECONDS)
             .addInterceptor(SdkHeaderInterceptor(sdk.key, sdk.name, sdk.version))
+
+        if (config.logLevel <= Log.DEBUG) {
+            builder.addInterceptor(LoggingInterceptor())
+        }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
 
