@@ -16,6 +16,7 @@ import io.hackle.android.ui.explorer.activity.experiment.model.isManualOverridab
 import io.hackle.android.ui.explorer.base.ViewHolder
 import io.hackle.android.ui.explorer.view.listener.OnSpinnerItemSelectedListener
 import io.hackle.android.ui.explorer.view.listener.setOnSpinnerItemSelectedListener
+import io.hackle.sdk.core.workspace.config.entity.ExperimentConfig
 
 internal class AbTestViewHolder private constructor(
     private val context: Context,
@@ -53,6 +54,9 @@ internal class AbTestViewHolder private constructor(
             position: Int,
             id: Long,
         ) {
+            if (item.experiment !is ExperimentConfig) {
+                return
+            }
             val variationKey = item.variationKeys[position]
             val variation = item.experiment.getVariationOrNull(variationKey) ?: return
             overrideSetListener.onOverrideSet(item.experiment, variation)
@@ -61,6 +65,9 @@ internal class AbTestViewHolder private constructor(
 
     inner class ResetClickListener(private val item: AbTestItem) : OnClickListener {
         override fun onClick(v: View?) {
+            if (item.experiment !is ExperimentConfig) {
+                return
+            }
             val variationKey = item.variationKeys[spinner.selectedItemPosition]
             val variation = item.experiment.getVariationOrNull(variationKey) ?: return
             overrideResetListener.onOverrideReset(item.experiment, variation)
@@ -81,14 +88,27 @@ internal class AbTestViewHolder private constructor(
     }
 }
 
-private val AbTestItem.keyLabel get() = "[${experiment.key}] ${experiment.name ?: ""}"
-private val AbTestItem.descLabel
-    get() = listOf(
-        "V${experiment.version}",
-        experiment.status.name,
-        experiment.variations.joinToString("/") { it.key },
-        experiment.identifierType
-    ).joinToString(" | ")
-private val AbTestItem.variationKeys get() = experiment.variations.map { it.key }
+private val AbTestItem.keyLabel: String get() = "[${experiment.key}] ${(experiment as? ExperimentConfig)?.name ?: ""}"
+private val AbTestItem.descLabel: String
+    get() {
+        return when (experiment) {
+            is ExperimentConfig -> listOf(
+                "V${experiment.version}",
+                experiment.status.name,
+                experiment.variations.joinToString("/") { it.key },
+                experiment.identifierType
+            ).joinToString(" | ")
+
+            else -> ""
+        }
+    }
+private val AbTestItem.variationKeys: List<String>
+    get() {
+        return when (experiment) {
+            is ExperimentConfig -> experiment.variations.map { it.key }
+            else -> emptyList()
+        }
+    }
+
 private val AbTestItem.decisionVariationKey get() = decision.variation.name
 private val AbTestItem.isManualOverridden get() = overriddenVariation != null

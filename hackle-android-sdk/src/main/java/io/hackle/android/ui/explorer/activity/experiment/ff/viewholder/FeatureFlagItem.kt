@@ -3,6 +3,7 @@ package io.hackle.android.ui.explorer.activity.experiment.ff.viewholder
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.model.Variation
+import io.hackle.sdk.core.workspace.config.entity.ExperimentConfig
 
 internal class FeatureFlagItem(
     val experiment: Experiment,
@@ -22,7 +23,7 @@ internal class FeatureFlagItem(
                 .map { (experiment, decision) ->
                     val overriddenVariationId = overrides[experiment.id]
                     val overriddenVariation =
-                        overriddenVariationId?.let { experiment.getVariationOrNull(it) }
+                        overriddenVariationId?.let { (experiment as? ExperimentConfig)?.getVariationOrNull(it) }
                     FeatureFlagItem(experiment, decision, overriddenVariation)
                 }
                 .sortedDescending()

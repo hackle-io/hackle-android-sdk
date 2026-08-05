@@ -24,13 +24,13 @@ class AndroidInAppMessageHiddenStorageTest {
 
     @Test
     fun `데이터가 없는 경우 false`() {
-        val inAppMessage = InAppMessages.create()
+        val inAppMessage = InAppMessages.config()
         expectThat(sut.exist(inAppMessage, 0))
     }
 
     @Test
     fun `데이터가 있지만 만료시간이 넘은 경우 false`() {
-        val inAppMessage = InAppMessages.create()
+        val inAppMessage = InAppMessages.config()
         sut.put(inAppMessage, 42)
         expectThat(keyValueRepository.getLong("1", -1)) isEqualTo 42
 
@@ -41,7 +41,7 @@ class AndroidInAppMessageHiddenStorageTest {
 
     @Test
     fun `데이터가 있고 만료시간 이내인 경우 true`() {
-        val inAppMessage = InAppMessages.create()
+        val inAppMessage = InAppMessages.config()
         sut.put(inAppMessage, 42)
         expectThat(keyValueRepository.getLong("1", -1)) isEqualTo 42
 

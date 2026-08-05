@@ -10,6 +10,7 @@ import java.util.concurrent.*
 internal object TaskExecutors {
 
     private val MAIN_HANDLER = Handler(Looper.getMainLooper())
+    private val MAIN_EXECUTOR = HandlerExecutor(MAIN_HANDLER)
     private val BACKGROUND_WORKER = ThreadPoolExecutor(
         2, Int.MAX_VALUE,
         60, TimeUnit.SECONDS,
@@ -24,7 +25,11 @@ internal object TaskExecutors {
         return HandlerExecutor(handler)
     }
 
-    fun default(): ExecutorService {
+    fun main(): Executor {
+        return MAIN_EXECUTOR
+    }
+
+    fun background(): ExecutorService {
         return BACKGROUND_WORKER
     }
 
@@ -40,3 +45,4 @@ internal object TaskExecutors {
         BACKGROUND_WORKER.execute(block)
     }
 }
+

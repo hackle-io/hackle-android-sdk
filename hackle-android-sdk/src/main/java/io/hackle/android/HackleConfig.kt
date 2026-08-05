@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.util.Log
 import io.hackle.android.internal.log.AndroidLogger
+import io.hackle.sdk.common.EvaluationMode
 import io.hackle.sdk.common.HackleSessionPolicy
 import io.hackle.sdk.common.HackleSessionTimeoutCondition
 import java.util.Collections
@@ -20,17 +21,17 @@ class HackleConfig private constructor(builder: Builder) {
      * The SDK API URI.
      */
     val sdkUri: String = builder.sdkUri
-    
+
     /**
      * The event API URI.
      */
     val eventUri: String = builder.eventUri
-    
+
     /**
      * The API URL.
      */
     val apiUrl: String = builder.apiUri
-    
+
     /**
      * The monitoring API URI.
      */
@@ -42,9 +43,14 @@ class HackleConfig private constructor(builder: Builder) {
     val enableMonitoring: Boolean = builder.enableMonitoring
 
     /**
+     * The evaluation mode.
+     */
+    val evaluationMode: EvaluationMode = builder.evaluationMode
+
+    /**
      * The application mode.
      */
-    val mode: HackleAppMode = builder.mode
+    val appMode: HackleAppMode = builder.appMode
 
     /**
      * Whether automatic screen tracking is enabled.
@@ -59,7 +65,7 @@ class HackleConfig private constructor(builder: Builder) {
     /**
      * Whether session tracking is enabled.
      */
-    val sessionTracking: Boolean = (mode == HackleAppMode.NATIVE && builder.sessionTracking)
+    val sessionTracking: Boolean = (appMode == HackleAppMode.NATIVE && builder.sessionTracking)
 
     /**
      * The session policy for controlling session behavior, including timeout, identifier-change handling,
@@ -86,7 +92,7 @@ class HackleConfig private constructor(builder: Builder) {
      * The event flush interval in milliseconds.
      */
     val eventFlushIntervalMillis: Int = builder.eventFlushIntervalMillis
-    
+
     /**
      * The event flush threshold.
      */
@@ -119,7 +125,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal var monitoringUri: String = DEFAULT_MONITORING_URI
         internal var enableMonitoring: Boolean = true
 
-        internal var mode: HackleAppMode = HackleAppMode.NATIVE
+        internal var evaluationMode: EvaluationMode = EvaluationMode.LOCAL
+        internal var appMode: HackleAppMode = HackleAppMode.NATIVE
 
         internal var automaticScreenTracking: Boolean = true
         internal var automaticAppLifecycleTracking: Boolean = true
@@ -188,7 +195,7 @@ class HackleConfig private constructor(builder: Builder) {
             this.monitoringUri = monitoringUri
         }
 
-        /** 
+        /**
          * Enables or disables monitoring feature.
          *
          * @param enableMonitoring true to enable monitoring, false to disable
@@ -199,13 +206,26 @@ class HackleConfig private constructor(builder: Builder) {
         }
 
         /**
+         * Sets the evaluation mode.
+         *
+         * @param evaluationMode the evaluation mode to set
+         * @return this builder instance
+         */
+        fun evaluationMode(evaluationMode: EvaluationMode) = apply {
+            this.evaluationMode = evaluationMode
+        }
+
+        /**
          * Sets the application mode.
          *
          * @param mode the application mode to set
          * @return this builder instance
          */
+        @Deprecated(
+            message = "App mode configuration is deprecated. WEB_VIEW_WRAPPER is no longer recommended, and NATIVE is the default."
+        )
         fun mode(mode: HackleAppMode) = apply {
-            this.mode = mode
+            this.appMode = mode
         }
 
         /**

@@ -11,11 +11,11 @@ import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.invocator.web.HackleJavascriptInterface
 import io.hackle.android.internal.model.Sdk
 import io.hackle.android.internal.remoteconfig.HackleRemoteConfigImpl
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
 import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.notification.NotificationHandler
 import io.hackle.sdk.common.*
-import io.hackle.sdk.common.Variation.Companion.CONTROL
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
@@ -120,21 +120,6 @@ class HackleApp internal constructor(
     }
 
     /**
-     * Sets a single user property.
-     *
-     * @param key the key of the property
-     * @param value the value of the property
-     * @param callback an optional callback to be executed when the operation is complete
-     */
-    @JvmOverloads
-    fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
-        val operations = PropertyOperations.builder()
-            .set(key, value)
-            .build()
-        hackleAppCore.updateUserProperties(operations, HackleAppContext.DEFAULT, callback)
-    }
-
-    /**
      * Updates user properties with a set of operations.
      *
      * @param operations a set of [PropertyOperations] to apply to user properties
@@ -142,7 +127,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun updateUserProperties(operations: PropertyOperations, callback: Runnable? = null) {
-        hackleAppCore.updateUserProperties(operations, HackleAppContext.DEFAULT, callback)
+        hackleAppCore.updateUserProperties(operations, callback)
     }
 
     /**
@@ -182,7 +167,7 @@ class HackleApp internal constructor(
      */
     @JvmOverloads
     fun resetUser(callback: Runnable? = null) {
-        hackleAppCore.resetUser(HackleAppContext.DEFAULT, callback)
+        hackleAppCore.resetUser(callback)
     }
 
     /**
@@ -209,28 +194,24 @@ class HackleApp internal constructor(
     /**
      * Decide the variation to expose to the user for experiment.
      *
-     * @param experimentKey    the unique key of the experiment
-     * @param defaultVariation the default variation of the experiment. MUST NOT be null
+     * @param experimentKey the unique key of the experiment
      *
-     * @return the decided [Variation] for the user, or [defaultVariation]
+     * @return the decided [Variation] for the user, or [Variation.CONTROL] if the experiment cannot be decided
      */
-    @JvmOverloads
-    fun variation(experimentKey: Long, defaultVariation: Variation = CONTROL): Variation {
-        return variationDetail(experimentKey, defaultVariation).variation
+    fun variation(experimentKey: Long): Variation {
+        return variationDetail(experimentKey).variation
     }
 
     /**
      * Decide the variation to expose to the user for experiment and returns an object that
      * describes the way the variation was decided.
      *
-     * @param experimentKey    the unique key for the experiment
-     * @param defaultVariation the default variation of the experiment. MUST NOT be null
+     * @param experimentKey the unique key for the experiment
      *
      * @return a [Decision] object
      */
-    @JvmOverloads
-    fun variationDetail(experimentKey: Long, defaultVariation: Variation = CONTROL): Decision {
-        return hackleAppCore.variationDetail(experimentKey, null, defaultVariation, HackleAppContext.DEFAULT)
+    fun variationDetail(experimentKey: Long): Decision {
+        return hackleAppCore.variationDetail(experimentKey, HackleAppContext.DEFAULT)
     }
 
     /**
@@ -239,7 +220,7 @@ class HackleApp internal constructor(
      * @return a map where key is experimentKey and value is [Decision] result
      */
     fun allVariationDetails(): Map<Long, Decision> {
-        return hackleAppCore.allVariationDetails(null, HackleAppContext.DEFAULT)
+        return hackleAppCore.allVariationDetails(HackleAppContext.DEFAULT)
     }
 
     /**
@@ -264,7 +245,7 @@ class HackleApp internal constructor(
      * @return a [FeatureFlagDecision] object
      */
     fun featureFlagDetail(featureKey: Long): FeatureFlagDecision {
-        return hackleAppCore.featureFlagDetail(featureKey, null, HackleAppContext.DEFAULT)
+        return hackleAppCore.featureFlagDetail(featureKey, HackleAppContext.DEFAULT)
     }
 
 
@@ -283,7 +264,7 @@ class HackleApp internal constructor(
      * @param event  the [Event] that occurred. MUST NOT be null
      */
     fun track(event: Event) {
-        hackleAppCore.track(event, null, HackleAppContext.DEFAULT)
+        hackleAppCore.track(event, HackleAppContext.DEFAULT)
     }
 
 
@@ -293,7 +274,7 @@ class HackleApp internal constructor(
      * @return a [HackleRemoteConfig] instance
      */
     fun remoteConfig(): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(hackleAppCore, null)
+        return HackleRemoteConfigImpl(hackleAppCore)
     }
 
     /**
@@ -388,99 +369,37 @@ class HackleApp internal constructor(
 
     // Deprecated
     //<editor-fold desc="Deprecated function">
-    @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
-    @JvmOverloads
-    fun variation(
-        experimentKey: Long,
-        userId: String,
-        defaultVariation: Variation = CONTROL,
-    ): Variation {
-        return hackleAppCore.variationDetail(
-            experimentKey,
-            User.of(userId),
-            defaultVariation,
-            HackleAppContext.DEFAULT
-        ).variation
+    /**
+     * Decide the variation to expose to the user for experiment.
+     *
+     * @param experimentKey    the unique key of the experiment
+     * @param defaultVariation ignored. [Variation.CONTROL] is always used when the experiment cannot be decided
+     *
+     * @return the decided [Variation] for the user, or [Variation.CONTROL] if the experiment cannot be decided
+     */
+    @Deprecated(
+        "Use variation(experimentKey) without defaultVariation instead.",
+        ReplaceWith("variation(experimentKey)")
+    )
+    fun variation(experimentKey: Long, defaultVariation: Variation): Variation {
+        return variation(experimentKey)
     }
 
-    @Deprecated("Use variation(experimentKey) with setUser(user) instead.")
-    @JvmOverloads
-    fun variation(
-        experimentKey: Long,
-        user: User,
-        defaultVariation: Variation = CONTROL,
-    ): Variation {
-        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.DEFAULT).variation
-    }
-
-    @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
-    @JvmOverloads
-    fun variationDetail(
-        experimentKey: Long,
-        userId: String,
-        defaultVariation: Variation = CONTROL,
-    ): Decision {
-        return hackleAppCore.variationDetail(experimentKey, User.of(userId), defaultVariation, HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use variationDetail(experimentKey) with setUser(user) instead.")
-    @JvmOverloads
-    fun variationDetail(
-        experimentKey: Long,
-        user: User,
-        defaultVariation: Variation = CONTROL,
-    ): Decision {
-        return hackleAppCore.variationDetail(experimentKey, user, defaultVariation, HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use allVariationDetails() with setUser(user) instead.")
-    fun allVariationDetails(user: User): Map<Long, Decision> {
-        return hackleAppCore.allVariationDetails(user, HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
-    fun featureFlagDetail(featureKey: Long, userId: String): FeatureFlagDecision {
-        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use featureFlagDetail(featureKey) with setUser(user) instead.")
-    fun featureFlagDetail(featureKey: Long, user: User): FeatureFlagDecision {
-        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
-    fun isFeatureOn(featureKey: Long, userId: String): Boolean {
-        return hackleAppCore.featureFlagDetail(featureKey, User.of(userId), HackleAppContext.DEFAULT).isOn
-    }
-
-    @Deprecated("Use isFeatureOn(featureKey) with setUser(user) instead.")
-    fun isFeatureOn(featureKey: Long, user: User): Boolean {
-        return hackleAppCore.featureFlagDetail(featureKey, user, HackleAppContext.DEFAULT).isOn
-    }
-
-    @Deprecated("Use track(eventKey) with setUser(user) instead.")
-    fun track(eventKey: String, userId: String) {
-        hackleAppCore.track(Event.of(eventKey), User.of(userId), HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use track(eventKey) with setUser(user) instead.")
-    fun track(event: Event, userId: String) {
-        hackleAppCore.track(event, User.of(userId), HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use track(eventKey) with setUser(user) instead.")
-    fun track(eventKey: String, user: User) {
-        hackleAppCore.track(Event.of(eventKey), user, HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use track(eventKey) with setUser(user) instead.")
-    fun track(event: Event, user: User) {
-        hackleAppCore.track(event, user, HackleAppContext.DEFAULT)
-    }
-
-    @Deprecated("Use remoteConfig() with setUser(user) instead.")
-    fun remoteConfig(user: User): HackleRemoteConfig {
-        return HackleRemoteConfigImpl(hackleAppCore, user)
+    /**
+     * Decide the variation to expose to the user for experiment and returns an object that
+     * describes the way the variation was decided.
+     *
+     * @param experimentKey    the unique key for the experiment
+     * @param defaultVariation ignored. [Variation.CONTROL] is always used when the experiment cannot be decided
+     *
+     * @return a [Decision] object
+     */
+    @Deprecated(
+        "Use variationDetail(experimentKey) without defaultVariation instead.",
+        ReplaceWith("variationDetail(experimentKey)")
+    )
+    fun variationDetail(experimentKey: Long, defaultVariation: Variation): Decision {
+        return variationDetail(experimentKey)
     }
 
     @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))
@@ -498,6 +417,28 @@ class HackleApp internal constructor(
         log.error {
             "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
         }
+    }
+
+    /**
+     * Sets a single user property.
+     *
+     * @param key the key of the property
+     * @param value the value of the property
+     * @param callback an optional callback to be executed when the operation is complete
+     */
+    @Deprecated(
+        "Use updateUserProperties(operations) instead.",
+        ReplaceWith(
+            "updateUserProperties(PropertyOperations.builder().set(key, value).build(), callback)",
+            "io.hackle.sdk.common.PropertyOperations"
+        )
+    )
+    @JvmOverloads
+    fun setUserProperty(key: String, value: Any?, callback: Runnable? = null) {
+        val operations = PropertyOperations.builder()
+            .set(key, value)
+            .build()
+        hackleAppCore.updateUserProperties(operations, callback)
     }
     //</editor-fold>
 
@@ -609,16 +550,20 @@ class HackleApp internal constructor(
             config: HackleConfig,
             onReady: Runnable,
         ): HackleApp {
-            return synchronized(LOCK) {
-                INSTANCE?.also { onReady.run() }
-                    ?: HackleApps
-                        .create(context.applicationContext, sdkKey, config)
-                        .initialize(user, onReady)
-                        .also {
-                            ApplicationLifecycleManager.instance.publishStateIfNeeded()
-                            ActivityLifecycleManager.instance.publishStateIfNeeded()
-                        }
-                        .also { INSTANCE = it }
+            synchronized(LOCK) {
+                val instance = INSTANCE
+                if (instance != null) {
+                    TaskExecutors.runOnBackground { onReady.run() }
+                    return instance
+                }
+                return HackleApps
+                    .create(context.applicationContext, sdkKey, config)
+                    .initialize(user, onReady)
+                    .also {
+                        ApplicationLifecycleManager.instance.publishStateIfNeeded()
+                        ActivityLifecycleManager.instance.publishStateIfNeeded()
+                    }
+                    .also { INSTANCE = it }
             }
         }
     }

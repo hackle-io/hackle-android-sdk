@@ -4,19 +4,18 @@ import com.google.gson.GsonBuilder
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
+import io.hackle.android.support.assertThrows
 import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import io.hackle.android.support.assertThrows
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
-import strikt.assertions.isNull
 import strikt.assertions.isTrue
 
 class UserInvocationHandlersTest {
@@ -113,7 +112,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.resetUser(any<HackleAppContext>(), null) }
+        verify(exactly = 1) { core.resetUser(null) }
     }
 
     // UserIdentifiers
@@ -181,7 +180,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), any<HackleAppContext>(), null) }
+        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), null) }
     }
 
     @Test
@@ -208,7 +207,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), any<HackleAppContext>(), null) }
+        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), null) }
     }
 
     @Test
@@ -327,24 +326,4 @@ class UserInvocationHandlersTest {
         }
     }
 
-    // browserProperties 전파 검증
-
-    @Test
-    fun `ResetUserInvocationHandler - browserProperties가 HackleAppContext에 전달된다`() {
-        // given
-        val sut = ResetUserInvocationHandler(core)
-
-        // when
-        sut.invoke(request("resetUser"))
-
-        // then
-        verify(exactly = 1) {
-            core.resetUser(
-                withArg<HackleAppContext> {
-                    expectThat(it.browserProperties["url"]).isEqualTo("https://hackle.io")
-                },
-                null
-            )
-        }
-    }
 }

@@ -2,9 +2,10 @@ package io.hackle.android.internal.inappmessage.present.record
 
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
 import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
+import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse.Code
 import io.hackle.sdk.common.decision.DecisionReason
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpression
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpressionStorage
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageImpression
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageImpressionStorage
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class InAppMessageRecorder(
@@ -12,6 +13,10 @@ internal class InAppMessageRecorder(
 ) {
 
     fun record(request: InAppMessagePresentRequest, response: InAppMessagePresentResponse) {
+        if (response.code != Code.PRESENT) {
+            return
+        }
+
         if (request.reason == DecisionReason.OVERRIDDEN) {
             return
         }

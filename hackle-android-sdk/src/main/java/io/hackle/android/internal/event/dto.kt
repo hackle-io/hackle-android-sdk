@@ -27,6 +27,7 @@ internal fun List<EventEntity>.toBody(): String {
 internal data class ExposureEventDto(
     val insertId: String,
     val timestamp: Long,
+    val internalProperties: Map<String, Any>,
 
     val userId: String?,
     val identifiers: Map<String, String>,
@@ -46,6 +47,7 @@ internal data class ExposureEventDto(
 internal data class TrackEventDto(
     val insertId: String,
     val timestamp: Long,
+    val internalProperties: Map<String, Any>,
 
     val userId: String?,
     val identifiers: Map<String, String>,
@@ -61,6 +63,7 @@ internal data class TrackEventDto(
 internal data class RemoteConfigEventDto(
     val insertId: String,
     val timestamp: Long,
+    val internalProperties: Map<String, Any>,
 
     val userId: String?,
     val identifiers: Map<String, String>,
@@ -78,6 +81,7 @@ internal data class RemoteConfigEventDto(
 internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
     insertId = insertId,
     timestamp = timestamp,
+    internalProperties = internalProperties,
 
     userId = user.identifiers[IdentifierType.ID.key],
     identifiers = user.identifiers,
@@ -97,14 +101,15 @@ internal fun UserEvent.Exposure.toDto() = ExposureEventDto(
 internal fun UserEvent.Track.toDto() = TrackEventDto(
     insertId = insertId,
     timestamp = timestamp,
+    internalProperties = internalProperties,
 
     userId = user.identifiers[IdentifierType.ID.key],
     identifiers = user.identifiers,
     userProperties = user.properties,
     hackleProperties = user.hackleProperties,
 
-    eventTypeId = eventType.id,
-    eventTypeKey = eventType.key,
+    eventTypeId = 0,
+    eventTypeKey = event.key,
     value = event.value,
     properties = event.properties
 )
@@ -112,6 +117,7 @@ internal fun UserEvent.Track.toDto() = TrackEventDto(
 internal fun UserEvent.RemoteConfig.toDto() = RemoteConfigEventDto(
     insertId = insertId,
     timestamp = timestamp,
+    internalProperties = internalProperties,
 
     userId = user.identifiers[IdentifierType.ID.key],
     identifiers = user.identifiers,

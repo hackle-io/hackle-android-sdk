@@ -9,6 +9,7 @@ import io.hackle.android.internal.user.UserListener
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.user.identifierEquals
 import io.hackle.sdk.common.HackleSessionPolicy
+import io.hackle.sdk.common.PropertyOperations
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 
@@ -134,6 +135,10 @@ internal class SessionManager(
 
     override fun onUserUpdated(oldUser: User, newUser: User, timestamp: Long) {
         startNewSessionIfNeeded(SessionContext.of(oldUser, newUser, timestamp))
+    }
+
+    override fun onPropertyOperations(user: User, operations: PropertyOperations, timestamp: Long) {
+        // noop
     }
 
     companion object {

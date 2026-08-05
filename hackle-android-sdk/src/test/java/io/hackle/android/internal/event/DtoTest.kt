@@ -1,10 +1,13 @@
 package io.hackle.android.internal.event
 
 import io.hackle.android.internal.database.workspace.EventEntity
+import io.hackle.android.support.Experiments
+import io.hackle.android.support.RemoteConfigs
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.event.UserEvent
-import io.hackle.sdk.core.model.*
+import io.hackle.sdk.core.model.Experiment
+import io.hackle.sdk.core.model.ValueType
 import io.hackle.sdk.core.user.HackleUser
 import io.hackle.sdk.core.user.IdentifierType
 import org.junit.Test
@@ -118,23 +121,13 @@ internal class DtoTest {
             .hackleProperty("hackleProp", "hackleValue")
             .build()
 
-        val experiment = Experiment(
+        val experiment = Experiments.config(
             id = 123L,
             key = 456L,
             name = "testExperiment",
             type = Experiment.Type.AB_TEST,
-            identifierType = "\$id",
             status = Experiment.Status.RUNNING,
-            version = 2,
-            executionVersion = 1,
-            variations = emptyList(),
-            userOverrides = emptyMap(),
-            segmentOverrides = emptyList(),
-            targetAudiences = emptyList(),
-            targetRules = emptyList(),
-            defaultRule = Action.Variation(0L),
-            winnerVariationId = null,
-            containerId = null
+            version = 2
         )
 
         val exposureEvent = UserEvent.Exposure(
@@ -145,13 +138,15 @@ internal class DtoTest {
             variationId = 789L,
             variationKey = "variationA",
             decisionReason = DecisionReason.TRAFFIC_ALLOCATED,
-            properties = mapOf("eventProp" to "eventValue")
+            properties = mapOf("eventProp" to "eventValue"),
+            internalProperties = mapOf("config_modified_at" to "42")
         )
 
         val dto = exposureEvent.toDto()
 
         expectThat(dto.insertId).isEqualTo("insert123")
         expectThat(dto.timestamp).isEqualTo(1000L)
+        expectThat(dto.internalProperties).isEqualTo(mapOf<String, Any>("config_modified_at" to "42"))
         expectThat(dto.userId).isEqualTo("testUserId")
         expectThat(dto.identifiers["\$id"]).isEqualTo("testUserId")
         expectThat(dto.identifiers["\$deviceId"]).isEqualTo("deviceId")
@@ -173,23 +168,10 @@ internal class DtoTest {
             .identifier(IdentifierType.DEVICE, "deviceId")
             .build()
 
-        val experiment = Experiment(
+        val experiment = Experiments.config(
             id = 123L,
             key = 456L,
-            name = "testExperiment",
-            type = Experiment.Type.AB_TEST,
-            identifierType = "\$id",
-            status = Experiment.Status.RUNNING,
-            version = 1,
-            executionVersion = 1,
-            variations = emptyList(),
-            userOverrides = emptyMap(),
-            segmentOverrides = emptyList(),
-            targetAudiences = emptyList(),
-            targetRules = emptyList(),
-            defaultRule = Action.Variation(0L),
-            winnerVariationId = null,
-            containerId = null
+            name = "testExperiment"
         )
 
         val exposureEvent = UserEvent.Exposure(
@@ -200,7 +182,8 @@ internal class DtoTest {
             variationId = null,
             variationKey = "control",
             decisionReason = DecisionReason.NOT_IN_MUTUAL_EXCLUSION_EXPERIMENT,
-            properties = emptyMap()
+            properties = emptyMap(),
+            internalProperties = emptyMap()
         )
 
         val dto = exposureEvent.toDto()
@@ -217,7 +200,6 @@ internal class DtoTest {
             .hackleProperty("hackleProp", "hackleValue")
             .build()
 
-        val eventType = EventType.Custom(1L, "purchase")
         val event = Event.builder("purchase")
             .value(99.99)
             .property("productId", "product123")
@@ -227,7 +209,7 @@ internal class DtoTest {
             insertId = "track123",
             timestamp = 2000L,
             user = user,
-            eventType = eventType,
+            internalProperties = mapOf("config_modified_at" to "42"),
             event = event
         )
 
@@ -235,11 +217,12 @@ internal class DtoTest {
 
         expectThat(dto.insertId).isEqualTo("track123")
         expectThat(dto.timestamp).isEqualTo(2000L)
+        expectThat(dto.internalProperties).isEqualTo(mapOf<String, Any>("config_modified_at" to "42"))
         expectThat(dto.userId).isEqualTo("testUserId")
         expectThat(dto.identifiers["\$id"]).isEqualTo("testUserId")
         expectThat(dto.userProperties["userProp"]).isEqualTo("userValue")
         expectThat(dto.hackleProperties["hackleProp"]).isEqualTo("hackleValue")
-        expectThat(dto.eventTypeId).isEqualTo(1L)
+        expectThat(dto.eventTypeId).isEqualTo(0L)
         expectThat(dto.eventTypeKey).isEqualTo("purchase")
         expectThat(dto.value).isEqualTo(99.99)
         expectThat(dto.properties["productId"]).isEqualTo("product123")
@@ -251,14 +234,13 @@ internal class DtoTest {
             .identifier(IdentifierType.ID, "testUserId")
             .build()
 
-        val eventType = EventType.Custom(1L, "click")
         val event = Event.builder("click").build()
 
         val trackEvent = UserEvent.Track(
             insertId = "track123",
             timestamp = 2000L,
             user = user,
-            eventType = eventType,
+            internalProperties = emptyMap(),
             event = event
         )
 
@@ -275,13 +257,12 @@ internal class DtoTest {
             .hackleProperty("hackleProp", "hackleValue")
             .build()
 
-        val parameter = RemoteConfigParameter(
+        val parameter = RemoteConfigs.config(
             id = 456L,
             key = "testParam",
             type = ValueType.STRING,
             identifierType = "\$id",
-            targetRules = emptyList(),
-            defaultValue = RemoteConfigParameter.Value(1L, "default")
+            defaultValue = RemoteConfigs.value(1L, "default")
         )
 
         val remoteConfigEvent = UserEvent.RemoteConfig(
@@ -291,13 +272,15 @@ internal class DtoTest {
             parameter = parameter,
             valueId = 789L,
             decisionReason = DecisionReason.DEFAULT_RULE,
-            properties = mapOf("configProp" to "configValue")
+            properties = mapOf("configProp" to "configValue"),
+            internalProperties = mapOf("config_modified_at" to "42")
         )
 
         val dto = remoteConfigEvent.toDto()
 
         expectThat(dto.insertId).isEqualTo("config123")
         expectThat(dto.timestamp).isEqualTo(3000L)
+        expectThat(dto.internalProperties).isEqualTo(mapOf<String, Any>("config_modified_at" to "42"))
         expectThat(dto.userId).isEqualTo("testUserId")
         expectThat(dto.identifiers["\$id"]).isEqualTo("testUserId")
         expectThat(dto.userProperties["userProp"]).isEqualTo("userValue")
@@ -316,13 +299,12 @@ internal class DtoTest {
             .identifier(IdentifierType.ID, "testUserId")
             .build()
 
-        val parameter = RemoteConfigParameter(
+        val parameter = RemoteConfigs.config(
             id = 456L,
             key = "testParam",
             type = ValueType.BOOLEAN,
             identifierType = "\$id",
-            targetRules = emptyList(),
-            defaultValue = RemoteConfigParameter.Value(1L, false)
+            defaultValue = RemoteConfigs.value(1L, false)
         )
 
         val remoteConfigEvent = UserEvent.RemoteConfig(
@@ -332,7 +314,8 @@ internal class DtoTest {
             parameter = parameter,
             valueId = null,
             decisionReason = DecisionReason.EXCEPTION,
-            properties = emptyMap()
+            properties = emptyMap(),
+            internalProperties = emptyMap()
         )
 
         val dto = remoteConfigEvent.toDto()

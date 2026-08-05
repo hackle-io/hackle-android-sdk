@@ -5,9 +5,11 @@ import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.DESTROYED
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
 import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
+import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse.Code
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresenter
-import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
+import io.hackle.android.internal.task.Futures
 import io.hackle.android.ui.core.ImageLoader
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleProcessor
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
@@ -16,6 +18,7 @@ import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.internal.time.Clock
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -55,30 +58,42 @@ internal class InAppMessageUi(
         return if (view.id == id) view else null
     }
 
-    override fun present(context: InAppMessagePresentationContext) {
-        runOnUiThread {
-            if (!opening.compareAndSet(false, true)) return@runOnUiThread
-            try {
-                presentNow(context)
-            } finally {
-                opening.set(false)
-            }
+    override fun present(context: InAppMessagePresentationContext): CompletableFuture<InAppMessagePresentResponse> {
+        return Futures.ui { doPresent(context) }
+    }
+
+    private fun doPresent(context: InAppMessagePresentationContext): InAppMessagePresentResponse {
+        if (!opening.compareAndSet(false, true)) {
+            return InAppMessagePresentResponse.of(Code.IN_PROGRESS, context)
+        }
+        try {
+            return presentNow(context)
+        } finally {
+            opening.set(false)
         }
     }
 
-    private fun presentNow(context: InAppMessagePresentationContext) {
-        val activity = activityProvider.currentActivity ?: return
-        if (currentMessageController != null) return
-        if (!isSupportedOrientation(activity, context)) return
+    private fun presentNow(context: InAppMessagePresentationContext): InAppMessagePresentResponse {
+        val activity = activityProvider.currentActivity
+            ?: return InAppMessagePresentResponse.of(Code.ACTIVITY_NOT_FOUND, context)
+        if (currentMessageController != null) {
+            return InAppMessagePresentResponse.of(Code.ALREADY_PRESENTED, context)
+        }
+        if (!isSupportedOrientation(activity, context)) {
+            return InAppMessagePresentResponse.of(Code.UNSUPPORTED_ORIENTATION, context)
+        }
 
         var messageController: InAppMessageController? = null
         try {
-            messageController = messageControllerFactory.create(context, this, activity) ?: return
+            messageController = messageControllerFactory.create(context, this, activity)
+                ?: return InAppMessagePresentResponse.of(Code.PRESENT, context) // 미노출 AB인 경우에도 present 한 것으로 간주함
             _currentMessageController.set(messageController)
             messageController.open(activity)
+            return InAppMessagePresentResponse.of(Code.PRESENT, context)
         } catch (e: Throwable) {
             log.error { "Failed to present InAppMessage: $e" }
             messageController?.close()
+            return InAppMessagePresentResponse.of(Code.EXCEPTION, context)
         }
     }
 
