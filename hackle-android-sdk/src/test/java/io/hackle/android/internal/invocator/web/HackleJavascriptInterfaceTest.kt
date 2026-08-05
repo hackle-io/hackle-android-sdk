@@ -14,6 +14,7 @@ import strikt.assertions.isEqualTo
 
 class HackleJavascriptInterfaceTest {
 
+    @Suppress("DEPRECATION")
     private fun app(
         sdk: Sdk = Sdk("SDK_KEY", "name", "version"),
         mode: HackleAppMode,

@@ -5,8 +5,8 @@ import io.hackle.android.internal.database.repository.AndroidKeyValueRepository
 import io.hackle.android.internal.database.repository.KeyValueRepository
 import io.hackle.android.internal.utils.json.parseJson
 import io.hackle.android.internal.utils.json.toJson
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpression
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpressionStorage
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageImpression
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageImpressionStorage
 import io.hackle.sdk.core.model.InAppMessage
 
 

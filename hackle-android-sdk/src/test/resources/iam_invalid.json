@@ -9,7 +9,6 @@
   "experiments": [],
   "featureFlags": [],
   "buckets": [],
-  "events": [],
   "segments": [],
   "containers": [],
   "parameterConfigurations": [],
@@ -18,6 +17,7 @@
     {
       "id": 5,
       "key": 5,
+      "order": 1,
       "timeUnit": "IMMEDIATE",
       "startEpochTime": null,
       "endEpochTime": null,
@@ -59,12 +59,16 @@
       },
       "messageContext": {
         "defaultLang": "ko",
-        "platformTypes": ["ANDROID"],
+        "platformTypes": [
+          "ANDROID"
+        ],
         "exposure": {
           "type": "DEFAULT",
           "key": null
         },
-        "orientations": ["VERTICAL"],
+        "orientations": [
+          "VERTICAL"
+        ],
         "messages": [
           {
             "lang": "ko",
@@ -107,6 +111,7 @@
     {
       "id": 8,
       "key": 8,
+      "order": 2,
       "timeUnit": "IMMEDIATE",
       "startEpochTime": null,
       "endEpochTime": null,
@@ -137,12 +142,16 @@
       },
       "messageContext": {
         "defaultLang": "ko",
-        "platformTypes": ["ANDROID"],
+        "platformTypes": [
+          "ANDROID"
+        ],
         "exposure": {
           "type": "DEFAULT",
           "key": null
         },
-        "orientations": ["VERTICAL"],
+        "orientations": [
+          "VERTICAL"
+        ],
         "messages": [
           {
             "lang": "ko",

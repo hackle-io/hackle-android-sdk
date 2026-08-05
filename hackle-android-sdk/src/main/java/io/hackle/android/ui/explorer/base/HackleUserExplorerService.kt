@@ -1,13 +1,12 @@
 package io.hackle.android.ui.explorer.base
 
-import io.hackle.android.internal.invocator.model.toDto
-import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.devtools.DevToolsApi
 import io.hackle.android.internal.devtools.OverrideRequestDto
+import io.hackle.android.internal.invocator.model.toDto
 import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.task.TaskExecutors.runOnBackground
 import io.hackle.android.internal.user.UserManager
-import io.hackle.android.ui.explorer.storage.HackleUserManualOverrideStorage
+import io.hackle.android.ui.explorer.storage.AndroidExperimentManualOverrideStorage
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.HackleCore
@@ -22,14 +21,14 @@ import io.hackle.sdk.core.user.HackleUser
 internal class HackleUserExplorerService(
     private val core: HackleCore,
     private val userManager: UserManager,
-    private val abTestOverrideStorage: HackleUserManualOverrideStorage,
-    private val featureFlagOverrideStorage: HackleUserManualOverrideStorage,
+    private val abTestOverrideStorage: AndroidExperimentManualOverrideStorage,
+    private val featureFlagOverrideStorage: AndroidExperimentManualOverrideStorage,
     private val pushTokenManager: PushTokenManager,
     private val devToolsApi: DevToolsApi,
 ) {
 
     fun currentUser(): HackleUser {
-        return userManager.resolve(null, HackleAppContext.DEFAULT)
+        return userManager.hackleUser()
     }
 
     fun registeredPushToken(): String? {

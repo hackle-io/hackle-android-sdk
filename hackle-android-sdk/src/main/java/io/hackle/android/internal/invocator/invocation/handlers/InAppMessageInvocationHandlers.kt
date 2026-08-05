@@ -12,7 +12,7 @@ import io.hackle.android.internal.invocator.model.InAppMessageViewEventDto
 import io.hackle.android.internal.invocator.model.toDto
 import io.hackle.android.internal.invocator.viewId
 import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
-import io.hackle.android.internal.workspace.toActionOrNull
+import io.hackle.android.internal.workspace.config.toActionOrNull
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEvent
 import io.hackle.android.ui.inappmessage.event.InAppMessageViewEventHandleType
 import io.hackle.android.ui.inappmessage.view.InAppMessageView

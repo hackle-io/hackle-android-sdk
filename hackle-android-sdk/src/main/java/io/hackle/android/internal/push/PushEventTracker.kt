@@ -21,7 +21,7 @@ internal class PushEventTracker(
     }
 
     private fun track(event: Event, user: User, timestamp: Long) {
-        val hackleUser = userManager.toHackleUser(user)
+        val hackleUser = userManager.hackleUser(user)
         core.track(event, hackleUser, timestamp)
     }
 

@@ -1,8 +1,9 @@
 package io.hackle.android.internal.inappmessage.schedule
 
-import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.inappmessage.trigger.InAppMessageTrigger
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.support.UserEvents
+import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
 import org.junit.Test
 import strikt.api.expectThat
@@ -13,11 +14,11 @@ class InAppMessageScheduleTest {
     @Test
     fun `create`() {
 
-        val inAppMessage = InAppMessages.create(
+        val inAppMessage = InAppMessages.config(
             key = 42
         )
         val event = UserEvents.track(
-            eventKey = "test",
+            event = Event.of("test"),
             timestamp = 320,
             insertId = "insert"
         )

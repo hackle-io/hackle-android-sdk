@@ -3,6 +3,7 @@ package io.hackle.android.ui.explorer.activity.experiment.ab.viewholder
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.core.model.Experiment
 import io.hackle.sdk.core.model.Variation
+import io.hackle.sdk.core.workspace.config.entity.ExperimentConfig
 
 internal class AbTestItem(
     val experiment: Experiment,
@@ -23,7 +24,7 @@ internal class AbTestItem(
                 .map { (experiment, decision) ->
                     val overriddenVariationId = overrides[experiment.id]
                     val overriddenVariation =
-                        overriddenVariationId?.let { experiment.getVariationOrNull(it) }
+                        overriddenVariationId?.let { (experiment as? ExperimentConfig)?.getVariationOrNull(it) }
                     AbTestItem(experiment, decision, overriddenVariation)
                 }
                 .sortedDescending()

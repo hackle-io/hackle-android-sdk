@@ -13,6 +13,7 @@ import io.hackle.android.ui.explorer.activity.experiment.model.isManualOverridab
 import io.hackle.android.ui.explorer.base.ViewHolder
 import io.hackle.android.ui.explorer.view.listener.OnSpinnerItemSelectedListener
 import io.hackle.android.ui.explorer.view.listener.setOnSpinnerItemSelectedListener
+import io.hackle.sdk.core.workspace.config.entity.ExperimentConfig
 
 internal class FeatureFlagViewHolder private constructor(
     private val context: Context,
@@ -50,6 +51,9 @@ internal class FeatureFlagViewHolder private constructor(
             position: Int,
             id: Long,
         ) {
+            if (item.experiment !is ExperimentConfig) {
+                return
+            }
             val variationKey = item.variationKeys[position]
             val variation = item.experiment.getVariationOrNull(variationKey) ?: return
             spinnerListener.onOverrideSet(item.experiment, variation)
@@ -58,6 +62,9 @@ internal class FeatureFlagViewHolder private constructor(
 
     inner class ResetClickListener(private val item: FeatureFlagItem) : OnClickListener {
         override fun onClick(v: View?) {
+            if (item.experiment !is ExperimentConfig) {
+                return
+            }
             val variationKey = item.variationKeys[spinner.selectedItemPosition]
             val variation = item.experiment.getVariationOrNull(variationKey) ?: return
             resetListener.onOverrideReset(item.experiment, variation)
@@ -78,11 +85,24 @@ internal class FeatureFlagViewHolder private constructor(
     }
 }
 
-private val FeatureFlagItem.keyLabel get() = "[${experiment.key}] ${experiment.name ?: ""}"
-private val FeatureFlagItem.descLabel
-    get() = listOf(
-        experiment.status.name,
-        experiment.identifierType
-    ).joinToString(" | ")
-private val FeatureFlagItem.variationKeys get() = experiment.variations.map { it.key }
+private val FeatureFlagItem.keyLabel get() = "[${experiment.key}] ${(experiment as? ExperimentConfig)?.name ?: ""}"
+private val FeatureFlagItem.descLabel: String
+    get() {
+        return when (experiment) {
+            is ExperimentConfig -> listOf(
+                experiment.status.name,
+                experiment.identifierType
+            ).joinToString(" | ")
+
+            else -> ""
+        }
+    }
+
+private val FeatureFlagItem.variationKeys: List<String>
+    get() {
+        return when (experiment) {
+            is ExperimentConfig -> experiment.variations.map { it.key }
+            else -> emptyList()
+        }
+    }
 private val FeatureFlagItem.isManualOverridden get() = overriddenVariation != null

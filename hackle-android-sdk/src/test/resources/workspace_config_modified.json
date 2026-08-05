@@ -12,6 +12,7 @@
       {
         "id": 143448,
         "key": 1,
+        "order": 1,
         "status": "DRAFT",
         "version": 2,
         "bucketId": 228117,
@@ -58,6 +59,7 @@
       {
         "id": 143449,
         "key": 2,
+        "order": 2,
         "status": "DRAFT",
         "version": 1,
         "bucketId": 228075,
@@ -101,6 +103,7 @@
       {
         "id": 143450,
         "key": 3,
+        "order": 3,
         "status": "DRAFT",
         "version": 1,
         "bucketId": 228078,
@@ -171,6 +174,7 @@
       {
         "id": 143451,
         "key": 4,
+        "order": 4,
         "status": "COMPLETED",
         "version": 1,
         "bucketId": 228081,
@@ -227,6 +231,7 @@
       {
         "id": 155219,
         "key": 5,
+        "order": 5,
         "status": "DRAFT",
         "version": 1,
         "bucketId": 266213,
@@ -283,6 +288,7 @@
       {
         "id": 360345,
         "key": 6,
+        "order": 6,
         "status": "DRAFT",
         "version": 1,
         "bucketId": 483048,
@@ -322,6 +328,7 @@
       {
         "id": 143452,
         "key": 1,
+        "order": 1,
         "status": "EXECUTED",
         "version": 1,
         "bucketId": 228084,
@@ -412,6 +419,7 @@
       {
         "id": 143453,
         "key": 2,
+        "order": 2,
         "status": "EXECUTED",
         "version": 1,
         "bucketId": 228088,
@@ -474,6 +482,7 @@
       {
         "id": 143454,
         "key": 3,
+        "order": 3,
         "status": "EXECUTED",
         "version": 1,
         "bucketId": 228091,
@@ -532,6 +541,7 @@
       {
         "id": 359470,
         "key": 4,
+        "order": 4,
         "status": "EXECUTED",
         "version": 1,
         "bucketId": 480137,
@@ -691,132 +701,6 @@
         "slots": []
       }
     ],
-    "events": [
-      {
-        "id": 133130,
-        "key": "sample__click_search_button"
-      },
-      {
-        "id": 133131,
-        "key": "sample__click_search_api_latency"
-      },
-      {
-        "id": 133132,
-        "key": "sample__purchase_complete"
-      },
-      {
-        "id": 133133,
-        "key": "sample__membership_subscription"
-      },
-      {
-        "id": 144010,
-        "key": "new_event"
-      },
-      {
-        "id": 246178,
-        "key": "ddddddnewekqwmekqwe"
-      },
-      {
-        "id": 246186,
-        "key": "asdasdas"
-      },
-      {
-        "id": 246191,
-        "key": "thalajaaa_orwell"
-      },
-      {
-        "id": 346994,
-        "key": "test_orwell"
-      },
-      {
-        "id": 347060,
-        "key": "event_convert_test"
-      },
-      {
-        "id": 351983,
-        "key": "abc_test"
-      },
-      {
-        "id": 351984,
-        "key": "orwell_test"
-      },
-      {
-        "id": 351985,
-        "key": "$session_start"
-      },
-      {
-        "id": 352338,
-        "key": "BINGBINGBING"
-      },
-      {
-        "id": 352434,
-        "key": "url_abc_test"
-      },
-      {
-        "id": 352456,
-        "key": "BBQ"
-      },
-      {
-        "id": 361019,
-        "key": "$session_end"
-      },
-      {
-        "id": 361020,
-        "key": "in_app_test"
-      },
-      {
-        "id": 361021,
-        "key": "in_app_test2"
-      },
-      {
-        "id": 361022,
-        "key": "$in_app_impression"
-      },
-      {
-        "id": 361023,
-        "key": "$in_app_close"
-      },
-      {
-        "id": 361024,
-        "key": "$in_app_hidden"
-      },
-      {
-        "id": 361025,
-        "key": "$in_app_action"
-      },
-      {
-        "id": 361150,
-        "key": "test33"
-      },
-      {
-        "id": 361288,
-        "key": "test44"
-      },
-      {
-        "id": 361481,
-        "key": "t"
-      },
-      {
-        "id": 361697,
-        "key": "qqqqqq"
-      },
-      {
-        "id": 361805,
-        "key": "rt"
-      },
-      {
-        "id": 361806,
-        "key": "r"
-      },
-      {
-        "id": 361887,
-        "key": "in_app_test22"
-      },
-      {
-        "id": 362166,
-        "key": "home"
-      }
-    ],
     "segments": [
       {
         "id": 100431,
@@ -876,6 +760,7 @@
       {
         "id": 1,
         "key": 1,
+        "order": 1,
         "timeUnit": "IMMEDIATE",
         "startEpochTime": null,
         "endEpochTime": null,
@@ -961,7 +846,9 @@
                   "type": "CLOSE",
                   "value": null
                 }
-              }
+              },
+              "outerButtons": [],
+              "innerButtons": []
             }
           ]
         }

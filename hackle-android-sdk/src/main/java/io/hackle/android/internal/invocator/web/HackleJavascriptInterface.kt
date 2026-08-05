@@ -17,7 +17,7 @@ internal open class HackleJavascriptInterface(
 
     @JavascriptInterface
     fun getAppMode(): String {
-        return app.config.mode.name
+        return app.config.appMode.name
     }
 
     @JavascriptInterface

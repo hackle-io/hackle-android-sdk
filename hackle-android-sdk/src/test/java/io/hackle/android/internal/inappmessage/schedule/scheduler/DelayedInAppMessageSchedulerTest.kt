@@ -19,6 +19,7 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import java.util.concurrent.CompletableFuture
 
 class DelayedInAppMessageSchedulerTest {
 
@@ -50,10 +51,10 @@ class DelayedInAppMessageSchedulerTest {
         every { delayManager.delete(any()) } returns delay
 
         val deliverResponse = mockk<InAppMessageDeliverResponse>()
-        every { deliverProcessor.process(any()) } returns deliverResponse
+        every { deliverProcessor.process(any()) } returns CompletableFuture.completedFuture(deliverResponse)
 
         // when
-        val actual = sut.schedule(InAppMessageScheduleAction.DELIVER, request)
+        val actual = sut.schedule(InAppMessageScheduleAction.DELIVER, request).get()
 
         // then
         expectThat(actual) isEqualTo InAppMessageScheduleResponse.of(
@@ -81,7 +82,7 @@ class DelayedInAppMessageSchedulerTest {
         every { delayManager.delay(any()) } returns delay
 
         // when
-        val actual = sut.schedule(InAppMessageScheduleAction.DELAY, request)
+        val actual = sut.schedule(InAppMessageScheduleAction.DELAY, request).get()
 
         // then
         expectThat(actual) isEqualTo InAppMessageScheduleResponse.of(request, Code.DELAY, delay = delay)
@@ -95,7 +96,7 @@ class DelayedInAppMessageSchedulerTest {
         every { delayManager.delete(any()) } returns delay
 
         // when
-        val actual = sut.schedule(InAppMessageScheduleAction.IGNORE, request)
+        val actual = sut.schedule(InAppMessageScheduleAction.IGNORE, request).get()
 
         // then
         expectThat(actual) isEqualTo InAppMessageScheduleResponse.of(request, Code.IGNORE, delay = delay)

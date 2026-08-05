@@ -2,7 +2,6 @@ package io.hackle.android.internal.application
 
 import io.hackle.android.internal.application.install.ApplicationInstallStateListener
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleListener
-import io.hackle.android.internal.context.HackleAppContext
 import io.hackle.android.internal.platform.packageinfo.PackageVersionInfo
 import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.Event
@@ -45,7 +44,7 @@ internal class ApplicationEventTracker(
     }
 
     private fun track(event: Event, timestamp: Long) {
-        val hackleUser = userManager.resolve(null, HackleAppContext.DEFAULT)
+        val hackleUser = userManager.hackleUser()
         core.track(event, hackleUser, timestamp)
     }
 

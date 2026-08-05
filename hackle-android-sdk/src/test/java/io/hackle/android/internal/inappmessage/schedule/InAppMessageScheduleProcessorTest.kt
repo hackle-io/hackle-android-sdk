@@ -15,6 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import java.util.concurrent.CompletableFuture
 
 class InAppMessageScheduleProcessorTest {
 
@@ -41,11 +42,11 @@ class InAppMessageScheduleProcessorTest {
         // given
         val request = InAppMessages.schedule().toRequest(InAppMessageScheduleType.TRIGGERED, 42)
         val response = InAppMessageScheduleResponse.of(request, Code.DELIVER, null, null)
-        every { scheduler.schedule(any(), any()) } returns response
+        every { scheduler.schedule(any(), any()) } returns CompletableFuture.completedFuture(response)
         every { actionDeterminer.determine(any()) } returns InAppMessageScheduleAction.DELIVER
 
         // when
-        val actual = sut.process(request)
+        val actual = sut.process(request).get()
 
         // then
         expectThat(actual) isEqualTo response
@@ -62,7 +63,7 @@ class InAppMessageScheduleProcessorTest {
         every { actionDeterminer.determine(any()) } returns InAppMessageScheduleAction.DELIVER
 
         // when
-        val actual = sut.process(request)
+        val actual = sut.process(request).get()
 
         // then
         expectThat(actual) isEqualTo InAppMessageScheduleResponse.of(request, Code.EXCEPTION, null, null)
@@ -73,7 +74,7 @@ class InAppMessageScheduleProcessorTest {
         // given
         val request = InAppMessages.schedule().toRequest(InAppMessageScheduleType.TRIGGERED, 42)
         val response = InAppMessageScheduleResponse.of(request, Code.DELIVER, null, null)
-        every { scheduler.schedule(any(), any()) } returns response
+        every { scheduler.schedule(any(), any()) } returns CompletableFuture.completedFuture(response)
         every { actionDeterminer.determine(any()) } returns InAppMessageScheduleAction.DELIVER
 
         // when

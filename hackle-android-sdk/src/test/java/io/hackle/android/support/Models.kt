@@ -1,27 +1,9 @@
 package io.hackle.android.support
 
-import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverRequest
-import io.hackle.android.internal.inappmessage.present.InAppMessagePresentRequest
-import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
-import io.hackle.android.internal.inappmessage.schedule.InAppMessageSchedule
-import io.hackle.android.internal.inappmessage.schedule.InAppMessageSchedule.Time
-import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.User
-import io.hackle.sdk.common.decision.DecisionReason
-import io.hackle.sdk.core.evaluation.evaluator.Evaluator
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluation
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityRequest
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutEvaluation
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutRequest
-import io.hackle.sdk.core.model.Identifiers
-import io.hackle.sdk.core.model.InAppMessage
+import io.hackle.sdk.core.model.*
 import io.hackle.sdk.core.model.Target
-import io.hackle.sdk.core.model.ValueType
-import io.hackle.sdk.core.user.HackleUser
-import io.hackle.sdk.core.user.IdentifierType
-import io.hackle.sdk.core.workspace.Workspace
-import io.mockk.mockk
-import java.util.UUID
+
+internal typealias VariationKey = io.hackle.sdk.common.Variation
 
 internal object Targets {
 
@@ -29,13 +11,16 @@ internal object Targets {
         return Target(conditions.toList())
     }
 
-    fun condition(key: Target.Key = key(), match: Target.Match = match()): Target.Condition {
+    fun condition(
+        key: Target.Key = key(),
+        match: Target.Match = match(),
+    ): Target.Condition {
         return Target.Condition(key, match)
     }
 
     fun key(
         type: Target.Key.Type = Target.Key.Type.USER_PROPERTY,
-        name: String = "name",
+        name: String = "age",
     ): Target.Key {
         return Target.Key(type, name)
     }
@@ -50,292 +35,86 @@ internal object Targets {
     }
 }
 
-internal object InAppMessages {
+internal fun segment(
+    id: Long = 1,
+    key: String = "segment",
+    type: Segment.Type = Segment.Type.USER_ID,
+    targets: List<Target> = emptyList(),
+): Segment {
+    return Segment(id, key, type, targets)
+}
 
-    fun create(
-        id: Long = 1,
-        key: Long = 1,
-        status: InAppMessage.Status = InAppMessage.Status.ACTIVE,
-        period: InAppMessage.Period = InAppMessage.Period.Always,
-        timetable: InAppMessage.Timetable = InAppMessage.Timetable.All,
-        eventTrigger: InAppMessage.EventTrigger = eventTrigger(),
-        evaluateContext: InAppMessage.EvaluateContext = InAppMessage.EvaluateContext(false),
-        targetContext: InAppMessage.TargetContext = targetContext(),
-        messageContext: InAppMessage.MessageContext = messageContext(),
-    ): InAppMessage {
-        return InAppMessage(
-            id = id,
-            key = key,
-            status = status,
-            period = period,
-            timetable = timetable,
-            eventTrigger = eventTrigger,
-            evaluateContext = evaluateContext,
-            targetContext = targetContext,
-            messageContext = messageContext
-        )
-    }
+internal fun bucket(
+    id: Long = 1,
+    seed: Int = 0,
+    slotSize: Int = 10000,
+    slots: List<Slot> = emptyList(),
+): Bucket {
+    return Bucket(id, seed, slotSize, slots)
+}
 
-    fun eventTrigger(
-        rules: List<InAppMessage.EventTrigger.Rule> = listOf(InAppMessage.EventTrigger.Rule("test", emptyList())),
-        frequencyCap: InAppMessage.EventTrigger.FrequencyCap? = null,
-        delay: InAppMessage.Delay = InAppMessage.Delay(InAppMessage.Delay.Type.IMMEDIATE, null),
-    ): InAppMessage.EventTrigger {
-        return InAppMessage.EventTrigger(rules = rules, frequencyCap = frequencyCap, delay = delay)
-    }
+internal fun slot(
+    startInclusive: Int = 0,
+    endExclusive: Int = 10000,
+    variationId: Long = 1,
+): Slot {
+    return Slot(startInclusive, endExclusive, variationId)
+}
 
-    fun frequencyCap(
-        identifierCaps: List<InAppMessage.EventTrigger.IdentifierCap> = emptyList(),
-        durationCap: InAppMessage.EventTrigger.DurationCap? = null,
-    ): InAppMessage.EventTrigger.FrequencyCap {
-        return InAppMessage.EventTrigger.FrequencyCap(identifierCaps, durationCap)
-    }
+internal fun container(
+    id: Long = 1,
+    bucketId: Long = 1,
+    groups: List<ContainerGroup> = emptyList(),
+): Container {
+    return Container(id, bucketId, groups)
+}
 
-    fun identifierCap(
-        identifierType: String = "\$id",
-        count: Int = 1,
-    ): InAppMessage.EventTrigger.IdentifierCap {
-        return InAppMessage.EventTrigger.IdentifierCap(identifierType, count)
-    }
+internal fun containerGroup(
+    id: Long = 1,
+    experiments: List<Long> = emptyList(),
+): ContainerGroup {
+    return ContainerGroup(id, experiments)
+}
 
-    fun durationCap(
-        duration: Long = 60,
-        count: Int = 1,
-    ): InAppMessage.EventTrigger.DurationCap {
-        return InAppMessage.EventTrigger.DurationCap(duration, count)
-    }
+internal fun parameterConfiguration(
+    id: Long = 1,
+    parameters: Map<String, Any> = emptyMap(),
+): ParameterConfiguration {
+    return ParameterConfiguration(id, parameters)
+}
 
-    fun targetContext(
-        targets: List<Target> = emptyList(),
-        overrides: List<InAppMessage.UserOverride> = emptyList(),
-    ): InAppMessage.TargetContext {
-        return InAppMessage.TargetContext(targets, overrides)
-    }
+internal fun cohort(
+    id: Long = 1,
+): Cohort {
+    return Cohort(id)
+}
 
-    fun messageContext(
-        defaultLang: String = "ko",
-        experimentContext: InAppMessage.ExperimentContext? = null,
-        platformTypes: List<InAppMessage.PlatformType> = listOf(InAppMessage.PlatformType.ANDROID),
-        orientations: List<InAppMessage.Orientation> = listOf(InAppMessage.Orientation.VERTICAL),
-        messages: List<InAppMessage.Message> = listOf(message()),
-    ): InAppMessage.MessageContext {
-        return InAppMessage.MessageContext(
-            defaultLang,
-            experimentContext,
-            platformTypes,
-            orientations,
-            messages
-        )
-    }
+internal fun targetEvent(
+    eventKey: String = "test",
+    stats: List<TargetEvent.Stat> = emptyList(),
+    property: TargetEvent.Property? = null,
+): TargetEvent {
+    return TargetEvent(eventKey, stats, property)
+}
 
-    fun message(
-        variationKey: String? = null,
-        lang: String = "ko",
-        layout: InAppMessage.Message.Layout = layout(),
-        images: List<InAppMessage.Message.Image> = listOf(image()),
-        imageAutoScroll: InAppMessage.Message.ImageAutoScroll? = null,
-        text: InAppMessage.Message.Text? = text(),
-        buttons: List<InAppMessage.Message.Button> = listOf(button()),
-        closeButton: InAppMessage.Message.Button? = null,
-        action: InAppMessage.Action? = null,
-        outerButtons: List<InAppMessage.Message.PositionalButton> = emptyList(),
-        innerButtons: List<InAppMessage.Message.PositionalButton> = emptyList(),
-        html: InAppMessage.Message.Html? = null,
-    ): InAppMessage.Message {
-        return InAppMessage.Message(
-            variationKey = variationKey,
-            lang = lang,
-            layout = layout,
-            images = images,
-            imageAutoScroll = imageAutoScroll,
-            text = text,
-            buttons = buttons,
-            closeButton = closeButton,
-            background = InAppMessage.Message.Background("#FFFFFF"),
-            action = action,
-            outerButtons = outerButtons,
-            innerButtons = innerButtons,
-            html = html,
-        )
-    }
+internal fun targetEventStat(
+    date: Long = 42,
+    count: Int = 1,
+): TargetEvent.Stat {
+    return TargetEvent.Stat(date, count)
+}
 
-    fun layout(
-        displayType: InAppMessage.DisplayType = InAppMessage.DisplayType.MODAL,
-        layoutType: InAppMessage.LayoutType = InAppMessage.LayoutType.IMAGE_ONLY,
-        alignment: InAppMessage.Message.Alignment? = null,
-    ): InAppMessage.Message.Layout {
-        return InAppMessage.Message.Layout(
-            displayType = displayType,
-            layoutType = layoutType,
-            alignment = alignment
-        )
-    }
+internal fun targetEventProperty(
+    key: String = "key",
+    type: Target.Key.Type = Target.Key.Type.EVENT_PROPERTY,
+    value: Any = "value",
+): TargetEvent.Property {
+    return TargetEvent.Property(key, type, value)
+}
 
-    fun action(
-        behavior: InAppMessage.Behavior = InAppMessage.Behavior.CLICK,
-        type: InAppMessage.ActionType = InAppMessage.ActionType.CLOSE,
-        value: String? = null,
-    ): InAppMessage.Action {
-        return InAppMessage.Action(
-            behavior = behavior,
-            actionType = type,
-            value = value
-        )
-    }
-
-    fun button(
-        text: String = "button",
-        textColor: String = "#000000",
-        bgColor: String = "#FFFFFF",
-        borderColor: String = "#FFFFFF",
-        action: InAppMessage.Action = action(),
-    ): InAppMessage.Message.Button {
-        return InAppMessage.Message.Button(
-            text = text,
-            style = InAppMessage.Message.Button.Style(
-                textColor = textColor,
-                bgColor = bgColor,
-                borderColor = borderColor
-            ),
-            action = action
-        )
-    }
-
-    fun image(
-        orientation: InAppMessage.Orientation = InAppMessage.Orientation.VERTICAL,
-        imagePath: String = "image_path",
-        action: InAppMessage.Action? = null,
-    ): InAppMessage.Message.Image {
-        return InAppMessage.Message.Image(
-            orientation = orientation,
-            imagePath = imagePath,
-            action = action
-        )
-    }
-
-    fun text(
-        title: String = "title",
-        titleColor: String = "#000000",
-        body: String = "body",
-        bodyColor: String = "#FFFFFF",
-    ): InAppMessage.Message.Text {
-        return InAppMessage.Message.Text(
-            title = InAppMessage.Message.Text.Attribute(
-                title,
-                InAppMessage.Message.Text.Style(titleColor)
-            ),
-            body = InAppMessage.Message.Text.Attribute(
-                body,
-                InAppMessage.Message.Text.Style(bodyColor)
-            )
-        )
-    }
-
-    fun context(
-        dispatchId: String = UUID.randomUUID().toString(),
-        inAppMessage: InAppMessage = create(),
-        message: InAppMessage.Message = message(),
-        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
-        decisionReason: DecisionReason = DecisionReason.DEFAULT_RULE,
-        properties: Map<String, Any> = mapOf(),
-        triggerEvent: Event = Event.of("test"),
-    ): InAppMessagePresentationContext {
-        return InAppMessagePresentationContext(dispatchId, inAppMessage, message, user, decisionReason, properties, triggerEvent)
-    }
-
-    fun schedule(
-        dispatchId: String = UUID.randomUUID().toString(),
-        inAppMessageKey: Long = 1,
-        identifiers: Identifiers = Identifiers.from(User.builder().deviceId("device_id").build()),
-        time: Time = Time(System.currentTimeMillis(), System.currentTimeMillis()),
-        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
-        eventBasedContext: InAppMessageSchedule.EventBasedContext = InAppMessageSchedule.EventBasedContext(
-            UUID.randomUUID().toString(), Event.of("test")
-        ),
-    ): InAppMessageSchedule {
-        return InAppMessageSchedule(dispatchId, inAppMessageKey, identifiers, time, reason, eventBasedContext)
-    }
-
-    fun eligibilityRequest(
-        workspace: Workspace = mockk(),
-        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
-        inAppMessage: InAppMessage = create(),
-        timestamp: Long = System.currentTimeMillis(),
-    ): InAppMessageEligibilityRequest {
-        return InAppMessageEligibilityRequest(
-            workspace = workspace,
-            user = user,
-            inAppMessage = inAppMessage,
-            timestamp = timestamp
-        )
-    }
-
-    fun eligibilityEvaluation(
-        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
-        targetEvaluations: List<Evaluator.Evaluation> = emptyList(),
-        inAppMessage: InAppMessage = create(),
-        isEligible: Boolean = true,
-        layoutEvaluation: InAppMessageLayoutEvaluation? = null,
-    ): InAppMessageEligibilityEvaluation {
-        return InAppMessageEligibilityEvaluation(
-            reason = reason,
-            targetEvaluations = targetEvaluations,
-            inAppMessage = inAppMessage,
-            isEligible = isEligible,
-            layoutEvaluation = layoutEvaluation
-        )
-    }
-
-    fun layoutRequest(
-        workspace: Workspace = mockk(),
-        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
-        inAppMessage: InAppMessage = create(),
-    ): InAppMessageLayoutRequest {
-        return InAppMessageLayoutRequest(
-            workspace = workspace,
-            user = user,
-            inAppMessage = inAppMessage
-        )
-    }
-
-    fun layoutEvaluation(
-        request: InAppMessageLayoutRequest = layoutRequest(),
-        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
-        targetEvaluations: List<Evaluator.Evaluation> = emptyList(),
-        message: InAppMessage.Message = request.inAppMessage.messageContext.messages.first(),
-        properties: Map<String, Any> = emptyMap(),
-    ): InAppMessageLayoutEvaluation {
-        return InAppMessageLayoutEvaluation(
-            request = request,
-            reason = reason,
-            targetEvaluations = targetEvaluations,
-            message = message,
-            properties = properties
-        )
-    }
-
-    fun presentRequest(
-        dispatchId: String = UUID.randomUUID().toString(),
-        inAppMessage: InAppMessage = create(),
-        message: InAppMessage.Message = inAppMessage.messageContext.messages.first(),
-        user: HackleUser = HackleUser.builder().identifier(IdentifierType.ID, "user").build(),
-        requestedAt: Long = System.currentTimeMillis(),
-        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
-        properties: Map<String, Any> = emptyMap(),
-        triggerEvent: Event = Event.of("test"),
-    ): InAppMessagePresentRequest {
-        return InAppMessagePresentRequest(dispatchId, inAppMessage, message, user, requestedAt, reason, properties, triggerEvent)
-    }
-
-    fun deliverRequest(
-        dispatchId: String = UUID.randomUUID().toString(),
-        inAppMessageKey: Long = 1L,
-        identifiers: Identifiers = Identifiers.from(User.builder().deviceId("device_id").build()),
-        requestedAt: Long = System.currentTimeMillis(),
-        reason: DecisionReason = DecisionReason.IN_APP_MESSAGE_TARGET,
-        properties: Map<String, Any> = emptyMap(),
-        triggerEvent: Event = Event.of("test"),
-    ): InAppMessageDeliverRequest {
-        return InAppMessageDeliverRequest(dispatchId, inAppMessageKey, identifiers, requestedAt, reason, properties, triggerEvent)
-    }
+internal fun identifier(
+    type: String = "\$id",
+    value: String = "user",
+): Identifier {
+    return Identifier(type, value)
 }
