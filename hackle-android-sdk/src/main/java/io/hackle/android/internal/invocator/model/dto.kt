@@ -1,7 +1,7 @@
 package io.hackle.android.internal.invocator.model
 
 import com.google.gson.annotations.SerializedName
-import io.hackle.android.internal.workspace.InAppMessageDto
+import io.hackle.android.internal.workspace.config.InAppMessageDto
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision

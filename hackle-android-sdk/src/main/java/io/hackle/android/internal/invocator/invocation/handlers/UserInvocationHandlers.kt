@@ -41,8 +41,7 @@ internal class SetUserInvocationHandler(private val core: HackleAppCore) : Invoc
 
 internal class ResetUserInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val context = HackleAppContext.create(request.browserProperties)
-        core.resetUser(context, null)
+        core.resetUser(null)
         return InvocationResponse.success()
     }
 }
@@ -75,8 +74,7 @@ internal class SetUserPropertyInvocationHandler(private val core: HackleAppCore)
         val operations = PropertyOperations.builder()
             .set(key, value)
             .build()
-        val context = HackleAppContext.create(request.browserProperties)
-        core.updateUserProperties(operations, context, null)
+        core.updateUserProperties(operations, null)
         return InvocationResponse.success()
     }
 }
@@ -85,8 +83,7 @@ internal class UpdateUserPropertiesInvocationHandler(private val core: HackleApp
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
         val dto = checkParameterNotNull(request.parameters.propertyOperationDto(), "operations")
         val operations = PropertyOperations.from(dto)
-        val context = HackleAppContext.create(request.browserProperties)
-        core.updateUserProperties(operations, context, null)
+        core.updateUserProperties(operations, null)
         return InvocationResponse.success()
     }
 }

@@ -3,8 +3,8 @@ package io.hackle.android
 import android.content.Context
 import android.content.Intent
 import io.hackle.sdk.common.Event
-import io.hackle.sdk.common.User
 import io.hackle.sdk.common.HackleRemoteConfig
+import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -12,23 +12,23 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.isEqualTo
 import strikt.assertions.isA
+import strikt.assertions.isEqualTo
 
 class HackleTest {
 
     @MockK
     private lateinit var hackleApp: HackleApp
-    
+
     @MockK
     private lateinit var context: Context
-    
+
     @MockK
     private lateinit var intent: Intent
-    
+
     @MockK
     private lateinit var remoteConfig: HackleRemoteConfig
-    
+
     @MockK
     private lateinit var subscriptionOperations: HackleSubscriptionOperations
 
@@ -42,6 +42,7 @@ class HackleTest {
     private val testPushToken = "test_push_token"
 
     @Before
+    @Suppress("DEPRECATION")
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
 
@@ -52,10 +53,9 @@ class HackleTest {
         every { HackleApp.initializeApp(any(), any(), any(), any<HackleConfig>(), any()) } returns hackleApp
         every { HackleApp.registerActivityLifecycleCallbacks(any()) } just Runs
         every { HackleApp.isHacklePushMessage(any()) } returns true
-        
+
         // HackleApp 인스턴스 메소드들 모킹
         every { hackleApp.remoteConfig() } returns remoteConfig
-        every { hackleApp.remoteConfig(any<User>()) } returns remoteConfig
         every { hackleApp.setUser(any(), any()) } just Runs
         every { hackleApp.setUserId(any(), any()) } just Runs
         every { hackleApp.setDeviceId(any()) } just Runs
@@ -80,7 +80,7 @@ class HackleTest {
     fun `app property should return HackleApp getInstance`() {
         // when
         val result = Hackle.app
-        
+
         // then
         expectThat(result).isEqualTo(hackleApp)
         verify { HackleApp.getInstance() }
@@ -90,7 +90,7 @@ class HackleTest {
     fun `registerActivityLifecycleCallbacks should delegate to HackleApp`() {
         // when
         Hackle.registerActivityLifecycleCallbacks(context)
-        
+
         // then
         verify { HackleApp.registerActivityLifecycleCallbacks(context) }
     }
@@ -99,7 +99,7 @@ class HackleTest {
     fun `isHacklePushMessage should delegate to HackleApp`() {
         // when
         val result = Hackle.isHacklePushMessage(intent)
-        
+
         // then
         expectThat(result).isEqualTo(true)
         verify { HackleApp.isHacklePushMessage(intent) }
@@ -110,10 +110,10 @@ class HackleTest {
         // given
         val config = HackleConfig.DEFAULT
         val onReady: () -> Unit = {}
-        
+
         // when
         val result = Hackle.initialize(context, testSdkKey, config, onReady)
-        
+
         // then
         expectThat(result).isEqualTo(hackleApp)
         verify { HackleApp.initializeApp(context, testSdkKey, config, any()) }
@@ -125,10 +125,10 @@ class HackleTest {
         val user = User.of(testUserId)
         val config = HackleConfig.DEFAULT
         val onReady: () -> Unit = {}
-        
+
         // when
         val result = Hackle.initialize(context, testSdkKey, user, config, onReady)
-        
+
         // then
         expectThat(result).isEqualTo(hackleApp)
         verify { HackleApp.initializeApp(context, testSdkKey, user, config, any()) }
@@ -138,7 +138,7 @@ class HackleTest {
     fun `user with id should create User instance`() {
         // when
         val result = Hackle.user(testUserId)
-        
+
         // then
         expectThat(result).isA<User>()
         expectThat(result.id).isEqualTo(testUserId)
@@ -150,7 +150,7 @@ class HackleTest {
         val result = Hackle.user(testUserId) {
             property("key", "value")
         }
-        
+
         // then
         expectThat(result).isA<User>()
         expectThat(result.id).isEqualTo(testUserId)
@@ -160,7 +160,7 @@ class HackleTest {
     fun `event with key should create Event instance`() {
         // when
         val result = Hackle.event(testEventKey)
-        
+
         // then
         expectThat(result).isA<Event>()
         expectThat(result.key).isEqualTo(testEventKey)
@@ -172,7 +172,7 @@ class HackleTest {
         val result = Hackle.event(testEventKey) {
             property("key", "value")
         }
-        
+
         // then
         expectThat(result).isA<Event>()
         expectThat(result.key).isEqualTo(testEventKey)
@@ -182,7 +182,7 @@ class HackleTest {
     fun `remoteConfig should delegate to app remoteConfig`() {
         // when
         val result = Hackle.remoteConfig()
-        
+
         // then
         expectThat(result).isEqualTo(remoteConfig)
         verify { hackleApp.remoteConfig() }
@@ -192,10 +192,10 @@ class HackleTest {
     fun `setUser should delegate to app setUser`() {
         // given
         val user = User.of(testUserId)
-        
+
         // when
         Hackle.setUser(user)
-        
+
         // then
         verify { hackleApp.setUser(user, null) }
     }
@@ -204,7 +204,7 @@ class HackleTest {
     fun `setUserId should delegate to app setUserId`() {
         // when
         Hackle.setUserId(testUserId)
-        
+
         // then
         verify { hackleApp.setUserId(testUserId, null) }
     }
@@ -213,16 +213,17 @@ class HackleTest {
     fun `setDeviceId should delegate to app setDeviceId`() {
         // when
         Hackle.setDeviceId(testDeviceId)
-        
+
         // then
         verify { hackleApp.setDeviceId(testDeviceId) }
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `setUserProperty should delegate to app setUserProperty`() {
         // when
         Hackle.setUserProperty(testPropertyKey, testPropertyValue)
-        
+
         // then
         verify { hackleApp.setUserProperty(testPropertyKey, testPropertyValue) }
     }
@@ -231,7 +232,7 @@ class HackleTest {
     fun `resetUser should delegate to app resetUser`() {
         // when
         Hackle.resetUser()
-        
+
         // then
         verify { hackleApp.resetUser() }
     }
@@ -240,7 +241,7 @@ class HackleTest {
     fun `setPhoneNumber should delegate to app setPhoneNumber`() {
         // when
         Hackle.setPhoneNumber(testPhoneNumber)
-        
+
         // then
         verify { hackleApp.setPhoneNumber(testPhoneNumber) }
     }
@@ -249,7 +250,7 @@ class HackleTest {
     fun `unsetPhoneNumber should delegate to app unsetPhoneNumber`() {
         // when
         Hackle.unsetPhoneNumber()
-        
+
         // then
         verify { hackleApp.unsetPhoneNumber() }
     }
@@ -258,7 +259,7 @@ class HackleTest {
     fun `updatePushSubscriptions should delegate to app updatePushSubscriptions`() {
         // when
         Hackle.updatePushSubscriptions(subscriptionOperations)
-        
+
         // then
         verify { hackleApp.updatePushSubscriptions(subscriptionOperations) }
     }
@@ -267,7 +268,7 @@ class HackleTest {
     fun `updateSmsSubscriptions should delegate to app updateSmsSubscriptions`() {
         // when
         Hackle.updateSmsSubscriptions(subscriptionOperations)
-        
+
         // then
         verify { hackleApp.updateSmsSubscriptions(subscriptionOperations) }
     }
@@ -276,7 +277,7 @@ class HackleTest {
     fun `updateKakaoSubscriptions should delegate to app updateKakaoSubscriptions`() {
         // when
         Hackle.updateKakaoSubscriptions(subscriptionOperations)
-        
+
         // then
         verify { hackleApp.updateKakaoSubscriptions(subscriptionOperations) }
     }
@@ -285,10 +286,10 @@ class HackleTest {
     fun `fetch should delegate to app fetch`() {
         // given
         val callback = Runnable { }
-        
+
         // when
         Hackle.fetch(callback)
-        
+
         // then
         verify { hackleApp.fetch(callback) }
     }
@@ -297,31 +298,19 @@ class HackleTest {
     fun `fetch without callback should delegate to app fetch with null`() {
         // when
         Hackle.fetch()
-        
+
         // then
         verify { hackleApp.fetch(null) }
     }
 
-    @Test
-    fun `deprecated remoteConfig with user should delegate to app remoteConfig`() {
-        // given
-        val user = User.of(testUserId)
-        
-        // when
-        @Suppress("DEPRECATION")
-        val result = Hackle.remoteConfig(user)
-        
-        // then
-        expectThat(result).isEqualTo(remoteConfig)
-        verify { hackleApp.remoteConfig(user) }
-    }
+    // 4.0 유저 중앙화로 user를 받는 remoteConfig 오버로드는 공개 API에서 제거되어 테스트도 함께 삭제됨
 
     @Test
     fun `deprecated setPushToken should delegate to app setPushToken`() {
         // when
         @Suppress("DEPRECATION")
         Hackle.setPushToken(testPushToken)
-        
+
         // then
         verify { hackleApp.setPushToken(testPushToken) }
     }
@@ -330,21 +319,21 @@ class HackleTest {
     @Test
     fun `user builder function should create user with id`() {
         val userId = "test_user_id"
-        
+
         val result = Hackle.user(userId)
-        
+
         expectThat(result.id).isEqualTo(userId)
     }
 
     @Test
     fun `user builder function with init block should create configured user`() {
         val userId = "test_user_id"
-        
+
         val result = Hackle.user(userId) {
             property("age", 25)
             property("name", "test_name")
         }
-        
+
         expectThat(result.id).isEqualTo(userId)
         expectThat(result.properties["age"]).isEqualTo(25)
         expectThat(result.properties["name"]).isEqualTo("test_name")
@@ -355,7 +344,7 @@ class HackleTest {
         val result = Hackle.user(null) {
             property("age", 30)
         }
-        
+
         expectThat(result.id).isEqualTo(null)
         expectThat(result.properties["age"]).isEqualTo(30)
     }
@@ -363,21 +352,21 @@ class HackleTest {
     @Test
     fun `event builder function should create event with key`() {
         val eventKey = "test_event"
-        
+
         val result = Hackle.event(eventKey)
-        
+
         expectThat(result.key).isEqualTo(eventKey)
     }
 
     @Test
     fun `event builder function with init block should create configured event`() {
         val eventKey = "test_event"
-        
+
         val result = Hackle.event(eventKey) {
             property("count", 5)
             property("category", "test")
         }
-        
+
         expectThat(result.key).isEqualTo(eventKey)
         expectThat(result.properties["count"]).isEqualTo(5)
         expectThat(result.properties["category"]).isEqualTo("test")

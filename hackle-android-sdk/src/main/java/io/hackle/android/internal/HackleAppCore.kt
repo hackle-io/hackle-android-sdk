@@ -2,7 +2,6 @@ package io.hackle.android.internal
 
 import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.context.HackleAppContext
-import io.hackle.android.internal.core.Updated
 import io.hackle.android.internal.event.DefaultEventProcessor
 import io.hackle.android.internal.monitoring.metric.DecisionMetrics
 import io.hackle.android.internal.notification.NotificationManager
@@ -14,6 +13,10 @@ import io.hackle.android.internal.push.token.PushTokenManager
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.session.SessionManager
 import io.hackle.android.internal.sync.PollingSynchronizer
+import io.hackle.android.internal.task.Futures
+import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.internal.task.onCompleteAsync
+import io.hackle.android.internal.task.recover
 import io.hackle.android.internal.user.UserManager
 import io.hackle.android.internal.utils.concurrent.Throttler
 import io.hackle.android.internal.workspace.WorkspaceManager
@@ -23,7 +26,6 @@ import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
-import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.common.decision.DecisionReason.EXCEPTION
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.decision.RemoteConfigDecision
@@ -42,8 +44,7 @@ import java.util.concurrent.Executor
 internal class HackleAppCore(
     private val clock: Clock,
     private val core: HackleCore,
-    private val eventExecutor: Executor,
-    private val backgroundExecutor: Executor,
+    private val coreExecutor: Executor,
     private val synchronizer: PollingSynchronizer,
     private val userManager: UserManager,
     private val workspaceManager: WorkspaceManager,
@@ -69,13 +70,13 @@ internal class HackleAppCore(
 
     internal fun initialize(user: User?, onReady: Runnable) = apply {
         userManager.initialize(user)
-        eventExecutor.execute {
+        coreExecutor.execute {
             try {
                 workspaceManager.initialize()
                 pushTokenManager.initialize()
                 sessionManager.initialize()
                 eventProcessor.initialize()
-                synchronizer.sync()
+                synchronizer.sync().get()
                 notificationManager.flush()
                 applicationInstallStateManager.checkApplicationInstall()
                 log.debug { "HackleApp initialized" }
@@ -93,64 +94,49 @@ internal class HackleAppCore(
 
     fun showUserExplorer() {
         userExplorer.show()
-        Metrics.counter("user.explorer.show").increment()
     }
 
     fun hideUserExplorer() {
         userExplorer.hide()
     }
 
+    // User
+
     fun setUser(user: User, callback: Runnable?) {
-        try {
-            val updated = userManager.setUser(user)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set user: $e" }
-            callback?.run()
-        }
+        Futures.wrap { userManager.setUser(user) }
+            .recover { log.error { "Unexpected exception while setUser: $it" } }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
+    fun resetUser(callback: Runnable?) {
+        Futures.wrap { userManager.resetUser() }
+            .recover { log.error { "Unexpected exception while reset user: $it" } }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
+    }
+
+
     fun setUserId(userId: String?, callback: Runnable?) {
-        try {
-            val updated = userManager.setUserId(userId)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set userId: $e" }
-            callback?.run()
-        }
+        Futures.wrap { userManager.setUserId(userId) }
+            .recover { log.error { "Unexpected exception while set userId: $it" } }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun setDeviceId(deviceId: String, callback: Runnable?) {
-        try {
-            val updated = userManager.setDeviceId(deviceId)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while set deviceId: $e" }
-            callback?.run()
-        }
+        Futures.wrap { userManager.setDeviceId(deviceId) }
+            .recover { log.error { "Unexpected exception while set deviceId: $it" } }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
-    fun updateUserProperties(
-        operations: PropertyOperations,
-        hackleAppContext: HackleAppContext,
-        callback: Runnable?,
-    ) {
-        try {
-            val event = operations.toEvent()
-            track(event, null, hackleAppContext)
-            eventProcessor.flush()
-            userManager.updateProperties(operations)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while update user properties: $e" }
-        } finally {
-            callback?.run()
-        }
+    fun updateUserProperties(operations: PropertyOperations, callback: Runnable?) {
+        Futures.wrap { userManager.updateProperties(operations) }
+            .recover { log.error { "Unexpected exception while update user properties: $it" } }
+            .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
     }
 
     fun updatePushSubscriptions(operations: HackleSubscriptionOperations, hackleAppContext: HackleAppContext) {
         try {
             val event = operations.toEvent("\$push_subscriptions")
-            track(event, null, hackleAppContext)
+            track(event, hackleAppContext)
             core.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while update push subscription status: $e" }
@@ -160,7 +146,7 @@ internal class HackleAppCore(
     fun updateSmsSubscriptions(operations: HackleSubscriptionOperations, hackleAppContext: HackleAppContext) {
         try {
             val event = operations.toEvent("\$sms_subscriptions")
-            track(event, null, hackleAppContext)
+            track(event, hackleAppContext)
             core.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while update sms subscription status: $e" }
@@ -170,21 +156,10 @@ internal class HackleAppCore(
     fun updateKakaoSubscriptions(operations: HackleSubscriptionOperations, hackleAppContext: HackleAppContext) {
         try {
             val event = operations.toEvent("\$kakao_subscriptions")
-            track(event, null, hackleAppContext)
+            track(event, hackleAppContext)
             core.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while update kakao subscription status: $e" }
-        }
-    }
-
-    fun resetUser(hackleAppContext: HackleAppContext, callback: Runnable?) {
-        try {
-            val updated = userManager.resetUser()
-            track(PropertyOperations.clearAll().toEvent(), null, hackleAppContext)
-            syncIfNeeded(updated, callback)
-        } catch (e: Exception) {
-            log.error { "Unexpected exception while reset user: $e" }
-            callback?.run()
         }
     }
 
@@ -198,12 +173,12 @@ internal class HackleAppCore(
                 .set(PIIProperty.PHONE_NUMBER.key, phoneNumber)
                 .build()
                 .toSecuredEvent()
-            track(event, null, hackleAppContext)
+            track(event, hackleAppContext)
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while set phoneNumber: $e" }
         } finally {
-            callback?.run()
+            TaskExecutors.runOnBackground { callback?.run() }
         }
     }
 
@@ -213,36 +188,34 @@ internal class HackleAppCore(
                 .unset(PIIProperty.PHONE_NUMBER.key)
                 .build()
                 .toSecuredEvent()
-            track(event, null, hackleAppContext)
+            track(event, hackleAppContext)
             eventProcessor.flush()
         } catch (e: Exception) {
             log.error { "Unexpected exception while unset phoneNumber: $e" }
         } finally {
-            callback?.run()
+            TaskExecutors.runOnBackground { callback?.run() }
         }
     }
 
     fun variationDetail(
         experimentKey: Long,
-        user: User?,
-        defaultVariation: Variation,
         hackleAppContext: HackleAppContext,
     ): Decision {
         val sample = Timer.start()
         return try {
-            val hackleUser = userManager.resolve(user, hackleAppContext)
-            core.experiment(experimentKey, hackleUser, defaultVariation)
+            val hackleUser = userManager.hackleUser(appContext = hackleAppContext)
+            core.experiment(experimentKey, hackleUser)
         } catch (t: Throwable) {
-            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]. Returning default variation[$defaultVariation]: $t" }
-            Decision.of(defaultVariation, DecisionReason.EXCEPTION)
+            log.error { "Unexpected exception while deciding variation for experiment[$experimentKey]: $t" }
+            Decision.of(Variation.CONTROL, EXCEPTION)
         }.also {
             DecisionMetrics.experiment(sample, experimentKey, it)
         }
     }
 
-    fun allVariationDetails(user: User? = null, hackleAppContext: HackleAppContext): Map<Long, Decision> {
+    fun allVariationDetails(hackleAppContext: HackleAppContext): Map<Long, Decision> {
         return try {
-            val hackleUser = userManager.resolve(user, hackleAppContext)
+            val hackleUser = userManager.hackleUser(appContext = hackleAppContext)
             core.experiments(hackleUser)
                 .mapKeysTo(hashMapOf()) { (experiment, _) -> experiment.key }
         } catch (t: Throwable) {
@@ -253,24 +226,23 @@ internal class HackleAppCore(
 
     fun featureFlagDetail(
         featureKey: Long,
-        user: User?,
         hackleAppContext: HackleAppContext,
     ): FeatureFlagDecision {
         val sample = Timer.start()
         return try {
-            val hackleUser = userManager.resolve(user, hackleAppContext)
+            val hackleUser = userManager.hackleUser(appContext = hackleAppContext)
             core.featureFlag(featureKey, hackleUser)
         } catch (t: Throwable) {
             log.error { "Unexpected exception while deciding feature flag for feature[$featureKey]: $t" }
-            FeatureFlagDecision.off(DecisionReason.EXCEPTION)
+            FeatureFlagDecision.off(EXCEPTION)
         }.also {
             DecisionMetrics.featureFlag(sample, featureKey, it)
         }
     }
 
-    fun track(event: Event, user: User?, hackleAppContext: HackleAppContext) {
+    fun track(event: Event, hackleAppContext: HackleAppContext) {
         try {
-            val hackleUser = userManager.resolve(user, hackleAppContext)
+            val hackleUser = userManager.hackleUser(appContext = hackleAppContext)
             core.track(event, hackleUser, clock.currentMillis())
         } catch (t: Throwable) {
             log.error { "Unexpected exception while tracking event[${event.key}]: $t" }
@@ -281,12 +253,11 @@ internal class HackleAppCore(
         key: String,
         requiredType: ValueType,
         defaultValue: T,
-        user: User?,
         hackleAppContext: HackleAppContext,
     ): RemoteConfigDecision<T> {
         val sample = Timer.start()
         return try {
-            val hackleUser = userManager.resolve(user, hackleAppContext)
+            val hackleUser = userManager.hackleUser(appContext = hackleAppContext)
             core.remoteConfig(key, hackleUser, requiredType, defaultValue)
         } catch (_: Exception) {
             log.error { "Unexpected exception while deciding remote config parameter[$key]. Returning default value." }
@@ -299,14 +270,12 @@ internal class HackleAppCore(
     fun fetch(callback: Runnable?) {
         fetchThrottler.execute(
             accept = {
-                backgroundExecutor.execute {
-                    synchronizer.sync()
-                    callback?.run()
-                }
+                synchronizer.sync()
+                    .onCompleteAsync(TaskExecutors.background()) { callback?.run() }
             },
             reject = {
                 log.debug { "Too many quick fetch requests." }
-                callback?.run()
+                TaskExecutors.runOnBackground { callback?.run() }
             }
         )
     }
@@ -320,23 +289,6 @@ internal class HackleAppCore(
             optOutManager.setOptOutTracking(optOut)
         } catch (e: Exception) {
             log.error { "Unexpected exception while setting opt-out tracking: $e" }
-        }
-    }
-
-    private fun syncIfNeeded(userUpdated: Updated<User>, callback: Runnable?) {
-        try {
-            backgroundExecutor.execute {
-                try {
-                    userManager.syncIfNeeded(userUpdated)
-                } catch (e: Exception) {
-                    log.error { "Failed to sync: $e" }
-                } finally {
-                    callback?.run()
-                }
-            }
-        } catch (e: Exception) {
-            log.error { "Failed to submit sync task: $e" }
-            callback?.run()
         }
     }
 

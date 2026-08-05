@@ -38,7 +38,7 @@ class InAppMessageEventTrackerTest {
                 InAppMessages.button(text = "button_2")
             )
         )
-        val inAppMessage = InAppMessages.create(
+        val inAppMessage = InAppMessages.config(
             id = 42,
             key = 320,
             messageContext = InAppMessages.messageContext(messages = listOf(message))
@@ -87,7 +87,7 @@ class InAppMessageEventTrackerTest {
                 InAppMessages.button(text = "button_2")
             )
         )
-        val inAppMessage = InAppMessages.create(
+        val inAppMessage = InAppMessages.config(
             id = 42,
             key = 320,
             messageContext = InAppMessages.messageContext(messages = listOf(message))
@@ -133,7 +133,7 @@ class InAppMessageEventTrackerTest {
                 InAppMessages.button(text = "button_2")
             )
         )
-        val inAppMessage = InAppMessages.create(
+        val inAppMessage = InAppMessages.config(
             id = 42,
             key = 320,
             messageContext = InAppMessages.messageContext(messages = listOf(message))

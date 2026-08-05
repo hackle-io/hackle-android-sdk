@@ -15,7 +15,7 @@ import java.util.concurrent.Executor
 
 internal class EventDispatcher(
     baseEventUri: String,
-    private val eventExecutor: Executor,
+    private val coreExecutor: Executor,
     private val eventRepository: EventRepository,
     private val httpExecutor: Executor,
     private val httpClient: OkHttpClient,
@@ -34,7 +34,7 @@ internal class EventDispatcher(
 
     private fun delete(events: List<EventEntity>) {
         try {
-            eventExecutor.execute(DeleteEventTask(events))
+            coreExecutor.execute(DeleteEventTask(events))
         } catch (e: Exception) {
             log.error { "Failed to submit DeleteEventTask: $e" }
         }
@@ -42,7 +42,7 @@ internal class EventDispatcher(
 
     private fun updateEventStatusToPending(events: List<EventEntity>) {
         try {
-            eventExecutor.execute(UpdateEventToPendingTask(events))
+            coreExecutor.execute(UpdateEventToPendingTask(events))
         } catch (e: Exception) {
             log.error { "Failed to submit UpdateEventTask: $e" }
         }

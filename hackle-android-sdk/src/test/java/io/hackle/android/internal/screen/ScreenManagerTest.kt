@@ -4,7 +4,7 @@ import android.app.Activity
 import io.hackle.android.internal.activity.lifecycle.ActivityProvider
 import io.hackle.android.internal.activity.lifecycle.ActivityState
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
-import io.hackle.android.internal.user.UserManager
+import io.hackle.android.internal.user.local.LocalUserManager
 import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.mockk.every
@@ -21,7 +21,7 @@ class ScreenManagerTest {
 
     private var activity: Activity? = null
 
-    private lateinit var userManager: UserManager
+    private lateinit var userManager: LocalUserManager
     private lateinit var listener: ScreenListener
     private lateinit var sut: ScreenManager
 

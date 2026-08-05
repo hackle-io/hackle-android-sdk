@@ -9,7 +9,6 @@ import io.hackle.android.internal.invocator.invocation.InvocationResponse
 import io.hackle.android.internal.invocator.model.DecisionDto
 import io.hackle.android.internal.invocator.model.FeatureFlagDecisionDto
 import io.hackle.android.internal.invocator.model.toDto
-import io.hackle.sdk.common.Variation
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.core.model.ValueType
@@ -20,9 +19,8 @@ internal abstract class AbTestInvocationHandler<R>(private val core: HackleAppCo
     override fun invoke(request: InvocationRequest): InvocationResponse<R> {
         val p = request.parameters
         val experimentKey = checkParameterNotNull(p.experimentKey(), "experimentKey")
-        val defaultVariation = Variation.fromOrControl(p.defaultVariation())
         val context = HackleAppContext.create(request.browserProperties)
-        val decision = core.variationDetail(experimentKey, p.user(), defaultVariation, context)
+        val decision = core.variationDetail(experimentKey, context)
         return InvocationResponse.success(transform(decision))
     }
 
@@ -45,7 +43,7 @@ internal abstract class FeatureFlagInvocationHandler<R>(private val core: Hackle
         val p = request.parameters
         val featureKey = checkParameterNotNull(p.featureKey(), "featureKey")
         val context = HackleAppContext.create(request.browserProperties)
-        val decision = core.featureFlagDetail(featureKey, p.user(), context)
+        val decision = core.featureFlagDetail(featureKey, context)
         return InvocationResponse.success(transform(decision))
     }
 
@@ -66,23 +64,22 @@ internal class FeatureFlagDetailInvocationHandler(core: HackleAppCore) :
 internal class RemoteConfigInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Any> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Any> {
         val p = request.parameters
-        val user = p.userWithUserId()
         val key = checkParameterNotNull(p.key(), "key")
         val context = HackleAppContext.create(request.browserProperties)
         val data: Any = when (checkParameterNotNull(p.valueType(), "valueType")) {
             "string" -> {
                 val defaultValue = checkParameterNotNull(p.defaultStringValue(), "defaultValue")
-                core.remoteConfig(key, ValueType.STRING, defaultValue, user, context).value
+                core.remoteConfig(key, ValueType.STRING, defaultValue, context).value
             }
 
             "number" -> {
                 val defaultValue = checkParameterNotNull(p.defaultNumberValue(), "defaultValue")
-                core.remoteConfig(key, ValueType.NUMBER, defaultValue, user, context).value.toDouble()
+                core.remoteConfig(key, ValueType.NUMBER, defaultValue, context).value.toDouble()
             }
 
             "boolean" -> {
                 val defaultValue = checkParameterNotNull(p.defaultBooleanValue(), "defaultValue")
-                core.remoteConfig(key, ValueType.BOOLEAN, defaultValue, user, context).value
+                core.remoteConfig(key, ValueType.BOOLEAN, defaultValue, context).value
             }
 
             else -> {

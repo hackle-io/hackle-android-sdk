@@ -1,14 +1,14 @@
 package io.hackle.android.internal.engagement
 
 import android.app.Activity
-import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle.*
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleListener
-import io.hackle.sdk.common.Screen
+import io.hackle.android.internal.core.listener.ApplicationListenerRegistry
 import io.hackle.android.internal.screen.ScreenListener
 import io.hackle.android.internal.screen.ScreenManager
 import io.hackle.android.internal.user.UserManager
+import io.hackle.sdk.common.Screen
 import io.hackle.sdk.common.User
 import io.hackle.sdk.core.internal.log.Logger
 import java.util.concurrent.atomic.AtomicReference

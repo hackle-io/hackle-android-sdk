@@ -10,7 +10,7 @@ internal class NotificationHandler(context: Context) {
 
     private var receiver: NotificationDataReceiver =
         DefaultNotificationDataReceiver(
-            executor = TaskExecutors.default(),
+            executor = TaskExecutors.background(),
             repository = NotificationHistoryRepositoryImpl(DatabaseHelper.getSharedDatabase(context))
         )
 

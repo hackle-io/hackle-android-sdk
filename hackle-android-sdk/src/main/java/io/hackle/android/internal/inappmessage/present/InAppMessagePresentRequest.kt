@@ -1,10 +1,9 @@
 package io.hackle.android.internal.inappmessage.present
 
 import io.hackle.android.internal.inappmessage.deliver.InAppMessageDeliverRequest
+import io.hackle.android.internal.inappmessage.deliver.evaluator.InAppMessageDeliverEvaluation
 import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.decision.DecisionReason
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.eligibility.InAppMessageEligibilityEvaluation
-import io.hackle.sdk.core.evaluation.evaluator.inappmessage.layout.InAppMessageLayoutEvaluation
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.user.HackleUser
 
@@ -25,20 +24,18 @@ internal class InAppMessagePresentRequest(
     companion object {
         fun of(
             request: InAppMessageDeliverRequest,
-            inAppMessage: InAppMessage,
             user: HackleUser,
-            eligibilityEvaluation: InAppMessageEligibilityEvaluation,
-            layoutEvaluation: InAppMessageLayoutEvaluation,
+            evaluation: InAppMessageDeliverEvaluation,
         ): InAppMessagePresentRequest {
             return InAppMessagePresentRequest(
                 dispatchId = request.dispatchId,
-                inAppMessage = inAppMessage,
-                message = layoutEvaluation.message,
+                inAppMessage = evaluation.eligibility.evaluation.entity,
+                message = evaluation.layout.evaluation.result.message,
                 user = user,
                 requestedAt = request.requestedAt,
-                reason = eligibilityEvaluation.reason,
-                properties = request.properties + layoutEvaluation.properties,
-                triggerEvent = request.triggerEvent,
+                reason = evaluation.eligibility.evaluation.result.reason,
+                properties = request.properties + evaluation.toProperties(),
+                triggerEvent = request.triggerEvent
             )
         }
     }

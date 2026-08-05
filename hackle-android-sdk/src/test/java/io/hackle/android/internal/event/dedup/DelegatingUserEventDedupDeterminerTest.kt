@@ -1,8 +1,8 @@
 package io.hackle.android.internal.event.dedup
 
 import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.event.UserEvents
 import io.hackle.android.internal.event.dedup.CachedUserEventDedupDeterminer.Key
+import io.hackle.android.support.UserEvents
 import io.hackle.sdk.core.event.UserEvent
 import io.hackle.sdk.core.internal.time.Clock
 import io.mockk.mockk

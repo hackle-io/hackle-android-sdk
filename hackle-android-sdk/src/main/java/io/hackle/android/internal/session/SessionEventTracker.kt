@@ -24,7 +24,7 @@ internal class SessionEventTracker(
     private fun track(eventKey: String, session: Session, user: User, timestamp: Long) {
         val event = Event.of(eventKey)
 
-        val hackleUser = userManager.toHackleUser(user)
+        val hackleUser = userManager.hackleUser(user)
             .toBuilder()
             .identifier(IdentifierType.SESSION, session.id, overwrite = false)
             .build()

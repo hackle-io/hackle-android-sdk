@@ -1,10 +1,11 @@
 package io.hackle.android.internal.inappmessage.present.record
 
-import io.hackle.android.internal.database.repository.MapKeyValueRepository
-import io.hackle.android.internal.inappmessage.storage.AndroidInAppMessageImpressionStorage
+import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
+import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse.Code
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.support.InMemoryInAppMessageImpressionStorage
 import io.hackle.sdk.common.decision.DecisionReason
-import io.hackle.sdk.core.evaluation.target.InAppMessageImpressionStorage
+import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageImpressionStorage
 import io.hackle.sdk.core.user.HackleUser
 import io.mockk.every
 import io.mockk.mockk
@@ -22,27 +23,30 @@ class InAppMessageRecorderTest {
 
     @Before
     fun before() {
-        storage = AndroidInAppMessageImpressionStorage(MapKeyValueRepository())
+        storage = InMemoryInAppMessageImpressionStorage()
         sut = InAppMessageRecorder(storage)
     }
 
     @Test
-    fun `record - save impression`() {
-
+    fun `record - PRESENT면 impression을 저장한다`() {
+        // given
         val user = HackleUser.builder()
             .identifier("a", "1")
             .identifier("b", "2")
             .build()
-        val inAppMessage = InAppMessages.create(id = 42)
+        val inAppMessage = InAppMessages.config(id = 42)
 
         val request = InAppMessages.presentRequest(
             user = user,
             inAppMessage = inAppMessage,
             requestedAt = 320L
         )
+        val response = InAppMessagePresentResponse.of(Code.PRESENT, InAppMessages.context())
 
-        sut.record(request, mockk())
+        // when
+        sut.record(request, response)
 
+        // then
         val impressions = storage.get(inAppMessage)
         expectThat(impressions) {
             hasSize(1)
@@ -54,26 +58,46 @@ class InAppMessageRecorderTest {
     }
 
     @Test
-    fun `record - when exceed impression limit then remove first`() {
-        val inAppMessage = InAppMessages.create(id = 42)
+    fun `record - PRESENT가 아니면 impression을 저장하지 않는다`() {
+        // given
+        val inAppMessage = InAppMessages.config(id = 42)
+        val request = InAppMessages.presentRequest(
+            inAppMessage = inAppMessage,
+            requestedAt = 320L
+        )
+        val response = InAppMessagePresentResponse.of(Code.ACTIVITY_NOT_FOUND, InAppMessages.context())
+
+        // when
+        sut.record(request, response)
+
+        // then
+        expectThat(storage.get(inAppMessage)).hasSize(0)
+    }
+
+    @Test
+    fun `record - 저장 개수 제한을 넘으면 가장 오래된 impression부터 제거한다`() {
+        // given
+        val inAppMessage = InAppMessages.config(id = 42)
+        val response = InAppMessagePresentResponse.of(Code.PRESENT, InAppMessages.context())
 
         repeat(100) {
             val request = InAppMessages.presentRequest(
                 inAppMessage = inAppMessage,
                 requestedAt = it.toLong()
             )
-
-            sut.record(request, mockk())
+            sut.record(request, response)
         }
-
         expectThat(storage.get(inAppMessage)).hasSize(100)
 
         val request = InAppMessages.presentRequest(
             inAppMessage = inAppMessage,
             requestedAt = 320
         )
-        sut.record(request, mockk())
 
+        // when
+        sut.record(request, response)
+
+        // then
         expectThat(storage.get(inAppMessage)) {
             hasSize(100)
             get { first().timestamp } isEqualTo 1
@@ -82,12 +106,13 @@ class InAppMessageRecorderTest {
     }
 
     @Test
-    fun `record - override`() {
+    fun `record - OVERRIDDEN이면 impression을 저장하지 않는다`() {
+        // given
         val user = HackleUser.builder()
             .identifier("a", "1")
             .identifier("b", "2")
             .build()
-        val inAppMessage = InAppMessages.create(id = 42)
+        val inAppMessage = InAppMessages.config(id = 42)
 
         val request = InAppMessages.presentRequest(
             user = user,
@@ -95,38 +120,34 @@ class InAppMessageRecorderTest {
             requestedAt = 320L,
             reason = DecisionReason.OVERRIDDEN,
         )
+        val response = InAppMessagePresentResponse.of(Code.PRESENT, InAppMessages.context())
 
-        sut.record(request, mockk())
+        // when
+        sut.record(request, response)
 
-        val impressions = storage.get(inAppMessage)
-        expectThat(impressions) {
-            hasSize(0)
-        }
+        // then
+        expectThat(storage.get(inAppMessage)).hasSize(0)
     }
 
     @Test
-    fun `record - exception`() {
-        val user = HackleUser.builder()
-            .identifier("a", "1")
-            .identifier("b", "2")
-            .build()
-        val inAppMessage = InAppMessages.create(id = 42)
-
+    fun `record - 저장 중 예외가 발생해도 전파하지 않는다`() {
+        // given
         val request = InAppMessages.presentRequest(
-            user = user,
-            inAppMessage = inAppMessage,
+            inAppMessage = InAppMessages.config(id = 42),
             requestedAt = 320L
         )
+        val response = InAppMessagePresentResponse.of(Code.PRESENT, InAppMessages.context())
 
-        val storage = mockk<InAppMessageImpressionStorage>(relaxed = true)
-        every { storage.get(any()) } throws IllegalArgumentException("fail")
+        val failingStorage = mockk<InAppMessageImpressionStorage>(relaxed = true)
+        every { failingStorage.get(any()) } throws IllegalArgumentException("fail")
+        val sut = InAppMessageRecorder(failingStorage)
 
-        val sut = InAppMessageRecorder(storage)
+        // when
+        sut.record(request, response)
 
-        sut.record(request, mockk())
-
+        // then
         verify(exactly = 0) {
-            storage.set(any(), any())
+            failingStorage.set(any(), any())
         }
     }
 }

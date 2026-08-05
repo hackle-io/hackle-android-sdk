@@ -1,6 +1,5 @@
 package io.hackle.android.internal.sync
 
-import io.hackle.sdk.core.internal.metrics.cumulative.CumulativeMetricRegistry
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -8,8 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import java.util.concurrent.Executors
-import kotlin.concurrent.thread
+import java.util.concurrent.CompletableFuture
 
 
 class CompositeSynchronizerTest {
@@ -20,61 +18,74 @@ class CompositeSynchronizerTest {
 
     @Before
     fun before() {
-        workspaceSynchronizer = mockk(relaxed = true)
-        cohortSynchronizer = mockk(relaxed = true)
-        sut = CompositeSynchronizer(Executors.newCachedThreadPool())
+        workspaceSynchronizer = mockk()
+        cohortSynchronizer = mockk()
+        sut = CompositeSynchronizer()
         sut.add(workspaceSynchronizer)
         sut.add(cohortSynchronizer)
     }
 
     @Test
-    fun `sync`() {
-        sut.sync()
+    fun `sync - 모든 synchronizer를 sync한다`() {
+        // given
+        every { workspaceSynchronizer.sync() } returns CompletableFuture.completedFuture(null)
+        every { cohortSynchronizer.sync() } returns CompletableFuture.completedFuture(null)
 
-        verify(exactly = 1) {
-            workspaceSynchronizer.sync()
-        }
-        verify(exactly = 1) {
-            cohortSynchronizer.sync()
-        }
+        // when
+        sut.sync().get()
+
+        // then
+        verify(exactly = 1) { workspaceSynchronizer.sync() }
+        verify(exactly = 1) { cohortSynchronizer.sync() }
     }
 
     @Test
-    fun `async`() {
-        every { workspaceSynchronizer.sync() } answers {
-            Thread.sleep(100)
-        }
-        every { cohortSynchronizer.sync() } answers {
-            Thread.sleep(100)
-        }
+    fun `sync - 모든 synchronizer가 완료되어야 완료된다`() {
+        // given
+        val workspaceFuture = CompletableFuture<Void>()
+        val cohortFuture = CompletableFuture<Void>()
+        every { workspaceSynchronizer.sync() } returns workspaceFuture
+        every { cohortSynchronizer.sync() } returns cohortFuture
 
-        var count = 0
-        thread {
-            sut.sync()
-            count++
-        }
+        // when
+        val actual = sut.sync()
 
-        Thread.sleep(50)
-        expectThat(count).isEqualTo(0)
-        Thread.sleep(100)
-        expectThat(count).isEqualTo(1)
+        // then
+        expectThat(actual.isDone) isEqualTo false
+
+        workspaceFuture.complete(null)
+        expectThat(actual.isDone) isEqualTo false
+
+        cohortFuture.complete(null)
+        actual.get()
     }
 
     @Test
-    fun `safe`() {
-        val counter = CumulativeMetricRegistry().counter("workspace")
+    fun `sync - synchronizer가 동기적으로 예외를 던져도 전체는 성공으로 완료된다`() {
+        // given
+        every { workspaceSynchronizer.sync() } returns CompletableFuture.completedFuture(null)
+        every { cohortSynchronizer.sync() } throws IllegalArgumentException("fail")
 
-        every { workspaceSynchronizer.sync() } answers {
-            Thread.sleep(100)
-            counter.increment()
-        }
+        // when
+        sut.sync().get()
 
-        every { cohortSynchronizer.sync() } answers {
-            Thread.sleep(50)
-            throw IllegalArgumentException("fail")
-        }
+        // then
+        verify(exactly = 1) { workspaceSynchronizer.sync() }
+    }
 
-        sut.sync()
-        expectThat(counter.count()).isEqualTo(1)
+    @Test
+    fun `sync - 일부 synchronizer가 실패해도 전체는 성공으로 완료된다`() {
+        // given
+        every { workspaceSynchronizer.sync() } returns CompletableFuture.completedFuture(null)
+        val failedFuture = CompletableFuture<Void>()
+        failedFuture.completeExceptionally(IllegalArgumentException("fail"))
+        every { cohortSynchronizer.sync() } returns failedFuture
+
+        // when
+        sut.sync().get()
+
+        // then
+        verify(exactly = 1) { workspaceSynchronizer.sync() }
+        verify(exactly = 1) { cohortSynchronizer.sync() }
     }
 }
