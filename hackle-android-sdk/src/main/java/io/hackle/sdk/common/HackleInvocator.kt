@@ -27,6 +27,11 @@ interface HackleInvocator {
      * `updateUserProperties`) the callback is called after the user context synchronization is complete.
      * For every other command the callback is called immediately.
      *
+     * The calling thread of the callback depends on the command: for immediate commands it is invoked
+     * synchronously on the calling thread, while for user mutation commands it is invoked later on
+     * whichever background thread completes the underlying operation. Callers must not assume either
+     * thread, and must dispatch to the main thread themselves before touching UI from the callback.
+     *
      * @param string the string specifying the operation to invoke
      * @param callback called with the result of the invocation
      */
