@@ -1,12 +1,15 @@
 package io.hackle.android.internal.invocator.web
 
+import android.webkit.WebView
 import io.hackle.android.HackleApp
 import io.hackle.android.HackleAppMode
 import io.hackle.android.HackleConfig
 import io.hackle.android.internal.model.Sdk
+import io.hackle.sdk.common.HackleInvocationCallback
 import io.hackle.sdk.common.HackleWebViewConfig
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.Test
 import strikt.api.expectThat
@@ -100,5 +103,93 @@ class HackleJavascriptInterfaceTest {
         verify(exactly = 1) {
             app.invocator.invoke("42")
         }
+    }
+
+    @Test
+    fun getBridgeCapabilities() {
+        val sut = HackleJavascriptInterface(
+            app = app(mode = HackleAppMode.NATIVE),
+            webViewConfig = HackleWebViewConfig.DEFAULT
+        )
+        expectThat(sut.getBridgeCapabilities()).isEqualTo("""["function","message"]""")
+    }
+
+    @Test
+    fun `postMessage - requestId가 없으면 invoke로 처리하고 회신하지 않는다`() {
+        // given
+        val app = app(mode = HackleAppMode.NATIVE)
+        val webView = mockk<WebView>(relaxed = true)
+        val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
+        sut.addTo(webView)
+
+        // when
+        sut.postMessage("""{"_hackle":{"command":"track","parameters":{"event":{"key":"purchase"}}}}""")
+
+        // then
+        verify(exactly = 1) { app.invocator.invoke(any()) }
+        verify(exactly = 0) { app.invocator.invokeAsync(any(), any()) }
+        verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
+    }
+
+    @Test
+    fun `postMessage - requestId가 있으면 완료 후 resolve 스크립트를 실행한다`() {
+        // given
+        val app = app(mode = HackleAppMode.NATIVE)
+        val invocationCallback = slot<HackleInvocationCallback>()
+        every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
+        val webView = mockk<WebView>(relaxed = true)
+        val post = slot<Runnable>()
+        every { webView.post(capture(post)) } returns true
+        val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
+        sut.addTo(webView)
+
+        // when
+        sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
+        invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
+        post.captured.run()
+
+        // then
+        verify(exactly = 1) {
+            webView.evaluateJavascript(
+                """window._hackleBridge && window._hackleBridge.resolve("req-1", "{\"success\":true,\"message\":\"OK\"}")""",
+                null
+            )
+        }
+    }
+
+    @Test
+    fun `postMessage - evaluateJavascript가 예외를 던져도 전파하지 않는다`() {
+        // given
+        val app = app(mode = HackleAppMode.NATIVE)
+        val invocationCallback = slot<HackleInvocationCallback>()
+        every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
+        val webView = mockk<WebView>(relaxed = true)
+        val post = slot<Runnable>()
+        every { webView.post(capture(post)) } returns true
+        every { webView.evaluateJavascript(any(), any()) } throws RuntimeException("boom")
+        val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
+        sut.addTo(webView)
+
+        // when
+        sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
+        invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
+
+        // then: 예외 없이 종료된다
+        post.captured.run()
+    }
+
+    @Test
+    fun `postMessage - WebView가 없으면 회신을 건너뛴다`() {
+        // given
+        val app = app(mode = HackleAppMode.NATIVE)
+        val invocationCallback = slot<HackleInvocationCallback>()
+        every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
+        val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
+
+        // when: addTo를 호출하지 않아 회신 대상이 없다
+        sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
+
+        // then: 예외 없이 종료된다
+        invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
     }
 }
