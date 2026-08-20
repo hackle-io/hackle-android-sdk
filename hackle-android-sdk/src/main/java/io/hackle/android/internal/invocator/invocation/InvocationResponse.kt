@@ -8,7 +8,7 @@ internal class InvocationResponse<out T> private constructor(
     val message: String,
     val data: T?,
     /**
-     * 비동기 처리의 완료 신호. user mutation 명령만 값을 가지며 직렬화되지 않는다.
+     * user mutation 명령만 값을 가진다.
      */
     val completion: CompletableFuture<Void>?,
 ) {

@@ -181,7 +181,7 @@ class HackleJavascriptInterfaceTest {
         val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
         sut.addTo(webView)
 
-        // when: 예외 없이 종료된다
+        // when
         sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
     }
@@ -193,14 +193,14 @@ class HackleJavascriptInterfaceTest {
         val invocationCallback = slot<HackleInvocationCallback>()
         every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
         val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
-        // WebView를 만들되 addTo로 연결하지 않아 webViewRef가 null임을 증명한다
+        // WebView를 만들되 addTo로 연결하지 않는다
         val webView = mockk<WebView>(relaxed = true)
 
-        // when: addTo를 호출하지 않아 회신 대상이 없다
+        // when
         sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
 
-        // then: 회신이 시도되지 않는다
+        // then
         verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
     }
 }
