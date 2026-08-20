@@ -211,7 +211,7 @@ class HackleInvocationTest {
                 assertThat(array.size, `is`(2))
                 assertThat((array[0] as Number).toDouble(), `is`(123.0))
                 assertThat(array[1], `is`("123"))
-            }, null)
+            }, any())
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -239,7 +239,7 @@ class HackleInvocationTest {
         val jsonString = createJsonString("setUserId", parameters)
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
-            app.setUserId(withArg { assertThat(it, `is`(userId)) }, null)
+            app.setUserId(withArg { assertThat(it, `is`(userId)) }, any())
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -254,7 +254,7 @@ class HackleInvocationTest {
         val jsonString = createJsonString("setUserId", parameters)
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
-            app.setUserId(null, null)
+            app.setUserId(null, any())
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -281,7 +281,7 @@ class HackleInvocationTest {
         val jsonString = createJsonString("setDeviceId", parameters)
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
-            app.setDeviceId(withArg { assertThat(it, `is`("abcd1234")) }, null)
+            app.setDeviceId(withArg { assertThat(it, `is`("abcd1234")) }, any())
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
@@ -317,7 +317,7 @@ class HackleInvocationTest {
                     assertThat(set.size, `is`(1))
                     assertThat(set["foo"], `is`("bar"))
                 },
-                null
+                any()
             )
         }
         result.parseJson<InvokeResponse>().apply {
@@ -374,7 +374,7 @@ class HackleInvocationTest {
                     assertThat(setOnce.size, `is`(1))
                     assertThat(setOnce["foo"], `is`("bar"))
                 },
-                null
+                any()
             )
         }
         result.parseJson<InvokeResponse>().apply {
@@ -506,7 +506,7 @@ class HackleInvocationTest {
         val jsonString = createJsonString("resetUser")
         val result = invocation.invoke(jsonString)
         verify(exactly = 1) {
-            app.resetUser(null)
+            app.resetUser(any())
         }
         result.parseJson<InvokeResponse>().apply {
             assertThat(success, `is`(true))
