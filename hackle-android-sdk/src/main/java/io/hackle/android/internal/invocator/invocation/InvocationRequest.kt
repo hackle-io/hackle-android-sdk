@@ -50,7 +50,8 @@ internal class InvocationRequest private constructor(
         }
 
         /**
-         * payload를 완전히 파싱하지 않고 requestId만 추출한다.
+         * `parse`와 동일하게 payload를 `InvocationRequestDto`로 완전히 역직렬화하되,
+         * `command` 존재 여부 검증만 생략하고 requestId를 꺼내 반환한다.
          * message 채널에서 회신 대상인지 판단하기 위해 쓴다.
          */
         fun requestId(string: String): String? {

@@ -5,17 +5,33 @@ import io.hackle.android.HackleApp
 import io.hackle.android.HackleAppMode
 import io.hackle.android.HackleConfig
 import io.hackle.android.internal.model.Sdk
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.sdk.common.HackleInvocationCallback
 import io.hackle.sdk.common.HackleWebViewConfig
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
+import io.mockk.unmockkObject
 import io.mockk.verify
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 class HackleJavascriptInterfaceTest {
+
+    @Before
+    fun setup() {
+        mockkObject(TaskExecutors)
+        every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
+    }
+
+    @After
+    fun tearDown() {
+        unmockkObject(TaskExecutors)
+    }
 
     @Suppress("DEPRECATION")
     private fun app(
@@ -138,15 +154,12 @@ class HackleJavascriptInterfaceTest {
         val invocationCallback = slot<HackleInvocationCallback>()
         every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
         val webView = mockk<WebView>(relaxed = true)
-        val post = slot<Runnable>()
-        every { webView.post(capture(post)) } returns true
         val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
         sut.addTo(webView)
 
         // when
         sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
-        post.captured.run()
 
         // then
         verify(exactly = 1) {
@@ -164,18 +177,13 @@ class HackleJavascriptInterfaceTest {
         val invocationCallback = slot<HackleInvocationCallback>()
         every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
         val webView = mockk<WebView>(relaxed = true)
-        val post = slot<Runnable>()
-        every { webView.post(capture(post)) } returns true
         every { webView.evaluateJavascript(any(), any()) } throws RuntimeException("boom")
         val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
         sut.addTo(webView)
 
-        // when
+        // when: 예외 없이 종료된다
         sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
-
-        // then: 예외 없이 종료된다
-        post.captured.run()
     }
 
     @Test
@@ -185,11 +193,14 @@ class HackleJavascriptInterfaceTest {
         val invocationCallback = slot<HackleInvocationCallback>()
         every { app.invocator.invokeAsync(any(), capture(invocationCallback)) } returns Unit
         val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
+        // WebView를 만들되 addTo로 연결하지 않아 webViewRef가 null임을 증명한다
+        val webView = mockk<WebView>(relaxed = true)
 
         // when: addTo를 호출하지 않아 회신 대상이 없다
         sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
-
-        // then: 예외 없이 종료된다
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
+
+        // then: 회신이 시도되지 않는다
+        verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
     }
 }

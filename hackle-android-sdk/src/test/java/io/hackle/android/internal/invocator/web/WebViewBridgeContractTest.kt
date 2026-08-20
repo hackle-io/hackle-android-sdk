@@ -11,20 +11,20 @@ import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
 import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.model.Sdk
+import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.sdk.common.HackleWebViewConfig
-import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
+import io.mockk.unmockkObject
 import io.mockk.verify
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
-import strikt.assertions.contains
-import strikt.assertions.endsWith
 import strikt.assertions.isEqualTo
 import strikt.assertions.isTrue
-import strikt.assertions.startsWith
 
 /**
  * 3 repo(iOS/Android/JS)가 공유하는 message 채널 wire 포맷 계약.
@@ -41,11 +41,13 @@ internal class WebViewBridgeContractTest {
     private lateinit var core: HackleAppCore
     private lateinit var app: HackleApp
     private lateinit var webView: WebView
-    private lateinit var post: CapturingSlot<Runnable>
 
     @Suppress("DEPRECATION")
     @Before
     fun setup() {
+        mockkObject(TaskExecutors)
+        every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
+
         core = mockk(relaxUnitFun = true)
         val invocator = HackleInvocatorImpl(InvocationProcessor(InvocationHandlerFactory(core)))
         app = HackleApp(
@@ -55,8 +57,11 @@ internal class WebViewBridgeContractTest {
             invocator = invocator
         )
         webView = mockk(relaxed = true)
-        post = slot()
-        every { webView.post(capture(post)) } returns true
+    }
+
+    @After
+    fun tearDown() {
+        unmockkObject(TaskExecutors)
     }
 
     private fun bridge(): HackleJavascriptInterface {
@@ -103,15 +108,12 @@ internal class WebViewBridgeContractTest {
 
         // 완료되면 회신한다
         callback.captured.run()
-        post.captured.run()
 
         val script = slot<String>()
         verify(exactly = 1) { webView.evaluateJavascript(capture(script), null) }
-        expectThat(script.captured) {
-            startsWith("""window._hackleBridge && window._hackleBridge.resolve("$requestId", "{""")
-            contains("""\"success\":true""")
-            endsWith("""}")""")
-        }
+        expectThat(script.captured).isEqualTo(
+            """window._hackleBridge && window._hackleBridge.resolve("$requestId", "{\"success\":true,\"message\":\"OK\"}")"""
+        )
     }
 
     @Test
