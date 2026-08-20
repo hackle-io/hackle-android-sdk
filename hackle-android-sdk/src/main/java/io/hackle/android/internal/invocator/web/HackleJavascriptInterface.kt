@@ -40,7 +40,7 @@ internal open class HackleJavascriptInterface(
 
     @JavascriptInterface
     fun getBridgeCapabilities(): String {
-        return CAPABILITIES
+        return """["function","message"]"""
     }
 
     @JavascriptInterface
@@ -85,7 +85,6 @@ internal open class HackleJavascriptInterface(
 
     companion object {
         const val NAME = "_hackleApp"
-        private const val CAPABILITIES = """["function","message"]"""
         private val log = Logger<HackleJavascriptInterface>()
     }
 }
