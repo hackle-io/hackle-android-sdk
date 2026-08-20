@@ -16,6 +16,7 @@ import io.hackle.sdk.core.model.ValueType
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
@@ -1005,5 +1006,41 @@ class HackleInvocationTest {
         )
 
         return gson.toJson(map)
+    }
+
+    // invokeAsync
+
+    @Test
+    fun `invokeAsync - completion이 없으면 즉시 응답한다`() {
+        every { app.sessionId } returns "session-1"
+        val jsonString = createJsonString("getSessionId")
+        var response: String? = null
+
+        invocation.invokeAsync(jsonString) { response = it }
+
+        assertThat(response, `is`("""{"success":true,"message":"OK","data":"session-1"}"""))
+    }
+
+    @Test
+    fun `invokeAsync - completion이 완료되면 응답한다`() {
+        val callback = slot<Runnable>()
+        every { app.resetUser(capture(callback)) } returns Unit
+        val jsonString = createJsonString("resetUser")
+        var response: String? = null
+
+        invocation.invokeAsync(jsonString) { response = it }
+
+        assertNull(response)
+        callback.captured.run()
+        assertThat(response, `is`("""{"success":true,"message":"OK"}"""))
+    }
+
+    @Test
+    fun `invokeAsync - 파싱에 실패하면 실패 응답으로 즉시 응답한다`() {
+        var response: String? = null
+
+        invocation.invokeAsync("not a json") { response = it }
+
+        assertThat(response, `is`("""{"success":false,"message":"Invalid invocation format"}"""))
     }
 }

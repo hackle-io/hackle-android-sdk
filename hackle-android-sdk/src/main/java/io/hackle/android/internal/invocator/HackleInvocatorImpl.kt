@@ -3,6 +3,7 @@ package io.hackle.android.internal.invocator
 import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.invocator.invocation.InvocationResponse
+import io.hackle.sdk.common.HackleInvocationCallback
 import io.hackle.sdk.common.HackleInvocator
 
 internal class HackleInvocatorImpl(
@@ -14,12 +15,26 @@ internal class HackleInvocatorImpl(
     }
 
     override fun invoke(string: String): String {
-        val response = try {
+        return response(string).toJsonString()
+    }
+
+    override fun invokeAsync(string: String, callback: HackleInvocationCallback) {
+        val response = response(string)
+        val json = response.toJsonString()
+        val completion = response.completion
+        if (completion == null) {
+            callback.onResponse(json)
+            return
+        }
+        completion.whenComplete { _, _ -> callback.onResponse(json) }
+    }
+
+    private fun response(string: String): InvocationResponse<Any> {
+        return try {
             val request = InvocationRequest.parse(string)
             processor.process(request)
         } catch (e: Exception) {
             InvocationResponse.failed(e)
         }
-        return response.toJsonString()
     }
 }
