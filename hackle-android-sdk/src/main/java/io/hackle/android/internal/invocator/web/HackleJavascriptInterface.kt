@@ -54,6 +54,10 @@ internal open class HackleJavascriptInterface(
      */
     @JavascriptInterface
     fun postMessage(message: String) {
+        if (!InvocationRequest.isInvocableString(message)) {
+            return
+        }
+
         val requestId = InvocationRequest.requestId(message)
         if (requestId == null) {
             app.invocator.invoke(message)

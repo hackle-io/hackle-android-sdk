@@ -131,6 +131,24 @@ class HackleJavascriptInterfaceTest {
     }
 
     @Test
+    fun `postMessage - invoke할 수 없는 메시지는 무시한다`() {
+        // given
+        val app = app(mode = HackleAppMode.NATIVE)
+        val webView = mockk<WebView>(relaxed = true)
+        val sut = HackleJavascriptInterface(app = app, webViewConfig = HackleWebViewConfig.DEFAULT)
+        sut.addTo(webView)
+
+        // when
+        sut.postMessage("not a json")
+        sut.postMessage("""{"_hackle":{"parameters":{}}}""")
+
+        // then
+        verify(exactly = 0) { app.invocator.invoke(any()) }
+        verify(exactly = 0) { app.invocator.invokeAsync(any(), any()) }
+        verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
+    }
+
+    @Test
     fun `postMessage - requestId가 없으면 invoke로 처리하고 회신하지 않는다`() {
         // given
         val app = app(mode = HackleAppMode.NATIVE)

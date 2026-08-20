@@ -140,13 +140,6 @@ class InvocationRequestTest {
     }
 
     @Test
-    fun `parse - requestId가 빈 문자열이면 null이다`() {
-        val request = InvocationRequest.parse(json(command = "setUser", requestId = ""))
-
-        expectThat(request.requestId).isNull()
-    }
-
-    @Test
     fun `requestId - payload에서 requestId만 추출한다`() {
         val requestId = InvocationRequest.requestId(json(command = "setUser", requestId = "req-1"))
 

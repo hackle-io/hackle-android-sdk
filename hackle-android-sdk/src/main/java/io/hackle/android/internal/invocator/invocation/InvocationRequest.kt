@@ -34,7 +34,7 @@ internal class InvocationRequest private constructor(
                 command = InvocationCommand.from(command),
                 parameters = invocation.parameters ?: hashMapOf(),
                 browserProperties = invocation.browserProperties ?: hashMapOf(),
-                requestId = invocation.requestId?.takeIf { it.isNotBlank() }
+                requestId = invocation.requestId
             )
         }
 
@@ -54,7 +54,7 @@ internal class InvocationRequest private constructor(
          */
         fun requestId(string: String): String? {
             return try {
-                string.parseJson<InvocationRequestDto>().hackle?.requestId?.takeIf { it.isNotBlank() }
+                string.parseJson<InvocationRequestDto>().hackle?.requestId
             } catch (_: Exception) {
                 null
             }
