@@ -15,6 +15,7 @@ internal open class HackleJavascriptInterface(
     private val webViewConfig: HackleWebViewConfig,
 ) {
 
+    @Volatile
     private var webViewRef: WeakReference<WebView>? = null
 
     @JavascriptInterface
