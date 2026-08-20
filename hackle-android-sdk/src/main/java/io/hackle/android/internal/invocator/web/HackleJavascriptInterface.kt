@@ -8,7 +8,6 @@ import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.HackleWebViewConfig
 import io.hackle.sdk.core.internal.log.Logger
-import io.hackle.sdk.core.internal.metrics.Metrics
 import java.lang.ref.WeakReference
 
 internal open class HackleJavascriptInterface(
@@ -55,8 +54,6 @@ internal open class HackleJavascriptInterface(
      */
     @JavascriptInterface
     fun postMessage(message: String) {
-        Metrics.counter("webview.bridge.message").increment()
-
         val requestId = InvocationRequest.requestId(message)
         if (requestId == null) {
             app.invocator.invoke(message)
