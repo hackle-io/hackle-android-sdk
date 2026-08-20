@@ -12,10 +12,11 @@ internal class InvocationRequest private constructor(
     val command: InvocationCommand,
     val parameters: InvocationParameters,
     val browserProperties: HackleBrowserProperties,
+    val requestId: String?,
 ) {
 
     override fun toString(): String {
-        return "InvocationRequest(command=$command, parameters=$parameters, browserProperties=$browserProperties)"
+        return "InvocationRequest(command=$command, parameters=$parameters, browserProperties=$browserProperties, requestId=$requestId)"
     }
 
     companion object {
@@ -32,7 +33,8 @@ internal class InvocationRequest private constructor(
             return InvocationRequest(
                 command = InvocationCommand.from(command),
                 parameters = invocation.parameters ?: hashMapOf(),
-                browserProperties = invocation.browserProperties ?: hashMapOf()
+                browserProperties = invocation.browserProperties ?: hashMapOf(),
+                requestId = invocation.requestId?.takeIf { it.isNotBlank() }
             )
         }
 
@@ -44,6 +46,18 @@ internal class InvocationRequest private constructor(
                 command.isNotBlank()
             } catch (_: Exception) {
                 false
+            }
+        }
+
+        /**
+         * payload를 완전히 파싱하지 않고 requestId만 추출한다.
+         * message 채널에서 회신 대상인지 판단하기 위해 쓴다.
+         */
+        fun requestId(string: String): String? {
+            return try {
+                string.parseJson<InvocationRequestDto>().hackle?.requestId?.takeIf { it.isNotBlank() }
+            } catch (_: Exception) {
+                null
             }
         }
     }

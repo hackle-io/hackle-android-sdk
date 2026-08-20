@@ -6,6 +6,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
+import strikt.assertions.isNull
 import strikt.assertions.isTrue
 
 class InvocationRequestTest {
@@ -16,11 +17,13 @@ class InvocationRequestTest {
         command: String? = "getSessionId",
         parameters: Map<String, Any?>? = null,
         browserProperties: Map<String, Any>? = null,
+        requestId: String? = null,
     ): String {
         val hackle = mutableMapOf<String, Any?>()
         if (command != null) hackle["command"] = command
         if (parameters != null) hackle["parameters"] = parameters
         if (browserProperties != null) hackle["browserProperties"] = browserProperties
+        if (requestId != null) hackle["requestId"] = requestId
         return gson.toJson(mapOf("_hackle" to hackle))
     }
 
@@ -118,5 +121,45 @@ class InvocationRequestTest {
     @Test
     fun `isInvocableString - command가 공백 문자열이면 false를 반환한다`() {
         expectThat(InvocationRequest.isInvocableString(json(command = "   "))).isFalse()
+    }
+
+    // requestId
+
+    @Test
+    fun `parse - requestId를 파싱한다`() {
+        val request = InvocationRequest.parse(json(command = "setUser", requestId = "req-1"))
+
+        expectThat(request.requestId).isEqualTo("req-1")
+    }
+
+    @Test
+    fun `parse - requestId가 없으면 null이다`() {
+        val request = InvocationRequest.parse(json(command = "setUser"))
+
+        expectThat(request.requestId).isNull()
+    }
+
+    @Test
+    fun `parse - requestId가 빈 문자열이면 null이다`() {
+        val request = InvocationRequest.parse(json(command = "setUser", requestId = ""))
+
+        expectThat(request.requestId).isNull()
+    }
+
+    @Test
+    fun `requestId - payload에서 requestId만 추출한다`() {
+        val requestId = InvocationRequest.requestId(json(command = "setUser", requestId = "req-1"))
+
+        expectThat(requestId).isEqualTo("req-1")
+    }
+
+    @Test
+    fun `requestId - requestId가 없으면 null이다`() {
+        expectThat(InvocationRequest.requestId(json(command = "track"))).isNull()
+    }
+
+    @Test
+    fun `requestId - 파싱할 수 없는 문자열이면 null이다`() {
+        expectThat(InvocationRequest.requestId("not a json")).isNull()
     }
 }
