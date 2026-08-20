@@ -3,6 +3,8 @@ package io.hackle.android.internal.invocator.invocation
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
+import java.util.concurrent.CompletableFuture
 
 class InvocationResponseTest {
 
@@ -53,5 +55,31 @@ class InvocationResponseTest {
         val json = InvocationResponse.failed(RuntimeException()).toJsonString()
 
         expectThat(json).isEqualTo("""{"success":false,"message":"FAIL"}""")
+    }
+
+    @Test
+    fun `success(completion) - completion을 보관한다`() {
+        val completion = CompletableFuture<Void>()
+
+        val response = InvocationResponse.success<Unit>(completion = completion)
+
+        expectThat(response.completion).isEqualTo(completion)
+    }
+
+    @Test
+    fun `success(completion) - completion은 JSON에 직렬화되지 않는다`() {
+        val response = InvocationResponse.success<Unit>(completion = CompletableFuture<Void>())
+
+        expectThat(response.toJsonString()).isEqualTo("""{"success":true,"message":"OK"}""")
+    }
+
+    @Test
+    fun `success() - completion이 없다`() {
+        expectThat(InvocationResponse.success<Any>().completion).isNull()
+    }
+
+    @Test
+    fun `failed - completion이 없다`() {
+        expectThat(InvocationResponse.failed(RuntimeException("boom")).completion).isNull()
     }
 }
