@@ -3,8 +3,10 @@ package io.hackle.android.internal.invocator
 import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.invocator.invocation.InvocationResponse
+import io.hackle.android.internal.task.onComplete
 import io.hackle.sdk.common.HackleInvocationCallback
 import io.hackle.sdk.common.HackleInvocator
+import io.hackle.sdk.core.internal.log.Logger
 
 internal class HackleInvocatorImpl(
     private val processor: InvocationProcessor,
@@ -23,10 +25,18 @@ internal class HackleInvocatorImpl(
         val json = response.toJsonString()
         val completion = response.completion
         if (completion == null) {
-            callback.onResponse(json)
+            respond(callback, json)
             return
         }
-        completion.whenComplete { _, _ -> callback.onResponse(json) }
+        completion.onComplete { respond(callback, json) }
+    }
+
+    private fun respond(callback: HackleInvocationCallback, json: String) {
+        try {
+            callback.onResponse(json)
+        } catch (e: Throwable) {
+            log.error { "Unexpected exception while responding to invocation: $e" }
+        }
     }
 
     private fun response(string: String): InvocationResponse<Any> {
@@ -36,5 +46,9 @@ internal class HackleInvocatorImpl(
         } catch (e: Exception) {
             InvocationResponse.failed(e)
         }
+    }
+
+    companion object {
+        private val log = Logger<HackleInvocatorImpl>()
     }
 }

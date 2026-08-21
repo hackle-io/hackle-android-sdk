@@ -5,33 +5,22 @@ import io.hackle.android.HackleApp
 import io.hackle.android.HackleAppMode
 import io.hackle.android.HackleConfig
 import io.hackle.android.internal.model.Sdk
-import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.support.InlineUiThreadRule
 import io.hackle.sdk.common.HackleInvocationCallback
 import io.hackle.sdk.common.HackleWebViewConfig
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.slot
-import io.mockk.unmockkObject
 import io.mockk.verify
-import org.junit.After
-import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
-class HackleJavascriptInterfaceTest {
+internal class HackleJavascriptInterfaceTest {
 
-    @Before
-    fun setup() {
-        mockkObject(TaskExecutors)
-        every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
-    }
-
-    @After
-    fun tearDown() {
-        unmockkObject(TaskExecutors)
-    }
+    @get:Rule
+    val inlineUiThread = InlineUiThreadRule()
 
     @Suppress("DEPRECATION")
     private fun app(

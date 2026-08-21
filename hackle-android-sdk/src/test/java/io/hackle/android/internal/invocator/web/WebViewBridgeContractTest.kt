@@ -11,16 +11,14 @@ import io.hackle.android.internal.invocator.invocation.InvocationHandlerFactory
 import io.hackle.android.internal.invocator.invocation.InvocationProcessor
 import io.hackle.android.internal.invocator.invocation.InvocationRequest
 import io.hackle.android.internal.model.Sdk
-import io.hackle.android.internal.task.TaskExecutors
+import io.hackle.android.support.InlineUiThreadRule
 import io.hackle.sdk.common.HackleWebViewConfig
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.slot
-import io.mockk.unmockkObject
 import io.mockk.verify
-import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -42,12 +40,12 @@ internal class WebViewBridgeContractTest {
     private lateinit var app: HackleApp
     private lateinit var webView: WebView
 
+    @get:Rule
+    val inlineUiThread = InlineUiThreadRule()
+
     @Suppress("DEPRECATION")
     @Before
     fun setup() {
-        mockkObject(TaskExecutors)
-        every { TaskExecutors.runOnUiThread(any()) } answers { firstArg<() -> Unit>()() }
-
         core = mockk(relaxUnitFun = true)
         val invocator = HackleInvocatorImpl(InvocationProcessor(InvocationHandlerFactory(core)))
         app = HackleApp(
@@ -57,11 +55,6 @@ internal class WebViewBridgeContractTest {
             invocator = invocator
         )
         webView = mockk(relaxed = true)
-    }
-
-    @After
-    fun tearDown() {
-        unmockkObject(TaskExecutors)
     }
 
     private fun bridge(): HackleJavascriptInterface {

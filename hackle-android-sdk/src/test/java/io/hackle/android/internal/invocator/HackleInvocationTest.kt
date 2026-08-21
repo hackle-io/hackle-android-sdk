@@ -1043,4 +1043,23 @@ class HackleInvocationTest {
 
         assertThat(response, `is`("""{"success":false,"message":"Invalid invocation format"}"""))
     }
+
+    @Test
+    fun `invokeAsync - 즉시 응답 콜백이 예외를 던져도 전파하지 않는다`() {
+        every { app.sessionId } returns "session-1"
+        val jsonString = createJsonString("getSessionId")
+
+        invocation.invokeAsync(jsonString) { throw IllegalStateException("boom") }
+    }
+
+    @Test
+    fun `invokeAsync - completion 완료 콜백이 예외를 던져도 전파하지 않는다`() {
+        val callback = slot<Runnable>()
+        every { app.resetUser(capture(callback)) } returns Unit
+        val jsonString = createJsonString("resetUser")
+
+        invocation.invokeAsync(jsonString) { throw IllegalStateException("boom") }
+
+        callback.captured.run()
+    }
 }

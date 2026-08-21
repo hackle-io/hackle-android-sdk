@@ -14,6 +14,12 @@ import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
 import java.util.concurrent.CompletableFuture
 
+private inline fun onCompletion(call: (Runnable) -> Unit): InvocationResponse<Unit> {
+    val completion = CompletableFuture<Void>()
+    call(Runnable { completion.complete(null) })
+    return InvocationResponse.success(completion = completion)
+}
+
 // Session
 
 internal class GetSessionIdInvocationHandler(private val core: HackleAppCore) : InvocationHandler<String> {
@@ -35,17 +41,13 @@ internal class SetUserInvocationHandler(private val core: HackleAppCore) : Invoc
         val data = checkParameterNotNull(request.parameters.userAsMap(), "user")
         val dto = UserDto.from(data)
         val user = User.from(dto)
-        val completion = CompletableFuture<Void>()
-        core.setUser(user, Runnable { completion.complete(null) })
-        return InvocationResponse.success(completion = completion)
+        return onCompletion { core.setUser(user, it) }
     }
 }
 
 internal class ResetUserInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
-        val completion = CompletableFuture<Void>()
-        core.resetUser(Runnable { completion.complete(null) })
-        return InvocationResponse.success(completion = completion)
+        return onCompletion { core.resetUser(it) }
     }
 }
 
@@ -55,18 +57,14 @@ internal class SetUserIdInvocationHandler(private val core: HackleAppCore) : Inv
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
         check(request.parameters.containsKey("userId"))
         val userId = request.parameters.userId()
-        val completion = CompletableFuture<Void>()
-        core.setUserId(userId, Runnable { completion.complete(null) })
-        return InvocationResponse.success(completion = completion)
+        return onCompletion { core.setUserId(userId, it) }
     }
 }
 
 internal class SetDeviceIdInvocationHandler(private val core: HackleAppCore) : InvocationHandler<Unit> {
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
         val deviceId = checkParameterNotNull(request.parameters.deviceId(), "deviceId")
-        val completion = CompletableFuture<Void>()
-        core.setDeviceId(deviceId, Runnable { completion.complete(null) })
-        return InvocationResponse.success(completion = completion)
+        return onCompletion { core.setDeviceId(deviceId, it) }
     }
 }
 
@@ -79,10 +77,7 @@ internal class SetUserPropertyInvocationHandler(private val core: HackleAppCore)
         val operations = PropertyOperations.builder()
             .set(key, value)
             .build()
-
-        val completion = CompletableFuture<Void>()
-        core.updateUserProperties(operations, Runnable { completion.complete(null) })
-        return InvocationResponse.success(completion = completion)
+        return onCompletion { core.updateUserProperties(operations, it) }
     }
 }
 
@@ -90,9 +85,7 @@ internal class UpdateUserPropertiesInvocationHandler(private val core: HackleApp
     override fun invoke(request: InvocationRequest): InvocationResponse<Unit> {
         val dto = checkParameterNotNull(request.parameters.propertyOperationDto(), "operations")
         val operations = PropertyOperations.from(dto)
-        val completion = CompletableFuture<Void>()
-        core.updateUserProperties(operations, Runnable { completion.complete(null) })
-        return InvocationResponse.success(completion = completion)
+        return onCompletion { core.updateUserProperties(operations, it) }
     }
 }
 
