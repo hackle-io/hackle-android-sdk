@@ -44,6 +44,7 @@ internal class HackleInvocatorImpl(
             val request = InvocationRequest.parse(string)
             processor.process(request)
         } catch (e: Exception) {
+            log.error { "Failed to parse Invocation: $e" }
             InvocationResponse.failed(e)
         }
     }
