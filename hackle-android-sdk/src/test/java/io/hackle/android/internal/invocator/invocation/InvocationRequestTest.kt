@@ -17,13 +17,13 @@ class InvocationRequestTest {
         command: String? = "getSessionId",
         parameters: Map<String, Any?>? = null,
         browserProperties: Map<String, Any>? = null,
-        requestId: String? = null,
+        messageId: String? = null,
     ): String {
         val hackle = mutableMapOf<String, Any?>()
         if (command != null) hackle["command"] = command
         if (parameters != null) hackle["parameters"] = parameters
         if (browserProperties != null) hackle["browserProperties"] = browserProperties
-        if (requestId != null) hackle["requestId"] = requestId
+        if (messageId != null) hackle["messageId"] = messageId
         return gson.toJson(mapOf("_hackle" to hackle))
     }
 
@@ -123,36 +123,36 @@ class InvocationRequestTest {
         expectThat(InvocationRequest.isInvocableString(json(command = "   "))).isFalse()
     }
 
-    // requestId
+    // messageId
 
     @Test
-    fun `parse - requestId를 파싱한다`() {
-        val request = InvocationRequest.parse(json(command = "setUser", requestId = "req-1"))
+    fun `parse - messageId를 파싱한다`() {
+        val request = InvocationRequest.parse(json(command = "setUser", messageId = "msg-1"))
 
-        expectThat(request.requestId).isEqualTo("req-1")
+        expectThat(request.messageId).isEqualTo("msg-1")
     }
 
     @Test
-    fun `parse - requestId가 없으면 null이다`() {
+    fun `parse - messageId가 없으면 null이다`() {
         val request = InvocationRequest.parse(json(command = "setUser"))
 
-        expectThat(request.requestId).isNull()
+        expectThat(request.messageId).isNull()
     }
 
     @Test
-    fun `requestId - payload에서 requestId만 추출한다`() {
-        val requestId = InvocationRequest.requestId(json(command = "setUser", requestId = "req-1"))
+    fun `messageId - payload에서 messageId만 추출한다`() {
+        val messageId = InvocationRequest.messageId(json(command = "setUser", messageId = "msg-1"))
 
-        expectThat(requestId).isEqualTo("req-1")
+        expectThat(messageId).isEqualTo("msg-1")
     }
 
     @Test
-    fun `requestId - requestId가 없으면 null이다`() {
-        expectThat(InvocationRequest.requestId(json(command = "track"))).isNull()
+    fun `messageId - messageId가 없으면 null이다`() {
+        expectThat(InvocationRequest.messageId(json(command = "track"))).isNull()
     }
 
     @Test
-    fun `requestId - 파싱할 수 없는 문자열이면 null이다`() {
-        expectThat(InvocationRequest.requestId("not a json")).isNull()
+    fun `messageId - 파싱할 수 없는 문자열이면 null이다`() {
+        expectThat(InvocationRequest.messageId("not a json")).isNull()
     }
 }

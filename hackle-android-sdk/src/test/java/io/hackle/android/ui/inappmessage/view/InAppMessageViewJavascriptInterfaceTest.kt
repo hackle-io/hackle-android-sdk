@@ -98,10 +98,10 @@ internal class InAppMessageViewJavascriptInterfaceTest {
     }
 
     @Test
-    fun `getBridgeCapabilities - IAM WebView도 message 채널을 노출한다`() {
+    fun `getSupportedInvocationTypes - IAM WebView도 message 채널을 노출한다`() {
         val sut = sut(Event.builder("hello").build())
 
-        expectThat(sut.getBridgeCapabilities()).isEqualTo("""["function","message"]""")
+        expectThat(sut.getSupportedInvocationTypes()).isEqualTo("""["function","message"]""")
     }
 
     @Test

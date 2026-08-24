@@ -30,11 +30,13 @@ import strikt.assertions.isTrue
  */
 internal class WebViewBridgeContractTest {
 
-    private val requestId = "11111111-2222-3333-4444-555555555555"
+    private val messageId = "11111111-2222-3333-4444-555555555555"
     private val mutationInvoke =
-        """{"_hackle":{"command":"setUser","parameters":{"user":{"id":"42"}},"requestId":"$requestId"}}"""
+        """{"_hackle":{"command":"setUser","parameters":{"user":{"id":"42"}},"messageId":"$messageId"}}"""
     private val trackInvoke =
         """{"_hackle":{"command":"track","parameters":{"event":{"key":"purchase"}}}}"""
+    private val trackInvokeWithMessageId =
+        """{"_hackle":{"command":"track","parameters":{"event":{"key":"purchase"}},"messageId":"$messageId"}}"""
 
     private lateinit var core: HackleAppCore
     private lateinit var app: HackleApp
@@ -66,12 +68,12 @@ internal class WebViewBridgeContractTest {
     @Test
     fun `message 채널 진입점 이름은 postMessage로 고정이다`() {
         expectThat(HackleJavascriptInterface.NAME).isEqualTo("_hackleApp")
-        expectThat(bridge().getBridgeCapabilities()).isEqualTo("""["function","message"]""")
+        expectThat(bridge().getSupportedInvocationTypes()).isEqualTo("""["function","message"]""")
         expectThat(bridge().getInvocationType()).isEqualTo("function")
     }
 
     @Test
-    fun `requestId가 붙어도 기존 invocator가 그대로 파싱한다`() {
+    fun `messageId가 붙어도 기존 invocator가 그대로 파싱한다`() {
         expectThat(InvocationRequest.isInvocableString(mutationInvoke)).isTrue()
         expectThat(InvocationRequest.isInvocableString(trackInvoke)).isTrue()
 
@@ -79,13 +81,13 @@ internal class WebViewBridgeContractTest {
 
         expectThat(request) {
             get { command }.isEqualTo(InvocationCommand.SET_USER)
-            get { requestId }.isEqualTo(this@WebViewBridgeContractTest.requestId)
+            get { messageId }.isEqualTo(this@WebViewBridgeContractTest.messageId)
             get { browserProperties }.isEqualTo(emptyMap<String, Any>())
         }
     }
 
     @Test
-    fun `mutation 메시지는 core를 호출하고 완료 후 resolve를 발송한다`() {
+    fun `mutation 메시지는 core를 호출하고 완료 후 resolveMessage를 발송한다`() {
         // given
         val callback = slot<Runnable>()
         every { core.setUser(any(), capture(callback)) } returns Unit
@@ -105,15 +107,28 @@ internal class WebViewBridgeContractTest {
         val script = slot<String>()
         verify(exactly = 1) { webView.evaluateJavascript(capture(script), null) }
         expectThat(script.captured).isEqualTo(
-            """window._hackleBridge && window._hackleBridge.resolve("$requestId", "{\"success\":true,\"message\":\"OK\"}")"""
+            """window._hackleBridge && window._hackleBridge.resolveMessage("$messageId", "{\"success\":true,\"message\":\"OK\"}")"""
         )
     }
 
     @Test
-    fun `track 메시지는 core를 호출하고 회신하지 않는다`() {
+    fun `messageId가 없는 메시지는 core만 호출하고 회신하지 않는다`() {
         bridge().postMessage(trackInvoke)
 
         verify(exactly = 1) { core.track(any(), any()) }
         verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
+    }
+
+    @Test
+    fun `mutation이 아닌 메시지도 messageId가 있으면 즉시 회신한다`() {
+        bridge().postMessage(trackInvokeWithMessageId)
+
+        verify(exactly = 1) { core.track(any(), any()) }
+
+        val script = slot<String>()
+        verify(exactly = 1) { webView.evaluateJavascript(capture(script), null) }
+        expectThat(script.captured).isEqualTo(
+            """window._hackleBridge && window._hackleBridge.resolveMessage("$messageId", "{\"success\":true,\"message\":\"OK\"}")"""
+        )
     }
 }

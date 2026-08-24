@@ -111,12 +111,12 @@ internal class HackleJavascriptInterfaceTest {
     }
 
     @Test
-    fun getBridgeCapabilities() {
+    fun getSupportedInvocationTypes() {
         val sut = HackleJavascriptInterface(
             app = app(mode = HackleAppMode.NATIVE),
             webViewConfig = HackleWebViewConfig.DEFAULT
         )
-        expectThat(sut.getBridgeCapabilities()).isEqualTo("""["function","message"]""")
+        expectThat(sut.getSupportedInvocationTypes()).isEqualTo("""["function","message"]""")
     }
 
     @Test
@@ -138,7 +138,7 @@ internal class HackleJavascriptInterfaceTest {
     }
 
     @Test
-    fun `postMessage - requestId가 없으면 invoke로 처리하고 회신하지 않는다`() {
+    fun `postMessage - messageId가 없으면 invoke로 처리하고 회신하지 않는다`() {
         // given
         val app = app(mode = HackleAppMode.NATIVE)
         val webView = mockk<WebView>(relaxed = true)
@@ -155,7 +155,7 @@ internal class HackleJavascriptInterfaceTest {
     }
 
     @Test
-    fun `postMessage - requestId가 있으면 완료 후 resolve 스크립트를 실행한다`() {
+    fun `postMessage - messageId가 있으면 완료 후 resolveMessage 스크립트를 실행한다`() {
         // given
         val app = app(mode = HackleAppMode.NATIVE)
         val invocationCallback = slot<HackleInvocationCallback>()
@@ -165,13 +165,13 @@ internal class HackleJavascriptInterfaceTest {
         sut.addTo(webView)
 
         // when
-        sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
+        sut.postMessage("""{"_hackle":{"command":"resetUser","messageId":"msg-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
 
         // then
         verify(exactly = 1) {
             webView.evaluateJavascript(
-                """window._hackleBridge && window._hackleBridge.resolve("req-1", "{\"success\":true,\"message\":\"OK\"}")""",
+                """window._hackleBridge && window._hackleBridge.resolveMessage("msg-1", "{\"success\":true,\"message\":\"OK\"}")""",
                 null
             )
         }
@@ -189,7 +189,7 @@ internal class HackleJavascriptInterfaceTest {
         sut.addTo(webView)
 
         // when
-        sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
+        sut.postMessage("""{"_hackle":{"command":"resetUser","messageId":"msg-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
     }
 
@@ -204,7 +204,7 @@ internal class HackleJavascriptInterfaceTest {
         val webView = mockk<WebView>(relaxed = true)
 
         // when
-        sut.postMessage("""{"_hackle":{"command":"resetUser","requestId":"req-1"}}""")
+        sut.postMessage("""{"_hackle":{"command":"resetUser","messageId":"msg-1"}}""")
         invocationCallback.captured.onResponse("""{"success":true,"message":"OK"}""")
 
         // then

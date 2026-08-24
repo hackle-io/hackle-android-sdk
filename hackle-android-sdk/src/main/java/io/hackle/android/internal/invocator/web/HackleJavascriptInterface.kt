@@ -39,7 +39,7 @@ internal open class HackleJavascriptInterface(
     }
 
     @JavascriptInterface
-    fun getBridgeCapabilities(): String {
+    fun getSupportedInvocationTypes(): String {
         return """["function","message"]"""
     }
 
@@ -49,8 +49,8 @@ internal open class HackleJavascriptInterface(
     }
 
     /**
-     * message 채널의 수신 지점. requestId가 있는 요청은 처리 완료 후
-     * `window._hackleBridge.resolve`로 회신한다.
+     * message 채널의 수신 지점. messageId가 있는 요청은 처리 완료 후
+     * `window._hackleBridge.resolveMessage`로 회신한다.
      */
     @JavascriptInterface
     fun postMessage(message: String) {
@@ -58,26 +58,27 @@ internal open class HackleJavascriptInterface(
             return
         }
 
-        val requestId = InvocationRequest.requestId(message)
-        if (requestId == null) {
+        val messageId = InvocationRequest.messageId(message)
+        if (messageId == null) {
             app.invocator.invoke(message)
             return
         }
-        app.invocator.invokeAsync(message) { response -> resolve(requestId, response) }
+        app.invocator.invokeAsync(message) { response -> resolveMessage(messageId, response) }
     }
 
-    private fun resolve(requestId: String, response: String) {
+    private fun resolveMessage(messageId: String, response: String) {
         val webView = webViewRef?.get()
         if (webView == null) {
-            log.debug { "Skipped bridge resolve. [requestId=$requestId]" }
+            log.debug { "Skipped bridge resolveMessage. [messageId=$messageId]" }
             return
         }
-        val script = "window._hackleBridge && window._hackleBridge.resolve(${requestId.toJson()}, ${response.toJson()})"
+        val script =
+            "window._hackleBridge && window._hackleBridge.resolveMessage(${messageId.toJson()}, ${response.toJson()})"
         runOnUiThread {
             try {
                 webView.evaluateJavascript(script, null)
             } catch (e: Throwable) {
-                log.debug { "Failed to resolve bridge request. [requestId=$requestId, error=$e]" }
+                log.debug { "Failed to resolve bridge message. [messageId=$messageId, error=$e]" }
             }
         }
     }
