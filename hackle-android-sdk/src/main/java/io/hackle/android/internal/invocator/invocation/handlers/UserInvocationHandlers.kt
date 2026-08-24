@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture
 private inline fun onCompletion(call: (Runnable) -> Unit): InvocationResponse<Unit> {
     val completion = CompletableFuture<Void>()
     call(Runnable { completion.complete(null) })
-    return InvocationResponse.success(completion = completion)
+    return InvocationResponse.successWithCompletion(completion)
 }
 
 // Session

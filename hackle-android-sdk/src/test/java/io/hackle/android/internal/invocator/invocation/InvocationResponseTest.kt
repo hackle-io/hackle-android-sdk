@@ -58,17 +58,17 @@ class InvocationResponseTest {
     }
 
     @Test
-    fun `success(completion) - completion을 보관한다`() {
+    fun `successWithCompletion - completion을 보관한다`() {
         val completion = CompletableFuture<Void>()
 
-        val response = InvocationResponse.success<Unit>(completion = completion)
+        val response = InvocationResponse.successWithCompletion<Unit>(completion)
 
         expectThat(response.completion).isEqualTo(completion)
     }
 
     @Test
-    fun `success(completion) - completion은 JSON에 직렬화되지 않는다`() {
-        val response = InvocationResponse.success<Unit>(completion = CompletableFuture<Void>())
+    fun `successWithCompletion - completion은 JSON에 직렬화되지 않는다`() {
+        val response = InvocationResponse.successWithCompletion<Unit>(CompletableFuture())
 
         expectThat(response.toJsonString()).isEqualTo("""{"success":true,"message":"OK"}""")
     }

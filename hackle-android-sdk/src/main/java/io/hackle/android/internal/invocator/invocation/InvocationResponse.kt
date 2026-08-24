@@ -35,7 +35,7 @@ internal class InvocationResponse<out T> private constructor(
             return InvocationResponse(isSuccess = true, message = "OK", data = data, completion = null)
         }
 
-        fun <T> success(completion: CompletableFuture<Void>): InvocationResponse<T> {
+        fun <T> successWithCompletion(completion: CompletableFuture<Void>): InvocationResponse<T> {
             return InvocationResponse(isSuccess = true, message = "OK", data = null, completion = completion)
         }
 
