@@ -112,10 +112,10 @@ internal class WebViewBridgeContractTest {
     }
 
     @Test
-    fun `messageId가 없는 메시지는 core만 호출하고 회신하지 않는다`() {
+    fun `messageId가 없는 메시지는 core를 호출하지 않고 무시한다`() {
         bridge().postMessage(trackInvoke)
 
-        verify(exactly = 1) { core.track(any(), any()) }
+        verify(exactly = 0) { core.track(any(), any()) }
         verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
     }
 

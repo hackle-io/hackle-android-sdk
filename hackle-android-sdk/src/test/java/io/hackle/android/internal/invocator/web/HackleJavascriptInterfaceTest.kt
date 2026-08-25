@@ -138,7 +138,7 @@ internal class HackleJavascriptInterfaceTest {
     }
 
     @Test
-    fun `postMessage - messageId가 없으면 invoke로 처리하고 회신하지 않는다`() {
+    fun `postMessage - messageId가 없으면 처리하지 않는다`() {
         // given
         val app = app(mode = HackleAppMode.NATIVE)
         val webView = mockk<WebView>(relaxed = true)
@@ -149,7 +149,7 @@ internal class HackleJavascriptInterfaceTest {
         sut.postMessage("""{"_hackle":{"command":"track","parameters":{"event":{"key":"purchase"}}}}""")
 
         // then
-        verify(exactly = 1) { app.invocator.invoke(any()) }
+        verify(exactly = 0) { app.invocator.invoke(any()) }
         verify(exactly = 0) { app.invocator.invokeAsync(any(), any()) }
         verify(exactly = 0) { webView.evaluateJavascript(any(), any()) }
     }

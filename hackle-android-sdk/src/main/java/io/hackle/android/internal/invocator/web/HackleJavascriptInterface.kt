@@ -49,8 +49,8 @@ internal open class HackleJavascriptInterface(
     }
 
     /**
-     * message 채널의 수신 지점. messageId가 있는 요청은 처리 완료 후
-     * `window._hackleBridge.resolveMessage`로 회신한다.
+     * message 채널의 수신 지점. 처리 완료 후 `window._hackleBridge.resolveMessage`로 회신한다.
+     * message 채널 요청에는 항상 messageId가 있어야 하며, 없으면 처리하지 않는다.
      */
     @JavascriptInterface
     fun postMessage(message: String) {
@@ -60,7 +60,7 @@ internal open class HackleJavascriptInterface(
 
         val messageId = InvocationRequest.messageId(message)
         if (messageId == null) {
-            app.invocator.invoke(message)
+            log.error { "Invalid invocation format (missing: messageId). [message=$message]" }
             return
         }
         app.invocator.invokeAsync(message) { response -> resolveMessage(messageId, response) }
