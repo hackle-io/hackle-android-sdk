@@ -96,4 +96,18 @@ internal class InAppMessageViewJavascriptInterfaceTest {
         expectThat(parsed.properties).isNotNull()
             .get { this["path"] } isEqualTo "a\\b"
     }
+
+    @Test
+    fun `getSupportedInvocationTypes - IAM WebView도 message 채널을 노출한다`() {
+        val sut = sut(Event.builder("hello").build())
+
+        expectThat(sut.getSupportedInvocationTypes()).isEqualTo("""["function","message"]""")
+    }
+
+    @Test
+    fun `getInvocationType - 하위호환으로 function을 유지한다`() {
+        val sut = sut(Event.builder("hello").build())
+
+        expectThat(sut.getInvocationType()).isEqualTo("function")
+    }
 }
