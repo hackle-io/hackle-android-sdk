@@ -10,12 +10,15 @@ import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionStatus
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isFalse
 import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 import strikt.assertions.isTrue
 
 class UserInvocationHandlersTest {
@@ -91,7 +94,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.setUser(any(), null) }
+        verify(exactly = 1) { core.setUser(any(), any()) }
     }
 
     @Test
@@ -112,7 +115,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.resetUser(null) }
+        verify(exactly = 1) { core.resetUser(any()) }
     }
 
     // UserIdentifiers
@@ -128,7 +131,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.setUserId("user-123", null) }
+        verify(exactly = 1) { core.setUserId("user-123", any()) }
     }
 
     @Test
@@ -142,7 +145,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.setUserId(null, null) }
+        verify(exactly = 1) { core.setUserId(null, any()) }
     }
 
     @Test
@@ -156,7 +159,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.setDeviceId("device-123", null) }
+        verify(exactly = 1) { core.setDeviceId("device-123", any()) }
     }
 
     @Test
@@ -180,7 +183,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), null) }
+        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), any()) }
     }
 
     @Test
@@ -207,7 +210,7 @@ class UserInvocationHandlersTest {
 
         // then
         expectThat(response.isSuccess).isTrue()
-        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), null) }
+        verify(exactly = 1) { core.updateUserProperties(any<PropertyOperations>(), any()) }
     }
 
     @Test
@@ -324,6 +327,100 @@ class UserInvocationHandlersTest {
         assertThrows<IllegalStateException> {
             sut.invoke(request("updatePushSubscriptions", emptyMap()))
         }
+    }
+
+    // completion
+
+    @Test
+    fun `SetUserInvocationHandler - core 콜백이 실행되면 completion이 완료된다`() {
+        // given
+        val callback = slot<Runnable>()
+        every { core.setUser(any(), capture(callback)) } returns Unit
+        val sut = SetUserInvocationHandler(core)
+        val params = mapOf("user" to mapOf("id" to "new-id"))
+
+        // when
+        val response = sut.invoke(request("setUser", params))
+
+        // then
+        expectThat(response.completion).isNotNull().get { isDone }.isFalse()
+        callback.captured.run()
+        expectThat(response.completion).isNotNull().get { isDone }.isTrue()
+    }
+
+    @Test
+    fun `ResetUserInvocationHandler - core 콜백이 실행되면 completion이 완료된다`() {
+        val callback = slot<Runnable>()
+        every { core.resetUser(capture(callback)) } returns Unit
+        val sut = ResetUserInvocationHandler(core)
+
+        val response = sut.invoke(request("resetUser"))
+
+        expectThat(response.completion).isNotNull().get { isDone }.isFalse()
+        callback.captured.run()
+        expectThat(response.completion).isNotNull().get { isDone }.isTrue()
+    }
+
+    @Test
+    fun `SetUserIdInvocationHandler - core 콜백이 실행되면 completion이 완료된다`() {
+        val callback = slot<Runnable>()
+        every { core.setUserId(any(), capture(callback)) } returns Unit
+        val sut = SetUserIdInvocationHandler(core)
+
+        val response = sut.invoke(request("setUserId", mapOf("userId" to "user-123")))
+
+        expectThat(response.completion).isNotNull().get { isDone }.isFalse()
+        callback.captured.run()
+        expectThat(response.completion).isNotNull().get { isDone }.isTrue()
+    }
+
+    @Test
+    fun `SetDeviceIdInvocationHandler - core 콜백이 실행되면 completion이 완료된다`() {
+        val callback = slot<Runnable>()
+        every { core.setDeviceId(any(), capture(callback)) } returns Unit
+        val sut = SetDeviceIdInvocationHandler(core)
+
+        val response = sut.invoke(request("setDeviceId", mapOf("deviceId" to "device-123")))
+
+        expectThat(response.completion).isNotNull().get { isDone }.isFalse()
+        callback.captured.run()
+        expectThat(response.completion).isNotNull().get { isDone }.isTrue()
+    }
+
+    @Test
+    fun `SetUserPropertyInvocationHandler - core 콜백이 실행되면 completion이 완료된다`() {
+        val callback = slot<Runnable>()
+        every { core.updateUserProperties(any<PropertyOperations>(), capture(callback)) } returns Unit
+        val sut = SetUserPropertyInvocationHandler(core)
+
+        val response = sut.invoke(request("setUserProperty", mapOf("key" to "foo", "value" to "bar")))
+
+        expectThat(response.completion).isNotNull().get { isDone }.isFalse()
+        callback.captured.run()
+        expectThat(response.completion).isNotNull().get { isDone }.isTrue()
+    }
+
+    @Test
+    fun `UpdateUserPropertiesInvocationHandler - core 콜백이 실행되면 completion이 완료된다`() {
+        val callback = slot<Runnable>()
+        every { core.updateUserProperties(any<PropertyOperations>(), capture(callback)) } returns Unit
+        val sut = UpdateUserPropertiesInvocationHandler(core)
+        val params = mapOf("operations" to mapOf("\$set" to mapOf("foo" to "bar")))
+
+        val response = sut.invoke(request("updateUserProperties", params))
+
+        expectThat(response.completion).isNotNull().get { isDone }.isFalse()
+        callback.captured.run()
+        expectThat(response.completion).isNotNull().get { isDone }.isTrue()
+    }
+
+    @Test
+    fun `SetPhoneNumberInvocationHandler - completion 대상이 아니다`() {
+        val sut = SetPhoneNumberInvocationHandler(core)
+
+        val response = sut.invoke(request("setPhoneNumber", mapOf("phoneNumber" to "+8210-1234-5678")))
+
+        expectThat(response.completion).isNull()
     }
 
 }

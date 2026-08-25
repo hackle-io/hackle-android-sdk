@@ -24,6 +24,9 @@ internal data class InvocationRequestDto(
 
         @SerializedName(KEY_BROWSER_PROPERTIES)
         val browserProperties: Map<String, Any>?,
+
+        @SerializedName(KEY_MESSAGE_ID)
+        val messageId: String? = null,
     )
 
     companion object {
@@ -31,6 +34,7 @@ internal data class InvocationRequestDto(
         const val KEY_COMMAND = "command"
         const val KEY_PARAMETERS = "parameters"
         const val KEY_BROWSER_PROPERTIES = "browserProperties"
+        const val KEY_MESSAGE_ID = "messageId"
     }
 }
 

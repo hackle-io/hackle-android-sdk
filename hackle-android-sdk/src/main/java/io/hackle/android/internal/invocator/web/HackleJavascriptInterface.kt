@@ -3,13 +3,21 @@ package io.hackle.android.internal.invocator.web
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import io.hackle.android.HackleApp
+import io.hackle.android.internal.invocator.invocation.InvocationRequest
+import io.hackle.android.internal.task.TaskExecutors.runOnUiThread
 import io.hackle.android.internal.utils.json.toJson
 import io.hackle.sdk.common.HackleWebViewConfig
+import io.hackle.sdk.core.internal.log.Logger
+import java.lang.ref.WeakReference
 
 internal open class HackleJavascriptInterface(
     private val app: HackleApp,
     private val webViewConfig: HackleWebViewConfig,
 ) {
+
+    @Volatile
+    private var webViewRef: WeakReference<WebView>? = null
+
     @JavascriptInterface
     fun getAppSdkKey(): String {
         return app.sdk.key
@@ -31,15 +39,57 @@ internal open class HackleJavascriptInterface(
     }
 
     @JavascriptInterface
+    fun getSupportedInvocationTypes(): String {
+        return """["function","message"]"""
+    }
+
+    @JavascriptInterface
     fun invoke(string: String): String {
         return app.invocator.invoke(string)
     }
 
+    /**
+     * message 채널의 수신 지점. 처리 완료 후 `window._hackleBridge.resolveMessage`로 회신한다.
+     * message 채널 요청에는 항상 messageId가 있어야 하며, 없으면 처리하지 않는다.
+     */
+    @JavascriptInterface
+    fun postMessage(message: String) {
+        if (!InvocationRequest.isInvocableString(message)) {
+            return
+        }
+
+        val messageId = InvocationRequest.messageId(message)
+        if (messageId == null) {
+            log.error { "Invalid invocation format (missing: messageId). [message=$message]" }
+            return
+        }
+        app.invocator.invokeAsync(message) { response -> resolveMessage(messageId, response) }
+    }
+
+    private fun resolveMessage(messageId: String, response: String) {
+        val webView = webViewRef?.get()
+        if (webView == null) {
+            log.debug { "Skipped bridge resolveMessage. [messageId=$messageId]" }
+            return
+        }
+        val script =
+            "window._hackleBridge && window._hackleBridge.resolveMessage(${messageId.toJson()}, ${response.toJson()})"
+        runOnUiThread {
+            try {
+                webView.evaluateJavascript(script, null)
+            } catch (e: Throwable) {
+                log.debug { "Failed to resolve bridge message. [messageId=$messageId, error=$e]" }
+            }
+        }
+    }
+
     fun addTo(webView: WebView) {
+        webViewRef = WeakReference(webView)
         webView.addJavascriptInterface(this, NAME)
     }
 
     companion object {
         const val NAME = "_hackleApp"
+        private val log = Logger<HackleJavascriptInterface>()
     }
 }
