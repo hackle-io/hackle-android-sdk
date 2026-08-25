@@ -6,6 +6,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
+import strikt.assertions.isNull
 import strikt.assertions.isTrue
 
 class InvocationRequestTest {
@@ -16,11 +17,13 @@ class InvocationRequestTest {
         command: String? = "getSessionId",
         parameters: Map<String, Any?>? = null,
         browserProperties: Map<String, Any>? = null,
+        messageId: String? = null,
     ): String {
         val hackle = mutableMapOf<String, Any?>()
         if (command != null) hackle["command"] = command
         if (parameters != null) hackle["parameters"] = parameters
         if (browserProperties != null) hackle["browserProperties"] = browserProperties
+        if (messageId != null) hackle["messageId"] = messageId
         return gson.toJson(mapOf("_hackle" to hackle))
     }
 
@@ -118,5 +121,38 @@ class InvocationRequestTest {
     @Test
     fun `isInvocableString - command가 공백 문자열이면 false를 반환한다`() {
         expectThat(InvocationRequest.isInvocableString(json(command = "   "))).isFalse()
+    }
+
+    // messageId
+
+    @Test
+    fun `parse - messageId를 파싱한다`() {
+        val request = InvocationRequest.parse(json(command = "setUser", messageId = "msg-1"))
+
+        expectThat(request.messageId).isEqualTo("msg-1")
+    }
+
+    @Test
+    fun `parse - messageId가 없으면 null이다`() {
+        val request = InvocationRequest.parse(json(command = "setUser"))
+
+        expectThat(request.messageId).isNull()
+    }
+
+    @Test
+    fun `messageId - payload에서 messageId만 추출한다`() {
+        val messageId = InvocationRequest.messageId(json(command = "setUser", messageId = "msg-1"))
+
+        expectThat(messageId).isEqualTo("msg-1")
+    }
+
+    @Test
+    fun `messageId - messageId가 없으면 null이다`() {
+        expectThat(InvocationRequest.messageId(json(command = "track"))).isNull()
+    }
+
+    @Test
+    fun `messageId - 파싱할 수 없는 문자열이면 null이다`() {
+        expectThat(InvocationRequest.messageId("not a json")).isNull()
     }
 }
