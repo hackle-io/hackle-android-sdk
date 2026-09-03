@@ -1,0 +1,178 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# NOTE: a repository .coderabbit.yaml REPLACES organization UI settings outright —
+# sources are not merged unless Configuration Inheritance is turned on.
+# The "organization settings" block below mirrors the Hackle org configuration.
+# Keep the two in sync; anything omitted here falls back to CodeRabbit defaults, not to the org.
+
+language: "ko-KR"
+
+reviews:
+  # ---------------------------------------------------------------- organization settings
+  profile: "quiet"
+  high_level_summary_in_walkthrough: true
+  changed_files_summary: false
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  suggested_labels: false
+  auto_apply_labels: true
+  suggested_reviewers: false
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+  pre_merge_checks:
+    docstrings:
+      mode: "off"
+    title:
+      mode: "off"
+    description:
+      mode: "off"
+    issue_assessment:
+      mode: "off"
+
+  # ---------------------------------------------------------------- repository specific
+  path_filters:
+    - "!**/build/**"
+    - "!gradlew"
+    - "!gradlew.bat"
+    - "!gradle/wrapper/**"
+    - "!local.properties"
+    - "!**/src/main/assets/**"
+    - "!**/*.min.js"
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+      - "^dev-.*"
+      - "^release-.*"
+      - "^[0-9]+\\.[0-9]+\\.x$"
+
+  tools:
+    # Defaults to true. Disabled because this repository has no detekt configuration, so detekt would
+    # report against its own default rule set. Enable this together with adopting the linter.
+    detekt:
+      enabled: false
+
+  path_instructions:
+    - path: "**"
+      instructions: |
+        # Context
+        Hackle Android SDK — a public SDK that ships inside customer applications.
+        Two concerns outrank everything else: not breaking the host app, and not breaking public API
+        backward compatibility.
+
+        # Priority
+        1. Anything that can crash the host app
+        2. Public API backward-compatibility breaks, including Java interoperability
+        3. Thread-safety defects and main-thread blocking
+        4. Renames or typos in field names, event property keys, and metric names — these break
+           server-side aggregation
+        5. Other correctness problems
+
+        # Do not raise
+        The following are already settled team policy. Do not leave review comments about them.
+        - Rewriting ported code to be "more idiomatic Kotlin". Parts of this codebase deliberately mirror
+          the structure and naming of Hackle's other SDKs so that behavior stays identical across platforms.
+        - Adding nullability, null checks, or defensive branches for cases that cannot actually occur
+          (YAGNI). This applies especially to code that already ships in released versions.
+        - Asking for explanatory or rationale comments. Requesting KDoc on public API is fine.
+        - Proposing new end-to-end or instrumentation test harnesses. This repository has effectively no
+          such infrastructure.
+        - Formatting, line breaks, import ordering, and other style preferences.
+        - Anything on lines that are not part of the diff.
+
+        # When you do raise something
+        - Give a concrete failure scenario: the inputs or state, then the wrong result or crash.
+        - If you are not certain, ask a question rather than asserting a defect.
+
+    - path: "hackle-android-sdk/src/main/java/**/*.kt"
+      instructions: |
+        # Public API compatibility
+        - The top level of `io.hackle.android` (Hackle.kt, HackleApp.kt, HackleConfig.kt, HackleAppMode.kt
+          and siblings) and the `io.hackle.sdk.common` package are public API. Treat signature changes,
+          removals, and renames as blocking, especially when they are not routed through `@Deprecated` first.
+        - Check Java interoperability: removal of `@JvmStatic`, `@JvmOverloads`, or `@JvmField`; JVM
+          overload signatures shifting because a default argument was added; nullability changes that
+          expose platform types; and changes to whether a functional interface still supports SAM conversion.
+        - Adding a property to a public data class changes its `copy` and `componentN` signatures.
+          Check binary compatibility.
+        - Demoting a dependency from `api` to `implementation` in `build.gradle` breaks consumer compilation.
+
+        # Concurrency
+        - `runBlocking` and `GlobalScope` are banned.
+        - Never perform disk I/O, network calls, or synchronous SharedPreferences commits on the main thread.
+        - When an Executor or HandlerThread is created, check that its lifetime and shutdown path are defined.
+        - Check synchronization of shared mutable state, but only require it where concurrent access
+          actually happens. Values written once during setup and read-only afterwards need none.
+
+        # Crash safety
+        - Flag `!!`. A crash in the SDK is a crash in the customer's app.
+        - Check that exceptions cannot escape the SDK at public entry points: public methods on HackleApp,
+          call sites that invoke user callbacks, BroadcastReceivers, and Activity or Application
+          lifecycle hooks.
+        - Check that a retained Context does not hold on to an Activity. Long-lived references must use
+          the application context.
+        - Flag force casts and unchecked parsing of server responses or local database rows.
+
+        # Minimum OS
+        - minSdk is 24 and compileSdk is 34. Check for a `Build.VERSION.SDK_INT` guard or `@RequiresApi`
+          around newer APIs.
+
+        # Obfuscation
+        - When a class used through reflection or Gson serialization is added or moved, check whether
+          `hackle-proguard-rules.pro` needs a matching keep rule.
+
+        # Logging and privacy
+        - Direct use of `println` or `android.util.Log` is banned; use the SDK's own logger
+          (`log.debug`, `log.info`, `log.warn`, `log.error`).
+        - Never log user identifiers, event property values, or the SDK key verbatim — mask them.
+        - Keep debug logging minimal. Do not add full request or response payload dumps.
+
+    - path: "hackle-android-sdk/src/main/java/io/hackle/android/internal/**/*.kt"
+      instructions: |
+        # Cross-SDK behavioral parity
+        This package implements the same evaluation and event-processing logic as Hackle's other SDKs.
+        - Changes or typos in DTO field names, event property keys, metric names, and decision reason
+          strings break server-side aggregation. Treat them as critical and always flag them.
+        - When a branch or a default in the evaluation logic changes — default variation, fallback
+          behavior, and the like — ask whether the other platform SDKs need the same change.
+        - Class and method structure here deliberately mirrors the other SDKs. Do not propose
+          restructuring or refactoring.
+
+    - path: "hackle-android-sdk/src/main/java/io/hackle/android/ui/**/*.kt"
+      instructions: |
+        # UI
+        - Check that UI updates happen on the main thread.
+        - Check that views, dialogs, listeners, and handlers do not leak an Activity.
+        - Flag code that mutates the host app's activity stack or global state without restoring it when
+          an in-app message or notification is dismissed.
+        - Check that layout and drawable resource names keep the `hackle_` prefix so they cannot collide
+          with the host app's resources.
+
+    - path: "hackle-android-sdk/src/test/java/**/*.kt"
+      instructions: |
+        # Test conventions
+        - Tests use JUnit 4 with MockK and Strikt. Assertions use `expectThat`; mocks use MockK.
+        - Production code is never modified for the sake of tests. Do not propose dependency injection,
+          interface extraction, or relaxed visibility for testability.
+        - Do not propose new end-to-end or instrumentation test harnesses.
+        - Do flag defects in the tests themselves: wrong assertions, tests that can never fail, and
+          reliance on non-deterministic timing.
+
+    - path: "**/build.gradle"
+      instructions: |
+        # Dependencies
+        - This SDK's dependencies are transitive into customer applications. Always ask for justification
+          when one is added.
+        - A major version bump of an existing dependency can collide with the host app's own version.
+          Check the blast radius.
+        - Check that the split between `api` and `implementation` is intentional.
+        - Changes to minSdk, compileSdk, jvmTarget, or sourceCompatibility are compatibility breaks.
+          Treat them as blocking.
