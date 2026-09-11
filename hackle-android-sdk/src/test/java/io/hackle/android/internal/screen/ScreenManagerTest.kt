@@ -30,15 +30,21 @@ class ScreenManagerTest {
         userManager = mockk()
         every { userManager.currentUser } returns User.of("test")
         listener = mockk(relaxed = true)
-        sut = ScreenManager(
+        sut = screenManager(manualScreenViewDedupEnabled = true)
+        sut.addListener(listener)
+    }
+
+    private fun screenManager(manualScreenViewDedupEnabled: Boolean): ScreenManager {
+        return ScreenManager(
             userManager,
             object : ActivityProvider {
                 override val currentActivity: Activity?
                     get() = activity
                 override val currentState: ActivityState
                     get() = ActivityState.ACTIVE
-            })
-        sut.addListener(listener)
+            },
+            manualScreenViewDedupEnabled
+        )
     }
 
     @Test
@@ -126,6 +132,76 @@ class ScreenManagerTest {
         sut.onLifecycle(ActivityLifecycle.STARTED, TestActivity(), 42)
         sut.onLifecycle(ActivityLifecycle.DESTROYED, TestActivity(), 42)
         expectThat(sut.currentScreen).isNull()
+    }
+
+    @Test
+    fun `setCurrentScreen - manualScreenViewDedupEnabled false - current screen == new screen`() {
+        // given
+        val sut = screenManager(manualScreenViewDedupEnabled = false)
+        val listener = mockk<ScreenListener>(relaxed = true)
+        sut.addListener(listener)
+        val currentScreen = Screen("name", "class")
+        val newScreen = Screen("name", "class")
+        sut.setCurrentScreen(currentScreen, 42)
+
+        // when
+        sut.setCurrentScreen(newScreen, 43)
+
+        // then
+        expectThat(sut.currentScreen).isSameInstanceAs(newScreen)
+        verify(exactly = 1) {
+            listener.onScreenStarted(null, currentScreen, any(), 42)
+        }
+        verify(exactly = 1) {
+            listener.onScreenEnded(currentScreen, any(), 43)
+        }
+        verify(exactly = 1) {
+            listener.onScreenStarted(currentScreen, newScreen, any(), 43)
+        }
+    }
+
+    @Test
+    fun `setCurrentScreen - manualScreenViewDedupEnabled false - current screen != new screen`() {
+        // given
+        val sut = screenManager(manualScreenViewDedupEnabled = false)
+        val listener = mockk<ScreenListener>(relaxed = true)
+        sut.addListener(listener)
+        val currentScreen = Screen("name", "class")
+        val newScreen = Screen("new_name", "class")
+        sut.setCurrentScreen(currentScreen, 42)
+
+        // when
+        sut.setCurrentScreen(newScreen, 43)
+
+        // then
+        expectThat(sut.currentScreen).isSameInstanceAs(newScreen)
+        verify(exactly = 2) {
+            listener.onScreenStarted(any(), any(), any(), any())
+        }
+        verify(exactly = 1) {
+            listener.onScreenEnded(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `onLifecycle RESUMED - manualScreenViewDedupEnabled false - always dedup`() {
+        // given
+        val sut = screenManager(manualScreenViewDedupEnabled = false)
+        val listener = mockk<ScreenListener>(relaxed = true)
+        sut.addListener(listener)
+
+        // when
+        sut.onLifecycle(ActivityLifecycle.RESUMED, TestActivity(), 42)
+        sut.onLifecycle(ActivityLifecycle.RESUMED, TestActivity(), 43)
+
+        // then
+        expectThat(sut.currentScreen).isEqualTo(Screen("TestActivity", "TestActivity"))
+        verify(exactly = 1) {
+            listener.onScreenStarted(any(), any(), any(), any())
+        }
+        verify(exactly = 0) {
+            listener.onScreenEnded(any(), any(), any())
+        }
     }
 
     private class TestActivity : Activity()
