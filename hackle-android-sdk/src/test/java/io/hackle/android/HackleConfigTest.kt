@@ -174,6 +174,21 @@ class HackleConfigTest {
     }
 
     @Test
+    fun `manualScreenViewDedupEnabled`() {
+        configTests(HackleConfig::manualScreenViewDedupEnabled to true)
+        configTests(HackleConfig::manualScreenViewDedupEnabled to false) {
+            manualScreenViewDedupEnabled(false)
+        }
+        configTests(HackleConfig::manualScreenViewDedupEnabled to true) {
+            manualScreenViewDedupEnabled(true)
+        }
+        configTests(HackleConfig::manualScreenViewDedupEnabled to true) {
+            manualScreenViewDedupEnabled(false)
+            manualScreenViewDedupEnabled(true)
+        }
+    }
+
+    @Test
     fun `enableMonitoring`() {
         configTests(HackleConfig::enableMonitoring to true)
         configTests(HackleConfig::enableMonitoring to false) {
