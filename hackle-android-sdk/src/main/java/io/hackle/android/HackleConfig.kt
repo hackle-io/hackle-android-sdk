@@ -63,6 +63,11 @@ class HackleConfig private constructor(builder: Builder) {
     val automaticAppLifecycleTracking: Boolean = builder.automaticAppLifecycleTracking
 
     /**
+     * Whether deduplication of repeated screen views set via `setCurrentScreen` is enabled.
+     */
+    val manualScreenViewDedupEnabled: Boolean = builder.manualScreenViewDedupEnabled
+
+    /**
      * Whether session tracking is enabled.
      */
     val sessionTracking: Boolean = (appMode == HackleAppMode.NATIVE && builder.sessionTracking)
@@ -130,6 +135,7 @@ class HackleConfig private constructor(builder: Builder) {
 
         internal var automaticScreenTracking: Boolean = true
         internal var automaticAppLifecycleTracking: Boolean = true
+        internal var manualScreenViewDedupEnabled: Boolean = true
 
         internal var sessionTracking: Boolean = true
         internal var sessionPolicy: HackleSessionPolicy = HackleSessionPolicy.DEFAULT
@@ -246,6 +252,20 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun automaticAppLifecycleTracking(automaticAppLifecycleTracking: Boolean) = apply {
             this.automaticAppLifecycleTracking = automaticAppLifecycleTracking
+        }
+
+        /**
+         * Enables or disables deduplication of repeated screen views set via `setCurrentScreen`.
+         *
+         * When disabled, calling `setCurrentScreen` with the current screen publishes `$page_view` again,
+         * along with `$engagement`'s `$engagement_time_ms` property once the minimum engagement duration is met.
+         * Automatic screen tracking always deduplicates regardless of this setting.
+         *
+         * @param manualScreenViewDedupEnabled true to deduplicate repeated screen views set via `setCurrentScreen` (default), false otherwise
+         * @return this builder instance
+         */
+        fun manualScreenViewDedupEnabled(manualScreenViewDedupEnabled: Boolean) = apply {
+            this.manualScreenViewDedupEnabled = manualScreenViewDedupEnabled
         }
 
         /**

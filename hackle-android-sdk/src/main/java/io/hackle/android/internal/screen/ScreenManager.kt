@@ -16,13 +16,14 @@ import java.util.concurrent.atomic.AtomicReference
 internal class ScreenManager(
     private val userManager: UserManager,
     private val activityProvider: ActivityProvider,
+    private val manualScreenViewDedupEnabled: Boolean,
 ) : ApplicationListenerRegistry<ScreenListener>(), ActivityLifecycleListener {
 
     private val _currentScreen = AtomicReference<Screen?>()
     val currentScreen: Screen? get() = _currentScreen.get()
 
     fun setCurrentScreen(screen: Screen, timestamp: Long) {
-        updateScreen(screen, timestamp)
+        updateScreen(screen, timestamp, dedup = manualScreenViewDedupEnabled)
     }
 
     fun resolveScreenClass(screenClass: String? = null): String {
@@ -33,9 +34,9 @@ internal class ScreenManager(
         return activity.javaClass.simpleName
     }
 
-    private fun updateScreen(screen: Screen, timestamp: Long) {
+    private fun updateScreen(screen: Screen, timestamp: Long, dedup: Boolean) {
         val previousScreen = _currentScreen.getAndSet(screen)
-        if (screen == previousScreen) {
+        if (dedup && screen == previousScreen) {
             return
         }
         val user = userManager.currentUser
@@ -69,7 +70,7 @@ internal class ScreenManager(
 
     override fun onLifecycle(activityLifecycle: ActivityLifecycle, activity: Activity, timestamp: Long) {
         return when (activityLifecycle) {
-            RESUMED -> updateScreen(Screen.from(activity), timestamp)
+            RESUMED -> updateScreen(Screen.from(activity), timestamp, dedup = true)
             PAUSED, CREATED, STARTED, STOPPED, DESTROYED -> Unit
         }
     }
