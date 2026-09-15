@@ -14,13 +14,14 @@ on:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       branch_name: ${{ steps.branch.outputs.branch_name }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.PAT }}
 
       - name: Create or checkout dev branch
         id: branch

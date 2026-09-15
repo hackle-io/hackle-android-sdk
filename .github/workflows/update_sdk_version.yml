@@ -1,11 +1,19 @@
 name: update sdk version
 
 on:
-  create:
+  push:
+    branches:
+      - 'dev-*'
+  workflow_call:
+    inputs:
+      branch:
+        description: 'Dev branch to update (e.g. dev-4.2.0)'
+        required: true
+        type: string
 
 jobs:
   update-sdk-version:
-    if: github.ref_type == 'branch' && startsWith(github.ref_name, 'dev-')
+    if: inputs.branch != '' || github.event.created
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -13,21 +21,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ inputs.branch || github.ref_name }}
+          fetch-depth: 0
 
       - name: Extract version from branch name
         id: version
         env:
-          BRANCH_NAME: ${{ github.ref_name }}
+          BRANCH_NAME: ${{ inputs.branch || github.ref_name }}
         run: |
-          VERSION=${BRANCH_NAME#dev-}
+          if [[ ! "$BRANCH_NAME" =~ ^dev-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Error: '$BRANCH_NAME' is not a dev-x.y.z branch"
+            exit 1
+          fi
+          VERSION="${BASH_REMATCH[1]}"
           echo "sdk_version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
 
       - name: Update SDK version in gradle.properties
+        env:
+          SDK_VERSION: ${{ steps.version.outputs.sdk_version }}
         run: |
-          sed -i -E "s/sdk_version=.*/sdk_version=${{ steps.version.outputs.sdk_version }}/" gradle.properties
-          echo "Updated sdk_version to ${{ steps.version.outputs.sdk_version }}"
+          sed -i -E "s/sdk_version=.*/sdk_version=$SDK_VERSION/" gradle.properties
+          echo "Updated sdk_version to $SDK_VERSION"
+
+      - name: Create release branches
+        env:
+          SDK_VERSION: ${{ steps.version.outputs.sdk_version }}
+        run: |
+          MINOR_BRANCH="$(echo "$SDK_VERSION" | cut -d. -f1-2).x"
+          MAIN_SHA=$(git rev-parse origin/main)
+
+          for BRANCH in "release-$SDK_VERSION" "$MINOR_BRANCH"; do
+            if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+              echo "$BRANCH already exists, skipping"
+            else
+              git push origin "$MAIN_SHA:refs/heads/$BRANCH"
+              echo "Created $BRANCH at $MAIN_SHA"
+            fi
+          done
 
       - name: Commit and push changes
         run: |
