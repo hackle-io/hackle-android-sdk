@@ -266,7 +266,8 @@ internal object HackleApps {
 
         val screenManager = ScreenManager(
             userManager = userManager,
-            activityProvider = activityLifecycleManager
+            activityProvider = activityLifecycleManager,
+            manualScreenViewDedupEnabled = config.manualScreenViewDedupEnabled
         )
 
         // EngagementManager
