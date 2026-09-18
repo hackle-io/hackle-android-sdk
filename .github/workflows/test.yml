@@ -5,17 +5,17 @@ on:
 
 jobs:
   android-sdk-test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: 8.7
           cache-read-only: false
@@ -39,7 +39,7 @@ jobs:
 
       - name: Coverage
         id: jacoco
-        uses: madrapps/jacoco-report@v1.7.2
+        uses: madrapps/jacoco-report@v1.8.0
         if: always()
         with:
           paths: ${{ github.workspace }}/hackle-android-sdk/build/reports/jacoco/coverageReport/coverageReport.xml
@@ -48,17 +48,17 @@ jobs:
           update-comment: true
 
   android-sdk-assemble-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '17'
           distribution: 'temurin'
 
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: 8.7
           cache-read-only: false

@@ -17,7 +17,7 @@ jobs:
       js_sdk_version: ${{ steps.check.outputs.js_sdk_version }}
       feature_branch: ${{ steps.check.outputs.feature_branch }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check latest JS SDK version
         id: check
@@ -59,7 +59,7 @@ jobs:
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Calculate version
         id: version
@@ -94,15 +94,10 @@ jobs:
       FEATURE_BRANCH: ${{ needs.check-js-sdk-version.outputs.feature_branch }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.prepare-branch.outputs.branch_name }}
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
 
       - name: Download JS SDK from npm
         run: |

@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.validate_tag.outputs.version }}
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Validate tag format
         id: validate_tag
@@ -44,9 +46,9 @@ jobs:
           echo "Version verification passed"
 
       - name: Create prerelease
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
-          github-token: ${{ secrets.PAT }} 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const tagName = '${{ steps.validate_tag.outputs.version }}';
             
@@ -70,3 +72,10 @@ jobs:
                 throw error;
               }
             }
+
+  publish:
+    needs: create-prerelease
+    uses: ./.github/workflows/publish.yml
+    with:
+      version: ${{ needs.create-prerelease.outputs.version }}
+    secrets: inherit
