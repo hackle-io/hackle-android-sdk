@@ -79,3 +79,8 @@ jobs:
     with:
       version: ${{ needs.create-prerelease.outputs.version }}
     secrets: inherit
+
+  notify_release:
+    needs: publish
+    uses: ./.github/workflows/notify_release.yml
+    secrets: inherit
