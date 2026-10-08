@@ -17,7 +17,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: 8.7
+          gradle-version: 8.11.1
           cache-read-only: false
           gradle-home-cache-cleanup: true
 
@@ -60,7 +60,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: 8.7
+          gradle-version: 8.11.1
           cache-read-only: false
           gradle-home-cache-cleanup: true
 
