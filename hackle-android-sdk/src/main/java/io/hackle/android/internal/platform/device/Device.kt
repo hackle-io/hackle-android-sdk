@@ -25,7 +25,6 @@ internal interface Device {
                     brand = Build.BRAND,
                     manufacturer = Build.MANUFACTURER,
                     locale = DeviceHelper.getDeviceLocale(),
-                    timezone = TimeZone.getDefault(),
                     screenInfo = DeviceInfo.ScreenInfo(
                         width = displayMetrics.widthPixels,
                         height = displayMetrics.heightPixels
@@ -53,7 +52,7 @@ internal data class DeviceImpl(
                 "deviceManufacturer" to deviceInfo.manufacturer,
                 "locale" to deviceInfo.locale.toLocaleString(),
                 "language" to deviceInfo.locale.language,
-                "timeZone" to deviceInfo.timezone.id,
+                "timeZone" to TimeZone.getDefault().id,
                 "screenWidth" to deviceInfo.screenInfo.width,
                 "screenHeight" to deviceInfo.screenInfo.height,
                 "isApp" to true

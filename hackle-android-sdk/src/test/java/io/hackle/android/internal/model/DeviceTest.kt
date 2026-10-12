@@ -12,6 +12,26 @@ import java.util.UUID
 class DeviceTest {
 
     @Test
+    fun `timeZone follows system time zone changes after device creation`() {
+        val original = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"))
+            val device = DeviceImpl(UUID.randomUUID().toString(), createTestDeviceInfo())
+            val originalProperties = device.properties
+            assertThat(originalProperties["timeZone"], `is`("Asia/Seoul"))
+
+            TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
+            assertThat(device.properties["timeZone"], `is`("America/New_York"))
+            assertThat(originalProperties["timeZone"], `is`("Asia/Seoul"))
+
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            assertThat(device.properties["timeZone"], `is`("UTC"))
+        } finally {
+            TimeZone.setDefault(original)
+        }
+    }
+
+    @Test
     fun `create device with static compare`() {
         val deviceId = UUID.randomUUID().toString()
         val deviceInfo = createTestDeviceInfo()
@@ -30,7 +50,7 @@ class DeviceTest {
         assertThat(device.properties["deviceManufacturer"], `is`("hackle manufacture"))
         assertThat(device.properties["locale"], `is`("ko-KR"))
         assertThat(device.properties["language"], `is`("ko"))
-        assertThat(device.properties["timeZone"], `is`("Asia/Seoul"))
+        assertThat(device.properties["timeZone"], `is`(TimeZone.getDefault().id))
         assertThat(device.properties["screenWidth"], `is`(1080))
         assertThat(device.properties["screenHeight"], `is`(1920))
         assertThat(device.properties["isApp"], `is`(true))
@@ -58,7 +78,7 @@ class DeviceTest {
         assertThat(properties["deviceManufacturer"], `is`(deviceInfo.manufacturer))
         assertThat(properties["locale"], `is`("${deviceInfo.locale.language}-${deviceInfo.locale.country}"))
         assertThat(properties["language"], `is`(deviceInfo.locale.language))
-        assertThat(properties["timeZone"], `is`(deviceInfo.timezone.id))
+        assertThat(properties["timeZone"], `is`(TimeZone.getDefault().id))
         assertThat(properties["screenWidth"], `is`(deviceInfo.screenInfo.width))
         assertThat(properties["screenHeight"], `is`(deviceInfo.screenInfo.height))
         assertThat(properties["isApp"], `is`(true))
@@ -74,7 +94,6 @@ class DeviceTest {
             brand = "hackle",
             manufacturer = "hackle manufacture",
             locale = Locale("ko", "KR"),
-            timezone = TimeZone.getTimeZone("Asia/Seoul"),
             screenInfo = DeviceInfo.ScreenInfo(1080, 1920)
         )
     }
