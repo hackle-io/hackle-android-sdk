@@ -12,6 +12,22 @@ import java.util.UUID
 class DeviceTest {
 
     @Test
+    fun `device info timezone follows system changes`() {
+        val original = TimeZone.getDefault()
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"))
+            val deviceInfo = createTestDeviceInfo()
+            assertThat(deviceInfo.timezone.id, `is`("Asia/Seoul"))
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            assertThat(deviceInfo.timezone.id, `is`("UTC"))
+            assertThat(deviceInfo.locale, `is`(Locale("ko", "KR")))
+        } finally {
+            TimeZone.setDefault(original)
+        }
+    }
+
+
+    @Test
     fun `timeZone follows system time zone changes after device creation`() {
         val original = TimeZone.getDefault()
         try {
