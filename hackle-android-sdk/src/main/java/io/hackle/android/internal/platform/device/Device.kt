@@ -3,7 +3,6 @@ package io.hackle.android.internal.platform.device
 import android.content.Context
 import android.os.Build
 import java.util.Locale
-import java.util.TimeZone
 
 internal interface Device {
 
@@ -25,7 +24,6 @@ internal interface Device {
                     brand = Build.BRAND,
                     manufacturer = Build.MANUFACTURER,
                     locale = DeviceHelper.getDeviceLocale(),
-                    timezone = TimeZone.getDefault(),
                     screenInfo = DeviceInfo.ScreenInfo(
                         width = displayMetrics.widthPixels,
                         height = displayMetrics.heightPixels

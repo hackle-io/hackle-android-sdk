@@ -11,9 +11,11 @@ internal data class DeviceInfo(
     val brand: String,
     val manufacturer: String,
     val locale: Locale,
-    val timezone: TimeZone,
     val screenInfo: ScreenInfo,
 ) {
+    val timezone: TimeZone
+        get() = TimeZone.getDefault()
+
     internal data class ScreenInfo(
         val width: Int,
         val height: Int,
