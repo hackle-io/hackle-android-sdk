@@ -1,6 +1,5 @@
 package io.hackle.android
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.webkit.WebView
@@ -961,29 +960,6 @@ class HackleAppTest {
     // Deprecated methods tests
     // 4.0 유저 중앙화로 user/userId를 받는 deprecated 오버로드(variation/variationDetail/allVariationDetails/
     // isFeatureOn/featureFlagDetail/track/remoteConfig)는 공개 API에서 제거되어 테스트도 함께 삭제됨
-
-    @Test
-    fun `showUserExplorer with Activity - deprecated`() {
-        val activity = mockk<Activity>()
-
-        sut.showUserExplorer(activity)
-
-        verify(exactly = 1) {
-            userExplorer.show()
-        }
-    }
-
-    @Test
-    fun setPushToken() {
-        sut.setPushToken("test_token")
-        // This method does nothing, just checking it doesn't throw
-    }
-
-    @Test
-    fun updatePushSubscriptionStatus() {
-        sut.updatePushSubscriptionStatus(HacklePushSubscriptionStatus.SUBSCRIBED)
-        // This method does nothing, just checking it doesn't throw
-    }
 
     @Test
     fun `displayedInAppMessageView`() {

@@ -215,11 +215,3 @@ fun Hackle.setOptOutTracking(optOut: Boolean) = app.setOptOutTracking(optOut)
  * When true, all event tracking is blocked.
  */
 val Hackle.isOptOutTracking: Boolean get() = app.isOptOutTracking
-
-/**
- * Sets the push token.
- *
- * @param token the push token to set
- */
-@Deprecated("Do not use the method because Hackle SDK will register push token by self. (Will remove v2.38.0)")
-fun Hackle.setPushToken(token: String) = app.setPushToken(token)
