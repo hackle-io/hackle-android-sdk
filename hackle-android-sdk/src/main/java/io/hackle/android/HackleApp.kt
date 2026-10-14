@@ -1,6 +1,5 @@
 package io.hackle.android
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.webkit.WebView
@@ -400,23 +399,6 @@ class HackleApp internal constructor(
     )
     fun variationDetail(experimentKey: Long, defaultVariation: Variation): Decision {
         return variationDetail(experimentKey)
-    }
-
-    @Deprecated("Use showUserExplorer() instead.", ReplaceWith("showUserExplorer()"))
-    fun showUserExplorer(activity: Activity) {
-        showUserExplorer()
-    }
-
-    @Deprecated("Do not use the method because Hackle SDK will register push token by self. (Will remove v2.38.0)")
-    fun setPushToken(token: String) {
-        log.debug { "HackleApp::setPushToken(token) will do nothing, please remove usages." }
-    }
-
-    @Deprecated("Do not use this method because it does nothing. Use `updatePushSubscriptions(operations)` instead.")
-    fun updatePushSubscriptionStatus(status: HacklePushSubscriptionStatus) {
-        log.error {
-            "updatePushSubscriptionStatus does nothing. Use updatePushSubscriptions(operations) instead."
-        }
     }
 
     /**

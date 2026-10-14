@@ -1,7 +1,6 @@
 package io.hackle.android
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import io.hackle.android.internal.HackleAppCore
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
@@ -27,7 +26,6 @@ import io.hackle.android.internal.event.dedup.ExposureEventDedupDeterminer
 import io.hackle.android.internal.event.dedup.RemoteConfigEventDedupDeterminer
 import io.hackle.android.internal.http.LoggingInterceptor
 import io.hackle.android.internal.http.SdkHeaderInterceptor
-import io.hackle.android.internal.http.Tls
 import io.hackle.android.internal.inappmessage.InAppMessageManager
 import io.hackle.android.internal.inappmessage.delay.InAppMessageDelayManager
 import io.hackle.android.internal.inappmessage.delay.InAppMessageDelayScheduler
@@ -747,16 +745,6 @@ internal object HackleApps {
 
         if (config.logLevel <= Log.DEBUG) {
             builder.addInterceptor(LoggingInterceptor())
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
-
-            try {
-                Tls.update(context)
-                builder.sslSocketFactory(Tls.tls12SocketFactory(), Tls.defaultTrustManager())
-            } catch (e: Exception) {
-                log.error { "TLS is not available: $e" }
-            }
         }
 
         return builder.build()
