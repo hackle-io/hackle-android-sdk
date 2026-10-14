@@ -39,7 +39,6 @@ class HackleTest {
     private val testPropertyKey = "test_property"
     private val testPropertyValue = "test_value"
     private val testPhoneNumber = "010-1234-5678"
-    private val testPushToken = "test_push_token"
 
     @Before
     @Suppress("DEPRECATION")
@@ -67,7 +66,6 @@ class HackleTest {
         every { hackleApp.updateSmsSubscriptions(any()) } just Runs
         every { hackleApp.updateKakaoSubscriptions(any()) } just Runs
         every { hackleApp.fetch(any()) } just Runs
-        every { hackleApp.setPushToken(any()) } just Runs
     }
 
     @After
@@ -304,16 +302,6 @@ class HackleTest {
     }
 
     // 4.0 유저 중앙화로 user를 받는 remoteConfig 오버로드는 공개 API에서 제거되어 테스트도 함께 삭제됨
-
-    @Test
-    fun `deprecated setPushToken should delegate to app setPushToken`() {
-        // when
-        @Suppress("DEPRECATION")
-        Hackle.setPushToken(testPushToken)
-
-        // then
-        verify { hackleApp.setPushToken(testPushToken) }
-    }
 
     // 기존 테스트들도 유지
     @Test
