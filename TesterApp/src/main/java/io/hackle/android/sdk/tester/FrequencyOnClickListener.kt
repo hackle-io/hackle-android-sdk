@@ -18,7 +18,7 @@ class FrequencyOnClickListener(
         history[currentIndex] = now
         currentIndex = (currentIndex + 1) % count
         if ((now - history[currentIndex]) <= millis) {
-//            HackleApp.getInstance().showUserExplorer(activity)
+//            HackleApp.getInstance().showUserExplorer()
         }
     }
 
