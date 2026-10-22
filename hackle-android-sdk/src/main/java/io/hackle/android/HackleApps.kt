@@ -599,10 +599,8 @@ internal object HackleApps {
             resetProcessor = inAppMessageResetProcessor
         )
 
-        if (config.inAppMessageEnabled) {
-            eventPublisher.add(inAppMessageManager)
-            userManager.addListener(inAppMessageManager)
-        }
+        eventPublisher.add(inAppMessageManager)
+        userManager.addListener(inAppMessageManager)
 
         // PushToken
         val pushTokenFetcher = PushTokenFetchers.create(context)
@@ -749,10 +747,4 @@ internal object HackleApps {
 
         return builder.build()
     }
-
-    private val HackleConfig.inAppMessageEnabled: Boolean
-        get() {
-            val disableFlag = get("\$disable_inappmessage") ?: return true
-            return disableFlag.toBoolean()
-        }
 }
