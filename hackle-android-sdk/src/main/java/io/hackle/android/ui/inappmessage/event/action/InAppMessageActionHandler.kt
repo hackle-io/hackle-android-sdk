@@ -1,8 +1,11 @@
 package io.hackle.android.ui.inappmessage.event.action
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import io.hackle.android.HackleUrlChannel
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageHiddenStorage
@@ -33,8 +36,10 @@ internal class InAppMessageCloseActionHandler : InAppMessageActionHandler {
     }
 }
 
-internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler) :
-    InAppMessageActionHandler {
+internal class InAppMessageLinkActionHandler(
+    private val uriHandler: UriHandler,
+    private val urlDispatcher: HackleUrlDispatcher,
+) : InAppMessageActionHandler {
 
     private val log = Logger<InAppMessageLinkActionHandler>()
 
@@ -54,12 +59,14 @@ internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler)
             log.error { "InAppMessage action value is null, not handle action [${view.inAppMessage.id}]" }
             return
         }
-        uriHandler.handle(activity, link)
+        openLink(activity, link, urlDispatcher, uriHandler)
     }
 }
 
-internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: UriHandler) :
-    InAppMessageActionHandler {
+internal class InAppMessageLinkAndCloseActionHandler(
+    private val uriHandler: UriHandler,
+    private val urlDispatcher: HackleUrlDispatcher,
+) : InAppMessageActionHandler {
 
     private val log = Logger<InAppMessageLinkActionHandler>()
 
@@ -80,7 +87,7 @@ internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: Uri
             return
         }
         view.close()
-        uriHandler.handle(activity, link)
+        openLink(activity, link, urlDispatcher, uriHandler)
     }
 }
 
@@ -105,6 +112,12 @@ internal class InAppMessageHideActionHandler(
     }
 }
 
+private fun openLink(activity: Activity, link: String, urlDispatcher: HackleUrlDispatcher, uriHandler: UriHandler) {
+    if (urlDispatcher.hasDelegate && urlDispatcher.dispatch(Uri.parse(link), HackleUrlChannel.IN_APP_MESSAGE)) {
+        return
+    }
+    uriHandler.handle(activity, link)
+}
 
 internal class UriHandler {
 

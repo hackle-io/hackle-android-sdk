@@ -5,6 +5,8 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import io.hackle.android.HackleApp
+import io.hackle.android.HackleUrlChannel
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationTrampolineActivity : Activity() {
@@ -44,6 +46,8 @@ internal class NotificationTrampolineActivity : Activity() {
                 if (uri == null) {
                     log.debug { "Landing url is empty." }
                     startLauncherActivity(extras)
+                } else if (handleByHackle(uri, extras)) {
+                    log.debug { "Landing url is handled by Hackle: $uri" }
                 } else {
                     val trampolineIntent = Intent(Intent.ACTION_VIEW, uri)
                     trampolineIntent.putExtras(extras)
@@ -58,6 +62,22 @@ internal class NotificationTrampolineActivity : Activity() {
                 }
             }
         }
+    }
+
+    private fun handleByHackle(uri: Uri, extras: Bundle): Boolean {
+        val app = HackleApp.currentInstance()
+        if (app == null) {
+            log.debug { "HackleApp is not initialized. Pending landing url until initialized: $uri" }
+            PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
+            startLauncherActivity(extras)
+            return true
+        }
+        val urlDispatcher = app.urlDispatcher
+        if (!urlDispatcher.hasDelegate) {
+            return false
+        }
+        startLauncherActivity(extras)
+        return urlDispatcher.dispatch(uri, HackleUrlChannel.PUSH)
     }
 
     private fun startLauncherActivity(bundle: Bundle, data: Uri? = null) {

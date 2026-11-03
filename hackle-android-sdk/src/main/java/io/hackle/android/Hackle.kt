@@ -118,6 +118,13 @@ fun Hackle.event(key: String, init: Event.Builder.() -> Unit) =
 fun Hackle.remoteConfig() = app.remoteConfig()
 
 /**
+ * Sets the delegate that handles links from push notifications and in-app messages.
+ *
+ * @param delegate the [HackleDelegate], or null to remove it
+ */
+fun Hackle.setDelegate(delegate: HackleDelegate?) = app.setDelegate(delegate)
+
+/**
  * Sets the current user.
  *
  * @param user the [User] to set

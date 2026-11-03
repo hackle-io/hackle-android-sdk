@@ -86,6 +86,7 @@ import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManage
 import io.hackle.android.internal.workspace.evaluation.client.RemoteEvaluateClient
 import io.hackle.android.internal.workspace.evaluation.evaluator.full.FullWorkspaceRemoteEvaluator
 import io.hackle.android.internal.workspace.evaluation.evaluator.partial.PartialWorkspaceRemoteEvaluator
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.core.GlideImageLoader
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
@@ -469,11 +470,12 @@ internal object HackleApps {
             core = core
         )
         val uriHandler = UriHandler()
+        val urlDispatcher = HackleUrlDispatcher(config.delegate)
         val inAppMessageActionHandlerFactory = InAppMessageActionHandlerFactory(
             handlers = listOf(
                 InAppMessageCloseActionHandler(),
-                InAppMessageLinkActionHandler(uriHandler),
-                InAppMessageLinkAndCloseActionHandler(uriHandler),
+                InAppMessageLinkActionHandler(uriHandler, urlDispatcher),
+                InAppMessageLinkAndCloseActionHandler(uriHandler, urlDispatcher),
                 InAppMessageHideActionHandler(inAppMessageHiddenStorage, clock)
             )
         )
@@ -708,7 +710,8 @@ internal object HackleApps {
             hackleAppCore = hackleAppCore,
             sdk = sdk,
             config = config,
-            invocator = hackleInvocator
+            invocator = hackleInvocator,
+            urlDispatcher = urlDispatcher
         )
     }
 
