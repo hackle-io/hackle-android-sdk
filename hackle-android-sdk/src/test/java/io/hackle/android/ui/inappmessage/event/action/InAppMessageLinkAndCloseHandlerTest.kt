@@ -2,6 +2,7 @@ package io.hackle.android.ui.inappmessage.event.action
 
 import android.app.Activity
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionType.*
@@ -17,6 +18,9 @@ internal class InAppMessageLinkAndCloseHandlerTest {
 
     @RelaxedMockK
     private lateinit var uriHandler: UriHandler
+
+    @RelaxedMockK
+    private lateinit var urlDispatcher: HackleUrlDispatcher
 
     @InjectMockKs
     private lateinit var sut: InAppMessageLinkAndCloseActionHandler

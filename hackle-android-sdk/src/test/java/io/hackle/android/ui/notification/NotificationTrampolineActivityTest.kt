@@ -4,6 +4,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import io.hackle.android.HackleApp
+import io.hackle.android.HackleUrlChannel
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -58,6 +61,12 @@ class NotificationTrampolineActivityTest {
 
         notificationHandler = mockk(relaxed = true)
         every { NotificationHandler.getInstance(any()) } returns notificationHandler
+
+        // HackleApp is initialized without delegate by default.
+        mockkObject(HackleApp.Companion)
+        every { HackleApp.currentInstance() } returns mockk {
+            every { urlDispatcher } returns mockk { every { hasDelegate } returns false }
+        }
 
         // Build the spy AFTER mockkObject so companion stubs are in place.
         sut = spyk(NotificationTrampolineActivity(), recordPrivateCalls = true)
@@ -223,5 +232,90 @@ class NotificationTrampolineActivityTest {
                 (flags and Intent.FLAG_ACTIVITY_NO_HISTORY) == 0
             })
         }
+    }
+
+    // ------------------------------------------------------------------
+    // DEEP_LINK path with delegate → launcher + delegate, no ACTION_VIEW
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `DEEP_LINK path with delegate - opens launcher and dispatches url to delegate`() {
+        val uri = mockk<Uri>(relaxed = true)
+        stubActivityIntent(uri = uri)
+
+        every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
+        every { NotificationData.from(any()) } returns notificationData
+
+        val urlDispatcher = mockk<HackleUrlDispatcher> {
+            every { hasDelegate } returns true
+            every { dispatch(any(), any()) } returns true
+        }
+        val app = mockk<HackleApp> {
+            every { this@mockk.urlDispatcher } returns urlDispatcher
+        }
+        every { HackleApp.currentInstance() } returns app
+
+        val launcherIntent = mockk<Intent>(relaxed = true)
+        val packageManager = mockk<PackageManager>(relaxed = true)
+        every { packageManager.getLaunchIntentForPackage(any()) } returns launcherIntent
+        every { sut.packageManager } returns packageManager
+        every { sut.packageName } returns "io.hackle.test"
+
+        callOnCreate()
+
+        verify(exactly = 1) { sut.startActivity(any()) }
+        verify(exactly = 1) { sut.startActivity(launcherIntent) }
+        verify(exactly = 1) { urlDispatcher.dispatch(uri, HackleUrlChannel.PUSH) }
+    }
+
+    @Test
+    fun `DEEP_LINK path without delegate - opens deep link directly`() {
+        val uri = mockk<Uri>(relaxed = true)
+        stubActivityIntent(uri = uri)
+
+        every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
+        every { NotificationData.from(any()) } returns notificationData
+
+        val urlDispatcher = mockk<HackleUrlDispatcher> {
+            every { hasDelegate } returns false
+        }
+        val app = mockk<HackleApp> {
+            every { this@mockk.urlDispatcher } returns urlDispatcher
+        }
+        every { HackleApp.currentInstance() } returns app
+
+        val packageManager = mockk<PackageManager>(relaxed = true)
+        every { sut.packageManager } returns packageManager
+        every { sut.packageName } returns "io.hackle.test"
+
+        callOnCreate()
+
+        verify(exactly = 1) { sut.startActivity(any()) }
+        verify(exactly = 0) { packageManager.getLaunchIntentForPackage(any()) }
+        verify(exactly = 0) { urlDispatcher.dispatch(any(), any()) }
+    }
+
+    @Test
+    fun `DEEP_LINK path when HackleApp is not initialized - opens launcher and stores pending link`() {
+        val uri = mockk<Uri>(relaxed = true)
+        stubActivityIntent(uri = uri)
+
+        every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
+        every { NotificationData.from(any()) } returns notificationData
+        every { HackleApp.currentInstance() } returns null
+
+        val launcherIntent = mockk<Intent>(relaxed = true)
+        val packageManager = mockk<PackageManager>(relaxed = true)
+        every { packageManager.getLaunchIntentForPackage(any()) } returns launcherIntent
+        every { sut.packageManager } returns packageManager
+        every { sut.packageName } returns "io.hackle.test"
+
+        callOnCreate()
+
+        verify(exactly = 1) { sut.startActivity(any()) }
+        verify(exactly = 1) { sut.startActivity(launcherIntent) }
+        val pending = PendingNotificationLinkStorage.drain()
+        assertEquals(uri, pending?.uri)
+        assertEquals(extras, pending?.extras)
     }
 }

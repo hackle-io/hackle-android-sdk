@@ -1,7 +1,10 @@
 package io.hackle.android.ui.inappmessage.event.action
 
 import android.app.Activity
+import android.net.Uri
+import io.hackle.android.HackleUrlChannel
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionType.*
@@ -18,6 +21,9 @@ internal class InAppMessageLinkActionHandlerTest {
 
     @RelaxedMockK
     private lateinit var uriHandler: UriHandler
+
+    @RelaxedMockK
+    private lateinit var urlDispatcher: HackleUrlDispatcher
 
     @InjectMockKs
     private lateinit var sut: InAppMessageLinkActionHandler
@@ -89,5 +95,30 @@ internal class InAppMessageLinkActionHandlerTest {
         verify(exactly = 1) {
             uriHandler.handle(activity, "gogo")
         }
+    }
+
+    @Test
+    fun `handle uri - when delegate handles url then do not open uri`() {
+        // given
+        val uri = mockk<Uri>()
+        mockkStatic(Uri::class)
+        every { Uri.parse("gogo") } returns uri
+        every { urlDispatcher.hasDelegate } returns true
+        every { urlDispatcher.dispatch(uri, HackleUrlChannel.IN_APP_MESSAGE) } returns true
+
+        val activity = mockk<Activity>()
+        val view = mockk<InAppMessageView>(relaxed = true) {
+            every { this@mockk.activity } returns activity
+            every { presentationContext } returns mockk(relaxed = true)
+        }
+        val action = InAppMessages.action(type = WEB_LINK, value = "gogo")
+
+        // when
+        sut.handle(view, action)
+
+        // then
+        verify(exactly = 1) { urlDispatcher.dispatch(uri, HackleUrlChannel.IN_APP_MESSAGE) }
+        verify { uriHandler wasNot Called }
+        unmockkStatic(Uri::class)
     }
 }

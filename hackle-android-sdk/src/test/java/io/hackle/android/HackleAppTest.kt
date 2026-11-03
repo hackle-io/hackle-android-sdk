@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
@@ -104,6 +105,9 @@ class HackleAppTest {
     @RelaxedMockK
     private lateinit var inAppMessageViewProvider: InAppMessageViewProvider
 
+    @RelaxedMockK
+    private lateinit var urlDispatcher: HackleUrlDispatcher
+
     private lateinit var sut: HackleApp
 
     @Suppress("DEPRECATION")
@@ -149,7 +153,8 @@ class HackleAppTest {
             hackleAppCore,
             Sdk.of("", HackleConfig.DEFAULT),
             HackleConfig.builder().mode(HackleAppMode.NATIVE).build(),
-            mockk()
+            mockk(),
+            urlDispatcher
         )
     }
 
@@ -169,6 +174,27 @@ class HackleAppTest {
         expectThrows<IllegalStateException> {
             HackleApp.getInstance()
         }
+    }
+
+    @Test
+    fun `setDelegate - sets delegate to url dispatcher`() {
+        val delegate = mockk<HackleDelegate>()
+
+        sut.setDelegate(delegate)
+
+        verify(exactly = 1) { urlDispatcher.setDelegate(delegate) }
+    }
+
+    @Test
+    fun `setDelegate - removes delegate when null`() {
+        sut.setDelegate(null)
+
+        verify(exactly = 1) { urlDispatcher.setDelegate(null) }
+    }
+
+    @Test
+    fun `currentInstance - returns null when HackleApp is not initialized`() {
+        expectThat(HackleApp.currentInstance()).isNull()
     }
 
     @Test
