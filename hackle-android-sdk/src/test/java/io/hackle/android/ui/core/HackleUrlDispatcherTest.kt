@@ -12,6 +12,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
+import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 import strikt.assertions.isTrue
 
@@ -78,5 +79,32 @@ class HackleUrlDispatcherTest {
         val actual = sut.dispatch(mockk(), HackleUrlChannel.PUSH)
 
         expectThat(actual).isTrue()
+    }
+
+    @Test
+    fun `currentDelegate - returns registered delegate`() {
+        val delegate = mockk<HackleDelegate>(relaxed = true)
+        val sut = HackleUrlDispatcher(delegate)
+
+        expectThat(sut.currentDelegate()).isSameInstanceAs(delegate)
+
+        sut.setDelegate(null)
+
+        expectThat(sut.currentDelegate()).isNull()
+    }
+
+    @Test
+    fun `dispatch with delegate - dispatches to the given delegate even if replaced`() {
+        val snapshot = mockk<HackleDelegate>(relaxed = true)
+        val sut = HackleUrlDispatcher(snapshot)
+        val url = mockk<Uri>()
+
+        sut.setDelegate(null)
+        sut.dispatch(snapshot, url, HackleUrlChannel.PUSH)
+
+        val context = slot<HackleUrlContext>()
+        verify(exactly = 1) { snapshot.handleUrl(capture(context)) }
+        expectThat(context.captured.url).isSameInstanceAs(url)
+        expectThat(context.captured.channel).isEqualTo(HackleUrlChannel.PUSH)
     }
 }

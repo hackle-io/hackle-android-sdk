@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import io.hackle.android.HackleApp
+import io.hackle.android.HackleDelegate
 import io.hackle.android.HackleUrlChannel
 import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.mockk.every
@@ -29,6 +30,16 @@ class NotificationTrampolineActivityTest {
                 Intent.FLAG_ACTIVITY_SINGLE_TOP
 
         assertEquals(expected, NotificationTrampolineActivity.NOTIFICATION_INTENT_FLAGS)
+    }
+
+    @Test
+    fun `foreground intent flags are NEW_TASK, RESET_TASK_IF_NEEDED without CLEAR_TOP`() {
+        val expected =
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+
+        assertEquals(expected, NotificationTrampolineActivity.FOREGROUND_INTENT_FLAGS)
+        assertEquals(0, NotificationTrampolineActivity.FOREGROUND_INTENT_FLAGS and Intent.FLAG_ACTIVITY_CLEAR_TOP)
     }
 
     @Test
@@ -65,7 +76,7 @@ class NotificationTrampolineActivityTest {
         // HackleApp is initialized without delegate by default.
         mockkObject(HackleApp.Companion)
         every { HackleApp.currentInstance() } returns mockk {
-            every { urlDispatcher } returns mockk { every { hasDelegate } returns false }
+            every { urlDispatcher } returns mockk { every { currentDelegate() } returns null }
         }
 
         // Build the spy AFTER mockkObject so companion stubs are in place.
@@ -203,8 +214,9 @@ class NotificationTrampolineActivityTest {
 
         callOnCreate()
 
-        // Launcher intent must have received addFlags(NOTIFICATION_INTENT_FLAGS).
+        // Launcher intent must have received addFlags(NOTIFICATION_INTENT_FLAGS) and the original uri.
         verify(exactly = 1) { launcherIntent.addFlags(NotificationTrampolineActivity.NOTIFICATION_INTENT_FLAGS) }
+        verify(exactly = 1) { launcherIntent.setData(uri) }
     }
 
     // ------------------------------------------------------------------
@@ -246,9 +258,10 @@ class NotificationTrampolineActivityTest {
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
         every { NotificationData.from(any()) } returns notificationData
 
+        val delegate = mockk<HackleDelegate>()
         val urlDispatcher = mockk<HackleUrlDispatcher> {
-            every { hasDelegate } returns true
-            every { dispatch(any(), any()) } returns true
+            every { currentDelegate() } returns delegate
+            every { dispatch(any<HackleDelegate>(), any(), any()) } returns Unit
         }
         val app = mockk<HackleApp> {
             every { this@mockk.urlDispatcher } returns urlDispatcher
@@ -265,7 +278,9 @@ class NotificationTrampolineActivityTest {
 
         verify(exactly = 1) { sut.startActivity(any()) }
         verify(exactly = 1) { sut.startActivity(launcherIntent) }
-        verify(exactly = 1) { urlDispatcher.dispatch(uri, HackleUrlChannel.PUSH) }
+        verify(exactly = 1) { launcherIntent.addFlags(NotificationTrampolineActivity.FOREGROUND_INTENT_FLAGS) }
+        verify(exactly = 0) { launcherIntent.addFlags(NotificationTrampolineActivity.NOTIFICATION_INTENT_FLAGS) }
+        verify(exactly = 1) { urlDispatcher.dispatch(delegate, uri, HackleUrlChannel.PUSH) }
     }
 
     @Test
@@ -277,7 +292,7 @@ class NotificationTrampolineActivityTest {
         every { NotificationData.from(any()) } returns notificationData
 
         val urlDispatcher = mockk<HackleUrlDispatcher> {
-            every { hasDelegate } returns false
+            every { currentDelegate() } returns null
         }
         val app = mockk<HackleApp> {
             every { this@mockk.urlDispatcher } returns urlDispatcher
@@ -293,6 +308,7 @@ class NotificationTrampolineActivityTest {
         verify(exactly = 1) { sut.startActivity(any()) }
         verify(exactly = 0) { packageManager.getLaunchIntentForPackage(any()) }
         verify(exactly = 0) { urlDispatcher.dispatch(any(), any()) }
+        verify(exactly = 0) { urlDispatcher.dispatch(any<HackleDelegate>(), any(), any()) }
     }
 
     @Test
@@ -314,6 +330,7 @@ class NotificationTrampolineActivityTest {
 
         verify(exactly = 1) { sut.startActivity(any()) }
         verify(exactly = 1) { sut.startActivity(launcherIntent) }
+        verify(exactly = 1) { launcherIntent.addFlags(NotificationTrampolineActivity.FOREGROUND_INTENT_FLAGS) }
         val pending = PendingNotificationLinkStorage.drain()
         assertEquals(uri, pending?.uri)
         assertEquals(extras, pending?.extras)
