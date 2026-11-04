@@ -1,8 +1,6 @@
 package io.hackle.android.ui.notification
 
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import io.hackle.android.HackleUrlChannel
@@ -46,14 +44,6 @@ internal object PendingNotificationLinkStorage {
         if (urlDispatcher.dispatch(link.uri, HackleUrlChannel.PUSH)) {
             return
         }
-        val intent = Intent(Intent.ACTION_VIEW, link.uri)
-        intent.putExtras(link.extras)
-        intent.addFlags(NotificationTrampolineActivity.NOTIFICATION_INTENT_FLAGS)
-        try {
-            context.startActivity(intent)
-            log.debug { "Redirected to: ${link.uri}" }
-        } catch (e: ActivityNotFoundException) {
-            log.debug { "Failed to land anywhere: ${link.uri}" }
-        }
+        NotificationLinkOpener.openLink(context, link.uri, link.extras)
     }
 }
