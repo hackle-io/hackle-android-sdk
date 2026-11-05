@@ -56,4 +56,32 @@ class ApplicationUrlHandlerTest {
         verify(exactly = 1) { launcherIntent.addFlags(LinkOpener.NOTIFICATION_INTENT_FLAGS) }
         verify(exactly = 1) { context.startActivity(launcherIntent) }
     }
+
+    @Test
+    fun `open - push link ignores security exception without falling back to launcher`() {
+        val context = mockk<Context> {
+            every { startActivity(any()) } throws SecurityException("permission denied")
+        }
+
+        sut.open(context, mockk(), HackleUrlChannel.PUSH, mockk<Bundle>())
+
+        verify(exactly = 0) { context.packageManager }
+    }
+
+    @Test
+    fun `open - push link ignores failure while starting launcher fallback`() {
+        val launcherIntent = mockk<Intent>(relaxed = true)
+        val context = mockk<Context> {
+            every { packageName } returns "io.hackle.test"
+            every { packageManager } returns mockk<PackageManager> {
+                every { getLaunchIntentForPackage("io.hackle.test") } returns launcherIntent
+            }
+            every { startActivity(any()) } throws ActivityNotFoundException("no handler")
+            every { startActivity(launcherIntent) } throws SecurityException("permission denied")
+        }
+
+        sut.open(context, mockk(), HackleUrlChannel.PUSH, mockk<Bundle>())
+
+        verify(exactly = 1) { context.startActivity(launcherIntent) }
+    }
 }
