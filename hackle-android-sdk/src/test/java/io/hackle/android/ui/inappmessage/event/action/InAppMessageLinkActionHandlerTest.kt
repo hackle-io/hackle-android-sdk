@@ -11,6 +11,7 @@ import io.hackle.sdk.core.model.InAppMessage.ActionType.*
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -20,17 +21,23 @@ import strikt.assertions.isEqualTo
 internal class InAppMessageLinkActionHandlerTest {
 
     @RelaxedMockK
-    private lateinit var uriHandler: UriHandler
-
-    @RelaxedMockK
     private lateinit var urlDispatcher: HackleUrlDispatcher
 
     @InjectMockKs
     private lateinit var sut: InAppMessageLinkActionHandler
 
+    private val uri = mockk<Uri>()
+
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
+        mockkStatic(Uri::class)
+        every { Uri.parse("gogo") } returns uri
+    }
+
+    @After
+    fun after() {
+        unmockkStatic(Uri::class)
     }
 
     @Test
@@ -59,7 +66,7 @@ internal class InAppMessageLinkActionHandlerTest {
         sut.handle(view, action)
 
         // then
-        verify { uriHandler wasNot Called }
+        verify { urlDispatcher wasNot Called }
     }
 
     @Test
@@ -75,7 +82,7 @@ internal class InAppMessageLinkActionHandlerTest {
         sut.handle(view, action)
 
         // then
-        verify { uriHandler wasNot Called }
+        verify { urlDispatcher wasNot Called }
     }
 
     @Test
@@ -93,32 +100,7 @@ internal class InAppMessageLinkActionHandlerTest {
 
         // then
         verify(exactly = 1) {
-            uriHandler.handle(activity, "gogo")
+            urlDispatcher.open(activity, uri, HackleUrlChannel.IN_APP_MESSAGE, null)
         }
-    }
-
-    @Test
-    fun `handle uri - when delegate handles url then do not open uri`() {
-        // given
-        val uri = mockk<Uri>()
-        mockkStatic(Uri::class)
-        every { Uri.parse("gogo") } returns uri
-        every { urlDispatcher.hasDelegate } returns true
-        every { urlDispatcher.dispatch(uri, HackleUrlChannel.IN_APP_MESSAGE) } returns true
-
-        val activity = mockk<Activity>()
-        val view = mockk<InAppMessageView>(relaxed = true) {
-            every { this@mockk.activity } returns activity
-            every { presentationContext } returns mockk(relaxed = true)
-        }
-        val action = InAppMessages.action(type = WEB_LINK, value = "gogo")
-
-        // when
-        sut.handle(view, action)
-
-        // then
-        verify(exactly = 1) { urlDispatcher.dispatch(uri, HackleUrlChannel.IN_APP_MESSAGE) }
-        verify { uriHandler wasNot Called }
-        unmockkStatic(Uri::class)
     }
 }

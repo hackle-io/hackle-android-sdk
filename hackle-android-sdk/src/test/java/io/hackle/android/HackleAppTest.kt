@@ -29,6 +29,8 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.android.ui.notification.NotificationHandler
+import io.hackle.android.ui.notification.PendingNotificationLink
+import io.hackle.android.ui.notification.PendingNotificationLinkStorage
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
@@ -160,6 +162,7 @@ class HackleAppTest {
 
     @After
     fun tearDown() {
+        PendingNotificationLinkStorage.drain()
         unmockkObject(TaskExecutors)
         unmockkObject(HackleApp)
         clearAllMocks()
@@ -177,7 +180,7 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setDelegate - sets delegate to url dispatcher`() {
+    fun `setDelegate - delegates to url dispatcher`() {
         val delegate = mockk<HackleDelegate>()
 
         sut.setDelegate(delegate)
@@ -186,10 +189,38 @@ class HackleAppTest {
     }
 
     @Test
-    fun `setDelegate - removes delegate when null`() {
+    fun `setDelegate - null delegates to url dispatcher`() {
         sut.setDelegate(null)
 
         verify(exactly = 1) { urlDispatcher.setDelegate(null) }
+    }
+
+    @Test
+    fun `dispatchPendingNotificationLink - does nothing when nothing is pending`() {
+        every { TaskExecutors.main() } returns Executor { it.run() }
+        val context = mockk<Context>()
+
+        sut.dispatchPendingNotificationLink(context)
+
+        verify(exactly = 0) { urlDispatcher.open(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `dispatchPendingNotificationLink - opens pending push link on the main executor and clears it`() {
+        val mainExecutor = mockk<Executor> {
+            every { execute(any()) } answers { firstArg<Runnable>().run() }
+        }
+        every { TaskExecutors.main() } returns mainExecutor
+        val context = mockk<Context>()
+        val uri = mockk<android.net.Uri>()
+        val extras = mockk<android.os.Bundle>()
+        PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
+
+        sut.dispatchPendingNotificationLink(context)
+
+        verify(exactly = 1) { mainExecutor.execute(any()) }
+        verify(exactly = 1) { urlDispatcher.open(context, uri, HackleUrlChannel.PUSH, extras) }
+        expectThat(PendingNotificationLinkStorage.drain()).isNull()
     }
 
     @Test

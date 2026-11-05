@@ -1,110 +1,62 @@
 package io.hackle.android.ui.core
 
+import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import io.hackle.android.HackleDelegate
 import io.hackle.android.HackleUrlChannel
 import io.hackle.android.HackleUrlContext
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import strikt.assertions.isFalse
-import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
-import strikt.assertions.isTrue
 
 class HackleUrlDispatcherTest {
 
     @Test
-    fun `dispatch - returns false when delegate is not registered`() {
-        val sut = HackleUrlDispatcher(null)
+    fun `open - opens url with the default handler`() {
+        val handler = mockk<UrlHandler>(relaxed = true)
+        val sut = HackleUrlDispatcher(handler)
+        val context = mockk<Context>()
+        val url = mockk<Uri>()
+        val extras = mockk<Bundle>()
 
-        val actual = sut.dispatch(mockk(), HackleUrlChannel.PUSH)
+        sut.open(context, url, HackleUrlChannel.PUSH, extras)
 
-        expectThat(actual).isFalse()
-        expectThat(sut.hasDelegate).isFalse()
+        verify(exactly = 1) { handler.open(context, url, HackleUrlChannel.PUSH, extras) }
     }
 
     @Test
-    fun `dispatch - delegates url with channel to initial delegate`() {
+    fun `setDelegate - routes links to the delegate`() {
+        val defaultHandler = mockk<UrlHandler>(relaxed = true)
         val delegate = mockk<HackleDelegate>(relaxed = true)
-        val sut = HackleUrlDispatcher(delegate)
+        val sut = HackleUrlDispatcher(defaultHandler)
         val url = mockk<Uri>()
 
-        val actual = sut.dispatch(url, HackleUrlChannel.IN_APP_MESSAGE)
+        sut.setDelegate(delegate)
+        sut.open(mockk(), url, HackleUrlChannel.IN_APP_MESSAGE)
 
-        expectThat(actual).isTrue()
-        val context = slot<HackleUrlContext>()
-        verify(exactly = 1) { delegate.handleUrl(capture(context)) }
-        expectThat(context.captured.url).isSameInstanceAs(url)
-        expectThat(context.captured.channel).isEqualTo(HackleUrlChannel.IN_APP_MESSAGE)
+        val urlContext = slot<HackleUrlContext>()
+        verify(exactly = 1) { delegate.handleUrl(capture(urlContext)) }
+        expectThat(urlContext.captured.url).isSameInstanceAs(url)
+        expectThat(urlContext.captured.channel).isEqualTo(HackleUrlChannel.IN_APP_MESSAGE)
+        verify(exactly = 0) { defaultHandler.open(any(), any(), any(), any()) }
     }
 
     @Test
-    fun `setDelegate - replaces delegate`() {
-        val first = mockk<HackleDelegate>(relaxed = true)
-        val second = mockk<HackleDelegate>(relaxed = true)
-        val sut = HackleUrlDispatcher(first)
-
-        sut.setDelegate(second)
-        sut.dispatch(mockk(), HackleUrlChannel.PUSH)
-
-        verify(exactly = 0) { first.handleUrl(any()) }
-        verify(exactly = 1) { second.handleUrl(any()) }
-    }
-
-    @Test
-    fun `setDelegate - removes delegate when null`() {
+    fun `setDelegate - null restores the default handler`() {
+        val defaultHandler = mockk<UrlHandler>(relaxed = true)
         val delegate = mockk<HackleDelegate>(relaxed = true)
-        val sut = HackleUrlDispatcher(delegate)
+        val sut = HackleUrlDispatcher(defaultHandler)
 
+        sut.setDelegate(delegate)
         sut.setDelegate(null)
-        val actual = sut.dispatch(mockk(), HackleUrlChannel.PUSH)
+        sut.open(mockk(), mockk(), HackleUrlChannel.PUSH)
 
-        expectThat(actual).isFalse()
-        expectThat(sut.hasDelegate).isFalse()
         verify(exactly = 0) { delegate.handleUrl(any()) }
-    }
-
-    @Test
-    fun `dispatch - returns true even if delegate throws`() {
-        val delegate = mockk<HackleDelegate> {
-            every { handleUrl(any()) } throws IllegalStateException("fail")
-        }
-        val sut = HackleUrlDispatcher(delegate)
-
-        val actual = sut.dispatch(mockk(), HackleUrlChannel.PUSH)
-
-        expectThat(actual).isTrue()
-    }
-
-    @Test
-    fun `currentDelegate - returns registered delegate`() {
-        val delegate = mockk<HackleDelegate>(relaxed = true)
-        val sut = HackleUrlDispatcher(delegate)
-
-        expectThat(sut.currentDelegate()).isSameInstanceAs(delegate)
-
-        sut.setDelegate(null)
-
-        expectThat(sut.currentDelegate()).isNull()
-    }
-
-    @Test
-    fun `dispatch with delegate - dispatches to the given delegate even if replaced`() {
-        val snapshot = mockk<HackleDelegate>(relaxed = true)
-        val sut = HackleUrlDispatcher(snapshot)
-        val url = mockk<Uri>()
-
-        sut.setDelegate(null)
-        sut.dispatch(snapshot, url, HackleUrlChannel.PUSH)
-
-        val context = slot<HackleUrlContext>()
-        verify(exactly = 1) { snapshot.handleUrl(capture(context)) }
-        expectThat(context.captured.url).isSameInstanceAs(url)
-        expectThat(context.captured.channel).isEqualTo(HackleUrlChannel.PUSH)
+        verify(exactly = 1) { defaultHandler.open(any(), any(), HackleUrlChannel.PUSH, null) }
     }
 }
