@@ -102,22 +102,6 @@ class HackleApp internal constructor(
     }
 
     /**
-     * Opens the push link tapped before the instance was registered, if any.
-     *
-     * Posted to the main queue once, right after the instance is registered.
-     * This does not wait for onReady or for any activity to be ready.
-     * Because it runs on the main queue, a [setDelegate] call made on the main thread
-     * right after initialization is reflected.
-     */
-    internal fun dispatchPendingNotificationLink(context: Context) {
-        TaskExecutors.main().execute {
-            val link = PendingNotificationLinkStorage.drain() ?: return@execute
-            log.debug { "Dispatch pending landing url: ${link.uri}" }
-            urlDispatcher.open(context, link.uri, HackleUrlChannel.PUSH, link.extras)
-        }
-    }
-
-    /**
      * Sets or replaces the current user.
      *
      * @param user the [User] to set
@@ -586,7 +570,17 @@ class HackleApp internal constructor(
                     }
                     .also { INSTANCE = it }
             }
-            app.dispatchPendingNotificationLink(context.applicationContext)
+            // Opens the push link tapped before the instance was registered, if any.
+            // Posted to the main queue once, without waiting for onReady or for any activity.
+            // Because it runs on the main queue, a setDelegate call made on the main thread
+            // right after initialization is reflected.
+            val urlDispatcher = app.urlDispatcher
+            val appContext = context.applicationContext
+            TaskExecutors.main().execute {
+                val link = PendingNotificationLinkStorage.drain() ?: return@execute
+                log.debug { "Dispatch pending landing url: ${link.uri}" }
+                urlDispatcher.open(appContext, link.uri, HackleUrlChannel.PUSH, link.extras)
+            }
             return app
         }
     }
