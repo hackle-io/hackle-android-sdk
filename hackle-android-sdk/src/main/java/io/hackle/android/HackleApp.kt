@@ -93,11 +93,28 @@ class HackleApp internal constructor(
      *
      * While a delegate is registered, the SDK does not open links itself.
      * To also receive links tapped before initialization, use [HackleConfig.Builder.delegate].
+     * See [HackleDelegate] for the contract the delegate must fulfill.
      *
      * @param delegate the [HackleDelegate], or null to remove it
      */
     fun setDelegate(delegate: HackleDelegate?) {
         urlDispatcher.setDelegate(delegate)
+    }
+
+    /**
+     * Opens the push link tapped before the instance was registered, if any.
+     *
+     * Posted to the main queue once, right after the instance is registered.
+     * This does not wait for onReady or for any activity to be ready.
+     * Because it runs on the main queue, a [setDelegate] call made on the main thread
+     * right after initialization is reflected.
+     */
+    internal fun dispatchPendingNotificationLink(context: Context) {
+        TaskExecutors.main().execute {
+            val link = PendingNotificationLinkStorage.drain() ?: return@execute
+            log.debug { "Dispatch pending landing url: ${link.uri}" }
+            urlDispatcher.open(context, link.uri, HackleUrlChannel.PUSH, link.extras)
+        }
     }
 
     /**
@@ -569,10 +586,7 @@ class HackleApp internal constructor(
                     }
                     .also { INSTANCE = it }
             }
-            val applicationContext = context.applicationContext
-            TaskExecutors.runOnUiThread {
-                PendingNotificationLinkStorage.dispatch(applicationContext, app.urlDispatcher)
-            }
+            app.dispatchPendingNotificationLink(context.applicationContext)
             return app
         }
     }

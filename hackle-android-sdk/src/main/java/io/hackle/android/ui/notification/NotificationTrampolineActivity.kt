@@ -1,11 +1,11 @@
 package io.hackle.android.ui.notification
 
 import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import io.hackle.android.HackleApp
 import io.hackle.android.HackleUrlChannel
+import io.hackle.android.ui.core.LinkOpener
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationTrampolineActivity : Activity() {
@@ -39,55 +39,35 @@ internal class NotificationTrampolineActivity : Activity() {
 
         when (data.clickAction) {
             NotificationClickAction.APP_OPEN -> {
-                startLauncherActivity(extras)
+                LinkOpener.startLauncherActivity(this, extras)
             }
             NotificationClickAction.DEEP_LINK -> {
                 if (uri == null) {
                     log.debug { "Landing url is empty." }
-                    startLauncherActivity(extras)
-                } else if (handleByHackle(uri, extras)) {
-                    log.debug { "Landing url is handled by Hackle: $uri" }
+                    LinkOpener.startLauncherActivity(this, extras)
                 } else {
-                    NotificationLinkOpener.openLink(this, uri, extras)
+                    dispatchLink(uri, extras)
                 }
             }
         }
     }
 
-    private fun handleByHackle(uri: Uri, extras: Bundle): Boolean {
+    /**
+     * The trampoline runs in the app process, so Application.onCreate has already completed.
+     * The instance is missing only when the app initializes HackleApp later (e.g. in an Activity).
+     */
+    private fun dispatchLink(uri: Uri, extras: Bundle) {
         val app = HackleApp.currentInstance()
         if (app == null) {
             log.debug { "HackleApp is not initialized. Pending landing url until initialized: $uri" }
             PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
-            startLauncherActivity(extras, flags = FOREGROUND_INTENT_FLAGS)
-            return true
+            LinkOpener.startLauncherActivity(this, extras)
+            return
         }
-        val urlDispatcher = app.urlDispatcher
-        val delegate = urlDispatcher.currentDelegate() ?: return false
-        startLauncherActivity(extras, flags = FOREGROUND_INTENT_FLAGS)
-        urlDispatcher.dispatch(delegate, uri, HackleUrlChannel.PUSH)
-        return true
-    }
-
-    private fun startLauncherActivity(bundle: Bundle, flags: Int = NOTIFICATION_INTENT_FLAGS) {
-        NotificationLinkOpener.startLauncherActivity(this, bundle, flags = flags)
+        app.urlDispatcher.open(this, uri, HackleUrlChannel.PUSH, extras)
     }
 
     companion object {
-
         private val log = Logger<NotificationTrampolineActivity>()
-
-        internal val NOTIFICATION_INTENT_FLAGS =
-            Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_SINGLE_TOP
-
-        /**
-         * Brings the existing task to the foreground as it is, like tapping the app icon.
-         * Used when the link is handled after launching the app, so the back stack is preserved.
-         */
-        internal val FOREGROUND_INTENT_FLAGS =
-            Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
     }
 }
