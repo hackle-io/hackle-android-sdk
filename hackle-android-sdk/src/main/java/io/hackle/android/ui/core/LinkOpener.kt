@@ -33,6 +33,8 @@ internal object LinkOpener {
         } catch (e: ActivityNotFoundException) {
             log.debug { "Failed to land anywhere: $uri" }
             startLauncherActivity(context, extras, uri)
+        } catch (e: Exception) {
+            log.error { "Failed to open link: $uri\n$e" }
         }
     }
 
@@ -63,8 +65,11 @@ internal object LinkOpener {
         launcherIntent.setData(data)
         launcherIntent.addFlags(NOTIFICATION_INTENT_FLAGS)
         extras?.let { launcherIntent.putExtras(it) }
-        context.startActivity(launcherIntent)
-
-        log.debug { "Started launcher activity." }
+        try {
+            context.startActivity(launcherIntent)
+            log.debug { "Started launcher activity." }
+        } catch (e: Exception) {
+            log.error { "Failed to start launcher activity\n$e" }
+        }
     }
 }
