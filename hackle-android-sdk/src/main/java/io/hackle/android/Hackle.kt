@@ -6,11 +6,14 @@ import io.hackle.sdk.common.Event
 import io.hackle.sdk.common.HackleRemoteConfig
 import io.hackle.sdk.common.User
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.sdk.core.internal.log.Logger
 
 /**
  * Hackle SDK main entry point providing convenient access to SDK features.
  */
 object Hackle
+
+private val log = Logger<Hackle>()
 
 /**
  * Gets the [HackleApp] instance.
@@ -119,10 +122,18 @@ fun Hackle.remoteConfig() = app.remoteConfig()
 
 /**
  * Sets the delegate that handles links from push notifications and in-app messages.
+ * Calls made before initialization are logged as errors and ignored.
  *
  * @param delegate the [HackleDelegate], or null to remove it
  */
-fun Hackle.setDelegate(delegate: HackleDelegate?) = app.setDelegate(delegate)
+fun Hackle.setDelegate(delegate: HackleDelegate?) {
+    val app = HackleApp.currentInstance()
+    if (app == null) {
+        log.error { "HackleApp is not initialized. Ignoring setDelegate." }
+        return
+    }
+    app.setDelegate(delegate)
+}
 
 /**
  * Sets the current user.

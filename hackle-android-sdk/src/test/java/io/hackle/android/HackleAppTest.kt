@@ -1035,7 +1035,10 @@ class HackleAppCompanionTest {
             val result = HackleApp.initializeApp(context, "test-key", config)
             expectThat(result).isSameInstanceAs(app)
             verify(exactly = 0) { handler.open(any(), any(), any(), any()) }
-            tasks.forEach { it.run() }
+            tasks.toList().also { tasks.clear() }.forEach { it.run() }
+
+            HackleApp.initializeApp(context, "test-key", config)
+            tasks.toList().also { tasks.clear() }.forEach { it.run() }
 
             verify(exactly = 1) { handler.open(context, uri, HackleUrlChannel.PUSH, extras) }
             expectThat(PendingNotificationLinkStorage.drain()).isNull()
