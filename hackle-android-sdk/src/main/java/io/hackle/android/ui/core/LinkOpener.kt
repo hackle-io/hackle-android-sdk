@@ -29,12 +29,12 @@ internal object LinkOpener {
         intent.addFlags(NOTIFICATION_INTENT_FLAGS)
         try {
             context.startActivity(intent)
-            log.debug { "Redirected to: $uri" }
+            log.debug { "Redirected to link." }
         } catch (e: ActivityNotFoundException) {
-            log.debug { "Failed to land anywhere: $uri" }
+            log.debug { "Failed to land anywhere." }
             startLauncherActivity(context, extras, uri)
         } catch (e: Exception) {
-            log.error { "Failed to open link: $uri\n$e" }
+            log.error { "Failed to open link [error=${e.javaClass.simpleName}]" }
         }
     }
 
@@ -48,7 +48,7 @@ internal object LinkOpener {
         try {
             context.startActivity(intent)
         } catch (e: Exception) {
-            log.error { "Failed to handle URI: $uri\n$e" }
+            log.error { "Failed to handle URI [error=${e.javaClass.simpleName}]" }
         }
     }
 
@@ -69,7 +69,7 @@ internal object LinkOpener {
             context.startActivity(launcherIntent)
             log.debug { "Started launcher activity." }
         } catch (e: Exception) {
-            log.error { "Failed to start launcher activity\n$e" }
+            log.error { "Failed to start launcher activity [error=${e.javaClass.simpleName}]" }
         }
     }
 }

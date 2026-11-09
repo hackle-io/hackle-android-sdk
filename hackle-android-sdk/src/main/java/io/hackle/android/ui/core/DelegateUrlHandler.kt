@@ -17,7 +17,7 @@ internal class DelegateUrlHandler(private val delegate: HackleDelegate) : UrlHan
         try {
             delegate.handleUrl(HackleUrlContext(url, channel))
         } catch (e: Throwable) {
-            log.error(e) { "Unexpected exception while handling url by delegate: $url" }
+            log.error(e) { "Unexpected exception while handling url by delegate [channel=$channel]" }
         }
     }
 

@@ -471,7 +471,10 @@ internal object HackleApps {
             core = core
         )
         val urlDispatcher = HackleUrlDispatcher(ApplicationUrlHandler())
+        // Hands the delegate over to the dispatcher so it is the only owner
+        // and HackleApp.setDelegate(null) can release it.
         urlDispatcher.setDelegate(config.delegate)
+        config.delegate = null
         val inAppMessageActionHandlerFactory = InAppMessageActionHandlerFactory(
             handlers = listOf(
                 InAppMessageCloseActionHandler(),

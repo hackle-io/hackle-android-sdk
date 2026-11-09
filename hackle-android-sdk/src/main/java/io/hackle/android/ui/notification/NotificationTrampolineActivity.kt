@@ -59,7 +59,7 @@ internal class NotificationTrampolineActivity : Activity() {
     private fun dispatchLink(uri: Uri, extras: Bundle) {
         val app = HackleApp.currentInstance()
         if (app == null) {
-            log.debug { "HackleApp is not initialized. Pending landing url until initialized: $uri" }
+            log.debug { "HackleApp is not initialized. Pending landing url until initialized" }
             PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
             LinkOpener.startLauncherActivity(this, extras)
             return

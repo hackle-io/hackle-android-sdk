@@ -27,7 +27,7 @@ internal class HackleUrlDispatcher(private val defaultHandler: UrlHandler) {
 
     fun open(context: Context, url: Uri, channel: HackleUrlChannel, extras: Bundle? = null) {
         val handler = urlHandler
-        log.debug { "Dispatch url: $url via ${handler.javaClass.simpleName} [channel=$channel]" }
+        log.debug { "Dispatch url via ${handler.javaClass.simpleName} [channel=$channel]" }
         handler.open(context, url, channel, extras)
     }
 

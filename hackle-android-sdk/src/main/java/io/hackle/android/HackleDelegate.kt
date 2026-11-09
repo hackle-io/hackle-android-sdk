@@ -36,7 +36,7 @@ class HackleUrlContext internal constructor(
  * Delegate interface for handling links from push notifications and in-app messages.
  *
  * Register it with [HackleConfig.Builder.delegate] or [HackleApp.setDelegate].
- * While a delegate is registered, the SDK does not open links itself and does not start any activity.
+ * The SDK does not open links passed to the delegate or start an activity for those links.
  * The SDK keeps a strong reference to the registered delegate until null is passed.
  *
  * [handleUrl] may be called while the app has no activity at all.
