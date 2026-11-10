@@ -372,8 +372,9 @@ class HackleConfig private constructor(builder: Builder) {
         /**
          * Sets the delegate that handles links from push notifications and in-app messages.
          *
-         * Registers the delegate before pending push links are replayed.
+         * Registers the delegate before push links held until initialization are replayed.
          * [HackleApp.setDelegate] can also receive them if called before replay.
+         * Links are held only when `io.hackle.android.defer_push_link_until_initialized` is enabled.
          *
          * @param delegate the [HackleDelegate] to handle links
          * @return this builder instance
