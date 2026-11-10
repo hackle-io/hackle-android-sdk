@@ -4,6 +4,10 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_ACTION_TYPE
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_BUTTON_TYPE
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_CLICK_AREA
+import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_ACTION_VALUE
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_CAMPAIGN_TYPE
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_DEBUG
 import io.hackle.android.internal.database.shared.NotificationHistoryEntity.Companion.COLUMN_ENVIRONMENT_ID
@@ -102,9 +106,9 @@ internal class NotificationHistoryRepositoryTest {
     @Test
     fun `get notification entities`() {
         val cursor = cursor(
-            listOf(0L, 1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, "JOURNEY", 1234567890L, 1),
-            listOf(1L, 2L, 3L, 4L, 5L, 6L, 7L, 2L, 3L, 4L, "PUSH_MESSAGE",3333333333L, 0),
-            listOf(2L, 3L, 4L, 5L, 6L, 7L, 8L, 3L, 4L, 5L , "JOURNEY", 4444444444L, 11),
+            listOf(0L, 1L, 2L, 3L, 4L, 5L, 6L, 1L, 2L, 3L, "JOURNEY", 1234567890L, 1, "APP_OPEN", "", "MESSAGE", ""),
+            listOf(1L, 2L, 3L, 4L, 5L, 6L, 7L, 2L, 3L, 4L, "PUSH_MESSAGE",3333333333L, 0, "DEEP_LINK", "https://example.com", "BUTTON", "PRIMARY"),
+            listOf(2L, 3L, 4L, 5L, 6L, 7L, 8L, 3L, 4L, 5L , "JOURNEY", 4444444444L, 11, "APP_OPEN", "", "MESSAGE", ""),
         )
         every { db.rawQuery(any(), any()) } returns cursor
 
@@ -114,6 +118,8 @@ internal class NotificationHistoryRepositoryTest {
         verify(exactly = 1) { db.rawQuery("SELECT * FROM notification_histories WHERE workspace_id = 123 AND environment_id = 456", null) }
         expectThat(actual) {
             hasSize(3)
+            get { this[1].clickArea } isEqualTo "BUTTON"
+            get { this[1].buttonType } isEqualTo "PRIMARY"
             get { this[0] } isEqualTo NotificationHistoryEntity(0L, 1L, 2L, 3L, 4L, 5L, 6L,  1L, 2L, 3L, "JOURNEY",1234567890L,true)
             get { this[1] } isEqualTo NotificationHistoryEntity(1L, 2L, 3L, 4L, 5L, 6L, 7L, 2L, 3L, 4L, "PUSH_MESSAGE", 3333333333L,false)
             get { this[2] } isEqualTo NotificationHistoryEntity(2L, 3L, 4L, 5L, 6L, 7L, 8L, 3L, 4L, 5L , "JOURNEY",4444444444L,true)
@@ -151,7 +157,11 @@ internal class NotificationHistoryRepositoryTest {
                 COLUMN_JOURNEY_NODE_ID,
                 COLUMN_CAMPAIGN_TYPE,
                 COLUMN_TIMESTAMP,
-                COLUMN_DEBUG
+                COLUMN_DEBUG,
+                COLUMN_ACTION_TYPE,
+                COLUMN_ACTION_VALUE,
+                COLUMN_CLICK_AREA,
+                COLUMN_BUTTON_TYPE
             ),
             *rows
         )

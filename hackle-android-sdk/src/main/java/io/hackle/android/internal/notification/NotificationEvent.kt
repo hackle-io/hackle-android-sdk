@@ -15,6 +15,10 @@ internal fun NotificationData.toTrackEvent() =
         .property("journey_node_id", journeyNodeId)
         .property("campaign_type", campaignType)
         .property("debug", debug)
+        .property("push_message_click_area", clickArea.name)
+        .property("push_message_click_action", clickAction.name)
+        .property("push_message_click_value", link)
+        .property("push_message_button_type", buttonType)
         .build()
 
 internal fun NotificationHistoryEntity.toTrackEvent() =
@@ -28,4 +32,8 @@ internal fun NotificationHistoryEntity.toTrackEvent() =
         .property("journey_node_id", journeyNodeId)
         .property("campaign_type", campaignType)
         .property("debug", debug)
+        .property("push_message_click_area", clickArea)
+        .property("push_message_click_action", clickAction)
+        .property("push_message_click_value", clickValue)
+        .property("push_message_button_type", buttonType)
         .build()

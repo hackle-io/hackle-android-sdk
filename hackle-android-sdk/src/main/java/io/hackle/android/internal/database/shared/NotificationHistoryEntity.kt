@@ -18,7 +18,11 @@ internal class NotificationHistoryEntity(
     val journeyNodeId: Long?,
     val campaignType: String?,
     val timestamp: Long,
-    val debug: Boolean
+    val debug: Boolean,
+    val clickAction: String? = null,
+    val clickValue: String? = null,
+    val clickArea: String? = null,
+    val buttonType: String? = null
 ) {
 
     companion object {
@@ -38,6 +42,11 @@ internal class NotificationHistoryEntity(
         const val COLUMN_JOURNEY_KEY = "journey_key"
         const val COLUMN_JOURNEY_NODE_ID = "journey_node_id"
         const val COLUMN_CAMPAIGN_TYPE = "campaign_type"
+        const val COLUMN_ACTION_TYPE = "action_type"
+        const val COLUMN_ACTION_VALUE = "action_value"
+
+        const val COLUMN_CLICK_AREA = "click_area"
+        const val COLUMN_BUTTON_TYPE = "button_type"
 
         const val CREATE_TABLE =
             "CREATE TABLE IF NOT EXISTS $TABLE_NAME (" +
@@ -53,7 +62,11 @@ internal class NotificationHistoryEntity(
                 "$COLUMN_JOURNEY_ID INTEGER," +
                 "$COLUMN_JOURNEY_KEY INTEGER," +
                 "$COLUMN_JOURNEY_NODE_ID INTEGER," +
-                "$COLUMN_CAMPAIGN_TYPE TEXT" +
+                "$COLUMN_CAMPAIGN_TYPE TEXT," +
+                "$COLUMN_ACTION_TYPE TEXT," +
+                "$COLUMN_ACTION_VALUE TEXT," +
+                "$COLUMN_CLICK_AREA TEXT," +
+                "$COLUMN_BUTTON_TYPE TEXT" +
             ")"
 
         const val ADD_JOURNEY_ID =
@@ -69,6 +82,9 @@ internal class NotificationHistoryEntity(
             "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CAMPAIGN_TYPE TEXT"
 
 
+        const val ADD_ACTION_TYPE = "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_ACTION_TYPE TEXT"
+        const val ADD_ACTION_VALUE = "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_ACTION_VALUE TEXT"
+
         fun from(cursor: Cursor): NotificationHistoryEntity {
             return NotificationHistoryEntity(
                 historyId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_HISTORY_ID)),
@@ -83,7 +99,11 @@ internal class NotificationHistoryEntity(
                 journeyId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_ID)),
                 journeyKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_KEY)),
                 journeyNodeId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_NODE_ID)),
-                campaignType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_TYPE))
+                campaignType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_TYPE)),
+                clickAction = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_ACTION_TYPE)),
+                clickArea = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_AREA)),
+                buttonType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_BUTTON_TYPE)),
+                clickValue = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_ACTION_VALUE))
             )
         }
 

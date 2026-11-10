@@ -63,6 +63,36 @@ class NotificationDataTest {
     }
 
     @Test
+    fun `parse buttons and select clicked action`() {
+        val intent = mockk<Intent>()
+        val payload = mapOf<String, Any>(
+            "workspaceId" to 1,
+            "environmentId" to 2,
+            "clickAction" to "APP_OPEN",
+            "buttons" to mapOf(
+                "categoryId" to "category",
+                "items" to listOf(
+                    mapOf("title" to "Open", "type" to "PRIMARY", "clickAction" to "DEEP_LINK", "link" to "https://example.com"),
+                    mapOf("title" to "Later", "clickAction" to "APP_OPEN")
+                )
+            )
+        )
+        every { intent.extras } returns MockBundle.create(mapOf(
+            "google.message_id" to "message",
+            "hackle" to payload.toJson()
+        ))
+
+        val data = requireNotNull(NotificationData.from(intent))
+        assertThat(data.buttons.size, `is`(2))
+        assertThat(data.buttons[0].title, `is`("Open"))
+        assertThat(data.clicked(0).clickAction, `is`(NotificationClickAction.DEEP_LINK))
+        assertThat(data.clicked(0).clickArea, `is`(NotificationClickArea.BUTTON))
+        assertThat(data.clicked(0).buttonType, `is`("PRIMARY"))
+        assertThat(data.clicked(0).link, `is`("https://example.com"))
+        assertThat(data.clicked(8), `is`(data))
+    }
+
+    @Test
     fun `override channel id when default channel type`() {
         val intent = mockk<Intent>()
         val map = mapOf<String, Any>(

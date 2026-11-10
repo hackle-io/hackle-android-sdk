@@ -28,6 +28,8 @@ import io.hackle.android.ui.notification.Constants.KEY_THUMBNAIL_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_TITLE
 import io.hackle.android.ui.notification.Constants.KEY_WORKSPACE_ID
 
+internal enum class NotificationClickArea { MESSAGE, BUTTON }
+
 internal data class NotificationData(
     val channelId: String,
     val messageId: String,
@@ -50,7 +52,20 @@ internal data class NotificationData(
     val journeyNodeId: Long?,
     val campaignType: String?,
     val debug: Boolean,
+    val buttons: List<NotificationButton> = emptyList(),
+    val clickArea: NotificationClickArea = NotificationClickArea.MESSAGE,
+    val buttonType: String? = null,
 ) {
+
+    fun clicked(index: Int): NotificationData {
+        val button = buttons.getOrNull(index) ?: return this
+        return copy(
+            clickArea = NotificationClickArea.BUTTON,
+            clickAction = button.clickAction,
+            link = button.link,
+            buttonType = button.type
+        )
+    }
 
     val notificationId: Int
         get() = messageId.hashCode()
@@ -90,13 +105,31 @@ internal data class NotificationData(
                     journeyKey = (hackle[KEY_JOURNEY_KEY] as? Number)?.toLong(),
                     journeyNodeId = (hackle[KEY_JOURNEY_NODE_ID] as? Number)?.toLong(),
                     campaignType = hackle[KEY_CAMPAIGN_TYPE] as? String,
-                    debug = hackle[KEY_DEBUG] as? Boolean ?: false
+                    debug = hackle[KEY_DEBUG] as? Boolean ?: false,
+                    buttons = parseButtons(hackle[Constants.KEY_BUTTONS])
                 )
             } catch (_: Exception) {
             }
             return null
         }
         
+        private fun parseButtons(value: Any?): List<NotificationButton> {
+            val items = (value as? Map<*, *>)?.get(Constants.KEY_ITEMS) as? List<*> ?: return emptyList()
+            return items.map { item ->
+                val button = item as? Map<*, *> ?: return emptyList()
+                val title = button[KEY_TITLE] as? String ?: return emptyList()
+                val action = runCatching {
+                    NotificationClickAction.from(button[KEY_CLICK_ACTION] as? String ?: NotificationClickAction.APP_OPEN.name)
+                }.getOrDefault(NotificationClickAction.APP_OPEN)
+                NotificationButton(
+                    title = title,
+                    clickAction = action,
+                    link = button[KEY_LINK] as? String,
+                    type = button[Constants.KEY_BUTTON_TYPE] as? String
+                )
+            }
+        }
+
         fun channelId(channelType: ChannelType, channelId: String?): String {
             return when(channelType) {
                 ChannelType.HACKLE_DEFAULT -> DEFAULT_NOTIFICATION_CHANNEL_ID

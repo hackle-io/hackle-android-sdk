@@ -41,6 +41,9 @@ class NotificationEventTest {
         assertThat(to.properties["push_message_execution_id"], `is`(3333L))
         assertThat(to.properties["push_message_delivery_id"], `is`(4444L))
         assertThat(to.properties["debug"], `is`(true))
+        assertThat(to.properties["push_message_click_area"], `is`("MESSAGE"))
+        assertThat(to.properties["push_message_click_action"], `is`("APP_OPEN"))
+        assertThat(to.properties["push_message_click_value"], `is`("foo://bar"))
     }
 
     @Test
@@ -58,6 +61,8 @@ class NotificationEventTest {
             journeyNodeId = 7777L,
             campaignType = "JOURNEY",
             timestamp = 987654321L,
+            clickArea = "BUTTON",
+            buttonType = "PRIMARY",
             debug = true,
         )
         val to = from.toTrackEvent()
@@ -66,6 +71,8 @@ class NotificationEventTest {
         assertThat(to.properties["push_message_key"], `is`(2222L))
         assertThat(to.properties["push_message_execution_id"], `is`(3333L))
         assertThat(to.properties["push_message_delivery_id"], `is`(4444L))
+        assertThat(to.properties["push_message_click_area"], `is`("BUTTON"))
+        assertThat(to.properties["push_message_button_type"], `is`("PRIMARY"))
         assertThat(to.properties["journey_id"], `is`(5555L))
         assertThat(to.properties["journey_key"], `is`(6666L))
         assertThat(to.properties["journey_node_id"], `is`(7777L))

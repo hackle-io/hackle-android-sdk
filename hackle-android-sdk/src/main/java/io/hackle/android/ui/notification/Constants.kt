@@ -12,6 +12,8 @@ internal object Constants {
     const val DEFAULT_NOTIFICATION_LARGE_ICON = "io_hackle_android_default_notification_large_icon"
     const val DEFAULT_NOTIFICATION_COLOR = "io_hackle_android_default_notification_color"
 
+    const val NOTIFICATION_TAG = "hackle_notification"
+
     const val KEY_MESSAGE_ID = "google.message_id"
 
     const val KEY_HACKLE = "hackle"
@@ -31,6 +33,10 @@ internal object Constants {
     const val KEY_LARGE_IMAGE_URL = "largeImageUrl"
     const val KEY_CLICK_ACTION = "clickAction"
     const val KEY_LINK = "link"
+    const val KEY_BUTTONS = "buttons"
+    const val KEY_BUTTON_TYPE = "type"
+    const val KEY_ITEMS = "items"
+    const val KEY_ACTION_INDEX = "io.hackle.android.notification.action_index"
     const val KEY_JOURNEY_ID = "journeyId"
     const val KEY_JOURNEY_KEY = "journeyKey"
     const val KEY_JOURNEY_NODE_ID = "journeyNodeId"

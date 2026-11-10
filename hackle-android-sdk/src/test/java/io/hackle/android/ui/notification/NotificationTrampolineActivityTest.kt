@@ -79,6 +79,7 @@ class NotificationTrampolineActivityTest {
         activityIntent = mockk(relaxed = true)
         every { activityIntent.extras } returns extras
         every { activityIntent.data } returns uri
+        every { activityIntent.getIntExtra(Constants.KEY_ACTION_INDEX, -1) } returns -1
         every { sut.intent } returns activityIntent
         return activityIntent
     }

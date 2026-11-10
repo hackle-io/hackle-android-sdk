@@ -18,12 +18,12 @@ internal class SharedDatabase(
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if(newVersion <= MAX_DATABASE_VERSION) {
-            when (oldVersion) {
-                1 -> {
-                    // migration v1 -> v2
-                    migrationTableFrom1To2(db)
-                }
+        if (oldVersion < 2 && newVersion >= 2) migrationTableFrom1To2(db)
+        if (oldVersion < 3 && newVersion >= 3) migrationTableFrom2To3(db)
+        if (oldVersion < 4 && newVersion >= 4) {
+            with(NotificationHistoryEntity) {
+                db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CLICK_AREA TEXT")
+                db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_BUTTON_TYPE TEXT")
             }
         }
     }
@@ -39,11 +39,15 @@ internal class SharedDatabase(
         }
     }
 
+    private fun migrationTableFrom2To3(db: SQLiteDatabase) {
+        db.execSQL(NotificationHistoryEntity.ADD_ACTION_TYPE)
+        db.execSQL(NotificationHistoryEntity.ADD_ACTION_VALUE)
+    }
+
     companion object {
 
         const val DATABASE_NAME = "hackle_shared"
-        const val DATABASE_VERSION = 2
-        const val MAX_DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 4
         private val log = Logger<SharedDatabase>()
     }
 }
