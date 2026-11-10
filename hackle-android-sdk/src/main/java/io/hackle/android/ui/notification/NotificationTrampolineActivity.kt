@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import io.hackle.android.HackleApp
 import io.hackle.android.HackleUrlChannel
+import io.hackle.android.internal.platform.ManifestMetadata
 import io.hackle.android.ui.core.LinkOpener
 import io.hackle.sdk.core.internal.log.Logger
 
@@ -59,15 +60,20 @@ internal class NotificationTrampolineActivity : Activity() {
     private fun dispatchLink(uri: Uri, extras: Bundle) {
         val app = HackleApp.currentInstance()
         if (app == null) {
-            log.debug { "HackleApp is not initialized. Pending landing url until initialized" }
-            PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
-            LinkOpener.startLauncherActivity(this, extras)
+            if (ManifestMetadata.boolean(this, DEFER_PUSH_LINK_KEY)) {
+                log.debug { "HackleApp is not initialized. Pending landing url until initialized" }
+                PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
+                LinkOpener.startLauncherActivity(this, extras)
+            } else {
+                LinkOpener.openLink(this, uri, extras)
+            }
             return
         }
         app.urlDispatcher.open(this, uri, HackleUrlChannel.PUSH, extras)
     }
 
     companion object {
+        private const val DEFER_PUSH_LINK_KEY = "io.hackle.android.defer_push_link_until_initialized"
         private val log = Logger<NotificationTrampolineActivity>()
     }
 }
