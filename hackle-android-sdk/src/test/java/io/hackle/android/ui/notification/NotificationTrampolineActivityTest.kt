@@ -2,6 +2,7 @@ package io.hackle.android.ui.notification
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import io.hackle.android.HackleApp
@@ -83,6 +84,7 @@ class NotificationTrampolineActivityTest {
 
     @After
     fun tearDown() {
+        PendingNotificationLinkStorage.drain()
         unmockkAll()
     }
 
@@ -293,6 +295,51 @@ class NotificationTrampolineActivityTest {
     }
 
     @Test
+    fun `DEEP_LINK path before initialization opens immediately by default`() {
+        val uri = mockk<Uri>(relaxed = true)
+        stubActivityIntent(uri = uri)
+        every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
+        every { NotificationData.from(any()) } returns notificationData
+        every { HackleApp.currentInstance() } returns null
+        val packageManager = mockk<PackageManager>(relaxed = true)
+        every { sut.packageManager } returns packageManager
+        every { sut.packageName } returns "io.hackle.test"
+
+        mockkObject(LinkOpener)
+
+        callOnCreate()
+
+        verify(exactly = 1) { LinkOpener.openLink(sut, uri, extras) }
+        verify(exactly = 1) { sut.startActivity(any()) }
+        verify(exactly = 0) { packageManager.getLaunchIntentForPackage(any()) }
+        assertEquals(null, PendingNotificationLinkStorage.drain())
+    }
+
+    @Test
+    fun `DEEP_LINK path before initialization opens immediately when defer metadata is false`() {
+        val uri = mockk<Uri>(relaxed = true)
+        stubActivityIntent(uri = uri)
+        every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
+        every { NotificationData.from(any()) } returns notificationData
+        every { HackleApp.currentInstance() } returns null
+        val packageManager = mockk<PackageManager>(relaxed = true)
+        every { sut.packageManager } returns packageManager
+        every { sut.packageName } returns "io.hackle.test"
+        val metadata = mockk<Bundle>()
+        every { metadata.containsKey("io.hackle.android.defer_push_link_until_initialized") } returns true
+        every { metadata.getBoolean("io.hackle.android.defer_push_link_until_initialized", false) } returns false
+        val appInfo = ApplicationInfo().apply { metaData = metadata }
+        every { packageManager.getApplicationInfo("io.hackle.test", PackageManager.GET_META_DATA) } returns appInfo
+        mockkObject(LinkOpener)
+
+        callOnCreate()
+
+        verify(exactly = 1) { LinkOpener.openLink(sut, uri, extras) }
+        verify(exactly = 0) { packageManager.getLaunchIntentForPackage(any()) }
+        assertEquals(null, PendingNotificationLinkStorage.drain())
+    }
+
+    @Test
     fun `DEEP_LINK path when HackleApp is not initialized - starts launcher activity and stores pending link`() {
         val uri = mockk<Uri>(relaxed = true)
         stubActivityIntent(uri = uri)
@@ -306,6 +353,11 @@ class NotificationTrampolineActivityTest {
         every { packageManager.getLaunchIntentForPackage(any()) } returns launcherIntent
         every { sut.packageManager } returns packageManager
         every { sut.packageName } returns "io.hackle.test"
+        val metadata = mockk<Bundle>()
+        every { metadata.containsKey("io.hackle.android.defer_push_link_until_initialized") } returns true
+        every { metadata.getBoolean("io.hackle.android.defer_push_link_until_initialized", false) } returns true
+        val appInfo = ApplicationInfo().apply { metaData = metadata }
+        every { packageManager.getApplicationInfo("io.hackle.test", PackageManager.GET_META_DATA) } returns appInfo
 
         callOnCreate()
 

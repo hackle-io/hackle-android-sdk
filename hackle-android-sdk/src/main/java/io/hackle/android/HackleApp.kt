@@ -92,7 +92,8 @@ class HackleApp internal constructor(
      * Sets the delegate that handles links from push notifications and in-app messages.
      *
      * While a delegate is registered, the SDK does not open links itself.
-     * Pending push links are received if the delegate is registered before replay.
+     * Push links held until initialization are received if the delegate is registered before replay.
+     * Links are held only when `io.hackle.android.defer_push_link_until_initialized` is enabled.
      * See [HackleDelegate] for the contract the delegate must fulfill.
      *
      * @param delegate the [HackleDelegate], or null to remove it

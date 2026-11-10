@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import io.hackle.android.internal.platform.ManifestMetadata
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
@@ -110,7 +111,7 @@ internal object NotificationFactory {
         // MARK:
         //  1. manifest
         //  2. app icon
-        val smallIcon = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_SMALL_ICON) ?: metadata.icon
+        val smallIcon = ManifestMetadata.resourceId(context, Constants.DEFAULT_NOTIFICATION_SMALL_ICON) ?: metadata.icon
 
         builder.setSmallIcon(smallIcon)
     }
@@ -122,7 +123,7 @@ internal object NotificationFactory {
      */
     private fun setThumbnailIcon(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val imageUrl = data.thumbnailImageUrl
-        val largeIconId = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_LARGE_ICON)
+        val largeIconId = ManifestMetadata.resourceId(context, Constants.DEFAULT_NOTIFICATION_LARGE_ICON)
         // MARK:
         //  1. remote
         //  2. manifest
@@ -141,7 +142,7 @@ internal object NotificationFactory {
      */
     private fun setColor(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {
         val colorFilter = data.iconColorFilter
-        val colorId = getResourceIdFromManifest(context, Constants.DEFAULT_NOTIFICATION_COLOR)
+        val colorId = ManifestMetadata.resourceId(context, Constants.DEFAULT_NOTIFICATION_COLOR)
         // MARK:
         //  1. remote
         //  2. manifest
@@ -216,28 +217,6 @@ internal object NotificationFactory {
         val imageUrl = data.largeImageUrl ?: return
         val image = loadImageFromUrl(context, imageUrl) ?: return
         bigPictureStyle.bigPicture(image)
-    }
-
-    private fun getResourceIdFromManifest(context: Context, key: String): Int? {
-        try {
-            val appInfo = context.packageManager.getApplicationInfo(
-                context.packageName,
-                PackageManager.GET_META_DATA
-            )
-
-            val metaData = appInfo.metaData
-            if (metaData != null && metaData.containsKey(key)) {
-                val resourceId = metaData.getInt(key)
-                if (resourceId != 0) {
-                    return resourceId
-                }
-            }
-        } catch (_: Exception) {
-            log.debug { "Failed to get resource ID from manifest: $key" }
-        }
-
-        return null
-
     }
 
     private fun loadImageFromUrl(context: Context, url: String?): Bitmap? {

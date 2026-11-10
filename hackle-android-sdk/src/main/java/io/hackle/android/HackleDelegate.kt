@@ -45,6 +45,17 @@ class HackleUrlContext internal constructor(
  * starting the launcher activity. In that case, bringing the app to the foreground, preparing the
  * screen, and holding the link until the screen is ready are all the delegate's responsibility.
  * A delegate that only navigates within an existing activity cannot open the link in that case.
+ *
+ * A push link tapped before the SDK is initialized (e.g. when the app initializes the SDK in an
+ * activity) is opened by the SDK right away and is not passed to the delegate.
+ * To pass it to the delegate instead, add the following to the `<application>` element of
+ * `AndroidManifest.xml`. The SDK then starts the launcher activity, holds the link, and replays it
+ * once the SDK is initialized.
+ * ```xml
+ * <meta-data
+ *     android:name="io.hackle.android.defer_push_link_until_initialized"
+ *     android:value="true" />
+ * ```
  */
 interface HackleDelegate {
 
