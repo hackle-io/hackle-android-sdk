@@ -114,6 +114,9 @@ class HackleConfig private constructor(builder: Builder) {
      */
     val optOutTracking: Boolean = builder.optOutTracking
 
+    @Volatile
+    internal var delegate: HackleDelegate? = builder.delegate
+
     private val extra: Map<String, String> = Collections.unmodifiableMap(builder.extra)
 
     internal operator fun get(key: String): String? = extra[key]
@@ -148,6 +151,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal var exposureEventDedupIntervalMillis: Int = DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
 
         internal var optOutTracking: Boolean = false
+
+        internal var delegate: HackleDelegate? = null
 
         internal val extra = hashMapOf<String, String>()
 
@@ -362,6 +367,19 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun optOutTracking(optOutTracking: Boolean) = apply {
             this.optOutTracking = optOutTracking
+        }
+
+        /**
+         * Sets the delegate that handles links from push notifications and in-app messages.
+         *
+         * Registers the delegate before pending push links are replayed.
+         * [HackleApp.setDelegate] can also receive them if called before replay.
+         *
+         * @param delegate the [HackleDelegate] to handle links
+         * @return this builder instance
+         */
+        fun delegate(delegate: HackleDelegate) = apply {
+            this.delegate = delegate
         }
 
         /**
