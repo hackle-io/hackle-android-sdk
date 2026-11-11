@@ -1,10 +1,12 @@
 package io.hackle.android.ui.notification
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import io.hackle.android.HackleApp
+import io.hackle.android.HackleUrlChannel
+import io.hackle.android.internal.platform.ManifestMetadata
+import io.hackle.android.ui.core.LinkOpener
 import io.hackle.sdk.core.internal.log.Logger
 
 internal class NotificationTrampolineActivity : Activity() {
@@ -38,49 +40,40 @@ internal class NotificationTrampolineActivity : Activity() {
 
         when (data.clickAction) {
             NotificationClickAction.APP_OPEN -> {
-                startLauncherActivity(extras)
+                LinkOpener.startLauncherActivity(this, extras)
             }
             NotificationClickAction.DEEP_LINK -> {
                 if (uri == null) {
                     log.debug { "Landing url is empty." }
-                    startLauncherActivity(extras)
+                    LinkOpener.startLauncherActivity(this, extras)
                 } else {
-                    val trampolineIntent = Intent(Intent.ACTION_VIEW, uri)
-                    trampolineIntent.putExtras(extras)
-                    trampolineIntent.addFlags(NOTIFICATION_INTENT_FLAGS)
-                    try {
-                        startActivity(trampolineIntent)
-                        log.debug { "Redirected to: $uri" }
-                    } catch (e: ActivityNotFoundException) {
-                        log.debug { "Failed to land anywhere." }
-                        startLauncherActivity(extras, uri)
-                    }
+                    dispatchLink(uri, extras)
                 }
             }
         }
     }
 
-    private fun startLauncherActivity(bundle: Bundle, data: Uri? = null) {
-        val launcherIntent = packageManager.getLaunchIntentForPackage(packageName)
-        if (launcherIntent == null) {
-            log.debug { "Cannot find launcher activity." }
+    /**
+     * The trampoline runs in the app process, so Application.onCreate has already completed.
+     * The instance is missing only when the app initializes HackleApp later (e.g. in an Activity).
+     */
+    private fun dispatchLink(uri: Uri, extras: Bundle) {
+        val app = HackleApp.currentInstance()
+        if (app == null) {
+            if (ManifestMetadata.boolean(this, DEFER_PUSH_LINK_KEY)) {
+                log.debug { "HackleApp is not initialized. Pending landing url until initialized" }
+                PendingNotificationLinkStorage.store(PendingNotificationLink(uri, extras))
+                LinkOpener.startLauncherActivity(this, extras)
+            } else {
+                LinkOpener.openLink(this, uri, extras)
+            }
             return
         }
-        launcherIntent.setData(data)
-        launcherIntent.addFlags(NOTIFICATION_INTENT_FLAGS)
-        launcherIntent.putExtras(bundle)
-        startActivity(launcherIntent)
-
-        log.debug { "Started launcher activity." }
+        app.urlDispatcher.open(this, uri, HackleUrlChannel.PUSH, extras)
     }
 
     companion object {
-
+        private const val DEFER_PUSH_LINK_KEY = "io.hackle.android.defer_push_link_until_initialized"
         private val log = Logger<NotificationTrampolineActivity>()
-
-        internal val NOTIFICATION_INTENT_FLAGS =
-            Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_SINGLE_TOP
     }
 }
