@@ -54,7 +54,8 @@ internal class WebViewBridgeContractTest {
             hackleAppCore = core,
             sdk = Sdk("SDK_KEY", "name", "version"),
             config = HackleConfig.builder().mode(HackleAppMode.NATIVE).build(),
-            invocator = invocator
+            invocator = invocator,
+            urlDispatcher = mockk(relaxed = true)
         )
         webView = mockk(relaxed = true)
     }

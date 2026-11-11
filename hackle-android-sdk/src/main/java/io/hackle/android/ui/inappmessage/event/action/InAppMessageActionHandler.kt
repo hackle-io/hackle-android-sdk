@@ -1,8 +1,8 @@
 package io.hackle.android.ui.inappmessage.event.action
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
+import io.hackle.android.HackleUrlChannel
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.common.decision.DecisionReason
 import io.hackle.sdk.core.evaluation.service.inappmessage.eligibility.match.InAppMessageHiddenStorage
@@ -33,55 +33,59 @@ internal class InAppMessageCloseActionHandler : InAppMessageActionHandler {
     }
 }
 
-internal class InAppMessageLinkActionHandler(private val uriHandler: UriHandler) :
-    InAppMessageActionHandler {
-
-    private val log = Logger<InAppMessageLinkActionHandler>()
+internal class InAppMessageLinkActionHandler(
+    private val urlDispatcher: HackleUrlDispatcher,
+) : InAppMessageActionHandler {
 
     override fun supports(action: InAppMessage.Action): Boolean {
         return action.actionType.shouldLink && !action.actionType.shouldClose
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
-        val activity = view.activity
-        if (activity == null) {
-            log.warn { "InAppMessage activity is null, not handle action [${view.inAppMessage.id}]" }
-            return
-        }
-
-        val link = action.value
-        if (link == null) {
-            log.error { "InAppMessage action value is null, not handle action [${view.inAppMessage.id}]" }
-            return
-        }
-        uriHandler.handle(activity, link)
+        urlDispatcher.openInAppMessageLink(view, action, close = false)
     }
 }
 
-internal class InAppMessageLinkAndCloseActionHandler(private val uriHandler: UriHandler) :
-    InAppMessageActionHandler {
-
-    private val log = Logger<InAppMessageLinkActionHandler>()
+internal class InAppMessageLinkAndCloseActionHandler(
+    private val urlDispatcher: HackleUrlDispatcher,
+) : InAppMessageActionHandler {
 
     override fun supports(action: InAppMessage.Action): Boolean {
         return action.actionType.shouldLink && action.actionType.shouldClose
     }
 
     override fun handle(view: InAppMessageView, action: InAppMessage.Action) {
-        val activity = view.activity
-        if (activity == null) {
-            log.warn { "InAppMessage activity is null, not handle action [${view.inAppMessage.id}]" }
-            return
-        }
-
-        val link = action.value
-        if (link == null) {
-            log.error { "InAppMessage action value is null, not handle action [${view.inAppMessage.id}]" }
-            return
-        }
-        view.close()
-        uriHandler.handle(activity, link)
+        urlDispatcher.openInAppMessageLink(view, action, close = true)
     }
+}
+
+private val linkActionLog = Logger<InAppMessageLinkActionHandler>()
+
+/**
+ * Opens the link of an in-app message [action] from the activity of [view].
+ * Does nothing when the view has no activity or the action has no link.
+ * When [close] is true, the view is closed before the link is opened.
+ */
+private fun HackleUrlDispatcher.openInAppMessageLink(
+    view: InAppMessageView,
+    action: InAppMessage.Action,
+    close: Boolean,
+) {
+    val activity = view.activity
+    if (activity == null) {
+        linkActionLog.warn { "InAppMessage activity is null, not handle action [${view.inAppMessage.id}]" }
+        return
+    }
+
+    val link = action.value
+    if (link == null) {
+        linkActionLog.error { "InAppMessage action value is null, not handle action [${view.inAppMessage.id}]" }
+        return
+    }
+    if (close) {
+        view.close()
+    }
+    open(activity, Uri.parse(link), HackleUrlChannel.IN_APP_MESSAGE)
 }
 
 internal class InAppMessageHideActionHandler(
@@ -102,21 +106,5 @@ internal class InAppMessageHideActionHandler(
         val expireAt = clock.currentMillis() + durationMillis
         storage.put(view.inAppMessage, expireAt)
         view.close()
-    }
-}
-
-
-internal class UriHandler {
-
-    private val log = Logger<UriHandler>()
-
-    fun handle(context: Context, link: String) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse(link)
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            log.error { "Failed to handle URI: $link\n$e" }
-        }
     }
 }
