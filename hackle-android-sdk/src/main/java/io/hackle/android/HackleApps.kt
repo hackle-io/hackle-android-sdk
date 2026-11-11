@@ -86,6 +86,8 @@ import io.hackle.android.internal.workspace.evaluation.WorkspaceEvaluationManage
 import io.hackle.android.internal.workspace.evaluation.client.RemoteEvaluateClient
 import io.hackle.android.internal.workspace.evaluation.evaluator.full.FullWorkspaceRemoteEvaluator
 import io.hackle.android.internal.workspace.evaluation.evaluator.partial.PartialWorkspaceRemoteEvaluator
+import io.hackle.android.ui.core.ApplicationUrlHandler
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.core.GlideImageLoader
 import io.hackle.android.ui.explorer.HackleUserExplorer
 import io.hackle.android.ui.explorer.base.HackleUserExplorerService
@@ -468,12 +470,16 @@ internal object HackleApps {
         val inAppMessageEventTracker = InAppMessageEventTracker(
             core = core
         )
-        val uriHandler = UriHandler()
+        val urlDispatcher = HackleUrlDispatcher(ApplicationUrlHandler())
+        // Hands the delegate over to the dispatcher so it is the only owner
+        // and HackleApp.setDelegate(null) can release it.
+        urlDispatcher.setDelegate(config.delegate)
+        config.delegate = null
         val inAppMessageActionHandlerFactory = InAppMessageActionHandlerFactory(
             handlers = listOf(
                 InAppMessageCloseActionHandler(),
-                InAppMessageLinkActionHandler(uriHandler),
-                InAppMessageLinkAndCloseActionHandler(uriHandler),
+                InAppMessageLinkActionHandler(urlDispatcher),
+                InAppMessageLinkAndCloseActionHandler(urlDispatcher),
                 InAppMessageHideActionHandler(inAppMessageHiddenStorage, clock)
             )
         )
@@ -599,10 +605,8 @@ internal object HackleApps {
             resetProcessor = inAppMessageResetProcessor
         )
 
-        if (config.inAppMessageEnabled) {
-            eventPublisher.add(inAppMessageManager)
-            userManager.addListener(inAppMessageManager)
-        }
+        eventPublisher.add(inAppMessageManager)
+        userManager.addListener(inAppMessageManager)
 
         // PushToken
         val pushTokenFetcher = PushTokenFetchers.create(context)
@@ -708,7 +712,8 @@ internal object HackleApps {
             hackleAppCore = hackleAppCore,
             sdk = sdk,
             config = config,
-            invocator = hackleInvocator
+            invocator = hackleInvocator,
+            urlDispatcher = urlDispatcher
         )
     }
 
@@ -749,10 +754,4 @@ internal object HackleApps {
 
         return builder.build()
     }
-
-    private val HackleConfig.inAppMessageEnabled: Boolean
-        get() {
-            val disableFlag = get("\$disable_inappmessage") ?: return true
-            return disableFlag.toBoolean()
-        }
 }

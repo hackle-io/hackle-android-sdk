@@ -1,13 +1,17 @@
 package io.hackle.android.ui.inappmessage.event.action
 
 import android.app.Activity
+import android.net.Uri
+import io.hackle.android.HackleUrlChannel
 import io.hackle.android.support.InAppMessages
+import io.hackle.android.ui.core.HackleUrlDispatcher
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.sdk.core.model.InAppMessage
 import io.hackle.sdk.core.model.InAppMessage.ActionType.*
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
@@ -17,14 +21,23 @@ import strikt.assertions.isEqualTo
 internal class InAppMessageLinkAndCloseActionHandlerTest {
 
     @RelaxedMockK
-    private lateinit var uriHandler: UriHandler
+    private lateinit var urlDispatcher: HackleUrlDispatcher
 
     @InjectMockKs
     private lateinit var sut: InAppMessageLinkAndCloseActionHandler
 
+    private val uri = mockk<Uri>()
+
     @Before
     fun before() {
         MockKAnnotations.init(this, relaxUnitFun = true)
+        mockkStatic(Uri::class)
+        every { Uri.parse("gogo") } returns uri
+    }
+
+    @After
+    fun after() {
+        unmockkStatic(Uri::class)
     }
 
     @Test
@@ -53,7 +66,7 @@ internal class InAppMessageLinkAndCloseActionHandlerTest {
         sut.handle(view, action)
 
         // then
-        verify { uriHandler wasNot Called }
+        verify { urlDispatcher wasNot Called }
     }
 
     @Test
@@ -69,7 +82,7 @@ internal class InAppMessageLinkAndCloseActionHandlerTest {
         sut.handle(view, action)
 
         // then
-        verify { uriHandler wasNot Called }
+        verify { urlDispatcher wasNot Called }
     }
 
     @Test
@@ -88,7 +101,7 @@ internal class InAppMessageLinkAndCloseActionHandlerTest {
         // then
         verify(exactly = 1) {
             view.close()
-            uriHandler.handle(activity, "gogo")
+            urlDispatcher.open(activity, uri, HackleUrlChannel.IN_APP_MESSAGE, null)
         }
     }
 }

@@ -18,6 +18,8 @@ import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.FeatureFlagDecision
 import io.hackle.sdk.common.subscription.HackleSubscriptionOperations
+import io.hackle.android.ui.core.HackleUrlDispatcher
+import io.hackle.android.ui.notification.PendingNotificationLinkStorage
 import io.hackle.sdk.core.internal.log.Logger
 import java.io.Closeable
 
@@ -29,6 +31,7 @@ class HackleApp internal constructor(
     internal val sdk: Sdk,
     internal val config: HackleConfig,
     internal val invocator: HackleInvocator,
+    internal val urlDispatcher: HackleUrlDispatcher,
 ) : Closeable {
     /**
      * The user's device ID.
@@ -83,6 +86,20 @@ class HackleApp internal constructor(
      */
     fun hideUserExplorer() {
         hackleAppCore.hideUserExplorer()
+    }
+
+    /**
+     * Sets the delegate that handles links from push notifications and in-app messages.
+     *
+     * While a delegate is registered, the SDK does not open links itself.
+     * Push links held until initialization are received if the delegate is registered before replay.
+     * Links are held only when `io.hackle.android.defer_push_link_until_initialized` is enabled.
+     * See [HackleDelegate] for the contract the delegate must fulfill.
+     *
+     * @param delegate the [HackleDelegate], or null to remove it
+     */
+    fun setDelegate(delegate: HackleDelegate?) {
+        urlDispatcher.setDelegate(delegate)
     }
 
     /**
@@ -467,6 +484,13 @@ class HackleApp internal constructor(
         }
 
         /**
+         * Returns the [HackleApp] instance if initialized, otherwise null.
+         */
+        internal fun currentInstance(): HackleApp? {
+            return synchronized(LOCK) { INSTANCE }
+        }
+
+        /**
          * Initializes the HackleApp instance with user.
          *
          * @param context the application [Context]
@@ -532,13 +556,13 @@ class HackleApp internal constructor(
             config: HackleConfig,
             onReady: Runnable,
         ): HackleApp {
-            synchronized(LOCK) {
+            val app = synchronized(LOCK) {
                 val instance = INSTANCE
                 if (instance != null) {
                     TaskExecutors.runOnBackground { onReady.run() }
                     return instance
                 }
-                return HackleApps
+                HackleApps
                     .create(context.applicationContext, sdkKey, config)
                     .initialize(user, onReady)
                     .also {
@@ -547,6 +571,18 @@ class HackleApp internal constructor(
                     }
                     .also { INSTANCE = it }
             }
+            // Opens the push link tapped before the instance was registered, if any.
+            // Posted to the main queue once, without waiting for onReady or for any activity.
+            // Because it runs on the main queue, a setDelegate call made on the main thread
+            // right after initialization is reflected.
+            val urlDispatcher = app.urlDispatcher
+            val appContext = context.applicationContext
+            TaskExecutors.main().execute {
+                val link = PendingNotificationLinkStorage.drain() ?: return@execute
+                log.debug { "Dispatch pending landing url" }
+                urlDispatcher.open(appContext, link.uri, HackleUrlChannel.PUSH, link.extras)
+            }
+            return app
         }
     }
 }
