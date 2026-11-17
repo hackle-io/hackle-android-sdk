@@ -10,6 +10,7 @@ import io.mockk.verify
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isNotNull
+import strikt.assertions.isNull
 import java.io.ByteArrayInputStream
 
 internal class InAppMessageWebViewAssetLoaderTest {
@@ -37,11 +38,15 @@ internal class InAppMessageWebViewAssetLoaderTest {
             "/www/index.html",
             "/flutter_assets/AssetManifest.json",
             "/nested/$JAVASCRIPT_SDK_ASSET",
+            "/../config.json",
+            "/$JAVASCRIPT_SDK_ASSET/../config.json",
         )
 
         for (path in paths) {
             // handled locally so that the request never falls through to the network
-            expectThat(sut.shouldInterceptRequest(uri(path))).describedAs(path).isNotNull()
+            val response = sut.shouldInterceptRequest(uri(path))
+            expectThat(response).describedAs(path).isNotNull()
+            expectThat(response!!.data).describedAs(path).isNull()
         }
         verify(exactly = 0) { assets.open(any(), any()) }
     }
