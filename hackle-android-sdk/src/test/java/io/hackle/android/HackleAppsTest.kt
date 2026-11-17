@@ -8,6 +8,7 @@ import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleMana
 import io.hackle.android.internal.monitoring.metric.MonitoringMetricRegistry
 import io.hackle.android.internal.platform.device.Device
 import io.hackle.android.mock.MockDevice
+import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.sdk.core.internal.metrics.Metrics
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -170,5 +171,24 @@ class HackleAppsTest {
         // then
         verify(exactly = 1) { delegate.handleUrl(any()) }
         expectThat(config.delegate).isNull()
+    }
+
+    @Test
+    fun `HackleApps create should pass htmlInAppMessageEnabled of config to in-app message ui`() {
+        // given
+        mockkObject(InAppMessageUi.Companion)
+        val config = HackleConfig.builder().htmlInAppMessageEnabled(false).build()
+
+        try {
+            // when
+            HackleApps.create(context, testSdkKey, config)
+
+            // then
+            verify(exactly = 1) {
+                InAppMessageUi.create(any(), any(), any(), any(), any(), any(), htmlEnabled = false)
+            }
+        } finally {
+            unmockkObject(InAppMessageUi.Companion)
+        }
     }
 }

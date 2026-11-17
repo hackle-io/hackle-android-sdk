@@ -3,6 +3,8 @@ package io.hackle.android.ui.inappmessage
 import android.app.Activity
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycle
 import io.hackle.android.internal.activity.lifecycle.ActivityProvider
+import io.hackle.android.internal.inappmessage.present.InAppMessagePresentResponse
+import io.hackle.android.internal.inappmessage.present.presentation.InAppMessagePresentationContext
 import io.hackle.android.internal.task.TaskExecutors
 import io.hackle.android.support.InAppMessages
 import io.hackle.android.ui.core.ImageLoader
@@ -13,11 +15,11 @@ import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.internal.time.Clock
 import io.hackle.sdk.core.model.InAppMessage
 import io.mockk.*
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
+import strikt.assertions.isEqualTo
 import strikt.assertions.isNotNull
 import strikt.assertions.isNull
 import java.util.concurrent.CyclicBarrier
@@ -46,7 +48,6 @@ class InAppMessageUiTest {
     @RelaxedMockK
     private lateinit var imageLoader: ImageLoader
 
-    @InjectMockKs
     private lateinit var sut: InAppMessageUi
 
     private lateinit var activity: Activity
@@ -69,6 +70,65 @@ class InAppMessageUiTest {
 
         every { activityProvider.currentActivity } returns activity
         every { messageControllerFactory.create(any(), any(), any()) } returns controller
+
+        sut = ui(htmlEnabled = true)
+    }
+
+    private fun ui(htmlEnabled: Boolean): InAppMessageUi {
+        return InAppMessageUi(
+            activityProvider = activityProvider,
+            messageControllerFactory = messageControllerFactory,
+            defaultListener = defaultListener,
+            clock = clock,
+            scheduler = scheduler,
+            eventHandleProcessor = eventHandleProcessor,
+            imageLoader = imageLoader,
+            htmlEnabled = htmlEnabled,
+        )
+    }
+
+    private fun htmlContext(): InAppMessagePresentationContext {
+        return InAppMessages.context(
+            message = InAppMessages.message(
+                layout = InAppMessages.layout(displayType = InAppMessage.DisplayType.HTML)
+            )
+        )
+    }
+
+    @Test
+    fun `when html in-app message is disabled then should not open html message`() {
+        // given
+        val sut = ui(htmlEnabled = false)
+
+        // when
+        val response = sut.present(htmlContext()).get()
+
+        // then
+        expectThat(response.code).isEqualTo(InAppMessagePresentResponse.Code.HTML_DISABLED)
+        verify { messageControllerFactory wasNot Called }
+    }
+
+    @Test
+    fun `when html in-app message is disabled then should still open other messages`() {
+        // given
+        val sut = ui(htmlEnabled = false)
+
+        // when
+        val response = sut.present(InAppMessages.context()).get()
+
+        // then
+        expectThat(response.code).isEqualTo(InAppMessagePresentResponse.Code.PRESENT)
+        verify(exactly = 1) { controller.open(activity) }
+    }
+
+    @Test
+    fun `when html in-app message is enabled then should open html message`() {
+        // when
+        val response = sut.present(htmlContext()).get()
+
+        // then
+        expectThat(response.code).isEqualTo(InAppMessagePresentResponse.Code.PRESENT)
+        verify(exactly = 1) { controller.open(activity) }
     }
 
     @Test
