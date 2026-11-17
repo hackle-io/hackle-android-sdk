@@ -114,6 +114,11 @@ class HackleConfig private constructor(builder: Builder) {
      */
     val optOutTracking: Boolean = builder.optOutTracking
 
+    /**
+     * Whether HTML in-app messages are presented.
+     */
+    val htmlInAppMessageEnabled: Boolean = builder.htmlInAppMessageEnabled
+
     @Volatile
     internal var delegate: HackleDelegate? = builder.delegate
 
@@ -151,6 +156,8 @@ class HackleConfig private constructor(builder: Builder) {
         internal var exposureEventDedupIntervalMillis: Int = DEFAULT_EXPOSURE_EVENT_DEDUP_INTERVAL_MILLIS
 
         internal var optOutTracking: Boolean = false
+
+        internal var htmlInAppMessageEnabled: Boolean = true
 
         internal var delegate: HackleDelegate? = null
 
@@ -367,6 +374,20 @@ class HackleConfig private constructor(builder: Builder) {
          */
         fun optOutTracking(optOutTracking: Boolean) = apply {
             this.optOutTracking = optOutTracking
+        }
+
+        /**
+         * Enables or disables HTML in-app messages.
+         *
+         * An HTML in-app message runs the HTML and JavaScript delivered from the server in a WebView.
+         * When disabled, HTML in-app messages are not presented and no impression is recorded for them.
+         * Other types of in-app messages are unaffected.
+         *
+         * @param htmlInAppMessageEnabled true to present HTML in-app messages (default), false otherwise
+         * @return this builder instance
+         */
+        fun htmlInAppMessageEnabled(htmlInAppMessageEnabled: Boolean) = apply {
+            this.htmlInAppMessageEnabled = htmlInAppMessageEnabled
         }
 
         /**

@@ -11,6 +11,7 @@ internal class InAppMessagePresentResponse(
         ACTIVITY_NOT_FOUND,
         ALREADY_PRESENTED,
         UNSUPPORTED_ORIENTATION,
+        HTML_DISABLED,
         IN_PROGRESS,
         EXCEPTION,
     }

@@ -517,7 +517,8 @@ internal object HackleApps {
             clock = clock,
             scheduler = Schedulers.executor(Executors.newSingleThreadScheduledExecutor()),
             eventProcessor = inAppMessageViewEventHandleProcessor,
-            imageLoader = imageLoader
+            imageLoader = imageLoader,
+            htmlEnabled = config.htmlInAppMessageEnabled
         )
 
         val inAppMessageRecorder = InAppMessageRecorder(
