@@ -52,7 +52,8 @@ def hasLocalSdk = getLocalProperty('hackle.java.sdk.path') != null
 
 dependencies {
     def javaSdkVersion = "3.0.0"
-    
+    def firebaseMessagingVersion = "23.0.8"
+
     // if hackle.java.sdk.path exist in local.properties, use local hackle-sdk-common and hackle-sdk-core
     if(hasLocalSdk)  {
         debugApi "io.hackle:hackle-sdk-common"
@@ -72,7 +73,7 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.4.0"
     implementation 'androidx.webkit:webkit:1.14.0'
 
-    compileOnly "com.google.firebase:firebase-messaging:23.0.8"
+    compileOnly "com.google.firebase:firebase-messaging:$firebaseMessagingVersion"
 
     implementation 'com.github.bumptech.glide:glide:4.16.0'
 
@@ -81,6 +82,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation "io.mockk:mockk:1.13.17"
     testImplementation 'io.strikt:strikt-core:0.32.0'
+    testImplementation "com.google.firebase:firebase-messaging:$firebaseMessagingVersion"
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

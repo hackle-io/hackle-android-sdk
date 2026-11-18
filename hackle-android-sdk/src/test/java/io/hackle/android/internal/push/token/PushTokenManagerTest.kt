@@ -11,6 +11,7 @@ import io.hackle.android.internal.user.UserManager
 import io.hackle.sdk.common.User
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
@@ -126,7 +127,8 @@ class PushTokenManagerTest {
     @Test
     fun `initialize - does not wait for push token fetch`() {
         // given
-        every { pushTokenFetcher.fetch(any()) } returns Unit
+        val callback = slot<(PushToken?) -> Unit>()
+        every { pushTokenFetcher.fetch(capture(callback)) } returns Unit
 
         // when
         sut.initialize()
@@ -134,6 +136,14 @@ class PushTokenManagerTest {
         // then
         expectThat(sut.currentPushToken).isNull()
         verify(exactly = 0) { pushEventTracker.trackToken(any(), any(), any()) }
+
+        // when
+        val token = PushToken.of("token")
+        callback.captured.invoke(token)
+
+        // then
+        expectThat(sut.currentPushToken).isEqualTo(token)
+        verify(exactly = 1) { pushEventTracker.trackToken(token, user, 42) }
     }
 
     @Test

@@ -1,6 +1,7 @@
 package io.hackle.android.internal.push.token
 
 import android.content.Context
+import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
@@ -26,14 +27,22 @@ internal class FcmPushTokenFetcher(
     private fun fetchFromFirebaseMessaging(callback: (PushToken?) -> Unit) {
         val firebaseMessaging = firebaseApp.get(FirebaseMessaging::class.java)
         firebaseMessaging.token.addOnCompleteListener(executor) { task ->
-            val pushToken = if (task.isSuccessful) {
+            callback(resolve(task))
+        }
+    }
+
+    private fun resolve(task: Task<String>): PushToken? {
+        return try {
+            if (task.isSuccessful) {
                 log.debug { "Successfully fetched PushToken from FirebaseMessaging" }
                 toPushToken(task.result)
             } else {
                 log.warn { "Failed to fetch PushToken from FirebaseMessaging: ${task.exception}" }
                 fetchFromFirebaseInstanceIdOrNull()
             }
-            callback(pushToken)
+        } catch (e: Throwable) {
+            log.warn { "Failed to resolve PushToken from FirebaseMessaging: $e" }
+            fetchFromFirebaseInstanceIdOrNull()
         }
     }
 
