@@ -1,45 +1,59 @@
 package io.hackle.android.internal.push.token
 
 import android.content.Context
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import io.hackle.sdk.core.internal.log.Logger
+import java.util.concurrent.Executor
 
-internal class FcmPushTokenFetcher(private val firebaseApp: FirebaseApp) : PushTokenFetcher {
-    override fun fetch(): PushToken? {
+internal class FcmPushTokenFetcher(
+    private val firebaseApp: FirebaseApp,
+    private val executor: Executor,
+) : PushTokenFetcher {
+
+    override fun fetch(callback: (PushToken?) -> Unit) {
         try {
             log.debug { "Attempt to fetch PushToken from FirebaseMessaging" }
-            val tokenValue = fetchFromFirebaseMessaging()
-            log.debug { "Successfully fetched PushToken from FirebaseMessaging" }
-            if (tokenValue.isBlank()) {
-                log.warn { "PushToken value is blank." }
-            }
-            return PushToken.of(tokenValue)
+            fetchFromFirebaseMessaging(callback)
         } catch (e: Throwable) {
             log.warn { "Failed to fetch PushToken from FirebaseMessaging: $e" }
+            callback(fetchFromFirebaseInstanceIdOrNull())
         }
-
-        try {
-            log.debug { "Attempt to fetch PushToken from FirebaseInstanceId" }
-            val tokenValue = fetchFromFirebaseInstanceId()
-            log.debug { "Successfully fetched PushToken from FirebaseInstanceId" }
-            if (tokenValue.isBlank()) {
-                log.warn { "PushToken value is blank." }
-            }
-            return PushToken.of(tokenValue)
-        } catch (e: Throwable) {
-            log.warn { "Failed to fetch PushToken from FirebaseInstanceId: $e" }
-        }
-
-        return null
     }
 
     // FirebaseMessaging.getToken API was introduced since firebase-messaging:21.0.0
-    private fun fetchFromFirebaseMessaging(): String {
+    private fun fetchFromFirebaseMessaging(callback: (PushToken?) -> Unit) {
         val firebaseMessaging = firebaseApp.get(FirebaseMessaging::class.java)
-        return Tasks.await(firebaseMessaging.token)
+        firebaseMessaging.token.addOnCompleteListener(executor) { task ->
+            val pushToken = if (task.isSuccessful) {
+                log.debug { "Successfully fetched PushToken from FirebaseMessaging" }
+                toPushToken(task.result)
+            } else {
+                log.warn { "Failed to fetch PushToken from FirebaseMessaging: ${task.exception}" }
+                fetchFromFirebaseInstanceIdOrNull()
+            }
+            callback(pushToken)
+        }
+    }
+
+    private fun fetchFromFirebaseInstanceIdOrNull(): PushToken? {
+        return try {
+            log.debug { "Attempt to fetch PushToken from FirebaseInstanceId" }
+            val tokenValue = fetchFromFirebaseInstanceId()
+            log.debug { "Successfully fetched PushToken from FirebaseInstanceId" }
+            toPushToken(tokenValue)
+        } catch (e: Throwable) {
+            log.warn { "Failed to fetch PushToken from FirebaseInstanceId: $e" }
+            null
+        }
+    }
+
+    private fun toPushToken(tokenValue: String): PushToken {
+        if (tokenValue.isBlank()) {
+            log.warn { "PushToken value is blank." }
+        }
+        return PushToken.of(tokenValue)
     }
 
     // This method for less than firebase-messaging:21.0.0
@@ -62,12 +76,12 @@ internal class FcmPushTokenFetcher(private val firebaseApp: FirebaseApp) : PushT
 
         private const val FCM_APP_NAME = "HACKLE_SDK_APP"
 
-        fun create(context: Context): FcmPushTokenFetcher {
+        fun create(context: Context, executor: Executor): FcmPushTokenFetcher {
             require(isFirebaseMessagingAvailable()) { "FirebaseMessaging not available." }
             val options =
                 requireNotNull(FirebaseOptions.fromResource(context)) { "Failed to get FirebaseOptions from resource." }
             val firebaseApp = FirebaseApp.initializeApp(context, options, FCM_APP_NAME)
-            return FcmPushTokenFetcher(firebaseApp)
+            return FcmPushTokenFetcher(firebaseApp, executor)
         }
 
         private fun isFirebaseMessagingAvailable(): Boolean {
