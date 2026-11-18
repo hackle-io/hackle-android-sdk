@@ -18,7 +18,6 @@ import io.hackle.sdk.common.HackleInAppMessageListener
 import io.hackle.sdk.core.internal.log.Logger
 import io.hackle.sdk.core.internal.scheduler.Scheduler
 import io.hackle.sdk.core.internal.time.Clock
-import io.hackle.sdk.core.model.InAppMessage
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -39,7 +38,6 @@ internal class InAppMessageUi(
     val scheduler: Scheduler,
     val eventHandleProcessor: InAppMessageViewEventHandleProcessor,
     val imageLoader: ImageLoader,
-    private val htmlEnabled: Boolean,
 ) : InAppMessagePresenter, InAppMessageViewProvider, ActivityLifecycleListener {
 
     private val _currentMessageController = AtomicReference<InAppMessageController>()
@@ -76,9 +74,6 @@ internal class InAppMessageUi(
     }
 
     private fun presentNow(context: InAppMessagePresentationContext): InAppMessagePresentResponse {
-        if (!isEnabled(context)) {
-            return InAppMessagePresentResponse.of(Code.HTML_DISABLED, context)
-        }
         val activity = activityProvider.currentActivity
             ?: return InAppMessagePresentResponse.of(Code.ACTIVITY_NOT_FOUND, context)
         if (currentMessageController != null) {
@@ -100,13 +95,6 @@ internal class InAppMessageUi(
             messageController?.close()
             return InAppMessagePresentResponse.of(Code.EXCEPTION, context)
         }
-    }
-
-    /**
-     * An HTML in-app message is presented only when it is enabled by `HackleConfig.htmlInAppMessageEnabled`.
-     */
-    private fun isEnabled(context: InAppMessagePresentationContext): Boolean {
-        return htmlEnabled || context.message.layout.displayType != InAppMessage.DisplayType.HTML
     }
 
     private fun isSupportedOrientation(activity: Activity, context: InAppMessagePresentationContext): Boolean {
@@ -158,7 +146,6 @@ internal class InAppMessageUi(
             scheduler: Scheduler,
             eventProcessor: InAppMessageViewEventHandleProcessor,
             imageLoader: ImageLoader,
-            htmlEnabled: Boolean,
         ): InAppMessageUi {
             return INSTANCE
                 ?: InAppMessageUi(
@@ -168,8 +155,7 @@ internal class InAppMessageUi(
                     clock,
                     scheduler,
                     eventProcessor,
-                    imageLoader,
-                    htmlEnabled
+                    imageLoader
                 ).also { INSTANCE = it }
         }
 

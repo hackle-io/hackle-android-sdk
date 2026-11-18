@@ -191,21 +191,6 @@ class HackleConfigTest {
     }
 
     @Test
-    fun `htmlInAppMessageEnabled`() {
-        configTests(HackleConfig::htmlInAppMessageEnabled to true)
-        configTests(HackleConfig::htmlInAppMessageEnabled to false) {
-            htmlInAppMessageEnabled(false)
-        }
-        configTests(HackleConfig::htmlInAppMessageEnabled to true) {
-            htmlInAppMessageEnabled(true)
-        }
-        configTests(HackleConfig::htmlInAppMessageEnabled to true) {
-            htmlInAppMessageEnabled(false)
-            htmlInAppMessageEnabled(true)
-        }
-    }
-
-    @Test
     fun `enableMonitoring`() {
         configTests(HackleConfig::enableMonitoring to true)
         configTests(HackleConfig::enableMonitoring to false) {
