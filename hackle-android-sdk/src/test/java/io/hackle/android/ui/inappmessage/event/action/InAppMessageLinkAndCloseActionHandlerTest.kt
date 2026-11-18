@@ -106,7 +106,7 @@ internal class InAppMessageLinkAndCloseActionHandlerTest {
     }
 
     @Test
-    fun `handle - when link scheme is not allowed then do nothing`() {
+    fun `handle - when link scheme is not allowed then close without opening link`() {
         // given
         every { Uri.parse("javascript:alert(1)") } returns mockk()
         val view = mockk<InAppMessageView>(relaxed = true) {
@@ -120,6 +120,6 @@ internal class InAppMessageLinkAndCloseActionHandlerTest {
 
         // then
         verify { urlDispatcher wasNot Called }
-        verify(exactly = 0) { view.close() }
+        verify(exactly = 1) { view.close() }
     }
 }

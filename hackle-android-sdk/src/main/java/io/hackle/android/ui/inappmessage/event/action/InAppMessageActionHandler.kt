@@ -63,9 +63,9 @@ private val linkActionLog = Logger<InAppMessageLinkActionHandler>()
 
 /**
  * Opens the link of an in-app message [action] from the activity of [view].
- * Does nothing when the view has no activity, the action has no link,
- * or the link is not allowed by [InAppMessageLinkPolicy].
+ * Does nothing when the view has no activity or the action has no link.
  * When [close] is true, the view is closed before the link is opened.
+ * The link is not opened when it is not allowed by [InAppMessageLinkPolicy], but the view is still closed.
  */
 private fun HackleUrlDispatcher.openInAppMessageLink(
     view: InAppMessageView,
@@ -83,12 +83,12 @@ private fun HackleUrlDispatcher.openInAppMessageLink(
         linkActionLog.error { "InAppMessage action value is null, not handle action [${view.inAppMessage.id}]" }
         return
     }
-    if (!InAppMessageLinkPolicy.isAllowed(link)) {
-        linkActionLog.warn { "InAppMessage link scheme is not allowed, not handle action [${view.inAppMessage.id}]" }
-        return
-    }
     if (close) {
         view.close()
+    }
+    if (!InAppMessageLinkPolicy.isAllowed(link)) {
+        linkActionLog.warn { "InAppMessage link scheme is not allowed, not open link [${view.inAppMessage.id}]" }
+        return
     }
     open(activity, Uri.parse(link), HackleUrlChannel.IN_APP_MESSAGE)
 }
