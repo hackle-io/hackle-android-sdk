@@ -609,7 +609,7 @@ internal object HackleApps {
         userManager.addListener(inAppMessageManager)
 
         // PushToken
-        val pushTokenFetcher = PushTokenFetchers.create(context)
+        val pushTokenFetcher = PushTokenFetchers.create(context, coreExecutor)
         val pushEventTracker = PushEventTracker(
             userManager = userManager,
             core = core
@@ -617,7 +617,9 @@ internal object HackleApps {
         val pushTokenManager = PushTokenManager(
             repository = keyValueRepositoryBySdkKey,
             pushTokenFetcher = pushTokenFetcher,
-            pushEventTracker = pushEventTracker
+            pushEventTracker = pushEventTracker,
+            userManager = userManager,
+            clock = clock
         )
         sessionManager.addListener(pushTokenManager)
 

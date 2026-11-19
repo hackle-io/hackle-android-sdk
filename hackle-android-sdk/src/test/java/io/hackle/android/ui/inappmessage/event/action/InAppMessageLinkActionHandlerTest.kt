@@ -103,4 +103,21 @@ internal class InAppMessageLinkActionHandlerTest {
             urlDispatcher.open(activity, uri, HackleUrlChannel.IN_APP_MESSAGE, null)
         }
     }
+
+    @Test
+    fun `handle - when link scheme is not allowed then do nothing`() {
+        // given
+        every { Uri.parse("javascript:alert(1)") } returns mockk()
+        val view = mockk<InAppMessageView>(relaxed = true) {
+            every { activity } returns mockk()
+            every { presentationContext } returns mockk(relaxed = true)
+        }
+        val action = InAppMessages.action(type = WEB_LINK, value = "javascript:alert(1)")
+
+        // when
+        sut.handle(view, action)
+
+        // then
+        verify { urlDispatcher wasNot Called }
+    }
 }
