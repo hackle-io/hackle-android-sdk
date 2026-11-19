@@ -136,7 +136,7 @@
 # Firebase Messaging is an optional (compileOnly) dependency.
 # Classes referenced by FcmPushTokenFetcher may be missing in apps without Firebase.
 -dontwarn com.google.android.gms.tasks.Task
--dontwarn com.google.android.gms.tasks.Tasks
+-dontwarn com.google.android.gms.tasks.OnCompleteListener
 -dontwarn com.google.firebase.FirebaseApp
 -dontwarn com.google.firebase.FirebaseOptions
 -dontwarn com.google.firebase.messaging.FirebaseMessaging
