@@ -1,5 +1,6 @@
 package io.hackle.android.ui.inappmessage.view
 
+import android.net.Uri
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -55,5 +56,22 @@ internal class InAppMessageWebViewClientTest {
         verify(exactly = 1) { listener.onRenderProcessGone() }
         verify(exactly = 0) { listener.onPageError() }
         expectThat(result).isTrue()
+    }
+
+    @Test
+    fun `shouldOverrideUrlLoading notifies url loading`() {
+        every { listener.onUrlLoading("https://example.com/landing") } returns true
+        val request = mockk<WebResourceRequest> {
+            every { url } returns uri("https://example.com/landing")
+        }
+
+        val result = sut.shouldOverrideUrlLoading(mockk(relaxed = true), request)
+
+        expectThat(result).isTrue()
+        verify(exactly = 1) { listener.onUrlLoading("https://example.com/landing") }
+    }
+
+    private fun uri(value: String): Uri {
+        return mockk { every { this@mockk.toString() } returns value }
     }
 }
