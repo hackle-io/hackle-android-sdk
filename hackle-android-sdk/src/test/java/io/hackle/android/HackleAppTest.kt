@@ -2,8 +2,12 @@ package io.hackle.android
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
 import android.webkit.WebView
 import io.hackle.android.internal.HackleAppCore
+import io.hackle.android.ui.core.HackleUrlDispatcher
+import io.hackle.android.ui.core.UrlHandler
 import io.hackle.android.internal.activity.lifecycle.ActivityLifecycleManager
 import io.hackle.android.internal.application.install.ApplicationInstallStateManager
 import io.hackle.android.internal.application.lifecycle.ApplicationLifecycleManager
@@ -28,6 +32,8 @@ import io.hackle.android.ui.inappmessage.InAppMessageUi
 import io.hackle.android.ui.inappmessage.view.InAppMessageView
 import io.hackle.android.ui.inappmessage.view.InAppMessageViewProvider
 import io.hackle.android.ui.notification.NotificationHandler
+import io.hackle.android.ui.notification.PendingNotificationLink
+import io.hackle.android.ui.notification.PendingNotificationLinkStorage
 import io.hackle.sdk.common.*
 import io.hackle.sdk.common.decision.Decision
 import io.hackle.sdk.common.decision.DecisionReason
@@ -104,6 +110,9 @@ class HackleAppTest {
     @RelaxedMockK
     private lateinit var inAppMessageViewProvider: InAppMessageViewProvider
 
+    @RelaxedMockK
+    private lateinit var urlDispatcher: HackleUrlDispatcher
+
     private lateinit var sut: HackleApp
 
     @Suppress("DEPRECATION")
@@ -149,12 +158,14 @@ class HackleAppTest {
             hackleAppCore,
             Sdk.of("", HackleConfig.DEFAULT),
             HackleConfig.builder().mode(HackleAppMode.NATIVE).build(),
-            mockk()
+            mockk(),
+            urlDispatcher
         )
     }
 
     @After
     fun tearDown() {
+        PendingNotificationLinkStorage.drain()
         unmockkObject(TaskExecutors)
         unmockkObject(HackleApp)
         clearAllMocks()
@@ -169,6 +180,27 @@ class HackleAppTest {
         expectThrows<IllegalStateException> {
             HackleApp.getInstance()
         }
+    }
+
+    @Test
+    fun `setDelegate - delegates to url dispatcher`() {
+        val delegate = mockk<HackleDelegate>()
+
+        sut.setDelegate(delegate)
+
+        verify(exactly = 1) { urlDispatcher.setDelegate(delegate) }
+    }
+
+    @Test
+    fun `setDelegate - null delegates to url dispatcher`() {
+        sut.setDelegate(null)
+
+        verify(exactly = 1) { urlDispatcher.setDelegate(null) }
+    }
+
+    @Test
+    fun `currentInstance - returns null when HackleApp is not initialized`() {
+        expectThat(HackleApp.currentInstance()).isNull()
     }
 
     @Test
@@ -973,6 +1005,49 @@ class HackleAppTest {
 }
 
 class HackleAppCompanionTest {
+
+    @Test
+    fun `initializeApp - replays pending push link once with original extras`() {
+        val instanceField = HackleApp::class.java.getDeclaredField("INSTANCE").apply { isAccessible = true }
+        val previousInstance = instanceField.get(null)
+        val context = mockk<Context>()
+        every { context.applicationContext } returns context
+        val uri = mockk<Uri>()
+        val extras = mockk<Bundle>()
+        val handler = mockk<UrlHandler>(relaxed = true)
+        val dispatcher = HackleUrlDispatcher(handler)
+        val core = mockk<HackleAppCore>(relaxed = true)
+        val config = HackleConfig.DEFAULT
+        val app = HackleApp(core, Sdk.of("test-key", config), config, mockk(), dispatcher)
+        val tasks = mutableListOf<Runnable>()
+        mockkObject(HackleApps, TaskExecutors, ApplicationLifecycleManager.Companion, ActivityLifecycleManager.Companion)
+        try {
+            instanceField.set(null, null)
+            PendingNotificationLinkStorage.drain()
+            every { HackleApps.create(context, "test-key", config) } returns app
+            every { ApplicationLifecycleManager.instance } returns mockk(relaxed = true)
+            every { ActivityLifecycleManager.instance } returns mockk(relaxed = true)
+            every { TaskExecutors.main() } returns Executor { tasks.add(it) }
+            PendingNotificationLinkStorage.store(
+                PendingNotificationLink(uri, extras)
+            )
+
+            val result = HackleApp.initializeApp(context, "test-key", config)
+            expectThat(result).isSameInstanceAs(app)
+            verify(exactly = 0) { handler.open(any(), any(), any(), any()) }
+            tasks.toList().also { tasks.clear() }.forEach { it.run() }
+
+            HackleApp.initializeApp(context, "test-key", config)
+            tasks.toList().also { tasks.clear() }.forEach { it.run() }
+
+            verify(exactly = 1) { handler.open(context, uri, HackleUrlChannel.PUSH, extras) }
+            expectThat(PendingNotificationLinkStorage.drain()).isNull()
+        } finally {
+            instanceField.set(null, previousInstance)
+            PendingNotificationLinkStorage.drain()
+            unmockkObject(HackleApps, TaskExecutors, ApplicationLifecycleManager.Companion, ActivityLifecycleManager.Companion)
+        }
+    }
 
     @Test
     fun `registerActivityLifecycleCallbacks`() {

@@ -17,6 +17,7 @@ import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import java.io.File
 
 class HackleAppsTest {
@@ -154,5 +155,20 @@ class HackleAppsTest {
 
         // then
         verify(exactly = 0) { Metrics.addRegistry(ofType(MonitoringMetricRegistry::class)) }
+    }
+
+    @Test
+    fun `HackleApps create should hand config delegate over to url dispatcher and release it from config`() {
+        // given
+        val delegate = mockk<HackleDelegate>(relaxed = true)
+        val config = HackleConfig.builder().delegate(delegate).build()
+
+        // when
+        val result = HackleApps.create(context, testSdkKey, config)
+        result.urlDispatcher.open(context, mockk(), HackleUrlChannel.PUSH)
+
+        // then
+        verify(exactly = 1) { delegate.handleUrl(any()) }
+        expectThat(config.delegate).isNull()
     }
 }

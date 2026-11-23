@@ -31,7 +31,8 @@ internal class HackleJavascriptInterfaceTest {
             hackleAppCore = mockk(relaxed = true),
             sdk = sdk,
             config = HackleConfig.builder().mode(mode).build(),
-            invocator = mockk(relaxed = true)
+            invocator = mockk(relaxed = true),
+            urlDispatcher = mockk(relaxed = true)
         )
     }
 

@@ -80,6 +80,7 @@ internal class InAppMessageViewController(
 
     private fun closeWithoutViewRemove() {
         handle(InAppMessageViewEvent.close(view))
+        unlockScreenOrientation()
         ui.closeCurrent()
         lifecycle(AFTER_CLOSE)
     }

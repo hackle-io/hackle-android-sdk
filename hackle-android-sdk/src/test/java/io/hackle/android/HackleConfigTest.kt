@@ -2,6 +2,7 @@ package io.hackle.android
 
 import android.util.Log
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import org.junit.After
@@ -14,6 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import strikt.assertions.isSameInstanceAs
 
 class HackleConfigTest {
@@ -310,6 +312,20 @@ class HackleConfigTest {
             .sessionPolicy(HackleSessionPolicy.builder().timeoutCondition(HackleSessionTimeoutCondition.builder().millis(-1000).build()).build())
             .build()
         expectThat(config.sessionPolicy.timeoutCondition.timeoutMillis).isEqualTo(1000L * 60 * 30)
+    }
+
+    @Test
+    fun `delegate - default is null`() {
+        expectThat(HackleConfig.DEFAULT.delegate).isNull()
+    }
+
+    @Test
+    fun `delegate - sets delegate`() {
+        val delegate = mockk<HackleDelegate>()
+
+        val config = HackleConfig.builder().delegate(delegate).build()
+
+        expectThat(config.delegate).isSameInstanceAs(delegate)
     }
 
     private fun <T> configTests(

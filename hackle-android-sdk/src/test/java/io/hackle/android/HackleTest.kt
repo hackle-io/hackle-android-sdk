@@ -85,6 +85,31 @@ class HackleTest {
     }
 
     @Test
+    fun `setDelegate before initialization is ignored`() {
+        every { HackleApp.getInstance() } throws IllegalStateException("HackleApp is not initialized")
+        every { HackleApp.currentInstance() } returns null
+
+        Hackle.setDelegate(mockk())
+        Hackle.setDelegate(null)
+
+        verify(exactly = 0) { hackleApp.setDelegate(any()) }
+    }
+
+    @Test
+    fun `setDelegate after initialization registers and clears delegate`() {
+        every { HackleApp.currentInstance() } returns hackleApp
+        val delegate = mockk<HackleDelegate>()
+
+        Hackle.setDelegate(delegate)
+        Hackle.setDelegate(null)
+
+        verifySequence {
+            hackleApp.setDelegate(delegate)
+            hackleApp.setDelegate(null)
+        }
+    }
+
+    @Test
     fun `registerActivityLifecycleCallbacks should delegate to HackleApp`() {
         // when
         Hackle.registerActivityLifecycleCallbacks(context)
