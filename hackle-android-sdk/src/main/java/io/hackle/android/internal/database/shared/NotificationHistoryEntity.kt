@@ -18,11 +18,11 @@ internal class NotificationHistoryEntity(
     val journeyNodeId: Long?,
     val campaignType: String?,
     val timestamp: Long,
-    val debug: Boolean,
     val clickAction: String? = null,
     val clickValue: String? = null,
     val clickArea: String? = null,
-    val buttonType: String? = null
+    val buttonType: String? = null,
+    val debug: Boolean
 ) {
 
     companion object {
@@ -95,7 +95,6 @@ internal class NotificationHistoryEntity(
                 pushMessageExecutionId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID)),
                 pushMessageDeliveryId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID)),
                 timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)) ?: 0L,
-                debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG)),
                 journeyId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_ID)),
                 journeyKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_KEY)),
                 journeyNodeId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_NODE_ID)),
@@ -103,7 +102,8 @@ internal class NotificationHistoryEntity(
                 clickAction = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_ACTION_TYPE)),
                 clickArea = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_AREA)),
                 buttonType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_BUTTON_TYPE)),
-                clickValue = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_ACTION_VALUE))
+                clickValue = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_ACTION_VALUE)),
+                debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG))
             )
         }
 
