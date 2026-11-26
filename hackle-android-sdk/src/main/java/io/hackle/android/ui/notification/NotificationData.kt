@@ -70,6 +70,12 @@ internal data class NotificationData(
     val notificationId: Int
         get() = messageId.hashCode()
 
+    val clickValue: String?
+        get() = when (clickAction) {
+            NotificationClickAction.APP_OPEN -> null
+            NotificationClickAction.DEEP_LINK -> link
+        }
+
     companion object {
 
         fun from(intent: Intent): NotificationData? {

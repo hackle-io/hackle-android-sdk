@@ -62,7 +62,7 @@ internal class NotificationHistoryRepositoryImpl(
         values.put(NotificationHistoryEntity.COLUMN_JOURNEY_NODE_ID, data.journeyNodeId)
         values.put(NotificationHistoryEntity.COLUMN_CAMPAIGN_TYPE, data.campaignType)
         values.put(NotificationHistoryEntity.COLUMN_ACTION_TYPE, data.clickAction.name)
-        values.put(NotificationHistoryEntity.COLUMN_ACTION_VALUE, data.link)
+        values.put(NotificationHistoryEntity.COLUMN_ACTION_VALUE, data.clickValue)
         values.put(NotificationHistoryEntity.COLUMN_CLICK_AREA, data.clickArea.name)
         values.put(NotificationHistoryEntity.COLUMN_BUTTON_TYPE, data.buttonType)
         db.insert(NotificationHistoryEntity.TABLE_NAME, null, values)

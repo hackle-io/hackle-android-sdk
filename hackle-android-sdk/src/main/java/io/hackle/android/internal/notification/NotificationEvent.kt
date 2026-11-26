@@ -17,7 +17,7 @@ internal fun NotificationData.toTrackEvent() =
         .property("debug", debug)
         .property("push_message_click_area", clickArea.name)
         .property("push_message_click_action", clickAction.name)
-        .property("push_message_click_value", link)
+        .property("push_message_click_value", clickValue)
         .property("push_message_button_type", buttonType)
         .build()
 

@@ -43,6 +43,36 @@ class NotificationEventTest {
         assertThat(to.properties["debug"], `is`(true))
         assertThat(to.properties["push_message_click_area"], `is`("MESSAGE"))
         assertThat(to.properties["push_message_click_action"], `is`("APP_OPEN"))
+        assertThat(to.properties.containsKey("push_message_click_value"), `is`(false))
+    }
+
+    @Test
+    fun `notification data to event with deep link`() {
+        val from = NotificationData(
+            channelId = "hackle_default_channel",
+            messageId = "abcd1234",
+            workspaceId = 123L,
+            environmentId = 456L,
+            pushMessageId = 1111L,
+            pushMessageKey = 2222L,
+            pushMessageExecutionId = 3333L,
+            pushMessageDeliveryId = 4444L,
+            showForeground = true,
+            iconColorFilter = null,
+            title = "foo",
+            body = "bar",
+            thumbnailImageUrl = null,
+            largeImageUrl = null,
+            clickAction = NotificationClickAction.DEEP_LINK,
+            link = "foo://bar",
+            journeyId = null,
+            journeyKey = null,
+            journeyNodeId = null,
+            campaignType = "PUSH_MESSAGE",
+            debug = false
+        )
+        val to = from.toTrackEvent()
+        assertThat(to.properties["push_message_click_action"], `is`("DEEP_LINK"))
         assertThat(to.properties["push_message_click_value"], `is`("foo://bar"))
     }
 
