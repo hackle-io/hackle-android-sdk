@@ -18,12 +18,17 @@ internal class SharedDatabase(
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 2 && newVersion >= 2) migrationTableFrom1To2(db)
-        if (oldVersion < 3 && newVersion >= 3) migrationTableFrom2To3(db)
-        if (oldVersion < 4 && newVersion >= 4) {
-            with(NotificationHistoryEntity) {
-                db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CLICK_AREA TEXT")
-                db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_BUTTON_TYPE TEXT")
+        if(newVersion <= MAX_DATABASE_VERSION) {
+            when (oldVersion) {
+                1 -> {
+                    // migration v1 -> v2 -> v3
+                    migrationTableFrom1To2(db)
+                    migrationTableFrom2To3(db)
+                }
+                2 -> {
+                    // migration v2 -> v3
+                    migrationTableFrom2To3(db)
+                }
             }
         }
     }
@@ -40,14 +45,21 @@ internal class SharedDatabase(
     }
 
     private fun migrationTableFrom2To3(db: SQLiteDatabase) {
-        db.execSQL(NotificationHistoryEntity.ADD_ACTION_TYPE)
-        db.execSQL(NotificationHistoryEntity.ADD_ACTION_VALUE)
+        try {
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_AREA)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_ACTION)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_VALUE)
+            db.execSQL(NotificationHistoryEntity.ADD_BUTTON_TYPE)
+        } catch (e: Exception) {
+            log.error { "Failed to upgrade database:\n$e" }
+        }
     }
 
     companion object {
 
         const val DATABASE_NAME = "hackle_shared"
-        const val DATABASE_VERSION = 4
+        const val DATABASE_VERSION = 3
+        const val MAX_DATABASE_VERSION = 3
         private val log = Logger<SharedDatabase>()
     }
 }
