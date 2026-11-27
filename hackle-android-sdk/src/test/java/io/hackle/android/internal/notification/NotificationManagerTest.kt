@@ -68,7 +68,7 @@ class NotificationManagerTest {
             2L,
             3L,
             "JOURNEY",
-            true
+            debug = true
         )
         val timestamp = System.currentTimeMillis()
         manager.onNotificationDataReceived(data, timestamp)
@@ -114,7 +114,7 @@ class NotificationManagerTest {
             2L,
             3L,
             "JOURNEY",
-            true
+            debug = true
         )
 
         // when - must not propagate to the (main-thread) caller
@@ -148,7 +148,7 @@ class NotificationManagerTest {
             2L,
             3L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(correctData, timestamp)
 
@@ -173,7 +173,7 @@ class NotificationManagerTest {
             3L,
             4L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(diffWorkspaceData, 2L)
 
@@ -198,7 +198,7 @@ class NotificationManagerTest {
             4L,
             5L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(diffEnvironmentData, 3L)
 
@@ -223,7 +223,7 @@ class NotificationManagerTest {
             5L,
             6L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(bothDiffData, 4L)
 
@@ -274,7 +274,7 @@ class NotificationManagerTest {
             null,
             null,
             null,
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(data, 1L)
 
