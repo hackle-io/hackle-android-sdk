@@ -28,8 +28,6 @@ import io.hackle.android.ui.notification.Constants.KEY_THUMBNAIL_IMAGE_URL
 import io.hackle.android.ui.notification.Constants.KEY_TITLE
 import io.hackle.android.ui.notification.Constants.KEY_WORKSPACE_ID
 
-internal enum class NotificationClickArea { MESSAGE, BUTTON }
-
 internal data class NotificationData(
     val channelId: String,
     val messageId: String,
@@ -51,10 +49,10 @@ internal data class NotificationData(
     val journeyKey: Long?,
     val journeyNodeId: Long?,
     val campaignType: String?,
-    val debug: Boolean,
     val buttons: List<NotificationButton> = emptyList(),
     val clickArea: NotificationClickArea = NotificationClickArea.MESSAGE,
     val buttonType: String? = null,
+    val debug: Boolean,
 ) {
 
     val notificationId: Int
@@ -107,10 +105,10 @@ internal data class NotificationData(
                     journeyKey = (hackle[KEY_JOURNEY_KEY] as? Number)?.toLong(),
                     journeyNodeId = (hackle[KEY_JOURNEY_NODE_ID] as? Number)?.toLong(),
                     campaignType = hackle[KEY_CAMPAIGN_TYPE] as? String,
-                    debug = hackle[KEY_DEBUG] as? Boolean ?: false,
                     buttons = buttons,
                     clickArea = if (button != null) NotificationClickArea.BUTTON else NotificationClickArea.MESSAGE,
-                    buttonType = button?.type
+                    buttonType = button?.type,
+                    debug = hackle[KEY_DEBUG] as? Boolean ?: false
                 )
             } catch (_: Exception) {
             }
