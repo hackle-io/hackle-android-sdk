@@ -65,7 +65,7 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
         try {
             val notification = NotificationFactory.createNotification(context, notificationExtras, notificationData)
             val notificationManager = NotificationManagerCompat.from(context)
-            notificationManager.notify(TAG, notificationData.notificationId, notification)
+            notificationManager.notify(Constants.NOTIFICATION_TAG, notificationData.notificationId, notification)
         } catch (e: Exception) {
             log.debug { e.message ?: "Handle notification intent error." }
             return false
@@ -94,7 +94,6 @@ internal class NotificationBroadcastReceiver : BroadcastReceiver() {
 
     companion object {
 
-        private const val TAG = "hackle_notification"
         private val log = Logger<NotificationBroadcastReceiver>()
     }
 }

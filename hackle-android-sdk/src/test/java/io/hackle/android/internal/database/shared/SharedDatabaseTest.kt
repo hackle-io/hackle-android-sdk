@@ -29,6 +29,33 @@ class SharedDatabaseTest {
     }
 
     @Test
+    fun `upgrade from v1 to v3`() {
+        val db = mockk<SQLiteDatabase>(relaxUnitFun = true)
+        sut.onUpgrade(db, 1, 3)
+        verify(exactly = 1) {
+            db.execSQL(NotificationHistoryEntity.ADD_JOURNEY_ID)
+            db.execSQL(NotificationHistoryEntity.ADD_CAMPAIGN_TYPE)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_AREA)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_ACTION)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_VALUE)
+            db.execSQL(NotificationHistoryEntity.ADD_BUTTON_TYPE)
+        }
+    }
+
+    @Test
+    fun `upgrade from v2 to v3`() {
+        val db = mockk<SQLiteDatabase>(relaxUnitFun = true)
+        sut.onUpgrade(db, 2, 3)
+        verify(exactly = 0) { db.execSQL(NotificationHistoryEntity.ADD_JOURNEY_ID) }
+        verify(exactly = 1) {
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_AREA)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_ACTION)
+            db.execSQL(NotificationHistoryEntity.ADD_CLICK_VALUE)
+            db.execSQL(NotificationHistoryEntity.ADD_BUTTON_TYPE)
+        }
+    }
+
+    @Test
     fun `execute with readonly value to false`() {
         val db = mockk<SQLiteDatabase>()
         every { sut.writableDatabase } returns db

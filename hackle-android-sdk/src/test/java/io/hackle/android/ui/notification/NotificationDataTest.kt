@@ -6,6 +6,7 @@ import io.hackle.android.mock.MockBundle
 import io.mockk.every
 import io.mockk.mockk
 import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.nullValue
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -60,6 +61,46 @@ class NotificationDataTest {
         assertThat(result.largeImageUrl, `is`("https://bar.com"))
         assertThat(result.link, `is`("foo://bar"))
         assertTrue(result.debug)
+    }
+
+    @Test
+    fun `parse buttons and select clicked action`() {
+        val intent = mockk<Intent>()
+        val payload = mapOf<String, Any>(
+            "workspaceId" to 1,
+            "environmentId" to 2,
+            "clickAction" to "APP_OPEN",
+            "buttons" to mapOf(
+                "categoryId" to "category",
+                "items" to listOf(
+                    mapOf("title" to "Open", "type" to "PRIMARY", "clickAction" to "DEEP_LINK", "link" to "https://example.com"),
+                    mapOf("title" to "Later", "clickAction" to "APP_OPEN")
+                )
+            )
+        )
+        every { intent.extras } returns MockBundle.create(mapOf(
+            "google.message_id" to "message",
+            "hackle" to payload.toJson()
+        ))
+
+        val data = requireNotNull(NotificationData.from(intent))
+        assertThat(data.buttons.size, `is`(2))
+        assertThat(data.buttons[0].title, `is`("Open"))
+        assertThat(data.clickArea, `is`(NotificationClickArea.MESSAGE))
+
+        val clicked = requireNotNull(NotificationData.from(intent, 0))
+        assertThat(clicked.clickAction, `is`(NotificationClickAction.DEEP_LINK))
+        assertThat(clicked.clickArea, `is`(NotificationClickArea.BUTTON))
+        assertThat(clicked.buttonType, `is`("PRIMARY"))
+        assertThat(clicked.link, `is`("https://example.com"))
+
+        val appOpen = requireNotNull(NotificationData.from(intent, 1))
+        assertThat(appOpen.clickAction, `is`(NotificationClickAction.APP_OPEN))
+        assertThat(appOpen.clickArea, `is`(NotificationClickArea.BUTTON))
+        assertThat(appOpen.link, `is`(nullValue()))
+        assertThat(appOpen.buttonType, `is`(nullValue()))
+
+        assertThat(NotificationData.from(intent, 8), `is`(data))
     }
 
     @Test

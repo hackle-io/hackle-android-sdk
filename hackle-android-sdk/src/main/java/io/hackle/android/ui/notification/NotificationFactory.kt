@@ -43,6 +43,7 @@ internal object NotificationFactory {
         setColor(context, builder, data)
         setBigTextStyle(builder, data)
         setContentIntent(context, builder, extras, data)
+        setActions(context, builder, extras, data)
         setBigPictureStyle(context, builder, data)
         return builder.build()
     }
@@ -186,6 +187,21 @@ internal object NotificationFactory {
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
         builder.setContentIntent(pendingIntent)
+    }
+
+    private fun setActions(context: Context, builder: NotificationCompat.Builder, extras: Bundle, data: NotificationData) {
+        data.buttons.forEachIndexed { index, button ->
+            val actionIntent = Intent(context, NotificationTrampolineActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtras(extras)
+                putExtra(Constants.KEY_ACTION_INDEX, index)
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, data.notificationId * 31 + index + 1, actionIntent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.addAction(0, button.title, pendingIntent)
+        }
     }
 
     private fun setBigPictureStyle(context: Context, builder: NotificationCompat.Builder, data: NotificationData) {

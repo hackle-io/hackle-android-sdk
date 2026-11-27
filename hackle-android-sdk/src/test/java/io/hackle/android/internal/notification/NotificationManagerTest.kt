@@ -68,7 +68,7 @@ class NotificationManagerTest {
             2L,
             3L,
             "JOURNEY",
-            true
+            debug = true
         )
         val timestamp = System.currentTimeMillis()
         manager.onNotificationDataReceived(data, timestamp)
@@ -114,7 +114,7 @@ class NotificationManagerTest {
             2L,
             3L,
             "JOURNEY",
-            true
+            debug = true
         )
 
         // when - must not propagate to the (main-thread) caller
@@ -148,7 +148,7 @@ class NotificationManagerTest {
             2L,
             3L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(correctData, timestamp)
 
@@ -173,7 +173,7 @@ class NotificationManagerTest {
             3L,
             4L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(diffWorkspaceData, 2L)
 
@@ -198,7 +198,7 @@ class NotificationManagerTest {
             4L,
             5L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(diffEnvironmentData, 3L)
 
@@ -223,7 +223,7 @@ class NotificationManagerTest {
             5L,
             6L,
             "PUSH_MESSAGE",
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(bothDiffData, 4L)
 
@@ -274,7 +274,7 @@ class NotificationManagerTest {
             null,
             null,
             null,
-            true
+            debug = true
         )
         manager.onNotificationDataReceived(data, 1L)
 
@@ -285,9 +285,9 @@ class NotificationManagerTest {
     @Test
     fun `flush data until empty`() {
         val notifications = listOf(
-            NotificationHistoryEntity(0, 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, 2L, 3L, "JOURNEY", 1L, true),
-            NotificationHistoryEntity(1, 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, 3L, 4L, "PUSH_MESSAGE", 2L, false),
-            NotificationHistoryEntity(2, 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, 4L, 5L, "JOURNEY", 3L, true),
+            NotificationHistoryEntity(0, 111L, 222L, 1111L, 2222L, 3333L, 4444L, 1L, 2L, 3L, "JOURNEY", timestamp = 1L, debug = true),
+            NotificationHistoryEntity(1, 111L, 222L, 2222L, 3333L, 4444L, 5555L, 2L, 3L, 4L, "PUSH_MESSAGE", timestamp = 2L, debug = false),
+            NotificationHistoryEntity(2, 111L, 222L, 3333L, 4444L, 5555L, 6666L, 3L, 4L, 5L, "JOURNEY", timestamp = 3L, debug = true),
         )
         repository.putAll(notifications)
 
@@ -337,11 +337,11 @@ class NotificationManagerTest {
     @Test
     fun `flush only same environment data`() {
         val notifications = listOf(
-            NotificationHistoryEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, null, null, null, null, 1L, true),
-            NotificationHistoryEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, null, null, null, null, 2L, false),
-            NotificationHistoryEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, null, null, null, null, 3L, true),
-            NotificationHistoryEntity(3, 222L, 111L, 4L, 4L, 4L, 4L, null, null, null, null, 4L, false),
-            NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, null, null, null, null, 5L, true),
+            NotificationHistoryEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, null, null, null, null, timestamp = 1L, debug = true),
+            NotificationHistoryEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, null, null, null, null, timestamp = 2L, debug = false),
+            NotificationHistoryEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, null, null, null, null, timestamp = 3L, debug = true),
+            NotificationHistoryEntity(3, 222L, 111L, 4L, 4L, 4L, 4L, null, null, null, null, timestamp = 4L, debug = false),
+            NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, null, null, null, null, timestamp = 5L, debug = true),
         )
         repository.putAll(notifications)
 
@@ -360,11 +360,11 @@ class NotificationManagerTest {
     @Test
     fun `do not flush any data if workspace returns null`() {
         val notifications = listOf(
-            NotificationHistoryEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, 2L, 3L, "JOURNEY", 1L, true),
-            NotificationHistoryEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 1L, 2L, 3L, "JOURNEY", 2L, false),
-            NotificationHistoryEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 1L, 2L, 3L, "JOURNEY", 3L, true),
-            NotificationHistoryEntity(3, 222L, 222L, 4L, 4L, 4L, 4L, 1L, 2L, 3L, "JOURNEY", 4L, false),
-            NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 1L, 2L, 3L, "JOURNEY", 5L, true),
+            NotificationHistoryEntity(0, 111L, 222L, 1L, 1L, 1L, 1L, 1L, 2L, 3L, "JOURNEY", timestamp = 1L, debug = true),
+            NotificationHistoryEntity(1, 111L, 111L, 2L, 2L, 2L, 2L, 1L, 2L, 3L, "JOURNEY", timestamp = 2L, debug = false),
+            NotificationHistoryEntity(2, 111L, 222L, 3L, 3L, 3L, 3L, 1L, 2L, 3L, "JOURNEY", timestamp = 3L, debug = true),
+            NotificationHistoryEntity(3, 222L, 222L, 4L, 4L, 4L, 4L, 1L, 2L, 3L, "JOURNEY", timestamp = 4L, debug = false),
+            NotificationHistoryEntity(4, 222L, 222L, 5L, 5L, 5L, 5L, 1L, 2L, 3L, "JOURNEY", timestamp = 5L, debug = true),
         )
         repository.putAll(notifications)
         every { workspaceFetcher.metadata() } returns null

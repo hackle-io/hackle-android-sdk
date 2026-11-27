@@ -3,6 +3,7 @@ package io.hackle.android.ui.notification
 import android.app.Activity
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.app.NotificationManagerCompat
 import io.hackle.android.HackleApp
 import io.hackle.android.HackleUrlChannel
 import io.hackle.android.internal.platform.ManifestMetadata
@@ -23,15 +24,24 @@ internal class NotificationTrampolineActivity : Activity() {
             return
         }
 
-        val notificationData = NotificationData.from(intent)
+        val actionIndex = intent.getIntExtra(Constants.KEY_ACTION_INDEX, -1)
+        val notificationData = NotificationData.from(intent, actionIndex)
         if (notificationData == null) {
             log.debug { "Notification data parse error." }
             finish()
             return
         }
 
+        if (actionIndex >= 0) {
+            NotificationManagerCompat.from(this).cancel(Constants.NOTIFICATION_TAG, notificationData.notificationId)
+        }
         NotificationHandler.getInstance(this).handleNotificationData(notificationData)
-        trampoline(intent.data, notificationExtras, notificationData)
+        val link = if (actionIndex >= 0) {
+            notificationData.link?.let(Uri::parse)
+        } else {
+            intent.data
+        }
+        trampoline(link, notificationExtras, notificationData)
         finish()
     }
 

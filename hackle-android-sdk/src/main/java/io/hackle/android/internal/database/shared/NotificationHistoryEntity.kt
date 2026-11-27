@@ -17,6 +17,10 @@ internal class NotificationHistoryEntity(
     val journeyKey: Long?,
     val journeyNodeId: Long?,
     val campaignType: String?,
+    val clickArea: String? = null,
+    val clickAction: String? = null,
+    val clickValue: String? = null,
+    val buttonType: String? = null,
     val timestamp: Long,
     val debug: Boolean
 ) {
@@ -38,6 +42,10 @@ internal class NotificationHistoryEntity(
         const val COLUMN_JOURNEY_KEY = "journey_key"
         const val COLUMN_JOURNEY_NODE_ID = "journey_node_id"
         const val COLUMN_CAMPAIGN_TYPE = "campaign_type"
+        const val COLUMN_CLICK_AREA = "click_area"
+        const val COLUMN_CLICK_ACTION = "click_action"
+        const val COLUMN_CLICK_VALUE = "click_value"
+        const val COLUMN_BUTTON_TYPE = "button_type"
 
         const val CREATE_TABLE =
             "CREATE TABLE IF NOT EXISTS $TABLE_NAME (" +
@@ -53,7 +61,11 @@ internal class NotificationHistoryEntity(
                 "$COLUMN_JOURNEY_ID INTEGER," +
                 "$COLUMN_JOURNEY_KEY INTEGER," +
                 "$COLUMN_JOURNEY_NODE_ID INTEGER," +
-                "$COLUMN_CAMPAIGN_TYPE TEXT" +
+                "$COLUMN_CAMPAIGN_TYPE TEXT," +
+                "$COLUMN_CLICK_AREA TEXT," +
+                "$COLUMN_CLICK_ACTION TEXT," +
+                "$COLUMN_CLICK_VALUE TEXT," +
+                "$COLUMN_BUTTON_TYPE TEXT" +
             ")"
 
         const val ADD_JOURNEY_ID =
@@ -68,6 +80,17 @@ internal class NotificationHistoryEntity(
         const val ADD_CAMPAIGN_TYPE =
             "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CAMPAIGN_TYPE TEXT"
 
+        const val ADD_CLICK_AREA =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CLICK_AREA TEXT"
+
+        const val ADD_CLICK_ACTION =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CLICK_ACTION TEXT"
+
+        const val ADD_CLICK_VALUE =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_CLICK_VALUE TEXT"
+
+        const val ADD_BUTTON_TYPE =
+            "ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_BUTTON_TYPE TEXT"
 
         fun from(cursor: Cursor): NotificationHistoryEntity {
             return NotificationHistoryEntity(
@@ -78,12 +101,16 @@ internal class NotificationHistoryEntity(
                 pushMessageKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_KEY)),
                 pushMessageExecutionId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_EXECUTION_ID)),
                 pushMessageDeliveryId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_PUSH_MESSAGE_DELIVERY_ID)),
-                timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)) ?: 0L,
-                debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG)),
                 journeyId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_ID)),
                 journeyKey = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_KEY)),
                 journeyNodeId = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_JOURNEY_NODE_ID)),
-                campaignType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_TYPE))
+                campaignType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CAMPAIGN_TYPE)),
+                clickArea = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_AREA)),
+                clickAction = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_ACTION)),
+                clickValue = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_CLICK_VALUE)),
+                buttonType = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(COLUMN_BUTTON_TYPE)),
+                timestamp = cursor.getLongOrNull(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)) ?: 0L,
+                debug = cursor.getBoolean(cursor.getColumnIndexOrThrow(COLUMN_DEBUG))
             )
         }
 

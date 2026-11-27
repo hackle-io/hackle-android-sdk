@@ -49,15 +49,28 @@ internal data class NotificationData(
     val journeyKey: Long?,
     val journeyNodeId: Long?,
     val campaignType: String?,
+    val buttons: List<NotificationButton> = emptyList(),
+    val clickArea: NotificationClickArea = NotificationClickArea.MESSAGE,
+    val buttonType: String? = null,
     val debug: Boolean,
 ) {
 
     val notificationId: Int
         get() = messageId.hashCode()
 
+    val clickValue: String?
+        get() = when (clickAction) {
+            NotificationClickAction.APP_OPEN -> null
+            NotificationClickAction.DEEP_LINK -> link
+        }
+
     companion object {
 
         fun from(intent: Intent): NotificationData? {
+            return from(intent, -1)
+        }
+
+        fun from(intent: Intent, actionIndex: Int): NotificationData? {
             try {
                 val data = checkNotNull(intent.extras)
                 val hackle = checkNotNull(data.getString(KEY_HACKLE))
@@ -66,6 +79,8 @@ internal data class NotificationData(
                     hackle[KEY_CHANNEL_TYPE] as? String 
                         ?: ChannelType.HACKLE_DEFAULT.name
                 )
+                val buttons = parseButtons(hackle[Constants.KEY_BUTTONS])
+                val button = buttons.getOrNull(actionIndex)
                 return NotificationData(
                     channelId = channelId(channelType, hackle[KEY_CHANNEL_ID] as? String),
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
@@ -81,15 +96,18 @@ internal data class NotificationData(
                     body = hackle[KEY_BODY] as? String,
                     thumbnailImageUrl = hackle[KEY_THUMBNAIL_IMAGE_URL] as? String,
                     largeImageUrl = hackle[KEY_LARGE_IMAGE_URL] as? String,
-                    clickAction = NotificationClickAction.from(
+                    clickAction = button?.clickAction ?: NotificationClickAction.from(
                         hackle[KEY_CLICK_ACTION] as? String
                             ?: NotificationClickAction.APP_OPEN.name
                     ),
-                    link = hackle[KEY_LINK] as? String,
+                    link = if (button != null) button.link else hackle[KEY_LINK] as? String,
                     journeyId = (hackle[KEY_JOURNEY_ID] as? Number)?.toLong(),
                     journeyKey = (hackle[KEY_JOURNEY_KEY] as? Number)?.toLong(),
                     journeyNodeId = (hackle[KEY_JOURNEY_NODE_ID] as? Number)?.toLong(),
                     campaignType = hackle[KEY_CAMPAIGN_TYPE] as? String,
+                    buttons = buttons,
+                    clickArea = if (button != null) NotificationClickArea.BUTTON else NotificationClickArea.MESSAGE,
+                    buttonType = button?.type,
                     debug = hackle[KEY_DEBUG] as? Boolean ?: false
                 )
             } catch (_: Exception) {
@@ -97,6 +115,23 @@ internal data class NotificationData(
             return null
         }
         
+        private fun parseButtons(value: Any?): List<NotificationButton> {
+            val items = (value as? Map<*, *>)?.get(Constants.KEY_ITEMS) as? List<*> ?: return emptyList()
+            return items.map { item ->
+                val button = item as? Map<*, *> ?: return emptyList()
+                val title = button[KEY_TITLE] as? String ?: return emptyList()
+                val action = runCatching {
+                    NotificationClickAction.from(button[KEY_CLICK_ACTION] as? String ?: NotificationClickAction.APP_OPEN.name)
+                }.getOrDefault(NotificationClickAction.APP_OPEN)
+                NotificationButton(
+                    title = title,
+                    clickAction = action,
+                    link = button[KEY_LINK] as? String,
+                    type = button[Constants.KEY_BUTTON_TYPE] as? String
+                )
+            }
+        }
+
         fun channelId(channelType: ChannelType, channelId: String?): String {
             return when(channelType) {
                 ChannelType.HACKLE_DEFAULT -> DEFAULT_NOTIFICATION_CHANNEL_ID
