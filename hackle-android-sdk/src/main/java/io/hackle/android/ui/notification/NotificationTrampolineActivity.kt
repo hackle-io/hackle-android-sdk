@@ -25,9 +25,7 @@ internal class NotificationTrampolineActivity : Activity() {
         }
 
         val actionIndex = intent.getIntExtra(Constants.KEY_ACTION_INDEX, -1)
-        val notificationData = NotificationData.from(intent)?.let { data ->
-            if (actionIndex >= 0) data.clicked(actionIndex) else data
-        }
+        val notificationData = NotificationData.from(intent, actionIndex)
         if (notificationData == null) {
             log.debug { "Notification data parse error." }
             finish()

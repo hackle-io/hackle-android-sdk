@@ -6,6 +6,7 @@ import io.hackle.android.mock.MockBundle
 import io.mockk.every
 import io.mockk.mockk
 import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.nullValue
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -85,11 +86,21 @@ class NotificationDataTest {
         val data = requireNotNull(NotificationData.from(intent))
         assertThat(data.buttons.size, `is`(2))
         assertThat(data.buttons[0].title, `is`("Open"))
-        assertThat(data.clicked(0).clickAction, `is`(NotificationClickAction.DEEP_LINK))
-        assertThat(data.clicked(0).clickArea, `is`(NotificationClickArea.BUTTON))
-        assertThat(data.clicked(0).buttonType, `is`("PRIMARY"))
-        assertThat(data.clicked(0).link, `is`("https://example.com"))
-        assertThat(data.clicked(8), `is`(data))
+        assertThat(data.clickArea, `is`(NotificationClickArea.MESSAGE))
+
+        val clicked = requireNotNull(NotificationData.from(intent, 0))
+        assertThat(clicked.clickAction, `is`(NotificationClickAction.DEEP_LINK))
+        assertThat(clicked.clickArea, `is`(NotificationClickArea.BUTTON))
+        assertThat(clicked.buttonType, `is`("PRIMARY"))
+        assertThat(clicked.link, `is`("https://example.com"))
+
+        val appOpen = requireNotNull(NotificationData.from(intent, 1))
+        assertThat(appOpen.clickAction, `is`(NotificationClickAction.APP_OPEN))
+        assertThat(appOpen.clickArea, `is`(NotificationClickArea.BUTTON))
+        assertThat(appOpen.link, `is`(nullValue()))
+        assertThat(appOpen.buttonType, `is`(nullValue()))
+
+        assertThat(NotificationData.from(intent, 8), `is`(data))
     }
 
     @Test

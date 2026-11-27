@@ -119,7 +119,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = null)
 
         every { notificationData.clickAction } returns NotificationClickAction.APP_OPEN
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         val launcherIntent = mockk<Intent>(relaxed = true)
         val packageManager = mockk<PackageManager>(relaxed = true)
@@ -143,7 +143,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = uri)
 
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         // Stub packageManager as a sentinel: if getLaunchIntentForPackage is called,
         // we know startLauncherActivity was invoked (wrong path for this test).
@@ -169,7 +169,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = null)
 
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         val launcherIntent = mockk<Intent>(relaxed = true)
         val packageManager = mockk<PackageManager>(relaxed = true)
@@ -193,7 +193,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = uri)
 
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         val launcherIntent = mockk<Intent>(relaxed = true)
         val packageManager = mockk<PackageManager>(relaxed = true)
@@ -225,7 +225,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = null)
 
         every { notificationData.clickAction } returns NotificationClickAction.APP_OPEN
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         val launcherIntent = mockk<Intent>(relaxed = true)
         val packageManager = mockk<PackageManager>(relaxed = true)
@@ -258,7 +258,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = uri)
 
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         val delegate = mockk<HackleDelegate>(relaxed = true)
         every { HackleApp.currentInstance() } returns appWith(DelegateUrlHandler(delegate))
@@ -283,7 +283,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = uri)
 
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
 
         val packageManager = mockk<PackageManager>(relaxed = true)
         every { sut.packageManager } returns packageManager
@@ -300,7 +300,7 @@ class NotificationTrampolineActivityTest {
         val uri = mockk<Uri>(relaxed = true)
         stubActivityIntent(uri = uri)
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
         every { HackleApp.currentInstance() } returns null
         val packageManager = mockk<PackageManager>(relaxed = true)
         every { sut.packageManager } returns packageManager
@@ -321,7 +321,7 @@ class NotificationTrampolineActivityTest {
         val uri = mockk<Uri>(relaxed = true)
         stubActivityIntent(uri = uri)
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
         every { HackleApp.currentInstance() } returns null
         val packageManager = mockk<PackageManager>(relaxed = true)
         every { sut.packageManager } returns packageManager
@@ -346,7 +346,7 @@ class NotificationTrampolineActivityTest {
         stubActivityIntent(uri = uri)
 
         every { notificationData.clickAction } returns NotificationClickAction.DEEP_LINK
-        every { NotificationData.from(any()) } returns notificationData
+        every { NotificationData.from(any(), any()) } returns notificationData
         every { HackleApp.currentInstance() } returns null
 
         val launcherIntent = mockk<Intent>(relaxed = true)

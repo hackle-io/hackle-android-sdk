@@ -57,16 +57,6 @@ internal data class NotificationData(
     val buttonType: String? = null,
 ) {
 
-    fun clicked(index: Int): NotificationData {
-        val button = buttons.getOrNull(index) ?: return this
-        return copy(
-            clickArea = NotificationClickArea.BUTTON,
-            clickAction = button.clickAction,
-            link = button.link,
-            buttonType = button.type
-        )
-    }
-
     val notificationId: Int
         get() = messageId.hashCode()
 
@@ -79,6 +69,10 @@ internal data class NotificationData(
     companion object {
 
         fun from(intent: Intent): NotificationData? {
+            return from(intent, -1)
+        }
+
+        fun from(intent: Intent, actionIndex: Int): NotificationData? {
             try {
                 val data = checkNotNull(intent.extras)
                 val hackle = checkNotNull(data.getString(KEY_HACKLE))
@@ -87,6 +81,8 @@ internal data class NotificationData(
                     hackle[KEY_CHANNEL_TYPE] as? String 
                         ?: ChannelType.HACKLE_DEFAULT.name
                 )
+                val buttons = parseButtons(hackle[Constants.KEY_BUTTONS])
+                val button = buttons.getOrNull(actionIndex)
                 return NotificationData(
                     channelId = channelId(channelType, hackle[KEY_CHANNEL_ID] as? String),
                     messageId = checkNotNull(data.getString(KEY_MESSAGE_ID)),
@@ -102,17 +98,19 @@ internal data class NotificationData(
                     body = hackle[KEY_BODY] as? String,
                     thumbnailImageUrl = hackle[KEY_THUMBNAIL_IMAGE_URL] as? String,
                     largeImageUrl = hackle[KEY_LARGE_IMAGE_URL] as? String,
-                    clickAction = NotificationClickAction.from(
+                    clickAction = button?.clickAction ?: NotificationClickAction.from(
                         hackle[KEY_CLICK_ACTION] as? String
                             ?: NotificationClickAction.APP_OPEN.name
                     ),
-                    link = hackle[KEY_LINK] as? String,
+                    link = if (button != null) button.link else hackle[KEY_LINK] as? String,
                     journeyId = (hackle[KEY_JOURNEY_ID] as? Number)?.toLong(),
                     journeyKey = (hackle[KEY_JOURNEY_KEY] as? Number)?.toLong(),
                     journeyNodeId = (hackle[KEY_JOURNEY_NODE_ID] as? Number)?.toLong(),
                     campaignType = hackle[KEY_CAMPAIGN_TYPE] as? String,
                     debug = hackle[KEY_DEBUG] as? Boolean ?: false,
-                    buttons = parseButtons(hackle[Constants.KEY_BUTTONS])
+                    buttons = buttons,
+                    clickArea = if (button != null) NotificationClickArea.BUTTON else NotificationClickArea.MESSAGE,
+                    buttonType = button?.type
                 )
             } catch (_: Exception) {
             }
