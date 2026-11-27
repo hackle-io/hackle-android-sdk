@@ -120,9 +120,9 @@ internal class NotificationHistoryRepositoryTest {
             hasSize(3)
             get { this[1].clickArea } isEqualTo "BUTTON"
             get { this[1].buttonType } isEqualTo "PRIMARY"
-            get { this[0] } isEqualTo NotificationHistoryEntity(0L, 1L, 2L, 3L, 4L, 5L, 6L,  1L, 2L, 3L, "JOURNEY",1234567890L, debug = true)
-            get { this[1] } isEqualTo NotificationHistoryEntity(1L, 2L, 3L, 4L, 5L, 6L, 7L, 2L, 3L, 4L, "PUSH_MESSAGE", 3333333333L, debug = false)
-            get { this[2] } isEqualTo NotificationHistoryEntity(2L, 3L, 4L, 5L, 6L, 7L, 8L, 3L, 4L, 5L , "JOURNEY",4444444444L, debug = true)
+            get { this[0] } isEqualTo NotificationHistoryEntity(0L, 1L, 2L, 3L, 4L, 5L, 6L,  1L, 2L, 3L, "JOURNEY",timestamp = 1234567890L, debug = true)
+            get { this[1] } isEqualTo NotificationHistoryEntity(1L, 2L, 3L, 4L, 5L, 6L, 7L, 2L, 3L, 4L, "PUSH_MESSAGE", timestamp = 3333333333L, debug = false)
+            get { this[2] } isEqualTo NotificationHistoryEntity(2L, 3L, 4L, 5L, 6L, 7L, 8L, 3L, 4L, 5L , "JOURNEY",timestamp = 4444444444L, debug = true)
         }
     }
 
@@ -132,9 +132,9 @@ internal class NotificationHistoryRepositoryTest {
         every { db.compileStatement(any()) } returns statement
 
         val entities = listOf(
-            NotificationHistoryEntity(0, 123L, 456L, 789L, 111L, 222L, 333L, 1L, 2L, 3L, "JOURNEY",444L, debug = true),
-            NotificationHistoryEntity(1, 123L, 456L, 789L, 111L, 222L, 333L, 2L, 3L, 4L, "PUSH_MESSAGE",444L, debug = true),
-            NotificationHistoryEntity(2, 123L, 456L, 789L, 111L, 222L, 333L, 3L, 4L, 5L , "JOURNEY", 444L, debug = true),
+            NotificationHistoryEntity(0, 123L, 456L, 789L, 111L, 222L, 333L, 1L, 2L, 3L, "JOURNEY",timestamp = 444L, debug = true),
+            NotificationHistoryEntity(1, 123L, 456L, 789L, 111L, 222L, 333L, 2L, 3L, 4L, "PUSH_MESSAGE",timestamp = 444L, debug = true),
+            NotificationHistoryEntity(2, 123L, 456L, 789L, 111L, 222L, 333L, 3L, 4L, 5L , "JOURNEY", timestamp = 444L, debug = true),
         )
         sut.delete(entities)
 
